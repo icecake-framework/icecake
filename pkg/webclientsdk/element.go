@@ -1522,7 +1522,7 @@ func (_this *Element) GetAttributeNames() (_result []string) {
 		_converted []string // javascript: sequence<DOMString> _what_return_name
 	)
 	__length0 := _returned.Length()
-	__array0 := make([]string, __length0, __length0)
+	__array0 := make([]string, __length0)
 	for __idx0 := 0; __idx0 < __length0; __idx0++ {
 		var __seq_out0 string
 		__seq_in0 := _returned.Index(__idx0)
@@ -1585,7 +1585,7 @@ func (_this *Element) SetAttribute(qualifiedName string, value string) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("setAttribute", _args[0:_end]...)
-	return
+	
 }
 
 func (_this *Element) RemoveAttribute(qualifiedName string) {
@@ -1597,7 +1597,7 @@ func (_this *Element) RemoveAttribute(qualifiedName string) {
 	_args[0] = _p0
 	_end++
 	_this.jsValue.Call("removeAttribute", _args[0:_end]...)
-	return
+	
 }
 
 func (_this *Element) ToggleAttribute(qualifiedName string, force *bool) (_result bool) {
@@ -1620,12 +1620,7 @@ func (_this *Element) ToggleAttribute(qualifiedName string, force *bool) (_resul
 		_end++
 	}
 	_returned := _this.jsValue.Call("toggleAttribute", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *Element) SetAttributeNode(attr *Attr) (_result *Attr) {
@@ -1656,11 +1651,7 @@ func (_this *Element) Closest(selectors string) (_result *Element) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("closest", _args[0:_end]...)
-
-	_converted := ElementFromJS(_returned)
-
-	_result = _converted
-	return
+	return ElementFromJS(_returned)
 }
 
 func (_this *Element) Matches(selectors string) (_result bool) {
@@ -1672,12 +1663,7 @@ func (_this *Element) Matches(selectors string) (_result bool) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("matches", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *Element) WebkitMatchesSelector(selectors string) (_result bool) {
@@ -1689,12 +1675,7 @@ func (_this *Element) WebkitMatchesSelector(selectors string) (_result bool) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("webkitMatchesSelector", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *Element) GetElementsByTagName(qualifiedName string) (_result *HTMLCollection) {
@@ -1706,12 +1687,7 @@ func (_this *Element) GetElementsByTagName(qualifiedName string) (_result *HTMLC
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("getElementsByTagName", _args[0:_end]...)
-	var (
-		_converted *HTMLCollection // javascript: HTMLCollection _what_return_name
-	)
-	_converted = HTMLCollectionFromJS(_returned)
-	_result = _converted
-	return
+	return HTMLCollectionFromJS(_returned)
 }
 
 func (_this *Element) GetElementsByClassName(classNames string) (_result *HTMLCollection) {
@@ -1723,12 +1699,7 @@ func (_this *Element) GetElementsByClassName(classNames string) (_result *HTMLCo
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("getElementsByClassName", _args[0:_end]...)
-	var (
-		_converted *HTMLCollection // javascript: HTMLCollection _what_return_name
-	)
-	_converted = HTMLCollectionFromJS(_returned)
-	_result = _converted
-	return
+	return HTMLCollectionFromJS(_returned)
 }
 
 func (_this *Element) InsertAdjacentElement(where string, element *Element) (_result *Element) {
@@ -1765,7 +1736,6 @@ func (_this *Element) InsertAdjacentText(where string, data string) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("insertAdjacentText", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) InsertAdjacentHTML(position string, text string) {
@@ -1780,7 +1750,6 @@ func (_this *Element) InsertAdjacentHTML(position string, text string) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("insertAdjacentHTML", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) GetBoundingClientRect() (_result *DOMRect) {
@@ -1789,12 +1758,7 @@ func (_this *Element) GetBoundingClientRect() (_result *DOMRect) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("getBoundingClientRect", _args[0:_end]...)
-	var (
-		_converted *DOMRect // javascript: DOMRect _what_return_name
-	)
-	_converted = DOMRectFromJS(_returned)
-	_result = _converted
-	return
+	return DOMRectFromJS(_returned)
 }
 
 func (_this *Element) ScrollIntoView() {
@@ -1803,7 +1767,6 @@ func (_this *Element) ScrollIntoView() {
 		_end  int
 	)
 	_this.jsValue.Call("scrollIntoView", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) ScrollXY(x float64, y float64) {
@@ -1818,7 +1781,6 @@ func (_this *Element) ScrollXY(x float64, y float64) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("scroll", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) ScrollToXY(x float64, y float64) {
@@ -1833,7 +1795,6 @@ func (_this *Element) ScrollToXY(x float64, y float64) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("scrollTo", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) ScrollByXY(x float64, y float64) {
@@ -1848,7 +1809,6 @@ func (_this *Element) ScrollByXY(x float64, y float64) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("scrollBy", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) SetPointerCapture(pointerId int) {
@@ -1860,7 +1820,6 @@ func (_this *Element) SetPointerCapture(pointerId int) {
 	_args[0] = _p0
 	_end++
 	_this.jsValue.Call("setPointerCapture", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) ReleasePointerCapture(pointerId int) {
@@ -1872,7 +1831,6 @@ func (_this *Element) ReleasePointerCapture(pointerId int) {
 	_args[0] = _p0
 	_end++
 	_this.jsValue.Call("releasePointerCapture", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) HasPointerCapture(pointerId int) (_result bool) {
@@ -1884,12 +1842,7 @@ func (_this *Element) HasPointerCapture(pointerId int) (_result bool) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("hasPointerCapture", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *Element) RequestPointerLock() {
@@ -1898,7 +1851,6 @@ func (_this *Element) RequestPointerLock() {
 		_end  int
 	)
 	_this.jsValue.Call("requestPointerLock", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) Prepend(nodes ...*Union) {
@@ -1912,7 +1864,6 @@ func (_this *Element) Prepend(nodes ...*Union) {
 		_end++
 	}
 	_this.jsValue.Call("prepend", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) Append(nodes ...*Union) {
@@ -1926,7 +1877,6 @@ func (_this *Element) Append(nodes ...*Union) {
 		_end++
 	}
 	_this.jsValue.Call("append", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) QuerySelector(selectors string) (_result *Element) {
@@ -1938,14 +1888,7 @@ func (_this *Element) QuerySelector(selectors string) (_result *Element) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("querySelector", _args[0:_end]...)
-	var (
-		_converted *Element // javascript: Element _what_return_name
-	)
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = ElementFromJS(_returned)
-	}
-	_result = _converted
-	return
+	return ElementFromJS(_returned)
 }
 
 func (_this *Element) QuerySelectorAll(selectors string) (_result *NodeList) {
@@ -1957,12 +1900,7 @@ func (_this *Element) QuerySelectorAll(selectors string) (_result *NodeList) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("querySelectorAll", _args[0:_end]...)
-	var (
-		_converted *NodeList // javascript: NodeList _what_return_name
-	)
-	_converted = NodeListFromJS(_returned)
-	_result = _converted
-	return
+	return NodeListFromJS(_returned)
 }
 
 func (_this *Element) Before(nodes ...*Union) {
@@ -1976,7 +1914,6 @@ func (_this *Element) Before(nodes ...*Union) {
 		_end++
 	}
 	_this.jsValue.Call("before", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) After(nodes ...*Union) {
@@ -1990,7 +1927,6 @@ func (_this *Element) After(nodes ...*Union) {
 		_end++
 	}
 	_this.jsValue.Call("after", _args[0:_end]...)
-	return
 }
 
 func (_this *Element) Remove() {
@@ -1999,5 +1935,4 @@ func (_this *Element) Remove() {
 		_end  int
 	)
 	_this.jsValue.Call("remove", _args[0:_end]...)
-	return
 }

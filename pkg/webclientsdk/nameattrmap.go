@@ -165,10 +165,5 @@ func (_this *NamedAttrMap) RemoveNamedItem(qualifiedName string) (_result *Attr)
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("removeNamedItem", _args[0:_end]...)
-	var (
-		_converted *Attr // javascript: Attr _what_return_name
-	)
-	_converted = AttrFromJS(_returned)
-	_result = _converted
-	return
+	return AttrFromJS(_returned)
 }

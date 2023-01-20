@@ -337,12 +337,7 @@ func (_this *MouseEvent) GetModifierState(keyArg string) (_result bool) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("getModifierState", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 /*********************************************************************************
@@ -552,7 +547,7 @@ func (_this *PointerEvent) GetCoalescedEvents() (_result []*PointerEvent) {
 		_converted []*PointerEvent // javascript: sequence<PointerEvent> _what_return_name
 	)
 	__length0 := _returned.Length()
-	__array0 := make([]*PointerEvent, __length0, __length0)
+	__array0 := make([]*PointerEvent, __length0)
 	for __idx0 := 0; __idx0 < __length0; __idx0++ {
 		var __seq_out0 *PointerEvent
 		__seq_in0 := _returned.Index(__idx0)
@@ -574,7 +569,7 @@ func (_this *PointerEvent) GetPredictedEvents() (_result []*PointerEvent) {
 		_converted []*PointerEvent // javascript: sequence<PointerEvent> _what_return_name
 	)
 	__length0 := _returned.Length()
-	__array0 := make([]*PointerEvent, __length0, __length0)
+	__array0 := make([]*PointerEvent, __length0)
 	for __idx0 := 0; __idx0 < __length0; __idx0++ {
 		var __seq_out0 *PointerEvent
 		__seq_in0 := _returned.Index(__idx0)
@@ -767,10 +762,5 @@ func (_this *KeyboardEvent) GetModifierState(keyArg string) (_result bool) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("getModifierState", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }

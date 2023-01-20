@@ -19,10 +19,7 @@ func PromiseBoolOnFulfilledToJS(callback PromiseBoolOnFulfilledFunc) *PromiseBoo
 		return nil
 	}
 	ret := PromiseBoolOnFulfilled(js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		var (
-			_p0 bool // javascript: boolean value
-		)
-		_p0 = (args[0]).Bool()
+		_p0 := (args[0]).Bool()
 		callback(_p0)
 
 		// returning no return value
@@ -41,7 +38,6 @@ func PromiseBoolOnFulfilledFromJS(_value js.Value) PromiseBoolOnFulfilledFunc {
 		_args[0] = _p0
 		_end++
 		_value.Invoke(_args[0:_end]...)
-		return
 	}
 }
 
@@ -62,10 +58,7 @@ func PromiseBoolOnRejectedToJS(callback PromiseBoolOnRejectedFunc) *PromiseBoolO
 		return nil
 	}
 	ret := PromiseBoolOnRejected(js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		var (
-			_p0 js.Value // javascript: any reason
-		)
-		_p0 = args[0]
+		_p0 := args[0]
 		callback(_p0)
 
 		// returning no return value
@@ -84,7 +77,6 @@ func PromiseBoolOnRejectedFromJS(_value js.Value) PromiseBoolOnRejectedFunc {
 		_args[0] = _p0
 		_end++
 		_value.Invoke(_args[0:_end]...)
-		return
 	}
 }
 
@@ -122,7 +114,6 @@ func PromiseFinallyFromJS(_value js.Value) PromiseFinallyFunc {
 			_end  int
 		)
 		_value.Invoke(_args[0:_end]...)
-		return
 	}
 }
 
@@ -173,12 +164,7 @@ func (_this *PromiseBool) Then(onFulfilled *PromiseBoolOnFulfilled, onRejected *
 		_end++
 	}
 	_returned := _this.Value.Call("then", _args[0:_end]...)
-	var (
-		_converted *PromiseBool // javascript: Promise _what_return_name
-	)
-	_converted = PromiseBoolFromJS(_returned)
-	_result = _converted
-	return
+	return PromiseBoolFromJS(_returned)
 }
 
 func (_this *PromiseBool) Catch(onRejected *PromiseBoolOnRejected) (_result *PromiseBool) {
@@ -197,12 +183,7 @@ func (_this *PromiseBool) Catch(onRejected *PromiseBoolOnRejected) (_result *Pro
 	_args[0] = _p0
 	_end++
 	_returned := _this.Value.Call("catch", _args[0:_end]...)
-	var (
-		_converted *PromiseBool // javascript: Promise _what_return_name
-	)
-	_converted = PromiseBoolFromJS(_returned)
-	_result = _converted
-	return
+	return PromiseBoolFromJS(_returned)
 }
 
 func (_this *PromiseBool) Finally(onFinally *PromiseFinally) (_result *PromiseBool) {
@@ -221,10 +202,5 @@ func (_this *PromiseBool) Finally(onFinally *PromiseFinally) (_result *PromiseBo
 	_args[0] = _p0
 	_end++
 	_returned := _this.Value.Call("finally", _args[0:_end]...)
-	var (
-		_converted *PromiseBool // javascript: Promise _what_return_name
-	)
-	_converted = PromiseBoolFromJS(_returned)
-	_result = _converted
-	return
+	return PromiseBoolFromJS(_returned)
 }

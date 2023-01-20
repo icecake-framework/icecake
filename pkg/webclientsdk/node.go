@@ -202,7 +202,7 @@ func (_this *Node) TextContent() *string {
 
 // SetTextContent setting attribute 'textContent' with
 // type string (idl: DOMString).
-func (_this *Node) SetTextContent(value *string) {
+func (_this *Node) SetTextContent(value string) {
 	var input interface{}
 	if value != nil {
 		input = *(value)
@@ -218,12 +218,7 @@ func (_this *Node) GetRootNode() (_result *Node) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("getRootNode", _args[0:_end]...)
-	var (
-		_converted *Node // javascript: Node _what_return_name
-	)
-	_converted = NodeFromJS(_returned)
-	_result = _converted
-	return
+	return NodeFromJS(_returned)
 }
 
 func (_this *Node) HasChildNodes() (_result bool) {
@@ -232,12 +227,7 @@ func (_this *Node) HasChildNodes() (_result bool) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("hasChildNodes", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *Node) Normalize() {
@@ -246,7 +236,6 @@ func (_this *Node) Normalize() {
 		_end  int
 	)
 	_this.jsValue.Call("normalize", _args[0:_end]...)
-	return
 }
 
 func (_this *Node) CloneNode(deep *bool) (_result *Node) {
@@ -266,12 +255,7 @@ func (_this *Node) CloneNode(deep *bool) (_result *Node) {
 		_end++
 	}
 	_returned := _this.jsValue.Call("cloneNode", _args[0:_end]...)
-	var (
-		_converted *Node // javascript: Node _what_return_name
-	)
-	_converted = NodeFromJS(_returned)
-	_result = _converted
-	return
+	return NodeFromJS(_returned)
 }
 
 func (_this *Node) IsEqualNode(otherNode *Node) (_result bool) {
@@ -283,12 +267,7 @@ func (_this *Node) IsEqualNode(otherNode *Node) (_result bool) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("isEqualNode", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *Node) IsSameNode(otherNode *Node) (_result bool) {
@@ -300,12 +279,7 @@ func (_this *Node) IsSameNode(otherNode *Node) (_result bool) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("isSameNode", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *Node) CompareDocumentPosition(other *Node) (_result int) {
@@ -317,12 +291,7 @@ func (_this *Node) CompareDocumentPosition(other *Node) (_result int) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("compareDocumentPosition", _args[0:_end]...)
-	var (
-		_converted int // javascript: unsigned short _what_return_name
-	)
-	_converted = (_returned).Int()
-	_result = _converted
-	return
+	return (_returned).Int()
 }
 
 func (_this *Node) Contains(other *Node) (_result bool) {
@@ -334,12 +303,7 @@ func (_this *Node) Contains(other *Node) (_result bool) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("contains", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *Node) InsertBefore(node *Node, child *Node) (_result *Node) {
@@ -354,12 +318,7 @@ func (_this *Node) InsertBefore(node *Node, child *Node) (_result *Node) {
 	_args[1] = _p1
 	_end++
 	_returned := _this.jsValue.Call("insertBefore", _args[0:_end]...)
-	var (
-		_converted *Node // javascript: Node _what_return_name
-	)
-	_converted = NodeFromJS(_returned)
-	_result = _converted
-	return
+	return NodeFromJS(_returned)
 }
 
 func (_this *Node) AppendChild(node *Node) (_result *Node) {
@@ -371,12 +330,7 @@ func (_this *Node) AppendChild(node *Node) (_result *Node) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("appendChild", _args[0:_end]...)
-	var (
-		_converted *Node // javascript: Node _what_return_name
-	)
-	_converted = NodeFromJS(_returned)
-	_result = _converted
-	return
+	return NodeFromJS(_returned)
 }
 
 func (_this *Node) ReplaceChild(node *Node, child *Node) (_result *Node) {
@@ -391,12 +345,7 @@ func (_this *Node) ReplaceChild(node *Node, child *Node) (_result *Node) {
 	_args[1] = _p1
 	_end++
 	_returned := _this.jsValue.Call("replaceChild", _args[0:_end]...)
-	var (
-		_converted *Node // javascript: Node _what_return_name
-	)
-	_converted = NodeFromJS(_returned)
-	_result = _converted
-	return
+	return NodeFromJS(_returned)
 }
 
 func (_this *Node) RemoveChild(child *Node) (_result *Node) {
@@ -408,12 +357,7 @@ func (_this *Node) RemoveChild(child *Node) (_result *Node) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("removeChild", _args[0:_end]...)
-	var (
-		_converted *Node // javascript: Node _what_return_name
-	)
-	_converted = NodeFromJS(_returned)
-	_result = _converted
-	return
+	return NodeFromJS(_returned)
 }
 
 /****************************************************************************
@@ -512,10 +456,7 @@ func NodeFilterFromJS(value js.Value) *NodeFilterValue {
 
 func (t *NodeFilterValue) allocateAcceptNode() js.Func {
 	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		var (
-			_p0 *Node // javascript: Node node
-		)
-		_p0 = NodeFromJS(args[0])
+		_p0 := NodeFromJS(args[0])
 		var _returned int
 		if t.function != nil {
 			_returned = t.function(_p0)
@@ -549,12 +490,7 @@ func (_this *NodeFilterValue) AcceptNode(node *Node) (_result int) {
 	} else {
 		_returned = _this.jsValue.Call("acceptNode", _args[0:_end]...)
 	}
-	var (
-		_converted int // javascript: unsigned short _what_return_name
-	)
-	_converted = (_returned).Int()
-	_result = _converted
-	return
+	return (_returned).Int()
 }
 
 /****************************************************************************
@@ -661,7 +597,6 @@ func (_this *NodeIterator) Detach() {
 		_end  int
 	)
 	_this.jsValue.Call("detach", _args[0:_end]...)
-	return
 }
 
 /****************************************************************************
@@ -713,7 +648,6 @@ func NodeListForEachFromJS(_value js.Value) NodeListForEachFunc {
 		_args[2] = _p2
 		_end++
 		_value.Invoke(_args[0:_end]...)
-		return
 	}
 }
 
@@ -790,12 +724,7 @@ func (_this *NodeList) Entries() (_result *NodeListEntryIterator) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("entries", _args[0:_end]...)
-	var (
-		_converted *NodeListEntryIterator // javascript: NodeListEntryIterator _what_return_name
-	)
-	_converted = NodeListEntryIteratorFromJS(_returned)
-	_result = _converted
-	return
+	return NodeListEntryIteratorFromJS(_returned)
 }
 
 func (_this *NodeList) ForEach(callback *NodeListForEach, optionalThisForCallbackArgument interface{}) {
@@ -819,7 +748,6 @@ func (_this *NodeList) ForEach(callback *NodeListForEach, optionalThisForCallbac
 		_end++
 	}
 	_this.jsValue.Call("forEach", _args[0:_end]...)
-	return
 }
 
 func (_this *NodeList) Keys() (_result *NodeListKeyIterator) {
@@ -828,12 +756,7 @@ func (_this *NodeList) Keys() (_result *NodeListKeyIterator) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("keys", _args[0:_end]...)
-	var (
-		_converted *NodeListKeyIterator // javascript: NodeListKeyIterator _what_return_name
-	)
-	_converted = NodeListKeyIteratorFromJS(_returned)
-	_result = _converted
-	return
+	return NodeListKeyIteratorFromJS(_returned)
 }
 
 func (_this *NodeList) Values() (_result *NodeListValueIterator) {
@@ -842,12 +765,7 @@ func (_this *NodeList) Values() (_result *NodeListValueIterator) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("values", _args[0:_end]...)
-	var (
-		_converted *NodeListValueIterator // javascript: NodeListValueIterator _what_return_name
-	)
-	_converted = NodeListValueIteratorFromJS(_returned)
-	_result = _converted
-	return
+	return NodeListValueIteratorFromJS(_returned)
 }
 
 /****************************************************************************
@@ -869,7 +787,7 @@ func NodeListEntryIteratorValueFromJS(value js.Value) *NodeListEntryIteratorValu
 		value1 bool       // javascript: boolean {done Done done}
 	)
 	__length0 := value.Get("value").Length()
-	__array0 := make([]js.Value, __length0, __length0)
+	__array0 := make([]js.Value, __length0)
 	for __idx0 := 0; __idx0 < __length0; __idx0++ {
 		var __seq_out0 js.Value
 		__seq_in0 := value.Get("value").Index(__idx0)
@@ -955,12 +873,7 @@ func (_this *NodeListEntryIterator) Next() (_result *NodeListEntryIteratorValue)
 		_end  int
 	)
 	_returned := _this.jsValue.Call("next", _args[0:_end]...)
-	var (
-		_converted *NodeListEntryIteratorValue // javascript: NodeListEntryIteratorValue _what_return_name
-	)
-	_converted = NodeListEntryIteratorValueFromJS(_returned)
-	_result = _converted
-	return
+	return NodeListEntryIteratorValueFromJS(_returned)
 }
 
 /****************************************************************************
@@ -987,12 +900,7 @@ func (_this *NodeListKeyIterator) Next() (_result *NodeListKeyIteratorValue) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("next", _args[0:_end]...)
-	var (
-		_converted *NodeListKeyIteratorValue // javascript: NodeListKeyIteratorValue _what_return_name
-	)
-	_converted = NodeListKeyIteratorValueFromJS(_returned)
-	_result = _converted
-	return
+	return NodeListKeyIteratorValueFromJS(_returned)
 }
 
 /****************************************************************************
@@ -1019,10 +927,5 @@ func (_this *NodeListValueIterator) Next() (_result *NodeListValueIteratorValue)
 		_end  int
 	)
 	_returned := _this.jsValue.Call("next", _args[0:_end]...)
-	var (
-		_converted *NodeListValueIteratorValue // javascript: NodeListValueIteratorValue _what_return_name
-	)
-	_converted = NodeListValueIteratorValueFromJS(_returned)
-	_result = _converted
-	return
+	return NodeListValueIteratorValueFromJS(_returned)
 }

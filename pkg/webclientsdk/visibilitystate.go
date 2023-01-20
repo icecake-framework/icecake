@@ -24,14 +24,14 @@ var visibilityStateFromWasmTable = map[string]VisibilityState{
 }
 
 // JSValue is converting this enum into a javascript object
-func (this *VisibilityState) JSValue() js.Value {
-	return js.ValueOf(this.Value())
+func (_this *VisibilityState) JSValue() js.Value {
+	return js.ValueOf(_this.Value())
 }
 
-// Value is converting this into javascript defined
+// Value is converting _this into javascript defined
 // string value
-func (this VisibilityState) Value() string {
-	idx := int(this)
+func (_this VisibilityState) Value() string {
+	idx := int(_this)
 	if idx >= 0 && idx < len(visibilityStateToWasmTable) {
 		return visibilityStateToWasmTable[idx]
 	}

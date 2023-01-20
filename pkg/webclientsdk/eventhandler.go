@@ -89,10 +89,7 @@ func EventHandlerToJS(callback EventHandlerFunc) *EventHandler {
 		return nil
 	}
 	ret := EventHandler(js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		var (
-			_p0 *Event // javascript: Event event
-		)
-		_p0 = EventFromJS(args[0])
+		_p0 := EventFromJS(args[0])
 		_returned := callback(_p0)
 		_converted := _returned
 		return _converted
@@ -109,13 +106,7 @@ func EventHandlerFromJS(_value js.Value) EventHandlerFunc {
 		_p0 := event.jsValue
 		_args[0] = _p0
 		_end++
-		_returned := _value.Invoke(_args[0:_end]...)
-		var (
-			_converted js.Value // javascript: any
-		)
-		_converted = _returned
-		_result = _converted
-		return
+		return _value.Invoke(_args[0:_end]...)
 	}
 }
 
@@ -145,7 +136,7 @@ type EventListenerValue struct {
 
 // JSValue is returning the javascript object that implements this callback interface
 func (t *EventListenerValue) JSValue() js.Value {
-	return t.JSValue()
+	return t.jsValue
 }
 
 // Release is releasing all resources that is allocated.
@@ -193,10 +184,7 @@ func EventListenerFromJS(value js.Value) *EventListenerValue {
 
 func (t *EventListenerValue) allocateHandleEvent() js.Func {
 	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		var (
-			_p0 *Event // javascript: Event event
-		)
-		_p0 = EventFromJS(args[0])
+		_p0 := EventFromJS(args[0])
 		if t.function != nil {
 			t.function(_p0)
 		} else {
@@ -229,7 +217,6 @@ func (_this *EventListenerValue) HandleEvent(event *Event) {
 	} else {
 		_this.jsValue.Call("handleEvent", _args[0:_end]...)
 	}
-	return
 }
 
 /******************************************************************************************
@@ -267,12 +254,7 @@ func NewEventTarget() (_result *EventTarget) {
 		_end  int
 	)
 	_returned := _klass.New(_args[0:_end]...)
-	var (
-		_converted *EventTarget // javascript: EventTarget _what_return_name
-	)
-	_converted = EventTargetFromJS(_returned)
-	_result = _converted
-	return
+	return EventTargetFromJS(_returned)
 }
 
 func (_this *EventTarget) AddEventListener(_type string, callback *EventListenerValue) {
@@ -287,7 +269,6 @@ func (_this *EventTarget) AddEventListener(_type string, callback *EventListener
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("addEventListener", _args[0:_end]...)
-	return
 }
 
 func (_this *EventTarget) RemoveEventListener(_type string, callback *EventListenerValue) {
@@ -302,5 +283,4 @@ func (_this *EventTarget) RemoveEventListener(_type string, callback *EventListe
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("removeEventListener", _args[0:_end]...)
-	return
 }

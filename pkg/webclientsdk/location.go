@@ -168,7 +168,6 @@ func (_this *Location) Assign(url string) {
 	_args[0] = _p0
 	_end++
 	_this.jsValue.Call("assign", _args[0:_end]...)
-	return
 }
 
 func (_this *Location) Replace(url string) {
@@ -180,7 +179,6 @@ func (_this *Location) Replace(url string) {
 	_args[0] = _p0
 	_end++
 	_this.jsValue.Call("replace", _args[0:_end]...)
-	return
 }
 
 func (_this *Location) Reload() {
@@ -189,5 +187,4 @@ func (_this *Location) Reload() {
 		_end  int
 	)
 	_this.jsValue.Call("reload", _args[0:_end]...)
-	return
 }

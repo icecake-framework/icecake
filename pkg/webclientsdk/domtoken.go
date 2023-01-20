@@ -1,6 +1,9 @@
 package webclientsdk
 
-import "syscall/js"
+import (
+	"strings"
+	"syscall/js"
+)
 
 /****************************************************************************
 * DOMTokenList
@@ -11,7 +14,7 @@ import "syscall/js"
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
 type DOMTokenList struct {
-	//jsValue js.Value
+	jsValue js.Value
 	tokens []string
 }
 
@@ -29,114 +32,72 @@ func DOMTokenListFromJS(value js.Value) *DOMTokenList {
 		return nil
 	}
 	ret := &DOMTokenList{}
+	ret.tokens = make([]string, 0)
 	ret.jsValue = value
 	return ret
 }
 
-// Length returning attribute 'length' with
-// type uint (idl: unsigned long).
-func (_this *DOMTokenList) Length() uint {
-	var ret uint
-	value := _this.jsValue.Get("length")
-	ret = (uint)((value).Int())
-	return ret
+// Length returns the number of tokens in the list.
+func (_this *DOMTokenList) Length() int {
+	return len(_this.tokens)
 }
 
-// ToString is an alias for Value.
-func (_this *DOMTokenList) ToString() string {
-	return _this.Value()
+// String returns the value of the list serialized as a string
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/value
+func (_this *DOMTokenList) String() (_ret string) {
+	for _, v := range _this.tokens {
+		_ret += v + " "
+	}
+	_ret = strings.TrimRight(_ret, " ")
+	return _ret
 }
 
-// SetValue setting attribute 'value' with
-// type string (idl: DOMString).
+// SetValue clears and sets the list to the given value
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/value
 func (_this *DOMTokenList) SetValue(value string) {
-	input := value
-	_this.jsValue.Set("value", input)
+	value = strings.Trim(value, " ")
+	value = strings.ToLower(value)
+	_this.tokens = strings.Split(value, " ")
+	// TODO must update the DOM
 }
 
-func (_this *DOMTokenList) Index(index uint) (_result *string) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := index
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("item", _args[0:_end]...)
-	var (
-		_converted *string // javascript: DOMString _what_return_name
-	)
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		__tmp := (_returned).String()
-		_converted = &__tmp
+// Item returns an item in the list, determined by its position in the list, its index.
+func (_this *DOMTokenList) Item(index int) (_result string) {
+	if index >= 0 && index < len(_this.tokens) {
+		return _this.tokens[index]
 	}
-	_result = _converted
-	return
-}
-
-func (_this *DOMTokenList) Item(index uint) (_result *string) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := index
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("item", _args[0:_end]...)
-	var (
-		_converted *string // javascript: DOMString _what_return_name
-	)
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		__tmp := (_returned).String()
-		_converted = &__tmp
-	}
-	_result = _converted
-	return
+	return ""
 }
 
 func (_this *DOMTokenList) Contains(token string) (_result bool) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := token
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("contains", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	token = strings.Trim(token, " ")
+	token = strings.ToLower(token)
+	for _, v := range _this.tokens {
+		if v == token {
+			return true
+		}
+	}
+	return false
 }
 
 func (_this *DOMTokenList) Add(tokens ...string) {
-	var (
-		_args []interface{} = make([]interface{}, 0+len(tokens))
-		_end  int
-	)
-	for _, __in := range tokens {
-		__out := __in
-		_args[_end] = __out
-		_end++
-	}
-	_this.jsValue.Call("add", _args[0:_end]...)
-	return
+
+	panic("TODO must update the DOM")
+	// TODO must update the DOM
 }
 
 func (_this *DOMTokenList) Remove(tokens ...string) {
-	var (
-		_args []interface{} = make([]interface{}, 0+len(tokens))
-		_end  int
-	)
-	for _, __in := range tokens {
-		__out := __in
-		_args[_end] = __out
-		_end++
+	for _, r := range tokens {
+		for i, t := range _this.tokens {
+			if t == r {
+				_this.tokens = append(_this.tokens[:i], _this.tokens[i+1:]...)
+				break
+			}
+		}
 	}
-	_this.jsValue.Call("remove", _args[0:_end]...)
-	return
+	// TODO must update the DOM
 }
 
 func (_this *DOMTokenList) Toggle(token string, force *bool) (_result bool) {
@@ -159,12 +120,8 @@ func (_this *DOMTokenList) Toggle(token string, force *bool) (_result bool) {
 		_end++
 	}
 	_returned := _this.jsValue.Call("toggle", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
+	// TODO must update the DOM
 }
 
 func (_this *DOMTokenList) Replace(token string, newToken string) (_result bool) {
@@ -179,27 +136,6 @@ func (_this *DOMTokenList) Replace(token string, newToken string) (_result bool)
 	_args[1] = _p1
 	_end++
 	_returned := _this.jsValue.Call("replace", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
-}
-
-func (_this *DOMTokenList) Supports(token string) (_result bool) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := token
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("supports", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
+	// TODO must update the DOM
 }

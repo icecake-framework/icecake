@@ -1595,7 +1595,6 @@ func (_this *Window) Close() {
 		_end  int
 	)
 	_this.jsValue.Call("close", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) Stop() {
@@ -1604,7 +1603,6 @@ func (_this *Window) Stop() {
 		_end  int
 	)
 	_this.jsValue.Call("stop", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) Focus() {
@@ -1613,7 +1611,6 @@ func (_this *Window) Focus() {
 		_end  int
 	)
 	_this.jsValue.Call("focus", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) Blur() {
@@ -1622,7 +1619,6 @@ func (_this *Window) Blur() {
 		_end  int
 	)
 	_this.jsValue.Call("blur", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) Open(url *string, target *string, features *string) (_result *Window) {
@@ -1680,7 +1676,6 @@ func (_this *Window) Alert() {
 		_end  int
 	)
 	_this.jsValue.Call("alert", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) AlertMessage(message string) {
@@ -1692,7 +1687,6 @@ func (_this *Window) AlertMessage(message string) {
 	_args[0] = _p0
 	_end++
 	_this.jsValue.Call("alert", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) Confirm(message *string) (_result bool) {
@@ -1712,12 +1706,7 @@ func (_this *Window) Confirm(message *string) (_result bool) {
 		_end++
 	}
 	_returned := _this.jsValue.Call("confirm", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *Window) Prompt(message *string, _default *string) (_result *string) {
@@ -1765,7 +1754,6 @@ func (_this *Window) Print() {
 		_end  int
 	)
 	_this.jsValue.Call("print", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) MoveTo(x int, y int) {
@@ -1780,7 +1768,6 @@ func (_this *Window) MoveTo(x int, y int) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("moveTo", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) MoveBy(x int, y int) {
@@ -1795,7 +1782,6 @@ func (_this *Window) MoveBy(x int, y int) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("moveBy", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) ResizeTo(x int, y int) {
@@ -1810,7 +1796,6 @@ func (_this *Window) ResizeTo(x int, y int) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("resizeTo", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) ResizeBy(x int, y int) {
@@ -1825,7 +1810,6 @@ func (_this *Window) ResizeBy(x int, y int) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("resizeBy", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) ScrollXY(x float64, y float64) {
@@ -1840,7 +1824,6 @@ func (_this *Window) ScrollXY(x float64, y float64) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("scroll", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) ScrollToXY(x float64, y float64) {
@@ -1855,7 +1838,6 @@ func (_this *Window) ScrollToXY(x float64, y float64) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("scrollTo", _args[0:_end]...)
-	return
 }
 
 func (_this *Window) ScrollByXY(x float64, y float64) {
@@ -1870,5 +1852,4 @@ func (_this *Window) ScrollByXY(x float64, y float64) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("scrollBy", _args[0:_end]...)
-	return
 }

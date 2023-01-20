@@ -82,7 +82,6 @@ func (_this *Storage) SetItem(key string, value string) {
 	_args[1] = _p1
 	_end++
 	_this.jsValue.Call("setItem", _args[0:_end]...)
-	return
 }
 
 func (_this *Storage) RemoveItem(key string) {
@@ -94,7 +93,6 @@ func (_this *Storage) RemoveItem(key string) {
 	_args[0] = _p0
 	_end++
 	_this.jsValue.Call("removeItem", _args[0:_end]...)
-	return
 }
 
 func (_this *Storage) Clear() {
@@ -103,7 +101,6 @@ func (_this *Storage) Clear() {
 		_end  int
 	)
 	_this.jsValue.Call("clear", _args[0:_end]...)
-	return
 }
 
 /**********************************************************************************
@@ -169,12 +166,7 @@ func (_this *PromiseStorageEstimate) Finally(onFinally *PromiseFinally) (_result
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("finally", _args[0:_end]...)
-	var (
-		_converted *PromiseStorageEstimate // javascript: Promise _what_return_name
-	)
-	_converted = PromiseStorageEstimateFromJS(_returned)
-	_result = _converted
-	return
+	return PromiseStorageEstimateFromJS(_returned)
 }
 
 /*************************************************************************************************
@@ -202,12 +194,7 @@ func (_this *StorageManager) Persisted() (_result *PromiseBool) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("persisted", _args[0:_end]...)
-	var (
-		_converted *PromiseBool // javascript: Promise _what_return_name
-	)
-	_converted = PromiseBoolFromJS(_returned)
-	_result = _converted
-	return
+	return PromiseBoolFromJS(_returned)
 }
 
 func (_this *StorageManager) Persist() (_result *PromiseBool) {
@@ -216,12 +203,7 @@ func (_this *StorageManager) Persist() (_result *PromiseBool) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("persist", _args[0:_end]...)
-	var (
-		_converted *PromiseBool // javascript: Promise _what_return_name
-	)
-	_converted = PromiseBoolFromJS(_returned)
-	_result = _converted
-	return
+	return PromiseBoolFromJS(_returned)
 }
 
 func (_this *StorageManager) Estimate() (_result *PromiseStorageEstimate) {
@@ -230,10 +212,5 @@ func (_this *StorageManager) Estimate() (_result *PromiseStorageEstimate) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("estimate", _args[0:_end]...)
-	var (
-		_converted *PromiseStorageEstimate // javascript: Promise _what_return_name
-	)
-	_converted = PromiseStorageEstimateFromJS(_returned)
-	_result = _converted
-	return
+	return PromiseStorageEstimateFromJS(_returned)
 }

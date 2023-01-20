@@ -29,11 +29,11 @@ tasks:
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
 
-  dev_components:
+  dev_framework:
     dir: '{{.USER_WORKING_DIR}}'
     sources: 
-      - "web/component/**/*"
-      - "pkg/icecake/**/*"
+      - "pkg/framework/**/*"
+      - "pkg/webclientsdk/**/*"
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
 
@@ -50,7 +50,7 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     deps: 
       - task: dev_static
-      - task: dev_components
+      - task: dev_framework
       - task: dev_wasm
 
   dev_back:

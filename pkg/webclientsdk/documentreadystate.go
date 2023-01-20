@@ -24,13 +24,13 @@ var documentReadyStateFromWasmTable = map[string]DocumentReadyState{
 }
 
 // JSValue is converting this enum into a javascript object
-func (this *DocumentReadyState) JSValue() js.Value {
-	return js.ValueOf(this.Value())
+func (_this *DocumentReadyState) JSValue() js.Value {
+	return js.ValueOf(_this.Value())
 }
 
 // Value is converting this into javascript defined string value
-func (this DocumentReadyState) Value() string {
-	idx := int(this)
+func (_this DocumentReadyState) Value() string {
+	idx := int(_this)
 	if idx >= 0 && idx < len(documentReadyStateToWasmTable) {
 		return documentReadyStateToWasmTable[idx]
 	}

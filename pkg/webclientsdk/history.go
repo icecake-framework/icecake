@@ -22,14 +22,14 @@ var scrollRestorationFromWasmTable = map[string]ScrollRestoration{
 }
 
 // JSValue is converting this enum into a javascript object
-func (this *ScrollRestoration) JSValue() js.Value {
-	return js.ValueOf(this.Value())
+func (_this *ScrollRestoration) JSValue() js.Value {
+	return js.ValueOf(_this.Value())
 }
 
-// Value is converting this into javascript defined
+// Value is converting _this into javascript defined
 // string value
-func (this ScrollRestoration) Value() string {
-	idx := int(this)
+func (_this ScrollRestoration) Value() string {
+	idx := int(_this)
 	if idx >= 0 && idx < len(scrollRestorationToWasmTable) {
 		return scrollRestorationToWasmTable[idx]
 	}
@@ -117,7 +117,6 @@ func (_this *History) Go(delta *int) {
 		_end++
 	}
 	_this.jsValue.Call("go", _args[0:_end]...)
-	return
 }
 
 func (_this *History) Back() {
@@ -126,7 +125,6 @@ func (_this *History) Back() {
 		_end  int
 	)
 	_this.jsValue.Call("back", _args[0:_end]...)
-	return
 }
 
 func (_this *History) Forward() {
@@ -135,7 +133,6 @@ func (_this *History) Forward() {
 		_end  int
 	)
 	_this.jsValue.Call("forward", _args[0:_end]...)
-	return
 }
 
 func (_this *History) PushState(data interface{}, title string, url *string) {
@@ -161,7 +158,6 @@ func (_this *History) PushState(data interface{}, title string, url *string) {
 		_end++
 	}
 	_this.jsValue.Call("pushState", _args[0:_end]...)
-	return
 }
 
 func (_this *History) ReplaceState(data interface{}, title string, url *string) {
@@ -187,5 +183,4 @@ func (_this *History) ReplaceState(data interface{}, title string, url *string) 
 		_end++
 	}
 	_this.jsValue.Call("replaceState", _args[0:_end]...)
-	return
 }

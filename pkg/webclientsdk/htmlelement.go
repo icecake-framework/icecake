@@ -1438,7 +1438,6 @@ func (_this *HTMLElement) Click() {
 		_end  int
 	)
 	_this.jsValue.Call("click", _args[0:_end]...)
-	return
 }
 
 func (_this *HTMLElement) Focus() {
@@ -1447,7 +1446,6 @@ func (_this *HTMLElement) Focus() {
 		_end  int
 	)
 	_this.jsValue.Call("focus", _args[0:_end]...)
-	return
 }
 
 func (_this *HTMLElement) Blur() {
@@ -1456,7 +1454,6 @@ func (_this *HTMLElement) Blur() {
 		_end  int
 	)
 	_this.jsValue.Call("blur", _args[0:_end]...)
-	return
 }
 
 /****************************************************************************

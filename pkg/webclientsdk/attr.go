@@ -45,6 +45,18 @@ func AttrFromJS(value js.Value) *Attr {
 	return ret
 }
 
+// JSValue returns the js.Value or js.Null() if _attr is nil
+func (_attr *Attr) JSValue() js.Value {
+	if _attr == nil {
+		return js.Null()
+	}
+	jsValue := js.Value{}
+	jsValue.Set("name", _attr.Name)
+	jsValue.Set("value", _attr.Value)
+	jsValue.Set("ownerElement", _attr.ownerElement)
+	return jsValue
+}
+
 // Prefix returns the namespace prefix of the attribute, or an empty string if no prefix is specified.
 // For example, if the qualified name is xml:lang, the returned prefix is xml.
 //

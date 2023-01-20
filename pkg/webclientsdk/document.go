@@ -2433,12 +2433,7 @@ func (_this *Document) CreateNodeIterator(root *Node, whatToShow *uint, filter *
 		_end++
 	}
 	_returned := _this.jsValue.Call("createNodeIterator", _args[0:_end]...)
-	var (
-		_converted *NodeIterator // javascript: NodeIterator _what_return_name
-	)
-	_converted = NodeIteratorFromJS(_returned)
-	_result = _converted
-	return
+	return NodeIteratorFromJS(_returned)
 }
 
 // GetElementAtPoint returns the topmost Element at the specified coordinates (relative to the viewport).
@@ -2471,7 +2466,7 @@ func (_this *Document) GetElementsAtPoint(x float64, y float64) (_result []*Elem
 	_returned := _this.jsValue.Call("elementsFromPoint", _args[0:2]...)
 
 	__length0 := _returned.Length()
-	__array0 := make([]*Element, __length0, __length0)
+	__array0 := make([]*Element, __length0)
 	for __idx0 := 0; __idx0 < __length0; __idx0++ {
 		__seq_in0 := _returned.Index(__idx0)
 		__array0[__idx0] = ElementFromJS(__seq_in0)
@@ -2512,7 +2507,6 @@ func (_this *Document) Prepend(nodes ...*Union) {
 		_end++
 	}
 	_this.jsValue.Call("prepend", _args[0:_end]...)
-	return
 }
 
 // Append inserts a set of Node objects or string objects after the last child of the document.
@@ -2534,5 +2528,4 @@ func (_this *Document) Append(nodes ...*Union) {
 		_end++
 	}
 	_this.jsValue.Call("append", _args[0:_end]...)
-	return
 }
