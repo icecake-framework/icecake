@@ -198,7 +198,7 @@ func (_this *HTMLElement) OffsetParent() *Element {
 	var ret *Element
 	value := _this.jsValue.Get("offsetParent")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = ElementFromJS(value)
+		ret = MakeElementFromJS(value)
 	}
 	return ret
 }
@@ -334,7 +334,7 @@ func eventFuncHTMLElement_domcore_Event(listener func(event *Event, target *HTML
 		var ret *Event
 		value := args[0]
 		incoming := value.Get("target")
-		ret = EventFromJS(value)
+		ret = MakeEventFromJS(value)
 		src := HTMLElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()

@@ -16,8 +16,8 @@ type Element struct {
 	Node
 }
 
-// ElementFromJS is casting a js.Value into Element.
-func ElementFromJS(value js.Value) *Element {
+// MakeElementFromJS is casting a js.Value into Element.
+func MakeElementFromJS(value js.Value) *Element {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -30,168 +30,159 @@ func ElementFromJS(value js.Value) *Element {
 * Element's properties
 *****************************************************************************/
 
-// Prefix returning attribute 'prefix' with
-// type string (idl: DOMString).
-func (_this *Element) Prefix() *string {
-	var ret *string
+// Returns the namespace prefix of the specified element, or null if no prefix is specified.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/prefix
+func (_this *Element) Prefix() string {
 	value := _this.jsValue.Get("prefix")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
+		return ""
 	}
-	return ret
+	return (value).String()
 }
 
-// LocalName returning attribute 'localName' with
-// type string (idl: DOMString).
+// LocalName returns the local part of the qualified name of an element.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/localName
 func (_this *Element) LocalName() string {
-	var ret string
 	value := _this.jsValue.Get("localName")
-	ret = (value).String()
-	return ret
+	return (value).String()
 }
 
-// TagName returning attribute 'tagName' with
-// type string (idl: DOMString).
+// TagName returns the tag name of the element on which it's called.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/tagName
 func (_this *Element) TagName() string {
-	var ret string
 	value := _this.jsValue.Get("tagName")
-	ret = (value).String()
-	return ret
+	return (value).String()
 }
 
-// Id returning attribute 'id' with
-// type string (idl: DOMString).
+// Id rrepresents the element's identifier, reflecting the id global attribute.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/id
 func (_this *Element) Id() string {
-	var ret string
 	value := _this.jsValue.Get("id")
-	ret = (value).String()
-	return ret
+	return (value).String()
 }
 
-// SetId setting attribute 'id' with
-// type string (idl: DOMString).
+// Id rrepresents the element's identifier, reflecting the id global attribute.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/id
 func (_this *Element) SetId(value string) {
-	input := value
-	_this.jsValue.Set("id", input)
+	_this.jsValue.Set("id", value)
 }
 
-// ClassName returning attribute 'className' with
-// type string (idl: DOMString).
+// SetClassName gets and sets the value of the class attribute of the specified element.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/className
 func (_this *Element) ClassName() string {
-	var ret string
 	value := _this.jsValue.Get("className")
-	ret = (value).String()
-	return ret
+	return (value).String()
 }
 
-// SetClassName setting attribute 'className' with
-// type string (idl: DOMString).
+// SetClassName gets and sets the value of the class attribute of the specified element.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/className
 func (_this *Element) SetClassName(value string) {
-	input := value
-	_this.jsValue.Set("className", input)
+	_this.jsValue.Set("className", value)
 }
 
-// ClassList returning attribute 'classList' with
-// type domcore.DOMTokenList (idl: DOMTokenList).
-func (_this *Element) ClassList() *DOMTokenList {
-	var ret *DOMTokenList
+// ClassList returns a live DOMTokenList collection of the class attributes of the element.
+// This can then be used to manipulate the class list.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+func (_this *Element) ClassList() *TokenList {
 	value := _this.jsValue.Get("classList")
-	ret = DOMTokenListFromJS(value)
-	return ret
+	return MakeTokenListFromJS(value)
 }
 
-// Slot returning attribute 'slot' with
-// type string (idl: DOMString).
-func (_this *Element) Slot() string {
-	var ret string
-	value := _this.jsValue.Get("slot")
-	ret = (value).String()
-	return ret
-}
-
-// SetSlot setting attribute 'slot' with
-// type string (idl: DOMString).
-func (_this *Element) SetSlot(value string) {
-	input := value
-	_this.jsValue.Set("slot", input)
-}
-
-// Attributes returning attribute 'attributes' with
-// type NamedNodeMap (idl: NamedNodeMap).
-func (_this *Element) Attributes() *NamedAttrMap {
-	var ret *NamedAttrMap
+// Attributes returns a live collection of all attribute nodes registered to the specified node.
+// It is a NamedNodeMap, not an Array, so it has no Array methods and the Attr nodes' indexes may differ among browsers.
+// To be more specific, attributes is a key/value pair of strings that represents any information regarding that attribute.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes
+func (_this *Element) Attributes() *Attributes {
 	value := _this.jsValue.Get("attributes")
-	ret = NamedNodeMapFromJS(value)
-	return ret
+	return MakeAttributesFromNamedNodeMapJS(value)
 }
 
-// InnerHTML returning attribute 'innerHTML' with
-// type string (idl: DOMString).
+// InnerHTML ets or sets the HTML or XML markup contained within the element.
+//
+// To insert the HTML into the document rather than replace the contents of an element, use the method insertAdjacentHTML().
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 func (_this *Element) InnerHTML() string {
-	var ret string
 	value := _this.jsValue.Get("innerHTML")
-	ret = (value).String()
-	return ret
+	return (value).String()
 }
 
-// SetInnerHTML setting attribute 'innerHTML' with
-// type string (idl: DOMString).
+// InnerHTML ets or sets the HTML or XML markup contained within the element.
+//
+// To insert the HTML into the document rather than replace the contents of an element, use the method insertAdjacentHTML().
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 func (_this *Element) SetInnerHTML(value string) {
 	input := value
 	_this.jsValue.Set("innerHTML", input)
 }
 
-// OuterHTML returning attribute 'outerHTML' with
-// type string (idl: DOMString).
+// OuterHTML gets the serialized HTML fragment describing the element including its descendants.
+// It can also be set to replace the element with nodes parsed from the given string.
+//
+// To only obtain the HTML representation of the contents of an element,
+// or to replace the contents of an element, use the innerHTML property instead.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
 func (_this *Element) OuterHTML() string {
-	var ret string
 	value := _this.jsValue.Get("outerHTML")
-	ret = (value).String()
-	return ret
+	return (value).String()
 }
 
-// SetOuterHTML setting attribute 'outerHTML' with
-// type string (idl: DOMString).
+// OuterHTML gets the serialized HTML fragment describing the element including its descendants.
+// It can also be set to replace the element with nodes parsed from the given string.
+//
+// To only obtain the HTML representation of the contents of an element,
+// or to replace the contents of an element, use the innerHTML property instead.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
 func (_this *Element) SetOuterHTML(value string) {
-	input := value
-	_this.jsValue.Set("outerHTML", input)
+	_this.jsValue.Set("outerHTML", value)
 }
 
-// ScrollTop returning attribute 'scrollTop' with
-// type float64 (idl: unrestricted double).
+// ScrollTop gets or sets the number of pixels that an element's content is scrolled vertically.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop
 func (_this *Element) ScrollTop() float64 {
-	var ret float64
 	value := _this.jsValue.Get("scrollTop")
-	ret = (value).Float()
-	return ret
+	return (value).Float()
 }
 
-// SetScrollTop setting attribute 'scrollTop' with
-// type float64 (idl: unrestricted double).
+// ScrollTop gets or sets the number of pixels that an element's content is scrolled vertically.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop
 func (_this *Element) SetScrollTop(value float64) {
 	input := value
 	_this.jsValue.Set("scrollTop", input)
 }
 
-// ScrollLeft returning attribute 'scrollLeft' with
-// type float64 (idl: unrestricted double).
+// ScrollLeft  gets or sets the number of pixels that an element's content is scrolled from its left edge.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft
 func (_this *Element) ScrollLeft() float64 {
-	var ret float64
 	value := _this.jsValue.Get("scrollLeft")
-	ret = (value).Float()
-	return ret
+	return (value).Float()
 }
 
-// SetScrollLeft setting attribute 'scrollLeft' with
-// type float64 (idl: unrestricted double).
+// ScrollLeft  gets or sets the number of pixels that an element's content is scrolled from its left edge.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft
 func (_this *Element) SetScrollLeft(value float64) {
-	input := value
-	_this.jsValue.Set("scrollLeft", input)
+	_this.jsValue.Set("scrollLeft", value)
 }
 
-// ScrollWidth returning attribute 'scrollWidth' with
-// type int (idl: long).
+// ScrollWidth s a measurement of the width of an element's content, including content not visible on the screen due to overflow.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth
 func (_this *Element) ScrollWidth() int {
 	var ret int
 	value := _this.jsValue.Get("scrollWidth")
@@ -199,8 +190,9 @@ func (_this *Element) ScrollWidth() int {
 	return ret
 }
 
-// ScrollHeight returning attribute 'scrollHeight' with
-// type int (idl: long).
+// ScrollHeight  is a measurement of the height of an element's content, including content not visible on the screen due to overflow.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight
 func (_this *Element) ScrollHeight() int {
 	var ret int
 	value := _this.jsValue.Get("scrollHeight")
@@ -208,17 +200,21 @@ func (_this *Element) ScrollHeight() int {
 	return ret
 }
 
-// ClientTop returning attribute 'clientTop' with
-// type int (idl: long).
+// ClientTop The width of the top border of an element in pixels.
+//
+// Note: This property will round the value to an integer. If you need a fractional value, use element.getBoundingClientRect().
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop
 func (_this *Element) ClientTop() int {
-	var ret int
 	value := _this.jsValue.Get("clientTop")
-	ret = (value).Int()
-	return ret
+	return (value).Int()
 }
 
-// ClientLeft returning attribute 'clientLeft' with
-// type int (idl: long).
+// ClientLeft the width of the left border of an element in pixels.
+// It includes the width of the vertical scrollbar if the text direction of the element is right-to-left and if there is an overflow causing a left vertical scrollbar to be rendered.
+// clientLeft does not include the left margin or the left padding. clientLeft is read-only.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft
 func (_this *Element) ClientLeft() int {
 	var ret int
 	value := _this.jsValue.Get("clientLeft")
@@ -226,8 +222,10 @@ func (_this *Element) ClientLeft() int {
 	return ret
 }
 
-// ClientWidth returning attribute 'clientWidth' with
-// type int (idl: long).
+// ClientWidth The Element.clientWidth property is zero for inline elements and elements with no CSS;
+// otherwise, it's the inner width of an element in pixels. It includes padding but excludes borders, margins, and vertical scrollbars (if present).
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/clientWidth
 func (_this *Element) ClientWidth() int {
 	var ret int
 	value := _this.jsValue.Get("clientWidth")
@@ -235,8 +233,10 @@ func (_this *Element) ClientWidth() int {
 	return ret
 }
 
-// ClientHeight returning attribute 'clientHeight' with
-// type int (idl: long).
+// ClientHeight is zero for elements with no CSS or inline layout boxes;
+// otherwise, it's the inner height of an element in pixels. It includes padding but excludes borders, margins, and horizontal scrollbars (if present).
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/clientHeight
 func (_this *Element) ClientHeight() int {
 	var ret int
 	value := _this.jsValue.Get("clientHeight")
@@ -244,30 +244,9 @@ func (_this *Element) ClientHeight() int {
 	return ret
 }
 
-// OnFullscreenChange returning attribute 'onfullscreenchange' with
-// type EventHandler (idl: EventHandlerNonNull).
-func (_this *Element) OnFullscreenChange() EventHandlerFunc {
-	var ret EventHandlerFunc
-	value := _this.jsValue.Get("onfullscreenchange")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = EventHandlerFromJS(value)
-	}
-	return ret
-}
-
-// OnFullscreenError returning attribute 'onfullscreenerror' with
-// type EventHandler (idl: EventHandlerNonNull).
-func (_this *Element) OnFullscreenError() EventHandlerFunc {
-	var ret EventHandlerFunc
-	value := _this.jsValue.Get("onfullscreenerror")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = EventHandlerFromJS(value)
-	}
-	return ret
-}
-
-// Children returning attribute 'children' with
-// type HTMLCollection (idl: HTMLCollection).
+// Children returns a live HTMLCollection which contains all of the child elements of the element upon which it was called.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/children
 func (_this *Element) Children() *HTMLCollection {
 	var ret *HTMLCollection
 	value := _this.jsValue.Get("children")
@@ -275,22 +254,24 @@ func (_this *Element) Children() *HTMLCollection {
 	return ret
 }
 
-// FirstElementChild returning attribute 'firstElementChild' with
-// type Element (idl: Element).
+// FirstElementChild  returns an element's first child Element, or null if there are no child elements.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/firstElementChild
 func (_this *Element) FirstElementChild() *Element {
 	value := _this.jsValue.Get("firstElementChild")
-	return ElementFromJS(value)
+	return MakeElementFromJS(value)
 }
 
-// LastElementChild returning attribute 'lastElementChild' with
-// type Element (idl: Element).
+// LastElementChild returns an element's last child Element, or null if there are no child elements.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/lastElementChild
 func (_this *Element) LastElementChild() *Element {
 	value := _this.jsValue.Get("lastElementChild")
-	return ElementFromJS(value)
+	return MakeElementFromJS(value)
 }
 
-// ChildElementCount returning attribute 'childElementCount' with
-// type uint (idl: unsigned long).
+// ChildElementCount returns the number of child elements of this element.
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/childElementCount
 func (_this *Element) ChildElementCount() uint {
 	var ret uint
 	value := _this.jsValue.Get("childElementCount")
@@ -298,1156 +279,46 @@ func (_this *Element) ChildElementCount() uint {
 	return ret
 }
 
-// PreviousElementSibling returning attribute 'previousElementSibling' with
-// type Element (idl: Element).
+// PreviousElementSibling returns the Element immediately prior to the specified one in its parent's children list,
+// or null if the specified element is the first one in the list.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/previousElementSibling
 func (_this *Element) PreviousElementSibling() *Element {
 	value := _this.jsValue.Get("previousElementSibling")
-	return ElementFromJS(value)
+	return MakeElementFromJS(value)
 }
 
-// NextElementSibling returning attribute 'nextElementSibling' with
-// type Element (idl: Element).
+// NextElementSibling returns the element immediately following the specified one in its parent's children list, or null if the specified element is the last one in the list.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/nextElementSibling
 func (_this *Element) NextElementSibling() *Element {
 	value := _this.jsValue.Get("nextElementSibling")
-	return ElementFromJS(value)
+	return MakeElementFromJS(value)
 }
 
-// AssignedSlot returning attribute 'assignedSlot' with
-// type js.Value (idl: HTMLSlotElement).
-func (_this *Element) AssignedSlot() js.Value {
-	var ret js.Value
-	value := _this.jsValue.Get("assignedSlot")
-	ret = value
-	return ret
-}
-
-// Role returning attribute 'role' with
-// type string (idl: DOMString).
-func (_this *Element) Role() *string {
-	var ret *string
+// Role get a,d set the attribute 'role'
+func (_this *Element) Role() string {
 	value := _this.jsValue.Get("role")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
+		return ""
 	}
-	return ret
+	return (value).String()
 }
 
-// SetRole setting attribute 'role' with
-// type string (idl: DOMString).
-func (_this *Element) SetRole(value *string) {
+// Role get a,d set the attribute 'role'
+func (_this *Element) SetRole(value string) {
 	var input interface{}
-	if value != nil {
-		input = *(value)
+	if value != "" {
+		input = value
 	} else {
-		input = nil
+		input = ""
 	}
 	_this.jsValue.Set("role", input)
 }
 
-// AriaActiveDescendant returning attribute 'ariaActiveDescendant' with
-// type string (idl: DOMString).
-func (_this *Element) AriaActiveDescendant() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaActiveDescendant")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaActiveDescendant setting attribute 'ariaActiveDescendant' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaActiveDescendant(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaActiveDescendant", input)
-}
-
-// AriaAtomic returning attribute 'ariaAtomic' with
-// type string (idl: DOMString).
-func (_this *Element) AriaAtomic() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaAtomic")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaAtomic setting attribute 'ariaAtomic' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaAtomic(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaAtomic", input)
-}
-
-// AriaAutoComplete returning attribute 'ariaAutoComplete' with
-// type string (idl: DOMString).
-func (_this *Element) AriaAutoComplete() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaAutoComplete")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaAutoComplete setting attribute 'ariaAutoComplete' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaAutoComplete(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaAutoComplete", input)
-}
-
-// AriaBusy returning attribute 'ariaBusy' with
-// type string (idl: DOMString).
-func (_this *Element) AriaBusy() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaBusy")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaBusy setting attribute 'ariaBusy' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaBusy(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaBusy", input)
-}
-
-// AriaChecked returning attribute 'ariaChecked' with
-// type string (idl: DOMString).
-func (_this *Element) AriaChecked() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaChecked")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaChecked setting attribute 'ariaChecked' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaChecked(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaChecked", input)
-}
-
-// AriaColCount returning attribute 'ariaColCount' with
-// type string (idl: DOMString).
-func (_this *Element) AriaColCount() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaColCount")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaColCount setting attribute 'ariaColCount' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaColCount(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaColCount", input)
-}
-
-// AriaColIndex returning attribute 'ariaColIndex' with
-// type string (idl: DOMString).
-func (_this *Element) AriaColIndex() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaColIndex")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaColIndex setting attribute 'ariaColIndex' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaColIndex(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaColIndex", input)
-}
-
-// AriaColSpan returning attribute 'ariaColSpan' with
-// type string (idl: DOMString).
-func (_this *Element) AriaColSpan() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaColSpan")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaColSpan setting attribute 'ariaColSpan' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaColSpan(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaColSpan", input)
-}
-
-// AriaControls returning attribute 'ariaControls' with
-// type string (idl: DOMString).
-func (_this *Element) AriaControls() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaControls")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaControls setting attribute 'ariaControls' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaControls(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaControls", input)
-}
-
-// AriaCurrent returning attribute 'ariaCurrent' with
-// type string (idl: DOMString).
-func (_this *Element) AriaCurrent() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaCurrent")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaCurrent setting attribute 'ariaCurrent' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaCurrent(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaCurrent", input)
-}
-
-// AriaDescribedBy returning attribute 'ariaDescribedBy' with
-// type string (idl: DOMString).
-func (_this *Element) AriaDescribedBy() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaDescribedBy")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaDescribedBy setting attribute 'ariaDescribedBy' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaDescribedBy(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaDescribedBy", input)
-}
-
-// AriaDetails returning attribute 'ariaDetails' with
-// type string (idl: DOMString).
-func (_this *Element) AriaDetails() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaDetails")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaDetails setting attribute 'ariaDetails' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaDetails(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaDetails", input)
-}
-
-// AriaDisabled returning attribute 'ariaDisabled' with
-// type string (idl: DOMString).
-func (_this *Element) AriaDisabled() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaDisabled")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaDisabled setting attribute 'ariaDisabled' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaDisabled(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaDisabled", input)
-}
-
-// AriaErrorMessage returning attribute 'ariaErrorMessage' with
-// type string (idl: DOMString).
-func (_this *Element) AriaErrorMessage() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaErrorMessage")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaErrorMessage setting attribute 'ariaErrorMessage' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaErrorMessage(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaErrorMessage", input)
-}
-
-// AriaExpanded returning attribute 'ariaExpanded' with
-// type string (idl: DOMString).
-func (_this *Element) AriaExpanded() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaExpanded")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaExpanded setting attribute 'ariaExpanded' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaExpanded(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaExpanded", input)
-}
-
-// AriaFlowTo returning attribute 'ariaFlowTo' with
-// type string (idl: DOMString).
-func (_this *Element) AriaFlowTo() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaFlowTo")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaFlowTo setting attribute 'ariaFlowTo' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaFlowTo(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaFlowTo", input)
-}
-
-// AriaHasPopup returning attribute 'ariaHasPopup' with
-// type string (idl: DOMString).
-func (_this *Element) AriaHasPopup() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaHasPopup")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaHasPopup setting attribute 'ariaHasPopup' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaHasPopup(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaHasPopup", input)
-}
-
-// AriaHidden returning attribute 'ariaHidden' with
-// type string (idl: DOMString).
-func (_this *Element) AriaHidden() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaHidden")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaHidden setting attribute 'ariaHidden' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaHidden(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaHidden", input)
-}
-
-// AriaInvalid returning attribute 'ariaInvalid' with
-// type string (idl: DOMString).
-func (_this *Element) AriaInvalid() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaInvalid")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaInvalid setting attribute 'ariaInvalid' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaInvalid(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaInvalid", input)
-}
-
-// AriaKeyShortcuts returning attribute 'ariaKeyShortcuts' with
-// type string (idl: DOMString).
-func (_this *Element) AriaKeyShortcuts() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaKeyShortcuts")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaKeyShortcuts setting attribute 'ariaKeyShortcuts' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaKeyShortcuts(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaKeyShortcuts", input)
-}
-
-// AriaLabel returning attribute 'ariaLabel' with
-// type string (idl: DOMString).
-func (_this *Element) AriaLabel() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaLabel")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaLabel setting attribute 'ariaLabel' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaLabel(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaLabel", input)
-}
-
-// AriaLabelledBy returning attribute 'ariaLabelledBy' with
-// type string (idl: DOMString).
-func (_this *Element) AriaLabelledBy() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaLabelledBy")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaLabelledBy setting attribute 'ariaLabelledBy' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaLabelledBy(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaLabelledBy", input)
-}
-
-// AriaLevel returning attribute 'ariaLevel' with
-// type string (idl: DOMString).
-func (_this *Element) AriaLevel() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaLevel")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaLevel setting attribute 'ariaLevel' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaLevel(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaLevel", input)
-}
-
-// AriaLive returning attribute 'ariaLive' with
-// type string (idl: DOMString).
-func (_this *Element) AriaLive() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaLive")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaLive setting attribute 'ariaLive' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaLive(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaLive", input)
-}
-
-// AriaModal returning attribute 'ariaModal' with
-// type string (idl: DOMString).
-func (_this *Element) AriaModal() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaModal")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaModal setting attribute 'ariaModal' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaModal(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaModal", input)
-}
-
-// AriaMultiLine returning attribute 'ariaMultiLine' with
-// type string (idl: DOMString).
-func (_this *Element) AriaMultiLine() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaMultiLine")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaMultiLine setting attribute 'ariaMultiLine' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaMultiLine(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaMultiLine", input)
-}
-
-// AriaMultiSelectable returning attribute 'ariaMultiSelectable' with
-// type string (idl: DOMString).
-func (_this *Element) AriaMultiSelectable() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaMultiSelectable")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaMultiSelectable setting attribute 'ariaMultiSelectable' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaMultiSelectable(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaMultiSelectable", input)
-}
-
-// AriaOrientation returning attribute 'ariaOrientation' with
-// type string (idl: DOMString).
-func (_this *Element) AriaOrientation() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaOrientation")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaOrientation setting attribute 'ariaOrientation' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaOrientation(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaOrientation", input)
-}
-
-// AriaOwns returning attribute 'ariaOwns' with
-// type string (idl: DOMString).
-func (_this *Element) AriaOwns() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaOwns")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaOwns setting attribute 'ariaOwns' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaOwns(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaOwns", input)
-}
-
-// AriaPlaceholder returning attribute 'ariaPlaceholder' with
-// type string (idl: DOMString).
-func (_this *Element) AriaPlaceholder() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaPlaceholder")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaPlaceholder setting attribute 'ariaPlaceholder' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaPlaceholder(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaPlaceholder", input)
-}
-
-// AriaPosInSet returning attribute 'ariaPosInSet' with
-// type string (idl: DOMString).
-func (_this *Element) AriaPosInSet() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaPosInSet")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaPosInSet setting attribute 'ariaPosInSet' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaPosInSet(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaPosInSet", input)
-}
-
-// AriaPressed returning attribute 'ariaPressed' with
-// type string (idl: DOMString).
-func (_this *Element) AriaPressed() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaPressed")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaPressed setting attribute 'ariaPressed' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaPressed(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaPressed", input)
-}
-
-// AriaReadOnly returning attribute 'ariaReadOnly' with
-// type string (idl: DOMString).
-func (_this *Element) AriaReadOnly() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaReadOnly")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaReadOnly setting attribute 'ariaReadOnly' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaReadOnly(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaReadOnly", input)
-}
-
-// AriaRelevant returning attribute 'ariaRelevant' with
-// type string (idl: DOMString).
-func (_this *Element) AriaRelevant() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaRelevant")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaRelevant setting attribute 'ariaRelevant' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaRelevant(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaRelevant", input)
-}
-
-// AriaRequired returning attribute 'ariaRequired' with
-// type string (idl: DOMString).
-func (_this *Element) AriaRequired() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaRequired")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaRequired setting attribute 'ariaRequired' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaRequired(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaRequired", input)
-}
-
-// AriaRoleDescription returning attribute 'ariaRoleDescription' with
-// type string (idl: DOMString).
-func (_this *Element) AriaRoleDescription() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaRoleDescription")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaRoleDescription setting attribute 'ariaRoleDescription' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaRoleDescription(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaRoleDescription", input)
-}
-
-// AriaRowCount returning attribute 'ariaRowCount' with
-// type string (idl: DOMString).
-func (_this *Element) AriaRowCount() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaRowCount")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaRowCount setting attribute 'ariaRowCount' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaRowCount(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaRowCount", input)
-}
-
-// AriaRowIndex returning attribute 'ariaRowIndex' with
-// type string (idl: DOMString).
-func (_this *Element) AriaRowIndex() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaRowIndex")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaRowIndex setting attribute 'ariaRowIndex' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaRowIndex(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaRowIndex", input)
-}
-
-// AriaRowSpan returning attribute 'ariaRowSpan' with
-// type string (idl: DOMString).
-func (_this *Element) AriaRowSpan() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaRowSpan")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaRowSpan setting attribute 'ariaRowSpan' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaRowSpan(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaRowSpan", input)
-}
-
-// AriaSelected returning attribute 'ariaSelected' with
-// type string (idl: DOMString).
-func (_this *Element) AriaSelected() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaSelected")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaSelected setting attribute 'ariaSelected' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaSelected(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaSelected", input)
-}
-
-// AriaSetSize returning attribute 'ariaSetSize' with
-// type string (idl: DOMString).
-func (_this *Element) AriaSetSize() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaSetSize")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaSetSize setting attribute 'ariaSetSize' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaSetSize(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaSetSize", input)
-}
-
-// AriaSort returning attribute 'ariaSort' with
-// type string (idl: DOMString).
-func (_this *Element) AriaSort() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaSort")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaSort setting attribute 'ariaSort' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaSort(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaSort", input)
-}
-
-// AriaValueMax returning attribute 'ariaValueMax' with
-// type string (idl: DOMString).
-func (_this *Element) AriaValueMax() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaValueMax")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaValueMax setting attribute 'ariaValueMax' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaValueMax(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaValueMax", input)
-}
-
-// AriaValueMin returning attribute 'ariaValueMin' with
-// type string (idl: DOMString).
-func (_this *Element) AriaValueMin() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaValueMin")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaValueMin setting attribute 'ariaValueMin' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaValueMin(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaValueMin", input)
-}
-
-// AriaValueNow returning attribute 'ariaValueNow' with
-// type string (idl: DOMString).
-func (_this *Element) AriaValueNow() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaValueNow")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaValueNow setting attribute 'ariaValueNow' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaValueNow(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaValueNow", input)
-}
-
-// AriaValueText returning attribute 'ariaValueText' with
-// type string (idl: DOMString).
-func (_this *Element) AriaValueText() *string {
-	var ret *string
-	value := _this.jsValue.Get("ariaValueText")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
-}
-
-// SetAriaValueText setting attribute 'ariaValueText' with
-// type string (idl: DOMString).
-func (_this *Element) SetAriaValueText(value *string) {
-	var input interface{}
-	if value != nil {
-		input = *(value)
-	} else {
-		input = nil
-	}
-	_this.jsValue.Set("ariaValueText", input)
-}
+/****************************************************************************
+* Element's events
+*****************************************************************************/
 
 // event attribute: Event
 func eventFuncElement_Event(listener func(event *Event, target *Element)) js.Func {
@@ -1455,8 +326,8 @@ func eventFuncElement_Event(listener func(event *Event, target *Element)) js.Fun
 		var ret *Event
 		value := args[0]
 		incoming := value.Get("target")
-		ret = EventFromJS(value)
-		src := ElementFromJS(incoming)
+		ret = MakeEventFromJS(value)
+		src := MakeElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1471,14 +342,6 @@ func (_this *Element) AddEventFullscreenChange(listener func(event *Event, curre
 	return cb
 }
 
-// SetOnFullscreenChange is assigning a function to 'onfullscreenchange'. This
-// This method is returning allocated javascript function that need to be released.
-func (_this *Element) SetOnFullscreenChange(listener func(event *Event, currentTarget *Element)) js.Func {
-	cb := eventFuncElement_Event(listener)
-	_this.jsValue.Set("onfullscreenchange", cb)
-	return cb
-}
-
 // AddFullscreenError is adding doing AddEventListener for 'FullscreenError' on target.
 // This method is returning allocated javascript function that need to be released.
 func (_this *Element) AddEventFullscreenError(listener func(event *Event, currentTarget *Element)) js.Func {
@@ -1487,24 +350,18 @@ func (_this *Element) AddEventFullscreenError(listener func(event *Event, curren
 	return cb
 }
 
-// SetOnFullscreenError is assigning a function to 'onfullscreenerror'. This
-// This method is returning allocated javascript function that need to be released.
-func (_this *Element) SetOnFullscreenError(listener func(event *Event, currentTarget *Element)) js.Func {
-	cb := eventFuncElement_Event(listener)
-	_this.jsValue.Set("onfullscreenerror", cb)
-	return cb
-}
-
 /****************************************************************************
 * Element's attributes
 *****************************************************************************/
 
-func (_this *Element) HasAttributes() (_result bool) {
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttributes
+func (_this *Element) HasAttributes() bool {
 	var _args [0]interface{}
 	_returned := _this.jsValue.Call("hasAttributes", _args[0:0]...)
 	return (_returned).Bool()
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute
 func (_this *Element) HasAttribute(qualifiedName string) (_result bool) {
 	var _args [1]interface{}
 	_args[0] = qualifiedName
@@ -1512,49 +369,7 @@ func (_this *Element) HasAttribute(qualifiedName string) (_result bool) {
 	return (_returned).Bool()
 }
 
-func (_this *Element) GetAttributeNames() (_result []string) {
-	var (
-		_args [0]interface{}
-		_end  int
-	)
-	_returned := _this.jsValue.Call("getAttributeNames", _args[0:_end]...)
-	var (
-		_converted []string // javascript: sequence<DOMString> _what_return_name
-	)
-	__length0 := _returned.Length()
-	__array0 := make([]string, __length0)
-	for __idx0 := 0; __idx0 < __length0; __idx0++ {
-		var __seq_out0 string
-		__seq_in0 := _returned.Index(__idx0)
-		__seq_out0 = (__seq_in0).String()
-		__array0[__idx0] = __seq_out0
-	}
-	_converted = __array0
-	_result = _converted
-	return
-}
-
-func (_this *Element) GetAttribute(qualifiedName string) (_result *string) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := qualifiedName
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("getAttribute", _args[0:_end]...)
-	var (
-		_converted *string // javascript: DOMString _what_return_name
-	)
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		__tmp := (_returned).String()
-		_converted = &__tmp
-	}
-	_result = _converted
-	return
-}
-
-func (_this *Element) GetAttributeNode(qualifiedName string) (_result *Attr) {
+func (_this *Element) GetAttributeNode(qualifiedName string) (_result *Attribute) {
 	var (
 		_args [1]interface{}
 		_end  int
@@ -1564,28 +379,13 @@ func (_this *Element) GetAttributeNode(qualifiedName string) (_result *Attr) {
 	_end++
 	_returned := _this.jsValue.Call("getAttributeNode", _args[0:_end]...)
 	var (
-		_converted *Attr // javascript: Attr _what_return_name
+		_converted *Attribute // javascript: Attr _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = AttrFromJS(_returned)
+		_converted = MakeAttributeFromJS(_returned)
 	}
 	_result = _converted
 	return
-}
-
-func (_this *Element) SetAttribute(qualifiedName string, value string) {
-	var (
-		_args [2]interface{}
-		_end  int
-	)
-	_p0 := qualifiedName
-	_args[0] = _p0
-	_end++
-	_p1 := value
-	_args[1] = _p1
-	_end++
-	_this.jsValue.Call("setAttribute", _args[0:_end]...)
-	
 }
 
 func (_this *Element) RemoveAttribute(qualifiedName string) {
@@ -1597,7 +397,7 @@ func (_this *Element) RemoveAttribute(qualifiedName string) {
 	_args[0] = _p0
 	_end++
 	_this.jsValue.Call("removeAttribute", _args[0:_end]...)
-	
+
 }
 
 func (_this *Element) ToggleAttribute(qualifiedName string, force *bool) (_result bool) {
@@ -1623,25 +423,9 @@ func (_this *Element) ToggleAttribute(qualifiedName string, force *bool) (_resul
 	return (_returned).Bool()
 }
 
-func (_this *Element) SetAttributeNode(attr *Attr) (_result *Attr) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := attr.JSValue()
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("setAttributeNode", _args[0:_end]...)
-	var (
-		_converted *Attr // javascript: Attr _what_return_name
-	)
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = AttrFromJS(_returned)
-	}
-	_result = _converted
-	return
-}
-
+// Traverses the element and its parents (heading toward the document root) until it finds a node that matches the specified CSS selector.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/closest
 func (_this *Element) Closest(selectors string) (_result *Element) {
 	var (
 		_args [1]interface{}
@@ -1651,7 +435,7 @@ func (_this *Element) Closest(selectors string) (_result *Element) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("closest", _args[0:_end]...)
-	return ElementFromJS(_returned)
+	return MakeElementFromJS(_returned)
 }
 
 func (_this *Element) Matches(selectors string) (_result bool) {
@@ -1718,7 +502,7 @@ func (_this *Element) InsertAdjacentElement(where string, element *Element) (_re
 		_converted *Element // javascript: Element _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = ElementFromJS(_returned)
+		_converted = MakeElementFromJS(_returned)
 	}
 	_result = _converted
 	return
@@ -1752,7 +536,7 @@ func (_this *Element) InsertAdjacentHTML(position string, text string) {
 	_this.jsValue.Call("insertAdjacentHTML", _args[0:_end]...)
 }
 
-func (_this *Element) GetBoundingClientRect() (_result *DOMRect) {
+func (_this *Element) GetBoundingClientRect() (_result *Rect) {
 	var (
 		_args [0]interface{}
 		_end  int
@@ -1888,7 +672,7 @@ func (_this *Element) QuerySelector(selectors string) (_result *Element) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("querySelector", _args[0:_end]...)
-	return ElementFromJS(_returned)
+	return MakeElementFromJS(_returned)
 }
 
 func (_this *Element) QuerySelectorAll(selectors string) (_result *NodeList) {
@@ -1900,7 +684,7 @@ func (_this *Element) QuerySelectorAll(selectors string) (_result *NodeList) {
 	_args[0] = _p0
 	_end++
 	_returned := _this.jsValue.Call("querySelectorAll", _args[0:_end]...)
-	return NodeListFromJS(_returned)
+	return MakeNodeListFromJS(_returned)
 }
 
 func (_this *Element) Before(nodes ...*Union) {
@@ -1935,4 +719,12 @@ func (_this *Element) Remove() {
 		_end  int
 	)
 	_this.jsValue.Call("remove", _args[0:_end]...)
+}
+
+// IsDefined returns true if the Element is not nil AND it's type is not TypeNull and not TypeUndefined
+func (_this *Element) IsDefined() bool {
+	if _this == nil || _this.jsValue.Type() != js.TypeNull && _this.jsValue.Type() != js.TypeUndefined {
+		return false
+	}
+	return true
 }

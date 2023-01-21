@@ -47,7 +47,7 @@ func (_this *HTMLCollection) Index(index uint) (_result *Element) {
 		_converted *Element // javascript: Element _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = ElementFromJS(_returned)
+		_converted = MakeElementFromJS(_returned)
 	}
 	_result = _converted
 	return
@@ -66,7 +66,7 @@ func (_this *HTMLCollection) Get(name string) (_result *Element) {
 		_converted *Element // javascript: Element _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = ElementFromJS(_returned)
+		_converted = MakeElementFromJS(_returned)
 	}
 	_result = _converted
 	return
@@ -85,7 +85,7 @@ func (_this *HTMLCollection) Item(index uint) (_result *Element) {
 		_converted *Element // javascript: Element _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = ElementFromJS(_returned)
+		_converted = MakeElementFromJS(_returned)
 	}
 	_result = _converted
 	return
@@ -104,7 +104,7 @@ func (_this *HTMLCollection) NamedItem(name string) (_result *Element) {
 		_converted *Element // javascript: Element _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = ElementFromJS(_returned)
+		_converted = MakeElementFromJS(_returned)
 	}
 	_result = _converted
 	return

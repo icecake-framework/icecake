@@ -19,8 +19,8 @@ type Document struct {
 	Node
 }
 
-// DocumentFromJS is casting a js.Value into Document.
-func DocumentFromJS(value js.Value) *Document {
+// MakeDocumentFromJS is casting a js.Value into Document.
+func MakeDocumentFromJS(value js.Value) *Document {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -34,7 +34,7 @@ func GetDocument() *Document {
 	var ret *Document
 	_klass := js.Global()
 	value := _klass.Get("document")
-	ret = DocumentFromJS(value)
+	ret = MakeDocumentFromJS(value)
 	if ret == nil {
 		log.Println("GetDocument() failed")
 	}
@@ -125,7 +125,7 @@ func (_this *Document) Doctype() *DocumentType {
 		return nil
 	}
 	value := _this.jsValue.Get("doctype")
-	return DocumentTypeFromJS(value)
+	return MakeDocumentTypeFromJS(value)
 }
 
 // ContentType returns the MIME type that the document is being rendered as.
@@ -155,7 +155,7 @@ func (_this *Document) DocumentElement() *Element {
 	var ret *Element
 	value := _this.jsValue.Get("documentElement")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = ElementFromJS(value)
+		ret = MakeElementFromJS(value)
 	}
 	return ret
 }
@@ -447,7 +447,7 @@ func (_this *Document) ActiveElement() *Element {
 		return nil
 	}
 	value := _this.jsValue.Get("activeElement")
-	return ElementFromJS(value)
+	return MakeElementFromJS(value)
 }
 
 // DesignMode controls whether the entire document is editable.
@@ -519,7 +519,7 @@ func (_this *Document) FullscreenElement() *Element {
 		return nil
 	}
 	value := _this.jsValue.Get("fullscreenElement")
-	return ElementFromJS(value)
+	return MakeElementFromJS(value)
 }
 
 // Children returns a live HTMLCollection which contains all of the child elements of the document upon which it was called.
@@ -543,7 +543,7 @@ func (_this *Document) FirstElementChild() *Element {
 		return nil
 	}
 	value := _this.jsValue.Get("firstElementChild")
-	return ElementFromJS(value)
+	return MakeElementFromJS(value)
 }
 
 // LastElementChild eturns the document's last child Element, or null if there are no child elements.
@@ -555,7 +555,7 @@ func (_this *Document) LastElementChild() *Element {
 		return nil
 	}
 	value := _this.jsValue.Get("lastElementChild")
-	return ElementFromJS(value)
+	return MakeElementFromJS(value)
 }
 
 // ChildElementCount returns the number of child elements of the document.
@@ -582,8 +582,8 @@ func eventFuncDocument_Event(listener func(event *Event, target *Document)) js.F
 		var ret *Event
 		value := args[0]
 		incoming := value.Get("target")
-		ret = EventFromJS(value)
-		src := DocumentFromJS(incoming)
+		ret = MakeEventFromJS(value)
+		src := MakeDocumentFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -621,7 +621,7 @@ func eventFuncDocument_MouseEvent(listener func(event *MouseEvent, target *Docum
 		value := args[0]
 		incoming := value.Get("target")
 		ret = MouseEventFromJS(value)
-		src := DocumentFromJS(incoming)
+		src := MakeDocumentFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -659,7 +659,7 @@ func eventFuncDocument_FocusEvent(listener func(event *FocusEvent, target *Docum
 		value := args[0]
 		incoming := value.Get("target")
 		ret = FocusEventFromJS(value)
-		src := DocumentFromJS(incoming)
+		src := MakeDocumentFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1025,7 +1025,7 @@ func eventFuncDocument_PointerEvent(listener func(event *PointerEvent, target *D
 		value := args[0]
 		incoming := value.Get("target")
 		ret = PointerEventFromJS(value)
-		src := DocumentFromJS(incoming)
+		src := MakeDocumentFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1063,7 +1063,7 @@ func eventFuncDocument_InputEvent(listener func(event *InputEvent, target *Docum
 		value := args[0]
 		incoming := value.Get("target")
 		ret = InputEventFromJS(value)
-		src := DocumentFromJS(incoming)
+		src := MakeDocumentFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1125,7 +1125,7 @@ func eventFuncDocument_KeyboardEvent(listener func(event *KeyboardEvent, target 
 		value := args[0]
 		incoming := value.Get("target")
 		ret = KeyboardEventFromJS(value)
-		src := DocumentFromJS(incoming)
+		src := MakeDocumentFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1883,7 +1883,7 @@ func eventFuncDocument_UIEvent(listener func(event *UIEvent, target *Document)) 
 		value := args[0]
 		incoming := value.Get("target")
 		ret = UIEventFromJS(value)
-		src := DocumentFromJS(incoming)
+		src := MakeDocumentFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -2257,7 +2257,7 @@ func eventFuncDocument_WheelEvent(listener func(event *WheelEvent, target *Docum
 		value := args[0]
 		incoming := value.Get("target")
 		ret = WheelEventFromJS(value)
-		src := DocumentFromJS(incoming)
+		src := MakeDocumentFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -2331,7 +2331,7 @@ func (_this *Document) GetElementsByName(elementName string) (_result *NodeList)
 	var _args [1]interface{}
 	_args[0] = elementName
 	_returned := _this.jsValue.Call("getElementsByName", _args[0:1]...)
-	return NodeListFromJS(_returned)
+	return MakeNodeListFromJS(_returned)
 }
 
 // GetElementById returns an Element object representing the element whose id property matches the specified string.
@@ -2346,7 +2346,7 @@ func (_this *Document) GetElementById(elementId string) (_result *Element) {
 	var _args [1]interface{}
 	_args[0] = elementId
 	_returned := _this.jsValue.Call("getElementById", _args[0:1]...)
-	return ElementFromJS(_returned)
+	return MakeElementFromJS(_returned)
 }
 
 // QuerySelector returns the first Element within the document that matches the specified selector, or group of selectors.
@@ -2361,7 +2361,7 @@ func (_this *Document) QuerySelector(selectors string) (_result *Element) {
 	var _args [1]interface{}
 	_args[0] = selectors
 	_returned := _this.jsValue.Call("querySelector", _args[0:1]...)
-	return ElementFromJS(_returned)
+	return MakeElementFromJS(_returned)
 }
 
 // querySelectorAll returns a static (not live) NodeList representing a list of the document's elements that match the specified group of selectors.
@@ -2375,7 +2375,7 @@ func (_this *Document) QuerySelectorAll(selectors string) (_result *NodeList) {
 	var _args [1]interface{}
 	_args[0] = selectors
 	_returned := _this.jsValue.Call("querySelectorAll", _args[0:1]...)
-	return NodeListFromJS(_returned)
+	return MakeNodeListFromJS(_returned)
 }
 
 // CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
@@ -2389,7 +2389,7 @@ func (_this *Document) CreateElement(localName string) (_result *Element) {
 	var _args [1]interface{}
 	_args[0] = localName
 	_returned := _this.jsValue.Call("createElement", _args[0:1]...)
-	_result = ElementFromJS(_returned)
+	_result = MakeElementFromJS(_returned)
 	return _result
 }
 
@@ -2397,7 +2397,7 @@ func (_this *Document) CreateElement(localName string) (_result *Element) {
 // The DOM does not enforce what sort of attributes can be added to a particular element in this manner.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/createAttribute
-func (_this *Document) CreateAttribute(localName string) (_result *Attr) {
+func (_this *Document) CreateAttribute(localName string) (_result *Attribute) {
 	if _this == nil {
 		log.Println("CreateAttribute() call on a nil Document")
 		return nil
@@ -2405,36 +2405,12 @@ func (_this *Document) CreateAttribute(localName string) (_result *Attr) {
 	var _args [1]interface{}
 	_args[0] = localName
 	_returned := _this.jsValue.Call("createAttribute", _args[0:1]...)
-	return AttrFromJS(_returned)
+	return MakeAttributeFromJS(_returned)
 }
 
-func (_this *Document) CreateNodeIterator(root *Node, whatToShow *uint, filter *NodeFilterValue) (_result *NodeIterator) {
-	var (
-		_args [3]interface{}
-		_end  int
-	)
-	_p0 := root.JSValue()
-	_args[0] = _p0
-	_end++
-	if whatToShow != nil {
-
-		var _p1 interface{}
-		if whatToShow != nil {
-			_p1 = *(whatToShow)
-		} else {
-			_p1 = nil
-		}
-		_args[1] = _p1
-		_end++
-	}
-	if filter != nil {
-		_p2 := filter.JSValue()
-		_args[2] = _p2
-		_end++
-	}
-	_returned := _this.jsValue.Call("createNodeIterator", _args[0:_end]...)
-	return NodeIteratorFromJS(_returned)
-}
+// CreateNodeIterator has been removed and replaced with the MakeNodes() function
+// func (_this *Document) CreateNodeIterator(root *Node, whatToShow *uint, filter *NodeFilter) *Nodes {
+// }
 
 // GetElementAtPoint returns the topmost Element at the specified coordinates (relative to the viewport).
 //
@@ -2448,7 +2424,7 @@ func (_this *Document) GetElementAtPoint(x float64, y float64) (_result *Element
 	_args[0] = x
 	_args[1] = y
 	_returned := _this.jsValue.Call("elementFromPoint", _args[0:2]...)
-	return ElementFromJS(_returned)
+	return MakeElementFromJS(_returned)
 }
 
 // GetElementsAtPoint eturns an array of all elements at the specified coordinates (relative to the viewport).
@@ -2469,7 +2445,7 @@ func (_this *Document) GetElementsAtPoint(x float64, y float64) (_result []*Elem
 	__array0 := make([]*Element, __length0)
 	for __idx0 := 0; __idx0 < __length0; __idx0++ {
 		__seq_in0 := _returned.Index(__idx0)
-		__array0[__idx0] = ElementFromJS(__seq_in0)
+		__array0[__idx0] = MakeElementFromJS(__seq_in0)
 	}
 	return __array0
 }

@@ -6,8 +6,8 @@ import "syscall/js"
 * DOMRect
 *****************************************************************************/
 
-// https://developer.mozilla.org/en-US/docs/Web/API/DOMRect
-type DOMRect struct {
+// https://developer.mozilla.org/en-US/docs/Web/API/Rect
+type Rect struct {
 	X      float64
 	Y      float64
 	Width  float64
@@ -15,7 +15,7 @@ type DOMRect struct {
 }
 
 // JSValue returns the js.Value or js.Null() if _this is nil
-func (_this *DOMRect) JSValue() js.Value {
+func (_this *Rect) JSValue() js.Value {
 	if _this == nil {
 		return js.Null()
 	}
@@ -29,11 +29,11 @@ func (_this *DOMRect) JSValue() js.Value {
 }
 
 // DOMRectFromJS is casting a js.Value into DOMRect.
-func DOMRectFromJS(value js.Value) *DOMRect {
+func DOMRectFromJS(value js.Value) *Rect {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &DOMRect{}
+	ret := &Rect{}
 
 	x := value.Get("x")
 	ret.X = (x).Float()

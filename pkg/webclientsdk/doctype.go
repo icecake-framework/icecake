@@ -12,8 +12,8 @@ type DocumentType struct {
 	Node
 }
 
-// DocumentTypeFromJS is casting a js.Value into DocumentType.
-func DocumentTypeFromJS(value js.Value) *DocumentType {
+// MakeDocumentTypeFromJS is casting a js.Value into DocumentType.
+func MakeDocumentTypeFromJS(value js.Value) *DocumentType {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}

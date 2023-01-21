@@ -215,7 +215,7 @@ func (_this *MouseEvent) RelatedTarget() *EventTarget {
 	var ret *EventTarget
 	value := _this.jsValue.Get("relatedTarget")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = EventTargetFromJS(value)
+		ret = MakeEventTargetFromJS(value)
 	}
 	return ret
 }
@@ -424,7 +424,7 @@ func (_this *FocusEvent) RelatedTarget() *EventTarget {
 	var ret *EventTarget
 	value := _this.jsValue.Get("relatedTarget")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = EventTargetFromJS(value)
+		ret = MakeEventTargetFromJS(value)
 	}
 	return ret
 }

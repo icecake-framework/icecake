@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sunraylab/icecake/pkg/framework"
+	icecakeapp "github.com/sunraylab/icecake/pkg/framework/app"
 	"github.com/sunraylab/icecake/pkg/spasdk"
 )
 
@@ -26,10 +26,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	framework.RenderComponents()
+	icecakeapp.RenderComponents()
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
 	<-c
-	fmt.Println("Go/WASM stop")
+	fmt.Println("Go/WASM ended")
 }

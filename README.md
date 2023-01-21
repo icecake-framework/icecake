@@ -44,6 +44,9 @@ icecake
 ├── build                           # build scripts
 │   └── Taskfile.yaml               # building task configuration, ic. autobuild the front
 │
+├── doc                             # overall doc
+│   └── [*.*]                       
+│
 ├── cmd
 │   └── icecake                     # the icecake CLI command required to run the SPA server
 │       └── icecake.go          

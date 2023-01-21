@@ -38,7 +38,7 @@ func GetWindow() *Window {
 func (_this *Window) Document() *Document {
 	var ret *Document
 	value := _this.jsValue.Get("document")
-	ret = DocumentFromJS(value)
+	ret = MakeDocumentFromJS(value)
 	return ret
 }
 
@@ -241,7 +241,7 @@ func eventFuncWindow_Event(listener func(event *Event, target *Window)) js.Func 
 		var ret *Event
 		value := args[0]
 		incoming := value.Get("target")
-		ret = EventFromJS(value)
+		ret = MakeEventFromJS(value)
 		src := WindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
