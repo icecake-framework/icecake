@@ -1,4 +1,4 @@
-package webclientsdk
+package browser
 
 import (
 	"syscall/js"

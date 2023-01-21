@@ -1,4 +1,4 @@
-package webclientsdk
+package browser
 
 import (
 	"log"
@@ -92,16 +92,16 @@ func (_attr *Attribute) Name() Name {
 *****************************************************************************/
 
 // JSValue returns the js.Value or js.Null() if _attr is nil
-// func (_attr *Attribute) JSValue() js.Value {
-// 	if _attr == nil {
-// 		return js.Null()
-// 	}
-// 	jsValue := js.Value{}
-// 	jsValue.Set("name", _attr.Name)
-// 	jsValue.Set("value", _attr.Value)
-// 	jsValue.Set("ownerElement", _attr.ownerElement)
-// 	return jsValue
-// }
+func (_attr *Attribute) JSValue() js.Value {
+	if _attr == nil {
+		return js.Null()
+	}
+	jsValue := js.Value{}
+	jsValue.Set("name", _attr.Name)
+	jsValue.Set("value", _attr.Value)
+	jsValue.Set("ownerElement", _attr.ownerElement)
+	return jsValue
+}
 
 // ToDOM update the DOM of the ownerElement with this attribute
 func (_attr *Attribute) ToDOM() {

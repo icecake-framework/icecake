@@ -37,6 +37,13 @@ tasks:
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
 
+  dev_components:
+    dir: '{{.USER_WORKING_DIR}}'
+    sources: 
+      - "web/components/**/*"
+    cmds: 
+      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
+
   dev_static: 
     dir: '{{.USER_WORKING_DIR}}'
     sources: 
@@ -49,6 +56,7 @@ tasks:
   dev_front:
     dir: '{{.USER_WORKING_DIR}}'
     deps: 
+      - task: dev_components
       - task: dev_static
       - task: dev_framework
       - task: dev_wasm

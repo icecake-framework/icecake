@@ -1,6 +1,7 @@
-package webclientsdk
+package browser
 
 import (
+	"fmt"
 	"strings"
 	"syscall/js"
 )
@@ -106,12 +107,26 @@ func (_this *Attributes) Set(name Name, value string) *Attribute {
 	name = Name(normalize(string(name)))
 	value = normalize(value)
 	a := _this.Get(name)
+
+	fmt.Println("Attribute:Set: ", name, value)
+
 	if a == nil {
-		a = NewAttribute(name, value, MakeElementFromJS(_this.jsValue))
+		var _args [1]interface{}
+		attr := NewAttribute(name, value, nil)
+		_args[0] = attr.JSValue()
+		_returned := _this.jsValue.Call("setNamedItem", _args[0:1]...)
+		a = MakeAttributeFromJS(_returned)
+		// a = NewAttribute(name, value, MakeNodeFromJS(_this.jsValue)) //MakeElementFromJS(_this.jsValue))
 	} else {
-		a.Value = value
+		var _args [1]interface{}
+		//attr := NewAttribute(name, value, nil)
+		_args[0] = a.JSValue()
+		_returned := _this.jsValue.Call("setNamedItem", _args[0:1]...)
+		a = MakeAttributeFromJS(_returned)
+		//		a.Value = value
 	}
 	return a
+
 }
 
 // Remove removes attributes in the list or does nothing for the one that does not exist.
