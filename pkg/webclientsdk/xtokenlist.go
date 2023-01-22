@@ -37,6 +37,7 @@ func MakeTokenListFromJS(value js.Value) *TokenList {
 	}
 	ret := &TokenList{}
 	ret.jsValue = value
+
 	ret.tokens = make([]string, 0)
 	ret.SetValue(ret.jsValue.Get("value").String())
 	return ret

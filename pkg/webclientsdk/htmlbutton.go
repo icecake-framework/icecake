@@ -157,12 +157,7 @@ func (_this *HTMLButtonElement) CheckValidity() (_result bool) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("checkValidity", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *HTMLButtonElement) ReportValidity() (_result bool) {
@@ -171,12 +166,7 @@ func (_this *HTMLButtonElement) ReportValidity() (_result bool) {
 		_end  int
 	)
 	_returned := _this.jsValue.Call("reportValidity", _args[0:_end]...)
-	var (
-		_converted bool // javascript: boolean _what_return_name
-	)
-	_converted = (_returned).Bool()
-	_result = _converted
-	return
+	return (_returned).Bool()
 }
 
 func (_this *HTMLButtonElement) SetCustomValidity(_error string) {
@@ -188,5 +178,4 @@ func (_this *HTMLButtonElement) SetCustomValidity(_error string) {
 	_args[0] = _p0
 	_end++
 	_this.jsValue.Call("setCustomValidity", _args[0:_end]...)
-	return
 }

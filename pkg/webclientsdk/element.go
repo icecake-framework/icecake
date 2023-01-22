@@ -30,25 +30,6 @@ func MakeElementFromJS(value js.Value) *Element {
 * Element's properties
 *****************************************************************************/
 
-// Returns the namespace prefix of the specified element, or null if no prefix is specified.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/prefix
-func (_this *Element) Prefix() string {
-	value := _this.jsValue.Get("prefix")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		return ""
-	}
-	return (value).String()
-}
-
-// LocalName returns the local part of the qualified name of an element.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/localName
-func (_this *Element) LocalName() string {
-	value := _this.jsValue.Get("localName")
-	return (value).String()
-}
-
 // TagName returns the tag name of the element on which it's called.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/tagName
@@ -103,10 +84,10 @@ func (_this *Element) ClassList() *TokenList {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes
 func (_this *Element) Attributes() *Attributes {
 	value := _this.jsValue.Get("attributes")
-	return MakeAttributesFromNamedNodeMapJS(value)
+	return MakeAttributesFromNamedNodeMapJS(value, _this)
 }
 
-// InnerHTML ets or sets the HTML or XML markup contained within the element.
+// InnerHTML gets or sets the HTML or XML markup contained within the element.
 //
 // To insert the HTML into the document rather than replace the contents of an element, use the method insertAdjacentHTML().
 //
@@ -120,10 +101,14 @@ func (_this *Element) InnerHTML() string {
 //
 // To insert the HTML into the document rather than replace the contents of an element, use the method insertAdjacentHTML().
 //
+// When writing to innerHTML, it will overwrite the content of the source element.
+// That means the HTML has to be loaded and re-parsed. This is not very efficient especially when using inside loops.
+//
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
-func (_this *Element) SetInnerHTML(value string) {
+func (_this *Element) SetInnerHTML(value string) (_ret *Element) {
 	input := value
 	_this.jsValue.Set("innerHTML", input)
+	return _this
 }
 
 // OuterHTML gets the serialized HTML fragment describing the element including its descendants.
@@ -152,96 +137,37 @@ func (_this *Element) SetOuterHTML(value string) {
 // ScrollTop gets or sets the number of pixels that an element's content is scrolled vertically.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop
-func (_this *Element) ScrollTop() float64 {
-	value := _this.jsValue.Get("scrollTop")
-	return (value).Float()
-}
-
-// ScrollTop gets or sets the number of pixels that an element's content is scrolled vertically.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop
-func (_this *Element) SetScrollTop(value float64) {
-	input := value
-	_this.jsValue.Set("scrollTop", input)
-}
-
-// ScrollLeft  gets or sets the number of pixels that an element's content is scrolled from its left edge.
-//
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft
-func (_this *Element) ScrollLeft() float64 {
-	value := _this.jsValue.Get("scrollLeft")
-	return (value).Float()
-}
-
-// ScrollLeft  gets or sets the number of pixels that an element's content is scrolled from its left edge.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft
-func (_this *Element) SetScrollLeft(value float64) {
-	_this.jsValue.Set("scrollLeft", value)
-}
-
-// ScrollWidth s a measurement of the width of an element's content, including content not visible on the screen due to overflow.
-//
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth
-func (_this *Element) ScrollWidth() int {
-	var ret int
-	value := _this.jsValue.Get("scrollWidth")
-	ret = (value).Int()
-	return ret
+func (_this *Element) ScrollRect() (_ret Rect) {
+	_ret.X = _this.jsValue.Get("scrollLeft").Float()
+	_ret.Y = _this.jsValue.Get("scrollTop").Float()
+	_ret.Width = _this.jsValue.Get("scrollWidth").Float()
+	_ret.Height = _this.jsValue.Get("scrollHeight").Float()
+	return _ret
 }
 
-// ScrollHeight  is a measurement of the height of an element's content, including content not visible on the screen due to overflow.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight
-func (_this *Element) ScrollHeight() int {
-	var ret int
-	value := _this.jsValue.Get("scrollHeight")
-	ret = (value).Int()
-	return ret
-}
-
-// ClientTop The width of the top border of an element in pixels.
+// ClientRect returns border coordinates of an element in pixels.
 //
 // Note: This property will round the value to an integer. If you need a fractional value, use element.getBoundingClientRect().
 //
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop
-func (_this *Element) ClientTop() int {
-	value := _this.jsValue.Get("clientTop")
-	return (value).Int()
+//   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop
+//   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft
+func (_this *Element) ClientRect() (_ret Rect) {
+	_ret = Rect{}
+	_ret.X = float64(_this.jsValue.Get("clientLeft").Int())
+	_ret.Y = float64(_this.jsValue.Get("clientTop").Int())
+	_ret.Width = float64(_this.jsValue.Get("clientWidth").Int())
+	_ret.Height = float64(_this.jsValue.Get("clientHeight").Int())
+	return _ret
 }
 
-// ClientLeft the width of the left border of an element in pixels.
-// It includes the width of the vertical scrollbar if the text direction of the element is right-to-left and if there is an overflow causing a left vertical scrollbar to be rendered.
-// clientLeft does not include the left margin or the left padding. clientLeft is read-only.
+// GetBoundingClientRect eturns a DOMRect object providing information about the size of an element and its position relative to the viewport.
 //
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft
-func (_this *Element) ClientLeft() int {
-	var ret int
-	value := _this.jsValue.Get("clientLeft")
-	ret = (value).Int()
-	return ret
-}
-
-// ClientWidth The Element.clientWidth property is zero for inline elements and elements with no CSS;
-// otherwise, it's the inner width of an element in pixels. It includes padding but excludes borders, margins, and vertical scrollbars (if present).
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/clientWidth
-func (_this *Element) ClientWidth() int {
-	var ret int
-	value := _this.jsValue.Get("clientWidth")
-	ret = (value).Int()
-	return ret
-}
-
-// ClientHeight is zero for elements with no CSS or inline layout boxes;
-// otherwise, it's the inner height of an element in pixels. It includes padding but excludes borders, margins, and horizontal scrollbars (if present).
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/clientHeight
-func (_this *Element) ClientHeight() int {
-	var ret int
-	value := _this.jsValue.Get("clientHeight")
-	ret = (value).Int()
-	return ret
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+func (_this *Element) BoundingClientRect() (_result *Rect) {
+	_returned := _this.jsValue.Call("getBoundingClientRect")
+	return DOMRectFromJS(_returned)
 }
 
 // Children returns a live HTMLCollection which contains all of the child elements of the element upon which it was called.
@@ -296,26 +222,6 @@ func (_this *Element) NextElementSibling() *Element {
 	return MakeElementFromJS(value)
 }
 
-// Role get a,d set the attribute 'role'
-func (_this *Element) Role() string {
-	value := _this.jsValue.Get("role")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		return ""
-	}
-	return (value).String()
-}
-
-// Role get a,d set the attribute 'role'
-func (_this *Element) SetRole(value string) {
-	var input interface{}
-	if value != "" {
-		input = value
-	} else {
-		input = ""
-	}
-	_this.jsValue.Set("role", input)
-}
-
 /****************************************************************************
 * Element's events
 *****************************************************************************/
@@ -351,94 +257,40 @@ func (_this *Element) AddEventFullscreenError(listener func(event *Event, curren
 }
 
 /****************************************************************************
-* Element's attributes
+* Element's methods
 *****************************************************************************/
 
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttributes
-func (_this *Element) HasAttributes() bool {
-	var _args [0]interface{}
-	_returned := _this.jsValue.Call("hasAttributes", _args[0:0]...)
-	return (_returned).Bool()
-}
-
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute
-func (_this *Element) HasAttribute(qualifiedName string) (_result bool) {
-	var _args [1]interface{}
-	_args[0] = qualifiedName
-	_returned := _this.jsValue.Call("hasAttribute", _args[0:1]...)
-	return (_returned).Bool()
-}
-
-func (_this *Element) GetAttributeNode(qualifiedName string) (_result *Attribute) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := qualifiedName
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("getAttributeNode", _args[0:_end]...)
-	var (
-		_converted *Attribute // javascript: Attr _what_return_name
-	)
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = MakeAttributeFromJS(_returned)
-	}
-	_result = _converted
-	return
-}
-
-func (_this *Element) RemoveAttribute(qualifiedName string) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := qualifiedName
-	_args[0] = _p0
-	_end++
-	_this.jsValue.Call("removeAttribute", _args[0:_end]...)
-
-}
-
-func (_this *Element) ToggleAttribute(qualifiedName string, force *bool) (_result bool) {
-	var (
-		_args [2]interface{}
-		_end  int
-	)
-	_p0 := qualifiedName
-	_args[0] = _p0
-	_end++
-	if force != nil {
-
-		var _p1 interface{}
-		if force != nil {
-			_p1 = *(force)
-		} else {
-			_p1 = nil
-		}
-		_args[1] = _p1
-		_end++
-	}
-	_returned := _this.jsValue.Call("toggleAttribute", _args[0:_end]...)
-	return (_returned).Bool()
-}
-
-// Traverses the element and its parents (heading toward the document root) until it finds a node that matches the specified CSS selector.
+// Traverses the element and its parents (heading toward the document root) until
+// it finds a node that matches the specified CSS selector.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/closest
 func (_this *Element) Closest(selectors string) (_result *Element) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := selectors
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("closest", _args[0:_end]...)
+	_returned := _this.jsValue.Call("closest", selectors)
 	return MakeElementFromJS(_returned)
 }
 
+// Matches tests whether the element would be selected by the specified CSS selector.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/matches
 func (_this *Element) Matches(selectors string) (_result bool) {
+	_returned := _this.jsValue.Call("matches", selectors)
+	return (_returned).Bool()
+}
+
+// QuerySelector returns the first element that is a descendant of the element on which it is invoked
+// that matches the specified group of selectors.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector
+func (_this *Element) QuerySelector(selectors string) (_result *Element) {
+	_returned := _this.jsValue.Call("querySelector", selectors)
+	return MakeElementFromJS(_returned)
+}
+
+// QuerySelectorAll eturns a static (not live) NodeList representing a list of elements matching
+// the specified group of selectors which are descendants of the element on which the method was called.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll
+func (_this *Element) QuerySelectorAll(selectors string) (_result *NodeList) {
 	var (
 		_args [1]interface{}
 		_end  int
@@ -446,197 +298,68 @@ func (_this *Element) Matches(selectors string) (_result bool) {
 	_p0 := selectors
 	_args[0] = _p0
 	_end++
-	_returned := _this.jsValue.Call("matches", _args[0:_end]...)
-	return (_returned).Bool()
+	_returned := _this.jsValue.Call("querySelectorAll", _args[0:_end]...)
+	return MakeNodeListFromJS(_returned)
 }
 
-func (_this *Element) WebkitMatchesSelector(selectors string) (_result bool) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := selectors
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("webkitMatchesSelector", _args[0:_end]...)
-	return (_returned).Bool()
-}
-
+// GetElementsByTagName returns a live HTMLCollection of elements with the given tag name.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByTagName
 func (_this *Element) GetElementsByTagName(qualifiedName string) (_result *HTMLCollection) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := qualifiedName
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("getElementsByTagName", _args[0:_end]...)
+	_returned := _this.jsValue.Call("getElementsByTagName", qualifiedName)
 	return HTMLCollectionFromJS(_returned)
 }
 
+// GetElementsByClassName returns a live HTMLCollection which contains every descendant element which has the specified class name or names.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByClassName
 func (_this *Element) GetElementsByClassName(classNames string) (_result *HTMLCollection) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := classNames
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("getElementsByClassName", _args[0:_end]...)
+	_returned := _this.jsValue.Call("getElementsByClassName", classNames)
 	return HTMLCollectionFromJS(_returned)
 }
 
-func (_this *Element) InsertAdjacentElement(where string, element *Element) (_result *Element) {
-	var (
-		_args [2]interface{}
-		_end  int
-	)
-	_p0 := where
-	_args[0] = _p0
-	_end++
-	_p1 := element.JSValue()
-	_args[1] = _p1
-	_end++
-	_returned := _this.jsValue.Call("insertAdjacentElement", _args[0:_end]...)
-	var (
-		_converted *Element // javascript: Element _what_return_name
-	)
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = MakeElementFromJS(_returned)
-	}
-	_result = _converted
-	return
-}
-
-func (_this *Element) InsertAdjacentText(where string, data string) {
-	var (
-		_args [2]interface{}
-		_end  int
-	)
-	_p0 := where
-	_args[0] = _p0
-	_end++
-	_p1 := data
-	_args[1] = _p1
-	_end++
-	_this.jsValue.Call("insertAdjacentText", _args[0:_end]...)
-}
-
-func (_this *Element) InsertAdjacentHTML(position string, text string) {
-	var (
-		_args [2]interface{}
-		_end  int
-	)
-	_p0 := position
-	_args[0] = _p0
-	_end++
-	_p1 := text
-	_args[1] = _p1
-	_end++
-	_this.jsValue.Call("insertAdjacentHTML", _args[0:_end]...)
-}
-
-func (_this *Element) GetBoundingClientRect() (_result *Rect) {
-	var (
-		_args [0]interface{}
-		_end  int
-	)
-	_returned := _this.jsValue.Call("getBoundingClientRect", _args[0:_end]...)
-	return DOMRectFromJS(_returned)
-}
-
+// ScrollIntoView scrolls the element's ancestor containers such that the element on which scrollIntoView() is called is visible to the user.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
 func (_this *Element) ScrollIntoView() {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_this.jsValue.Call("scrollIntoView", _args[0:_end]...)
+	_this.jsValue.Call("scrollIntoView")
 }
 
-func (_this *Element) ScrollXY(x float64, y float64) {
-	var (
-		_args [2]interface{}
-		_end  int
-	)
-	_p0 := x
-	_args[0] = _p0
-	_end++
-	_p1 := y
-	_args[1] = _p1
-	_end++
-	_this.jsValue.Call("scroll", _args[0:_end]...)
+type WhereInsert string
+
+const (
+	WI_BEFOREBEGIN WhereInsert = "beforebegin" //  Before the Element itself.
+	WI_AFTERBEGIN  WhereInsert = "afterbegin"  // Just inside the element, before its first child.
+	WI_BEFOREEND   WhereInsert = "beforeend"   // Just inside the element, after its last child.
+	WI_AFTEREND    WhereInsert = "afterend"    // After the element itself.
+)
+
+// InsertAdjacentElement inserts a given element node at a given position relative to the element it is invoked upon.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentElement
+func (_this *Element) InsertAdjacentElement(where WhereInsert, element *Element) (_result *Element) {
+	_returned := _this.jsValue.Call("insertAdjacentElement", where, element.JSValue())
+	return MakeElementFromJS(_returned)
 }
 
-func (_this *Element) ScrollToXY(x float64, y float64) {
-	var (
-		_args [2]interface{}
-		_end  int
-	)
-	_p0 := x
-	_args[0] = _p0
-	_end++
-	_p1 := y
-	_args[1] = _p1
-	_end++
-	_this.jsValue.Call("scrollTo", _args[0:_end]...)
+// InsertAdjacentText given a relative position and a string, inserts a new text node at the given position relative to the element it is called from.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentText
+func (_this *Element) InsertAdjacentText(where WhereInsert, text string) {
+	_this.jsValue.Call("insertAdjacentText", where, text)
 }
 
-func (_this *Element) ScrollByXY(x float64, y float64) {
-	var (
-		_args [2]interface{}
-		_end  int
-	)
-	_p0 := x
-	_args[0] = _p0
-	_end++
-	_p1 := y
-	_args[1] = _p1
-	_end++
-	_this.jsValue.Call("scrollBy", _args[0:_end]...)
+// InsertAdjacentHTML parses the specified text as HTML or XML and inserts the resulting nodes into the DOM tree at a specified position.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML
+func (_this *Element) InsertAdjacentHTML(where WhereInsert, text string) {
+	_this.jsValue.Call("insertAdjacentHTML", where, text)
 }
 
-func (_this *Element) SetPointerCapture(pointerId int) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := pointerId
-	_args[0] = _p0
-	_end++
-	_this.jsValue.Call("setPointerCapture", _args[0:_end]...)
-}
-
-func (_this *Element) ReleasePointerCapture(pointerId int) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := pointerId
-	_args[0] = _p0
-	_end++
-	_this.jsValue.Call("releasePointerCapture", _args[0:_end]...)
-}
-
-func (_this *Element) HasPointerCapture(pointerId int) (_result bool) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := pointerId
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("hasPointerCapture", _args[0:_end]...)
-	return (_returned).Bool()
-}
-
-func (_this *Element) RequestPointerLock() {
-	var (
-		_args [0]interface{}
-		_end  int
-	)
-	_this.jsValue.Call("requestPointerLock", _args[0:_end]...)
-}
-
+// Prepend inserts a set of Node objects or string objects before the first child of the Element.
+// String objects are inserted as equivalent Text nodes.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
 func (_this *Element) Prepend(nodes ...*Union) {
 	var (
 		_args []interface{} = make([]interface{}, 0+len(nodes))
@@ -650,6 +373,18 @@ func (_this *Element) Prepend(nodes ...*Union) {
 	_this.jsValue.Call("prepend", _args[0:_end]...)
 }
 
+// Append inserts a set of Node objects or string objects after the last child of the Element.
+// String objects are inserted as equivalent Text nodes.
+//
+// This method is supported by all browsers and is a much cleaner way of inserting nodes, text, data, etc. into the DOM.
+//
+// Allows you to also append string objects, whereas Node.appendChild() only accepts Node objects.
+//
+// Has no return value, whereas Node.appendChild() returns the appended Node object.
+//
+// Can append several nodes and strings, whereas Node.appendChild() can only append one node.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/append
 func (_this *Element) Append(nodes ...*Union) {
 	var (
 		_args []interface{} = make([]interface{}, 0+len(nodes))
@@ -661,30 +396,6 @@ func (_this *Element) Append(nodes ...*Union) {
 		_end++
 	}
 	_this.jsValue.Call("append", _args[0:_end]...)
-}
-
-func (_this *Element) QuerySelector(selectors string) (_result *Element) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := selectors
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("querySelector", _args[0:_end]...)
-	return MakeElementFromJS(_returned)
-}
-
-func (_this *Element) QuerySelectorAll(selectors string) (_result *NodeList) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := selectors
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("querySelectorAll", _args[0:_end]...)
-	return MakeNodeListFromJS(_returned)
 }
 
 func (_this *Element) Before(nodes ...*Union) {
@@ -723,7 +434,7 @@ func (_this *Element) Remove() {
 
 // IsDefined returns true if the Element is not nil AND it's type is not TypeNull and not TypeUndefined
 func (_this *Element) IsDefined() bool {
-	if _this == nil || _this.jsValue.Type() != js.TypeNull && _this.jsValue.Type() != js.TypeUndefined {
+	if _this == nil || _this.jsValue.Type() == js.TypeNull || _this.jsValue.Type() == js.TypeUndefined {
 		return false
 	}
 	return true

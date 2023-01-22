@@ -97,11 +97,11 @@ func (_this *Node) IsDocConnected() bool {
 	return (value).Bool()
 }
 
-// OwnerDocument returns the top-level document object of the node, the top-level object in which all the child nodes are created.
+// Doc returns the top-level document object of the node, the top-level object in which all the child nodes are created.
 // on a node that is itself a document, the value is null.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/ownerDocument
-func (_this *Node) OwnerDocument() *Document {
+func (_this *Node) Doc() *Document {
 	value := _this.jsValue.Get("ownerDocument")
 	return MakeDocumentFromJS(value)
 }

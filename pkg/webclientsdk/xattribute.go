@@ -24,10 +24,10 @@ type Attribute struct {
 	// https://developer.mozilla.org/en-US/docs/Web/API/Attr/name
 	name Name
 
-	// Value contains the value of the attribute.
+	// value contains the value of the attribute.
 	//
 	// https://developer.mozilla.org/en-US/docs/Web/API/Attr/value
-	Value string
+	value string
 }
 
 /****************************************************************************
@@ -41,17 +41,19 @@ func MakeAttributeFromJS(value js.Value) *Attribute {
 	}
 	ret := &Attribute{}
 	ret.name = Name(value.Get("name").String())
-	ret.Value = value.Get("value").String()
+	ret.value = value.Get("value").String()
 	ownerElement := value.Get("ownerElement")
 	ret.ownerElement = MakeElementFromJS(ownerElement)
 	return ret
 }
 
-func NewAttribute(name Name, value string, ownerElement *Element) *Attribute {
+// CreateAttribute create a new attribut and update the DOM
+func CreateAttribute(name Name, value string, ownerElement *Element) *Attribute {
 	ret := &Attribute{}
 	ret.name = Name(normalize(string(name)))
-	ret.Value = normalize(value)
+	ret.value = normalize(value)
 	ret.ownerElement = ownerElement
+	ret.ownerElement.JSValue().Call("setAttribute", string(ret.name), ret.value)
 	return ret
 }
 
@@ -60,11 +62,15 @@ func NewAttribute(name Name, value string, ownerElement *Element) *Attribute {
 *****************************************************************************/
 
 // String returns normalized formated properties of this attribute
-func (_attr *Attribute) String() string {
+func (_attr *Attribute) String() (_ret string) {
 	if _attr == nil {
 		return ""
 	}
-	return normalize(string(_attr.name)) + `="` + normalize(_attr.Value) + `"`
+	_ret = normalize(string(_attr.name))
+	if _attr.value != "" {
+		_ret += `="` + normalize(_attr.value) + `"`
+	}
+	return _ret
 }
 
 // OwnerElement  returns the Element the attribute belongs to.
@@ -91,20 +97,8 @@ func (_attr *Attribute) Name() Name {
 * Attribute's Methods
 *****************************************************************************/
 
-// JSValue returns the js.Value or js.Null() if _attr is nil
-func (_attr *Attribute) JSValue() js.Value {
-	if _attr == nil {
-		return js.Null()
-	}
-	jsValue := js.Value{}
-	jsValue.Set("name", _attr.Name)
-	jsValue.Set("value", _attr.Value)
-	jsValue.Set("ownerElement", _attr.ownerElement)
-	return jsValue
-}
-
-// ToDOM update the DOM of the ownerElement with this attribute
-func (_attr *Attribute) ToDOM() {
+// SetValue update the DOM of the ownerElement with this attribute
+func (_attr *Attribute) SetValue(_val string) {
 	if _attr == nil {
 		log.Println("ToDOM() call on a nil Attribute")
 		return
@@ -114,8 +108,6 @@ func (_attr *Attribute) ToDOM() {
 		return
 	}
 
-	var _args [2]interface{}
-	_args[0] = string(_attr.name)
-	_args[1] = _attr.Value
-	_attr.ownerElement.JSValue().Call("setAttribute", _args[0:2]...)
+	_attr.value = _val
+	_attr.ownerElement.JSValue().Call("setAttribute", string(_attr.name), _attr.value)
 }

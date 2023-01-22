@@ -11,7 +11,7 @@ import (
 
 	"github.com/sunraylab/icecake/pkg/spasdk"
 	browser "github.com/sunraylab/icecake/pkg/webclientsdk"
-	"github.com/sunraylab/icecake/web/components/button"
+	"github.com/sunraylab/icecake/web/components/mybutton"
 )
 
 // the main func is required by the wasm GO builder
@@ -31,7 +31,7 @@ func main() {
 	if coll != nil {
 		for i := uint(0); i < coll.Length(); i++ {
 			e := coll.Item(i)
-			icb := button.Cast(e.JSValue())
+			icb := mybutton.Cast(e.JSValue())
 			icb.Render()
 		}
 	}

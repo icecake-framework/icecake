@@ -15,18 +15,18 @@ type Rect struct {
 }
 
 // JSValue returns the js.Value or js.Null() if _this is nil
-func (_this *Rect) JSValue() js.Value {
-	if _this == nil {
-		return js.Null()
-	}
+// func (_this *Rect) JSValue() js.Value {
+// 	if _this == nil {
+// 		return js.Null()
+// 	}
 
-	jsValue := js.Value{}
-	jsValue.Set("x", _this.X)
-	jsValue.Set("y", _this.Y)
-	jsValue.Set("width", _this.Width)
-	jsValue.Set("height", _this.Height)
-	return jsValue
-}
+// 	jsValue := js.Value{}
+// 	jsValue.Set("x", _this.X)
+// 	jsValue.Set("y", _this.Y)
+// 	jsValue.Set("width", _this.Width)
+// 	jsValue.Set("height", _this.Height)
+// 	return jsValue
+// }
 
 // DOMRectFromJS is casting a js.Value into DOMRect.
 func DOMRectFromJS(value js.Value) *Rect {

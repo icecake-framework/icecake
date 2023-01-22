@@ -56,10 +56,10 @@ func MakeNodes(root *Node, filter NodeTypeFilter, match func(*Node) bool) Nodes 
 		fin = fin || (filter&SHOW_DOCUMENT_FRAGMENT) > 0 && nt == NT_DOCUMENT_FRAGMENT
 		fin = fin || (filter&SHOW_DOCUMENT_TYPE) > 0 && nt == NT_DOCUMENT_TYPE
 		fin = fin || (filter&SHOW_PROCESSING_INSTRUCTION) > 0 && nt == NT_PROCESSING_INSTRUCTION
+		if fin && match != nil {
+			fin = fin || match(scan)
+		}
 		if fin {
-			if match != nil {
-				fin = fin || match(scan)
-			}
 			nodes = append(nodes, scan)
 		}
 	}

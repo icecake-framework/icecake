@@ -11,8 +11,8 @@ type Window struct {
 	EventTarget
 }
 
-// WindowFromJS is casting a js.Value into Window.
-func WindowFromJS(value js.Value) *Window {
+// MakeWindowFromJS is casting a js.Value into Window.
+func MakeWindowFromJS(value js.Value) *Window {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -24,11 +24,8 @@ func WindowFromJS(value js.Value) *Window {
 // GetWindow returning attribute 'window' with
 // type Window (idl: Window).
 func GetWindow() *Window {
-	var ret *Window
-	_klass := js.Global()
-	value := _klass.Get("window")
-	ret = WindowFromJS(value)
-	return ret
+	value := js.Global().Get("window")
+	return MakeWindowFromJS(value)
 }
 
 // Document returning attribute 'document' with
@@ -36,10 +33,8 @@ func GetWindow() *Window {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/document
 func (_this *Window) Document() *Document {
-	var ret *Document
 	value := _this.jsValue.Get("document")
-	ret = MakeDocumentFromJS(value)
-	return ret
+	return MakeDocumentFromJS(value)
 }
 
 // Location returning attribute 'location' with
@@ -77,7 +72,7 @@ func (_this *Window) Top() *Window {
 	var ret *Window
 	value := _this.jsValue.Get("top")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = WindowFromJS(value)
+		ret = MakeWindowFromJS(value)
 	}
 	return ret
 }
@@ -242,7 +237,7 @@ func eventFuncWindow_Event(listener func(event *Event, target *Window)) js.Func 
 		value := args[0]
 		incoming := value.Get("target")
 		ret = MakeEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -304,7 +299,7 @@ func eventFuncWindow_MouseEvent(listener func(event *MouseEvent, target *Window)
 		value := args[0]
 		incoming := value.Get("target")
 		ret = MouseEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -350,7 +345,7 @@ func eventFuncWindow_htmlcommon_BeforeUnloadEvent(listener func(event *BeforeUnl
 		value := args[0]
 		incoming := value.Get("target")
 		ret = BeforeUnloadEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -380,7 +375,7 @@ func eventFuncWindow_FocusEvent(listener func(event *FocusEvent, target *Window)
 		value := args[0]
 		incoming := value.Get("target")
 		ret = FocusEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -634,7 +629,7 @@ func eventFuncWindow_PointerEvent(listener func(event *PointerEvent, target *Win
 		value := args[0]
 		incoming := value.Get("target")
 		ret = PointerEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -664,7 +659,7 @@ func eventFuncWindow_HashChangeEvent(listener func(event *HashChangeEvent, targe
 		value := args[0]
 		incoming := value.Get("target")
 		ret = HashChangeEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -694,7 +689,7 @@ func eventFuncWindow_InputEvent(listener func(event *InputEvent, target *Window)
 		value := args[0]
 		incoming := value.Get("target")
 		ret = InputEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -740,7 +735,7 @@ func eventFuncWindow_KeyboardEvent(listener func(event *KeyboardEvent, target *W
 		value := args[0]
 		incoming := value.Get("target")
 		ret = KeyboardEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1058,7 +1053,7 @@ func eventFuncWindow_PageTransitionEvent(listener func(event *PageTransitionEven
 		value := args[0]
 		incoming := value.Get("target")
 		ret = PageTransitionEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1312,7 +1307,7 @@ func eventFuncWindow_UIEvent(listener func(event *UIEvent, target *Window)) js.F
 		value := args[0]
 		incoming := value.Get("target")
 		ret = UIEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1566,7 +1561,7 @@ func eventFuncWindow_WheelEvent(listener func(event *WheelEvent, target *Window)
 		value := args[0]
 		incoming := value.Get("target")
 		ret = WheelEventFromJS(value)
-		src := WindowFromJS(incoming)
+		src := MakeWindowFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1664,7 +1659,7 @@ func (_this *Window) Open(url *string, target *string, features *string) (_resul
 		_converted *Window // javascript: Window _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = WindowFromJS(_returned)
+		_converted = MakeWindowFromJS(_returned)
 	}
 	_result = _converted
 	return

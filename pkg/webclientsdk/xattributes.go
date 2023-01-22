@@ -1,7 +1,6 @@
 package browser
 
 import (
-	"fmt"
 	"strings"
 	"syscall/js"
 )
@@ -18,6 +17,8 @@ import (
 type Attributes struct {
 	jsValue    js.Value
 	attributes []*Attribute
+
+	OwnerElement *Element // the Element the attributes belongs to.
 }
 
 // JSValue returns the js.Value or js.Null() if _this is nil
@@ -35,37 +36,29 @@ type Attributes struct {
 *****************************************************************************/
 
 // MakeAttributesFromNamedNodeMapJS is casting a js.Value into DOMAttributes.
-func MakeAttributesFromNamedNodeMapJS(_value js.Value) *Attributes {
+func MakeAttributesFromNamedNodeMapJS(_value js.Value, _ownerElement *Element) (_ret *Attributes) {
 	if typ := _value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &Attributes{}
-	ret.jsValue = _value
-	ret.attributes = make([]*Attribute, 0)
+	_ret = &Attributes{}
+	_ret.jsValue = _value
 
-	var _args [1]interface{}
+	_ret.attributes = make([]*Attribute, 0)
+	_ret.OwnerElement = _ownerElement
+
 	data := _value.Get("length")
 	len := (uint)((data).Int())
 	for i := uint(0); i < len; i++ {
-		_args[0] = i
-		_returned := _value.Call("item", _args[0:1]...)
-		_result := MakeAttributeFromJS(_returned)
-		ret.attributes = append(ret.attributes, _result)
+		__returned := _value.Call("item", i)
+		_result := MakeAttributeFromJS(__returned)
+		_ret.attributes = append(_ret.attributes, _result)
 	}
-	return ret
+	return _ret
 }
 
 /****************************************************************************
 * Attributes's properties
 *****************************************************************************/
-
-// ToDOM update the DOM with the internal value and returns the DOM's js.Value.
-func (_this *Attributes) ToDOM() js.Value {
-	// TODO
-	_this.jsValue.Set("value", _this.String())
-
-	return _this.jsValue
-}
 
 // Length returns the number of attributes in the list.
 func (_this *Attributes) Length() int {
@@ -73,12 +66,12 @@ func (_this *Attributes) Length() int {
 }
 
 // Item returns an item in the list, determined by its position in the list, its index.
-// Returns an empty Attribute if the index is out of range.
+// Returns nil if out of range.
 func (_this *Attributes) Item(index int) *Attribute {
 	if index >= 0 && index < len(_this.attributes) {
 		return _this.attributes[index]
 	}
-	return &Attribute{}
+	return nil
 }
 
 // String returns the value of the list serialized as a string
@@ -107,39 +100,42 @@ func (_this *Attributes) Set(name Name, value string) *Attribute {
 	name = Name(normalize(string(name)))
 	value = normalize(value)
 	a := _this.Get(name)
-
-	fmt.Println("Attribute:Set: ", name, value)
-
 	if a == nil {
-		var _args [1]interface{}
-		attr := NewAttribute(name, value, nil)
-		_args[0] = attr.JSValue()
-		_returned := _this.jsValue.Call("setNamedItem", _args[0:1]...)
-		a = MakeAttributeFromJS(_returned)
-		// a = NewAttribute(name, value, MakeNodeFromJS(_this.jsValue)) //MakeElementFromJS(_this.jsValue))
+		a := CreateAttribute(name, value, _this.OwnerElement)
+		_this.attributes = append(_this.attributes, a)
 	} else {
-		var _args [1]interface{}
-		//attr := NewAttribute(name, value, nil)
-		_args[0] = a.JSValue()
-		_returned := _this.jsValue.Call("setNamedItem", _args[0:1]...)
-		a = MakeAttributeFromJS(_returned)
-		//		a.Value = value
+		a.SetValue(value)
 	}
 	return a
 
 }
 
 // Remove removes attributes in the list or does nothing for the one that does not exist.
-// Duplicates are removed too
-func (_this *Attributes) Remove(name Name) {
+func (_this *Attributes) Remove(name Name) (_ret bool) {
+	_ret = false
 	name = Name(normalize(string(name)))
 	for i, a := range _this.attributes {
 		if a.name == name {
 			_this.attributes = append(_this.attributes[:i], _this.attributes[i+1:]...)
-			var _args [1]interface{}
-			_args[0] = string(name)
-			_this.jsValue.Call("removeNamedItem", _args[0:1]...)
-			return
+			_this.OwnerElement.jsValue.Call("removeAttribute", string(name))
+			_ret = true
 		}
+	}
+	return _ret
+}
+
+// Toggle a attribute from one to another. If none exists then one is set.
+//
+// returns the set attribute.
+func (_this *Attributes) Toggle(one Name, another Name) (_ret *Attribute) {
+	one = Name(normalize(string(one)))
+	another = Name(normalize(string(another)))
+
+	onewas := _this.Remove(one)
+	if onewas {
+		return _this.Set(another, "")
+	} else {
+		_this.Remove(another)
+		return _this.Set(one, "")
 	}
 }

@@ -13,8 +13,8 @@ type HTMLElement struct {
 	Element
 }
 
-// HTMLElementFromJS is casting a js.Value into HTMLElement.
-func HTMLElementFromJS(value js.Value) *HTMLElement {
+// MakeHTMLElementFromJS is casting a js.Value into HTMLElement.
+func MakeHTMLElementFromJS(value js.Value) *HTMLElement {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -335,7 +335,7 @@ func eventFuncHTMLElement_domcore_Event(listener func(event *Event, target *HTML
 		value := args[0]
 		incoming := value.Get("target")
 		ret = MakeEventFromJS(value)
-		src := HTMLElementFromJS(incoming)
+		src := MakeHTMLElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -365,7 +365,7 @@ func eventFuncHTMLElement_MouseEvent(listener func(event *MouseEvent, target *HT
 		value := args[0]
 		incoming := value.Get("target")
 		ret = MouseEventFromJS(value)
-		src := HTMLElementFromJS(incoming)
+		src := MakeHTMLElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -395,7 +395,7 @@ func eventFuncHTMLElement_htmlevent_FocusEvent(listener func(event *FocusEvent, 
 		value := args[0]
 		incoming := value.Get("target")
 		ret = FocusEventFromJS(value)
-		src := HTMLElementFromJS(incoming)
+		src := MakeHTMLElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -633,7 +633,7 @@ func eventFuncHTMLElement_PointerEvent(listener func(event *PointerEvent, target
 		value := args[0]
 		incoming := value.Get("target")
 		ret = PointerEventFromJS(value)
-		src := HTMLElementFromJS(incoming)
+		src := MakeHTMLElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -663,7 +663,7 @@ func eventFuncHTMLElement_htmlevent_InputEvent(listener func(event *InputEvent, 
 		value := args[0]
 		incoming := value.Get("target")
 		ret = InputEventFromJS(value)
-		src := HTMLElementFromJS(incoming)
+		src := MakeHTMLElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -709,7 +709,7 @@ func eventFuncHTMLElement_KeyboardEvent(listener func(event *KeyboardEvent, targ
 		value := args[0]
 		incoming := value.Get("target")
 		ret = KeyboardEventFromJS(value)
-		src := HTMLElementFromJS(incoming)
+		src := MakeHTMLElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1171,7 +1171,7 @@ func eventFuncHTMLElement_UIEvent(listener func(event *UIEvent, target *HTMLElem
 		value := args[0]
 		incoming := value.Get("target")
 		ret = UIEventFromJS(value)
-		src := HTMLElementFromJS(incoming)
+		src := MakeHTMLElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -1409,7 +1409,7 @@ func eventFuncHTMLElement_htmlevent_WheelEvent(listener func(event *WheelEvent, 
 		value := args[0]
 		incoming := value.Get("target")
 		ret = WheelEventFromJS(value)
-		src := HTMLElementFromJS(incoming)
+		src := MakeHTMLElementFromJS(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}

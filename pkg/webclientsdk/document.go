@@ -334,7 +334,7 @@ func (_this *Document) Body() *HTMLElement {
 	var ret *HTMLElement
 	value := _this.jsValue.Get("body")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = HTMLElementFromJS(value)
+		ret = MakeHTMLElementFromJS(value)
 	}
 	return ret
 }
@@ -435,7 +435,7 @@ func (_this *Document) DefaultView() *Window {
 		return nil
 	}
 	value := _this.jsValue.Get("defaultView")
-	return WindowFromJS(value)
+	return MakeWindowFromJS(value)
 }
 
 // ActiveElement returns the Element within the DOM that currently has focus.

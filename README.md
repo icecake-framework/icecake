@@ -105,6 +105,18 @@ Start the server either in debug mode with the `F5` in vscode, or by running the
 $ task -t ./build/Taskfile.yaml dev_back
 ```
 
+### Editor Configuration
+
+If you are using Visual Studio Code, you can use workspace settings to configure the environment variables for the go tools.
+
+Your settings.json file should look something like this:
+
+```json
+{
+    "go.toolsEnvVars": { "GOARCH": "wasm", "GOOS": "js" }
+}
+```
+
 ## Testing
 
 Useful read about [go data race detector](https://go.dev/doc/articles/race_detector#How_To_Use)
@@ -114,6 +126,15 @@ To be able to test wasm code on the browser, you need to install [wasmbrowsertes
 ```bash
 $ go install github.com/agnivade/wasmbrowsertest@latest
 $ mv $(go env GOBIN)/wasmbrowsertest $(go env GOBIN)/go_js_wasm_exec
+```
+
+and if you're working on WSL you need to customize and create a command to enable lanching chrome from the command line:
+
+[see build/google-chrome/google-chrome.go](./build/google-chrome/google-chrome.go)
+
+```bash
+cd build
+go build -o ~/google-chrome ./google-chrome/google-chrome.go
 ```
 
 Run the `unit_test` task to run both testing pkg and wasm:
