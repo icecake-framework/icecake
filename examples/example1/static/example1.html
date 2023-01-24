@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>icecake</title>
+</head>
+
+<body>
+    <h1>Icecake Go Wasm Framework</h1>
+    <h2>Example1</h2>
+    <p>Hello mate!</p>
+
+    <!-- wasm js required files -->
+    <script src="wasm_exec.js"></script>
+    <script>
+        const goWasm = new Go()
+        WebAssembly.instantiateStreaming(fetch("example1.wasm"), goWasm.importObject)
+            .then((result) => {
+                goWasm.run(result.instance)
+            })
+
+    </script>
+</body>
+
+</html>

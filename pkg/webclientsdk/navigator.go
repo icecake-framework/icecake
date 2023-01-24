@@ -2,23 +2,26 @@ package browser
 
 import "syscall/js"
 
+// represents the state and the identity of the user agent. It allows scripts to query it and to register themselves to carry on some activities.
+//
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator
 type Navigator struct {
 	jsValue js.Value
 }
 
-// NavigatorFromJS is casting a js.Value into Navigator.
-func NavigatorFromJS(value js.Value) *Navigator {
+// NewNavigatorFromJS is casting a js.Value into Navigator.
+func NewNavigatorFromJS(value js.Value) *Navigator {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &Navigator{}
+	ret := new(Navigator)
 	ret.jsValue = value
 	return ret
 }
 
-// UserAgent returning attribute 'userAgent' with
-// type string (idl: DOMString).
+// UserAgent returns the user agent string for the current browser.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent
 func (_this *Navigator) UserAgent() string {
 	var ret string
 	value := _this.jsValue.Get("userAgent")
@@ -26,8 +29,9 @@ func (_this *Navigator) UserAgent() string {
 	return ret
 }
 
-// Language returning attribute 'language' with
-// type string (idl: DOMString).
+// Language returns a string representing the preferred language of the user, usually the language of the browser UI.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
 func (_this *Navigator) Language() string {
 	var ret string
 	value := _this.jsValue.Get("language")
@@ -35,8 +39,14 @@ func (_this *Navigator) Language() string {
 	return ret
 }
 
-// OnLine returning attribute 'onLine' with
-// type bool (idl: boolean).
+// OnLine Returns the online status of the browser.
+//
+// The property returns a boolean value, with true meaning online and false meaning offline.
+// The property sends updates whenever the browser's ability to connect to the network changes.
+// The update occurs when the user follows links or when a script requests a remote page. *
+// For example, the property should return false when users click links soon after they lose internet connection.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine
 func (_this *Navigator) OnLine() bool {
 	var ret bool
 	value := _this.jsValue.Get("onLine")
@@ -44,20 +54,9 @@ func (_this *Navigator) OnLine() bool {
 	return ret
 }
 
-// CookieEnabled returning attribute 'cookieEnabled' with
-// type bool (idl: boolean).
+// CookieEnabled eturns a Boolean value that indicates whether cookies are enabled or not.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled
 func (_this *Navigator) CookieEnabled() bool {
-	var ret bool
-	value := _this.jsValue.Get("cookieEnabled")
-	ret = (value).Bool()
-	return ret
-}
-
-// Storage returning attribute 'storage' with
-// type storage.StorageManager (idl: StorageManager).
-func (_this *Navigator) Storage() *StorageManager {
-	var ret *StorageManager
-	value := _this.jsValue.Get("storage")
-	ret = StorageManagerFromJS(value)
-	return ret
+	return _this.jsValue.Get("cookieEnabled").Bool()
 }

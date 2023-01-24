@@ -23,6 +23,7 @@ tasks:
       # - GOARCH=wasm GOOS=js go test -cover ./web/...
       - GOARCH=wasm GOOS=js go test ./web/wasm/wasm_test.go
 
+  # task -t ./build/Taskfile.yaml dev_wasm
   dev_wasm:
     dir: '{{.USER_WORKING_DIR}}'
     sources: 
@@ -30,6 +31,7 @@ tasks:
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
 
+  # task -t ./build/Taskfile.yaml dev_framework
   dev_framework:
     dir: '{{.USER_WORKING_DIR}}'
     sources: 
@@ -38,6 +40,7 @@ tasks:
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
 
+  # task -t ./build/Taskfile.yaml dev_components
   dev_components:
     dir: '{{.USER_WORKING_DIR}}'
     sources: 
@@ -45,23 +48,39 @@ tasks:
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
 
+  # task -t ./build/Taskfile.yaml dev_static
   dev_static: 
     dir: '{{.USER_WORKING_DIR}}'
     sources: 
       - "./web/static/**/*"
+      - "./examples/**/static/**/*"
     cmds: 
       - mkdir -p ./tmp/website
       - cp -R ./web/static/** ./tmp/website/
+      - find ./examples -type f | xargs -i cp {} ./tmp/website/
 
-  # launch it with --watch 
+  # task -t ./build/Taskfile.yaml dev_ex1 --watch 
+  dev_ex1:
+    dir: '{{.USER_WORKING_DIR}}'
+    sources: 
+      - "./examples/example1/wasm/**/*"
+    deps: 
+      - task: dev_static
+      - task: dev_components
+      - task: dev_framework
+    cmds:
+      - GOARCH=wasm GOOS=js go build -o ./tmp/website/example1.wasm ./examples/example1/wasm/main.go
+
+  # task -t ./build/Taskfile.yaml dev_front --watch 
   dev_front:
     dir: '{{.USER_WORKING_DIR}}'
     deps: 
-      - task: dev_components
       - task: dev_static
+      - task: dev_components
       - task: dev_framework
       - task: dev_wasm
 
+  # task -t ./build/Taskfile.yaml dev_back
   dev_back:
     dir: '{{.USER_WORKING_DIR}}'
     ignore_error: true

@@ -28,7 +28,7 @@ func main() {
 
 	// Make a web server a add APIs route handlers
 	spa := spaserver.MakeWebserver()
-	//spaws.ApiRouter.HandleFunc("/login", api.ServeLogin())
+	//spa.ApiRouter.HandleFunc("/login", api.ServeLogin())
 
 	// Let's start the server, listen requests and serve answers
 	spa.Run()

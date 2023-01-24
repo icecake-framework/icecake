@@ -3,6 +3,8 @@ package browser
 import "syscall/js"
 
 // class: HTMLCollection
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/HTMLCollection
 type HTMLCollection struct {
 	jsValue js.Value
 }
@@ -15,8 +17,8 @@ func (_this *HTMLCollection) JSValue() js.Value {
 	return _this.jsValue
 }
 
-// HTMLCollectionFromJS is casting a js.Value into HTMLCollection.
-func HTMLCollectionFromJS(value js.Value) *HTMLCollection {
+// newHTMLCollectionFromJS is casting a js.Value into HTMLCollection.
+func newHTMLCollectionFromJS(value js.Value) *HTMLCollection {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -47,7 +49,7 @@ func (_this *HTMLCollection) Index(index uint) (_result *Element) {
 		_converted *Element // javascript: Element _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = MakeElementFromJS(_returned)
+		_converted = NewElementFromJS(_returned)
 	}
 	_result = _converted
 	return
@@ -66,7 +68,7 @@ func (_this *HTMLCollection) Get(name string) (_result *Element) {
 		_converted *Element // javascript: Element _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = MakeElementFromJS(_returned)
+		_converted = NewElementFromJS(_returned)
 	}
 	_result = _converted
 	return
@@ -85,7 +87,7 @@ func (_this *HTMLCollection) Item(index uint) (_result *Element) {
 		_converted *Element // javascript: Element _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = MakeElementFromJS(_returned)
+		_converted = NewElementFromJS(_returned)
 	}
 	_result = _converted
 	return
@@ -104,7 +106,7 @@ func (_this *HTMLCollection) NamedItem(name string) (_result *Element) {
 		_converted *Element // javascript: Element _what_return_name
 	)
 	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_converted = MakeElementFromJS(_returned)
+		_converted = NewElementFromJS(_returned)
 	}
 	_result = _converted
 	return

@@ -35,8 +35,8 @@ type Nodes []*Node
 
 // MakeNodes make a slice of nodes, scaning existing nodes from root to the last sibling node.
 // Only nodes matching filter AND the optional match function are included.
-func MakeNodes(root *Node, filter NodeTypeFilter, match func(*Node) bool) Nodes {
-	nodes := make(Nodes, 0)
+func MakeNodes(root *Node, filter NodeTypeFilter, match func(*Node) bool) (nodes Nodes) {
+	nodes = make(Nodes, 0)
 	if root == nil || root.JSValue().Type() == js.TypeNull || root.JSValue().Type() == js.TypeUndefined {
 		return nodes
 	}
@@ -46,7 +46,7 @@ func MakeNodes(root *Node, filter NodeTypeFilter, match func(*Node) bool) Nodes 
 		return nodes
 	}
 
-	for scan := root; scan != nil; scan = root.NextSibling() {
+	for scan := root; scan != nil; scan = root.SiblingNext() {
 		nt := scan.NodeType()
 		fin := (filter & SHOW_ALL) > 0
 		fin = fin || (filter&SHOW_ELEMENT) > 0 && nt == NT_ELEMENT
@@ -62,6 +62,21 @@ func MakeNodes(root *Node, filter NodeTypeFilter, match func(*Node) bool) Nodes 
 		if fin {
 			nodes = append(nodes, scan)
 		}
+	}
+
+	return nodes
+}
+
+func MakeNodesFromJSNodeList(value js.Value) (nodes Nodes) {
+	nodes = make(Nodes, 0)
+	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+		return nil
+	}
+	len := (uint)(value.Get("length").Int())
+	for i := uint(0); i < len; i++ {
+		_returned := value.Call("item", i)
+		node := NewNodeFromJS(_returned)
+		nodes = append(nodes, node)
 	}
 
 	return nodes

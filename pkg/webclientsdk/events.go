@@ -8,12 +8,141 @@ import (
  * HashChangeEvent
  */
 
+type GENERIC_EVENT string
+
+const (
+	GENERIC_ONCANCEL            GENERIC_EVENT = "cancel"
+	GENERIC_ONCHANGE            GENERIC_EVENT = "change"
+	GENERIC_ONCLOSE             GENERIC_EVENT = "close"
+	GENERIC_ONCUECHANGE         GENERIC_EVENT = "cuechange"
+	GENERIC_ONINVALID           GENERIC_EVENT = "invalid"
+	GENERIC_ONLOAD              GENERIC_EVENT = "load"
+	GENERIC_ONRESET             GENERIC_EVENT = "reset"
+	GENERIC_ONSCROLL            GENERIC_EVENT = "scroll"
+	GENERIC_ONSELECT            GENERIC_EVENT = "select"
+	GENERIC_ONSELECTIONCHANGE   GENERIC_EVENT = "selectionchange"
+	GENERIC_ONSELECTSTART       GENERIC_EVENT = "selectstart"
+	GENERIC_ONSUBMIT            GENERIC_EVENT = "submit"
+	GENERIC_ONTOGGLE            GENERIC_EVENT = "toggle"
+	GENERIC_ONPOINTERLOCKCHANGE GENERIC_EVENT = "pointerlockchange"
+	GENERIC_ONPOINTERLOCKERROR  GENERIC_EVENT = "pointerlockerror"
+)
+
+const (
+	GENERIC_WIN_ONAFTERPRINT      GENERIC_EVENT = "afterprint"
+	GENERIC_WIN_ONAPPINSTALLED    GENERIC_EVENT = "appinstalled"
+	GENERIC_WIN_BEFOREPRINT       GENERIC_EVENT = "beforeprint"
+	GENERIC_WIN_LANGUAGECHANGE    GENERIC_EVENT = "languagechange"
+	GENERIC_WIN_OFFLINE           GENERIC_EVENT = "offline"
+	GENERIC_WIN_ONLINE            GENERIC_EVENT = "online"
+	GENERIC_WIN_ORIENTATIONCHANGE GENERIC_EVENT = "orientationchange"
+)
+
+const (
+	GENERIC_MEDIA_ONABORT          GENERIC_EVENT = "abort"          // Fired when the resource was not fully loaded, but not as the result of an error.
+	GENERIC_MEDIA_ONCANPLAY        GENERIC_EVENT = "canplay"        // Fired when the user agent can play the media, but estimates that not enough data has been loaded to play the media up to its end without having to stop for further buffering of content.
+	GENERIC_MEDIA_ONCANPLAYTHROUGH GENERIC_EVENT = "canplaythrough" // Fired when the user agent can play the media, and estimates that enough data has been loaded to play the media up to its end without having to stop for further buffering of content.
+	GENERIC_MEDIA_ONDURATIONCHANGE GENERIC_EVENT = "durationchange" // Fired when the duration property has been updated.
+	GENERIC_MEDIA_ONEMPTIED        GENERIC_EVENT = "emptied"        // Fired when the media has become empty; for example, when the media has already been loaded (or partially loaded), and the HTMLMediaElement.load() method is called to reload it.
+	GENERIC_MEDIA_ONENDED          GENERIC_EVENT = "ended"          // Fired when playback stops when end of the media (<audio> or <video>) is reached or because no further data is available.
+	GENERIC_MEDIA_ONERROR          GENERIC_EVENT = "error"          // Fired when the resource could not be loaded due to an error.
+	GENERIC_MEDIA_ONLOADEDDATA     GENERIC_EVENT = "loadeddata"     // Fired when the first frame of the media has finished loading.
+	GENERIC_MEDIA_ONLOADEDMETADATA GENERIC_EVENT = "loadedmetadata" // Fired when the metadata has been loaded.
+	GENERIC_MEDIA_ONLOADSTART      GENERIC_EVENT = "loadstart"      // Fired when the browser has started to load a resource.
+	GENERIC_MEDIA_ONPAUSE          GENERIC_EVENT = "pause"          // Fired when a request to pause play is handled and the activity has entered its paused state, most commonly occurring when the media's HTMLMediaElement.pause() method is called.
+	GENERIC_MEDIA_ONPLAY           GENERIC_EVENT = "play"           // Fired when the paused property is changed from true to false, as a result of the HTMLMediaElement.play() method, or the autoplay attribute.
+	GENERIC_MEDIA_ONPLAYING        GENERIC_EVENT = "playing"        // Fired when playback is ready to start after having been paused or delayed due to lack of data.
+	GENERIC_MEDIA_ONRATECHANGE     GENERIC_EVENT = "ratechange"     // Fired when the playback rate has changed.
+	GENERIC_MEDIA_ONSEEKED         GENERIC_EVENT = "seeked"         // Fired when a seek operation completes.
+	GENERIC_MEDIA_ONSEEKING        GENERIC_EVENT = "seeking"        // Fired when a seek operation begins.
+	GENERIC_MEDIA_ONSTALLED        GENERIC_EVENT = "stalled"        // Fired when the user agent is trying to fetch media data, but data is unexpectedly not forthcoming.
+	GENERIC_MEDIA_ONSUSPEND        GENERIC_EVENT = "suspend"        // Fired when the media data loading has been suspended.
+	GENERIC_MEDIA_ONTIMEUPDATE     GENERIC_EVENT = "timeupdate"     // Fired when the time indicated by the currentTime property has been updated.
+	GENERIC_MEDIA_ONVOLUMECHANGE   GENERIC_EVENT = "volumechange"   // Fired when the volume has changed.
+	GENERIC_MEDIA_ONWAITING        GENERIC_EVENT = "waiting"        // Fired when playback has stopped because of a temporary lack of data.
+)
+
+type FULLSCREEN_EVENT string
+
+const (
+	FULLSCREEN_ONCHANGE FULLSCREEN_EVENT = "fullscreenchange"
+	FULLSCREEN_ONERROR  FULLSCREEN_EVENT = "fullscreenerror"
+)
+
+/******************************************************************************
+* Event
+******************************************************************************/
+
+// Event represents an event which takes place in the DOM.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Event
+type Event struct {
+	jsValue js.Value
+}
+
+// JSValue returns the js.Value or js.Null() if _this is nil
+// func (_this *Event) JSValue() js.Value {
+// 	if _this == nil {
+// 		return js.Null()
+// 	}
+// 	return _this.jsValue
+// }
+
+// NewEventFromJS is casting a js.Value into Event.
+func NewEventFromJS(value js.Value) *Event {
+	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+		return nil
+	}
+	ret := new(Event)
+	ret.jsValue = value
+	return ret
+}
+
+/******************************************************************************
+* Event's properties
+******************************************************************************/
+
+// Type: there are many types of events, some of which use other interfaces based on the main Event interface.
+// Event itself contains the properties and methods which are common to all events.
+//
+// It is set when the event is constructed.
+// Commonly used to refer to the specific event, such as click, load, or error
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Event/type
+func (_this *Event) Type() string {
+	return _this.jsValue.Get("type").String()
+}
+
+// Target: a reference to the object onto which the event was dispatched.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Event/target
+func (_this *Event) Target() *EventTarget {
+	value := _this.jsValue.Get("target")
+	return NewEventTargetFromJS(value)
+}
+
+// CurrentTarget always refers to the element to which the event handler has been attached,
+// as opposed to Event.target, which identifies the element on which the event occurred and which may be its descendant.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Event/currentTarget
+func (_this *Event) CurrentTarget() *EventTarget {
+	value := _this.jsValue.Get("currentTarget")
+	return NewEventTargetFromJS(value)
+}
+
+/*********************************************************************************
+ * HashChangeEvent
+ */
+
+// fire when the fragment identifier of the URL has changed.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/HashChangeEvent
 type HashChangeEvent struct {
 	Event
 }
 
-// HashChangeEventFromJS is casting a js.Value into HashChangeEvent.
-func HashChangeEventFromJS(value js.Value) *HashChangeEvent {
+// NewHashChangeEventFromJS is casting a js.Value into HashChangeEvent.
+func NewHashChangeEventFromJS(value js.Value) *HashChangeEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -25,331 +154,263 @@ func HashChangeEventFromJS(value js.Value) *HashChangeEvent {
 // OldURL returning attribute 'oldURL' with
 // type string (idl: USVString).
 func (_this *HashChangeEvent) OldURL() string {
-	var ret string
-	value := _this.jsValue.Get("oldURL")
-	ret = (value).String()
-	return ret
+	return _this.jsValue.Get("oldURL").String()
 }
 
 // NewURL returning attribute 'newURL' with
 // type string (idl: USVString).
 func (_this *HashChangeEvent) NewURL() string {
-	var ret string
-	value := _this.jsValue.Get("newURL")
-	ret = (value).String()
-	return ret
+	return _this.jsValue.Get("newURL").String()
 }
 
 /*********************************************************************************
  * PageTransitionEvent
  */
 
+type PAGETRANSITION_EVENT string
+
+const (
+	PAGETRANSITION_ONPAGEHIDE PAGETRANSITION_EVENT = "pagehide"
+	PAGETRANSITION_ONPAGESHOW PAGETRANSITION_EVENT = "pageshow"
+)
+
+// The PageTransitionEvent event object is available inside handler functions for the pageshow and pagehide events,
+// fired when a document is being loaded or unloaded.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/PageTransitionEvent
 type PageTransitionEvent struct {
 	Event
 }
 
-// PageTransitionEventFromJS is casting a js.Value into PageTransitionEvent.
-func PageTransitionEventFromJS(value js.Value) *PageTransitionEvent {
+// NewPageTransitionEventFromJS is casting a js.Value into PageTransitionEvent.
+func NewPageTransitionEventFromJS(value js.Value) *PageTransitionEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &PageTransitionEvent{}
+	ret := new(PageTransitionEvent)
 	ret.jsValue = value
 	return ret
 }
 
 // Persisted returning attribute 'persisted' with
-// type bool (idl: boolean).
 func (_this *PageTransitionEvent) Persisted() bool {
-	var ret bool
-	value := _this.jsValue.Get("persisted")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("persisted").Bool()
 }
 
 /*********************************************************************************
  * BeforeUnloadEvent
  */
 
+// fired when the window, the document and its resources are about to be unloaded.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/BeforeUnloadEvent
 type BeforeUnloadEvent struct {
 	Event
 }
 
-// BeforeUnloadEventFromJS is casting a js.Value into BeforeUnloadEvent.
-func BeforeUnloadEventFromJS(value js.Value) *BeforeUnloadEvent {
+// NewBeforeUnloadEventFromJS is casting a js.Value into BeforeUnloadEvent.
+func NewBeforeUnloadEventFromJS(value js.Value) *BeforeUnloadEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &BeforeUnloadEvent{}
+	ret := new(BeforeUnloadEvent)
 	ret.jsValue = value
 	return ret
 }
 
 // ReturnValue returning attribute 'returnValue' with
-// type string (idl: DOMString).
 func (_this *BeforeUnloadEvent) ReturnValue() string {
-	var ret string
-	value := _this.jsValue.Get("returnValue")
-	ret = (value).String()
-	return ret
+	return _this.jsValue.Get("returnValue").String()
 }
 
 // SetReturnValue setting attribute 'returnValue' with
-// type string (idl: DOMString).
 func (_this *BeforeUnloadEvent) SetReturnValue(value string) {
-	input := value
-	_this.jsValue.Set("returnValue", input)
+	_this.jsValue.Set("returnValue", value)
 }
 
 /*********************************************************************************
  * UIEvent
  */
 
+// UIEvent represents simple user interface events.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/UIEvent
 type UIEvent struct {
 	Event
 }
 
-// UIEventFromJS is casting a js.Value into UIEvent.
-func UIEventFromJS(value js.Value) *UIEvent {
+// NewUIEventFromJS is casting a js.Value into UIEvent.
+func NewUIEventFromJS(value js.Value) *UIEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &UIEvent{}
+	ret := new(UIEvent)
 	ret.jsValue = value
 	return ret
 }
 
-// View returning attribute 'view' with
-// type js.Value (idl: Window).
+// View Returns a WindowProxy that contains the view that generated the event.
 func (_this *UIEvent) View() js.Value {
-	var ret js.Value
-	value := _this.jsValue.Get("view")
-	ret = value
-	return ret
+	return _this.jsValue.Get("view")
 }
 
-// Detail returning attribute 'detail' with
-// type int (idl: long).
+// Detail details about the event, depending on the event type.
 func (_this *UIEvent) Detail() int {
-	var ret int
-	value := _this.jsValue.Get("detail")
-	ret = (value).Int()
-	return ret
+	return _this.jsValue.Get("detail").Int()
 }
 
 /*********************************************************************************
  * MouseEvent
  */
 
+type MOUSE_EVENT string
+
+const (
+	MOUSE_ONCLICK       MOUSE_EVENT = "click"
+	MOUSE_ONAUXCLICK    MOUSE_EVENT = "auxclick"
+	MOUSE_ONDBLCLICK    MOUSE_EVENT = "dblclick"
+	MOUSE_ONMOUSEDOWN   MOUSE_EVENT = "mousedown"
+	MOUSE_ONMOUSEENTER  MOUSE_EVENT = "mouseenter"
+	MOUSE_ONMOUSELEAVE  MOUSE_EVENT = "mouseleave"
+	MOUSE_ONMOUSEMOVE   MOUSE_EVENT = "mousemove"
+	MOUSE_ONMOUSEOUT    MOUSE_EVENT = "mouseout"
+	MOUSE_ONMOUSEUP     MOUSE_EVENT = "mouseup"
+	MOUSE_ONMOUSEOVER   MOUSE_EVENT = "mouseover"
+	MOUSE_ONCONTEXTMENU MOUSE_EVENT = "contextmenu"
+)
+
 type MouseEvent struct {
 	UIEvent
 }
 
-// MouseEventFromJS is casting a js.Value into MouseEvent.
-func MouseEventFromJS(value js.Value) *MouseEvent {
+// NewMouseEventFromJS is casting a js.Value into MouseEvent.
+func NewMouseEventFromJS(value js.Value) *MouseEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &MouseEvent{}
+	ret := new(MouseEvent)
 	ret.jsValue = value
 	return ret
 }
 
 // CtrlKey returning attribute 'ctrlKey' with
-// type bool (idl: boolean).
 func (_this *MouseEvent) CtrlKey() bool {
-	var ret bool
-	value := _this.jsValue.Get("ctrlKey")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("ctrlKey").Bool()
 }
 
 // ShiftKey returning attribute 'shiftKey' with
-// type bool (idl: boolean).
 func (_this *MouseEvent) ShiftKey() bool {
-	var ret bool
-	value := _this.jsValue.Get("shiftKey")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("shiftKey").Bool()
 }
 
 // AltKey returning attribute 'altKey' with
-// type bool (idl: boolean).
 func (_this *MouseEvent) AltKey() bool {
-	var ret bool
-	value := _this.jsValue.Get("altKey")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("altKey").Bool()
 }
 
 // MetaKey returning attribute 'metaKey' with
-// type bool (idl: boolean).
 func (_this *MouseEvent) MetaKey() bool {
-	var ret bool
-	value := _this.jsValue.Get("metaKey")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("metaKey").Bool()
 }
 
 // Button returning attribute 'button' with
-// type int (idl: short).
 func (_this *MouseEvent) Button() int {
-	var ret int
-	value := _this.jsValue.Get("button")
-	ret = (value).Int()
-	return ret
+	return _this.jsValue.Get("button").Int()
 }
 
 // Buttons returning attribute 'buttons' with
-// type int (idl: unsigned short).
 func (_this *MouseEvent) Buttons() int {
-	var ret int
-	value := _this.jsValue.Get("buttons")
-	ret = (value).Int()
-	return ret
+	return _this.jsValue.Get("buttons").Int()
 }
 
 // RelatedTarget returning attribute 'relatedTarget' with
-// type domcore.EventTarget (idl: EventTarget).
 func (_this *MouseEvent) RelatedTarget() *EventTarget {
-	var ret *EventTarget
 	value := _this.jsValue.Get("relatedTarget")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = MakeEventTargetFromJS(value)
-	}
-	return ret
+	return NewEventTargetFromJS(value)
 }
 
 // ScreenX returning attribute 'screenX' with
-// type float64 (idl: double).
 func (_this *MouseEvent) ScreenX() float64 {
-	var ret float64
-	value := _this.jsValue.Get("screenX")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("screenX").Float()
 }
 
 // ScreenY returning attribute 'screenY' with
-// type float64 (idl: double).
 func (_this *MouseEvent) ScreenY() float64 {
-	var ret float64
-	value := _this.jsValue.Get("screenY")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("screenY").Float()
 }
 
 // PageX returning attribute 'pageX' with
-// type float64 (idl: double).
 func (_this *MouseEvent) PageX() float64 {
-	var ret float64
-	value := _this.jsValue.Get("pageX")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("pageX").Float()
 }
 
 // PageY returning attribute 'pageY' with
-// type float64 (idl: double).
 func (_this *MouseEvent) PageY() float64 {
-	var ret float64
-	value := _this.jsValue.Get("pageY")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("pageY").Float()
 }
 
 // ClientX returning attribute 'clientX' with
-// type float64 (idl: double).
 func (_this *MouseEvent) ClientX() float64 {
-	var ret float64
-	value := _this.jsValue.Get("clientX")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("clientX").Float()
 }
 
 // ClientY returning attribute 'clientY' with
-// type float64 (idl: double).
 func (_this *MouseEvent) ClientY() float64 {
-	var ret float64
-	value := _this.jsValue.Get("clientY")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("clientY").Float()
 }
 
 // X returning attribute 'x' with
-// type float64 (idl: double).
 func (_this *MouseEvent) X() float64 {
-	var ret float64
-	value := _this.jsValue.Get("x")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("x").Float()
 }
 
 // Y returning attribute 'y' with
-// type float64 (idl: double).
 func (_this *MouseEvent) Y() float64 {
-	var ret float64
-	value := _this.jsValue.Get("y")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("y").Float()
 }
 
 // OffsetX returning attribute 'offsetX' with
-// type float64 (idl: double).
 func (_this *MouseEvent) OffsetX() float64 {
-	var ret float64
-	value := _this.jsValue.Get("offsetX")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("offsetX").Float()
 }
 
 // OffsetY returning attribute 'offsetY' with
-// type float64 (idl: double).
 func (_this *MouseEvent) OffsetY() float64 {
-	var ret float64
-	value := _this.jsValue.Get("offsetY")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("offsetY").Float()
 }
 
 // MovementX returning attribute 'movementX' with
-// type int (idl: long).
 func (_this *MouseEvent) MovementX() int {
-	var ret int
-	value := _this.jsValue.Get("movementX")
-	ret = (value).Int()
-	return ret
+	return _this.jsValue.Get("movementX").Int()
 }
 
 // MovementY returning attribute 'movementY' with
-// type int (idl: long).
 func (_this *MouseEvent) MovementY() int {
-	var ret int
-	value := _this.jsValue.Get("movementY")
-	ret = (value).Int()
-	return ret
+	return _this.jsValue.Get("movementY").Int()
 }
 
 func (_this *MouseEvent) GetModifierState(keyArg string) (_result bool) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := keyArg
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("getModifierState", _args[0:_end]...)
-	return (_returned).Bool()
+	return _this.jsValue.Call("getModifierState", keyArg).Bool()
 }
 
 /*********************************************************************************
 * WheelEvent
  */
 
+type DOM_DELTA uint
+
+const (
+	DOM_DELTA_PIXEL DOM_DELTA = 0x00
+	DOM_DELTA_LINE  DOM_DELTA = 0x01
+	DOM_DELTA_PAGE  DOM_DELTA = 0x02
+)
+
 type WheelEvent struct {
 	MouseEvent
 }
 
-// WheelEventFromJS is casting a js.Value into WheelEvent.
-func WheelEventFromJS(value js.Value) *WheelEvent {
+// NewWheelEventFromJS is casting a js.Value into WheelEvent.
+func NewWheelEventFromJS(value js.Value) *WheelEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -358,409 +419,285 @@ func WheelEventFromJS(value js.Value) *WheelEvent {
 	return ret
 }
 
-const (
-	DOM_DELTA_PIXEL uint = 0x00
-	DOM_DELTA_LINE  uint = 0x01
-	DOM_DELTA_PAGE  uint = 0x02
-)
-
 // DeltaX returning attribute 'deltaX' with
-// type float64 (idl: double).
 func (_this *WheelEvent) DeltaX() float64 {
-	var ret float64
-	value := _this.jsValue.Get("deltaX")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("deltaX").Float()
 }
 
 // DeltaY returning attribute 'deltaY' with
-// type float64 (idl: double).
 func (_this *WheelEvent) DeltaY() float64 {
-	var ret float64
-	value := _this.jsValue.Get("deltaY")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("deltaY").Float()
 }
 
 // DeltaZ returning attribute 'deltaZ' with
-// type float64 (idl: double).
 func (_this *WheelEvent) DeltaZ() float64 {
-	var ret float64
-	value := _this.jsValue.Get("deltaZ")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("deltaZ").Float()
 }
 
 // DeltaMode returning attribute 'deltaMode' with
-// type uint (idl: unsigned long).
-func (_this *WheelEvent) DeltaMode() uint {
-	var ret uint
-	value := _this.jsValue.Get("deltaMode")
-	ret = (uint)((value).Int())
-	return ret
+func (_this *WheelEvent) DeltaMode() DOM_DELTA {
+	return DOM_DELTA(_this.jsValue.Get("deltaMode").Int())
 }
 
 /**********************************************************************************
  * class: FocusEvent
  */
 
+type FOCUS_EVENT string
+
+const (
+	FOCUS_ONBLUR  FOCUS_EVENT = "blur"
+	FOCUS_ONFOCUS FOCUS_EVENT = "focus"
+)
+
 type FocusEvent struct {
 	UIEvent
 }
 
-// FocusEventFromJS is casting a js.Value into FocusEvent.
-func FocusEventFromJS(value js.Value) *FocusEvent {
+// NewFocusEventFromJS is casting a js.Value into FocusEvent.
+func NewFocusEventFromJS(value js.Value) *FocusEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &FocusEvent{}
+	ret := new(FocusEvent)
 	ret.jsValue = value
 	return ret
 }
 
-// RelatedTarget returning attribute 'relatedTarget' with
-// type domcore.EventTarget (idl: EventTarget).
+// RelatedTarget returning attribute 'relatedTarget'
 func (_this *FocusEvent) RelatedTarget() *EventTarget {
-	var ret *EventTarget
 	value := _this.jsValue.Get("relatedTarget")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = MakeEventTargetFromJS(value)
-	}
-	return ret
+	return NewEventTargetFromJS(value)
 }
 
 /**********************************************************************************
  * PointerEvent
  */
 
+type POINTER_EVENT string
+
+const (
+	POINTER_ONGOTPOINTERCAPTURE  POINTER_EVENT = "gotpointercapture"
+	POINTER_ONLOSTPOINTERCAPTURE POINTER_EVENT = "lostpointercapture"
+	POINTER_ONPOINTERCANCEL      POINTER_EVENT = "pointercancel"
+	POINTER_ONPOINTERDOWN        POINTER_EVENT = "pointerdown"
+	POINTER_ONPOINTERCENTER      POINTER_EVENT = "pointerenter"
+	POINTER_ONPOINTERLEAVE       POINTER_EVENT = "pointerleave"
+	POINTER_ONPOINTERMOVE        POINTER_EVENT = "pointermove"
+	POINTER_ONPOINTEROUT         POINTER_EVENT = "pointerout"
+	POINTER_ONPOINTEROVER        POINTER_EVENT = "pointerover"
+	POINTER_ONPOINTERUP          POINTER_EVENT = "pointerup"
+)
+
 type PointerEvent struct {
 	MouseEvent
 }
 
-// PointerEventFromJS is casting a js.Value into PointerEvent.
-func PointerEventFromJS(value js.Value) *PointerEvent {
+// NewPointerEventFromJS is casting a js.Value into PointerEvent.
+func NewPointerEventFromJS(value js.Value) *PointerEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &PointerEvent{}
+	ret := new(PointerEvent)
 	ret.jsValue = value
 	return ret
 }
 
 // PointerId returning attribute 'pointerId' with
-// type int (idl: long).
 func (_this *PointerEvent) PointerId() int {
-	var ret int
-	value := _this.jsValue.Get("pointerId")
-	ret = (value).Int()
-	return ret
+	return _this.jsValue.Get("pointerId").Int()
 }
 
 // Width returning attribute 'width' with
-// type float64 (idl: double).
 func (_this *PointerEvent) Width() float64 {
-	var ret float64
-	value := _this.jsValue.Get("width")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("width").Float()
 }
 
 // Height returning attribute 'height' with
-// type float64 (idl: double).
 func (_this *PointerEvent) Height() float64 {
-	var ret float64
-	value := _this.jsValue.Get("height")
-	ret = (value).Float()
-	return ret
+	return _this.jsValue.Get("height").Float()
 }
 
 // Pressure returning attribute 'pressure' with
-// type float32 (idl: float).
-func (_this *PointerEvent) Pressure() float32 {
-	var ret float32
-	value := _this.jsValue.Get("pressure")
-	ret = (float32)((value).Float())
-	return ret
+func (_this *PointerEvent) Pressure() float64 {
+	return _this.jsValue.Get("pressure").Float()
 }
 
 // TangentialPressure returning attribute 'tangentialPressure' with
-// type float32 (idl: float).
-func (_this *PointerEvent) TangentialPressure() float32 {
-	var ret float32
-	value := _this.jsValue.Get("tangentialPressure")
-	ret = (float32)((value).Float())
-	return ret
+func (_this *PointerEvent) TangentialPressure() float64 {
+	return _this.jsValue.Get("tangentialPressure").Float()
 }
 
 // TiltX returning attribute 'tiltX' with
-// type int (idl: long).
 func (_this *PointerEvent) TiltX() int {
-	var ret int
-	value := _this.jsValue.Get("tiltX")
-	ret = (value).Int()
-	return ret
+	return _this.jsValue.Get("tiltX").Int()
 }
 
 // TiltY returning attribute 'tiltY' with
-// type int (idl: long).
 func (_this *PointerEvent) TiltY() int {
-	var ret int
-	value := _this.jsValue.Get("tiltY")
-	ret = (value).Int()
-	return ret
+	return _this.jsValue.Get("tiltY").Int()
 }
 
 // Twist returning attribute 'twist' with
-// type int (idl: long).
 func (_this *PointerEvent) Twist() int {
-	var ret int
-	value := _this.jsValue.Get("twist")
-	ret = (value).Int()
-	return ret
+	return _this.jsValue.Get("twist").Int()
 }
 
 // PointerType returning attribute 'pointerType' with
-// type string (idl: DOMString).
 func (_this *PointerEvent) PointerType() string {
-	var ret string
-	value := _this.jsValue.Get("pointerType")
-	ret = (value).String()
-	return ret
+	return _this.jsValue.Get("pointerType").String()
 }
 
 // IsPrimary returning attribute 'isPrimary' with
-// type bool (idl: boolean).
 func (_this *PointerEvent) IsPrimary() bool {
-	var ret bool
-	value := _this.jsValue.Get("isPrimary")
-	ret = (value).Bool()
-	return ret
-}
-
-func (_this *PointerEvent) GetCoalescedEvents() (_result []*PointerEvent) {
-	var (
-		_args [0]interface{}
-		_end  int
-	)
-	_returned := _this.jsValue.Call("getCoalescedEvents", _args[0:_end]...)
-	var (
-		_converted []*PointerEvent // javascript: sequence<PointerEvent> _what_return_name
-	)
-	__length0 := _returned.Length()
-	__array0 := make([]*PointerEvent, __length0)
-	for __idx0 := 0; __idx0 < __length0; __idx0++ {
-		var __seq_out0 *PointerEvent
-		__seq_in0 := _returned.Index(__idx0)
-		__seq_out0 = PointerEventFromJS(__seq_in0)
-		__array0[__idx0] = __seq_out0
-	}
-	_converted = __array0
-	_result = _converted
-	return
-}
-
-func (_this *PointerEvent) GetPredictedEvents() (_result []*PointerEvent) {
-	var (
-		_args [0]interface{}
-		_end  int
-	)
-	_returned := _this.jsValue.Call("getPredictedEvents", _args[0:_end]...)
-	var (
-		_converted []*PointerEvent // javascript: sequence<PointerEvent> _what_return_name
-	)
-	__length0 := _returned.Length()
-	__array0 := make([]*PointerEvent, __length0)
-	for __idx0 := 0; __idx0 < __length0; __idx0++ {
-		var __seq_out0 *PointerEvent
-		__seq_in0 := _returned.Index(__idx0)
-		__seq_out0 = PointerEventFromJS(__seq_in0)
-		__array0[__idx0] = __seq_out0
-	}
-	_converted = __array0
-	_result = _converted
-	return
+	return _this.jsValue.Get("isPrimary").Bool()
 }
 
 /**********************************************************************************
  * InputEvent
  */
 
+// represents an event notifying the user of editable content changes.
+type INPUT_EVENT string
+
+const (
+	INPUT_ONINPUT       INPUT_EVENT = "input"       // Fired when the value of an <input>, <select>, or <textarea> element has been changed.
+	INPUT_ONCHANGE      INPUT_EVENT = "change"      // Fired when the value of an <input>, <select>, or <textarea> element has been changed and committed by the user.
+	INPUT_ONBEFOREINPUT INPUT_EVENT = "beforeinput" // Fired when the value of an <input>, <select>, or <textarea> element is about to be modified.
+)
+
 type InputEvent struct {
 	UIEvent
 }
 
-// InputEventFromJS is casting a js.Value into InputEvent.
-func InputEventFromJS(value js.Value) *InputEvent {
+// NewInputEventFromJS is casting a js.Value into InputEvent.
+func NewInputEventFromJS(value js.Value) *InputEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &InputEvent{}
+	ret := new(InputEvent)
 	ret.jsValue = value
 	return ret
 }
 
 // Data returning attribute 'data' with
-// type string (idl: DOMString).
-func (_this *InputEvent) Data() *string {
-	var ret *string
-	value := _this.jsValue.Get("data")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		__tmp := (value).String()
-		ret = &__tmp
-	}
-	return ret
+func (_this *InputEvent) Data() string {
+	return _this.jsValue.Get("data").String()
 }
 
+// func (_this *InputEvent) Data() *string {
+// 	var ret *string
+// 	value := _this.jsValue.Get("data")
+// 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
+// 		__tmp := (value).String()
+// 		ret = &__tmp
+// 	}
+// 	return ret
+// }
+
 // IsComposing returning attribute 'isComposing' with
-// type bool (idl: boolean).
 func (_this *InputEvent) IsComposing() bool {
-	var ret bool
-	value := _this.jsValue.Get("isComposing")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("isComposing").Bool()
 }
 
 // InputType returning attribute 'inputType' with
-// type string (idl: DOMString).
 func (_this *InputEvent) InputType() string {
-	var ret string
-	value := _this.jsValue.Get("inputType")
-	ret = (value).String()
-	return ret
+	return _this.jsValue.Get("inputType").String()
 }
 
 /**********************************************************************************
  * KeyboardEvent
  */
 
+type KEYBOARD_EVENT string
+
+const (
+	KEYBOARD_ONKEYDOWN  KEYBOARD_EVENT = "keydown"
+	KEYBOARD_ONKEYPRESS KEYBOARD_EVENT = "keypress"
+	KEYBOARD_ONKEYUP    KEYBOARD_EVENT = "keyup"
+)
+
+type DOM_KEY_LOCATION uint
+
+const (
+	DOM_KEY_LOCATION_STANDARD DOM_KEY_LOCATION = 0x00
+	DOM_KEY_LOCATION_LEFT     DOM_KEY_LOCATION = 0x01
+	DOM_KEY_LOCATION_RIGHT    DOM_KEY_LOCATION = 0x02
+	DOM_KEY_LOCATION_NUMPAD   DOM_KEY_LOCATION = 0x03
+)
+
 type KeyboardEvent struct {
 	UIEvent
 }
 
-// KeyboardEventFromJS is casting a js.Value into KeyboardEvent.
-func KeyboardEventFromJS(value js.Value) *KeyboardEvent {
+// NewKeyboardEventFromJS is casting a js.Value into KeyboardEvent.
+func NewKeyboardEventFromJS(value js.Value) *KeyboardEvent {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &KeyboardEvent{}
+	ret := new(KeyboardEvent)
 	ret.jsValue = value
 	return ret
 }
 
-const (
-	DOM_KEY_LOCATION_STANDARD uint = 0x00
-	DOM_KEY_LOCATION_LEFT     uint = 0x01
-	DOM_KEY_LOCATION_RIGHT    uint = 0x02
-	DOM_KEY_LOCATION_NUMPAD   uint = 0x03
-)
-
 // Key returning attribute 'key' with
-// type string (idl: DOMString).
 func (_this *KeyboardEvent) Key() string {
-	var ret string
-	value := _this.jsValue.Get("key")
-	ret = (value).String()
-	return ret
+	return _this.jsValue.Get("key").String()
 }
 
 // Code returning attribute 'code' with
-// type string (idl: DOMString).
 func (_this *KeyboardEvent) Code() string {
-	var ret string
-	value := _this.jsValue.Get("code")
-	ret = (value).String()
-	return ret
+	return _this.jsValue.Get("code").String()
 }
 
 // Location returning attribute 'location' with
-// type uint (idl: unsigned long).
-func (_this *KeyboardEvent) Location() uint {
-	var ret uint
-	value := _this.jsValue.Get("location")
-	ret = (uint)((value).Int())
-	return ret
+func (_this *KeyboardEvent) Location() DOM_KEY_LOCATION {
+	return DOM_KEY_LOCATION(_this.jsValue.Get("location").Int())
 }
 
 // CtrlKey returning attribute 'ctrlKey' with
-// type bool (idl: boolean).
 func (_this *KeyboardEvent) CtrlKey() bool {
-	var ret bool
-	value := _this.jsValue.Get("ctrlKey")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("ctrlKey").Bool()
 }
 
 // ShiftKey returning attribute 'shiftKey' with
-// type bool (idl: boolean).
 func (_this *KeyboardEvent) ShiftKey() bool {
-	var ret bool
-	value := _this.jsValue.Get("shiftKey")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("shiftKey").Bool()
 }
 
 // AltKey returning attribute 'altKey' with
-// type bool (idl: boolean).
 func (_this *KeyboardEvent) AltKey() bool {
-	var ret bool
-	value := _this.jsValue.Get("altKey")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("altKey").Bool()
 }
 
 // MetaKey returning attribute 'metaKey' with
-// type bool (idl: boolean).
 func (_this *KeyboardEvent) MetaKey() bool {
-	var ret bool
-	value := _this.jsValue.Get("metaKey")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("metaKey").Bool()
 }
 
 // Repeat returning attribute 'repeat' with
-// type bool (idl: boolean).
 func (_this *KeyboardEvent) Repeat() bool {
-	var ret bool
-	value := _this.jsValue.Get("repeat")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("repeat").Bool()
 }
 
 // IsComposing returning attribute 'isComposing' with
-// type bool (idl: boolean).
 func (_this *KeyboardEvent) IsComposing() bool {
-	var ret bool
-	value := _this.jsValue.Get("isComposing")
-	ret = (value).Bool()
-	return ret
+	return _this.jsValue.Get("isComposing").Bool()
 }
 
 // CharCode returning attribute 'charCode' with
-// type uint (idl: unsigned long).
 func (_this *KeyboardEvent) CharCode() uint {
-	var ret uint
-	value := _this.jsValue.Get("charCode")
-	ret = (uint)((value).Int())
-	return ret
+	return uint(_this.jsValue.Get("charCode").Int())
 }
 
 // KeyCode returning attribute 'keyCode' with
-// type uint (idl: unsigned long).
 func (_this *KeyboardEvent) KeyCode() uint {
-	var ret uint
-	value := _this.jsValue.Get("keyCode")
-	ret = (uint)((value).Int())
-	return ret
+	return uint(_this.jsValue.Get("keyCode").Int())
 }
 
+// returns the current state of the specified modifier key: true if the modifier is active (that is the modifier key is pressed or locked), otherwise, false.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState
 func (_this *KeyboardEvent) GetModifierState(keyArg string) (_result bool) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := keyArg
-	_args[0] = _p0
-	_end++
-	_returned := _this.jsValue.Call("getModifierState", _args[0:_end]...)
-	return (_returned).Bool()
+	return _this.jsValue.Call("getModifierState", keyArg).Bool()
 }

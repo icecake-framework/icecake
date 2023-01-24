@@ -35,7 +35,7 @@ type Attribute struct {
 *****************************************************************************/
 
 // AttrFromJS is casting a js.Value into Attribute
-func MakeAttributeFromJS(value js.Value) *Attribute {
+func NewAttributeFromJS(value js.Value) *Attribute {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -43,12 +43,12 @@ func MakeAttributeFromJS(value js.Value) *Attribute {
 	ret.name = Name(value.Get("name").String())
 	ret.value = value.Get("value").String()
 	ownerElement := value.Get("ownerElement")
-	ret.ownerElement = MakeElementFromJS(ownerElement)
+	ret.ownerElement = NewElementFromJS(ownerElement)
 	return ret
 }
 
-// CreateAttribute create a new attribut and update the DOM
-func CreateAttribute(name Name, value string, ownerElement *Element) *Attribute {
+// SetNewAttribute create a new attribut and update the DOM
+func SetNewAttribute(name Name, value string, ownerElement *Element) *Attribute {
 	ret := &Attribute{}
 	ret.name = Name(normalize(string(name)))
 	ret.value = normalize(value)
@@ -97,8 +97,8 @@ func (_attr *Attribute) Name() Name {
 * Attribute's Methods
 *****************************************************************************/
 
-// SetValue update the DOM of the ownerElement with this attribute
-func (_attr *Attribute) SetValue(_val string) {
+// Reset update the DOM of the ownerElement with this attribute
+func (_attr *Attribute) Reset(_attribute string) {
 	if _attr == nil {
 		log.Println("ToDOM() call on a nil Attribute")
 		return
@@ -108,6 +108,6 @@ func (_attr *Attribute) SetValue(_val string) {
 		return
 	}
 
-	_attr.value = _val
+	_attr.value = _attribute
 	_attr.ownerElement.JSValue().Call("setAttribute", string(_attr.name), _attr.value)
 }

@@ -1,186 +1,114 @@
 package browser
 
-import "syscall/js"
-
-/*********************************************************************************
-* History
- */
-
-type ScrollRestoration int
-
-const (
-	AutoScrollRestoration ScrollRestoration = iota
-	ManualScrollRestoration
+import (
+	"net/url"
+	"syscall/js"
 )
 
-var scrollRestorationToWasmTable = []string{
-	"auto", "manual",
-}
-
-var scrollRestorationFromWasmTable = map[string]ScrollRestoration{
-	"auto": AutoScrollRestoration, "manual": ManualScrollRestoration,
-}
-
-// JSValue is converting this enum into a javascript object
-func (_this *ScrollRestoration) JSValue() js.Value {
-	return js.ValueOf(_this.Value())
-}
-
-// Value is converting _this into javascript defined
-// string value
-func (_this ScrollRestoration) Value() string {
-	idx := int(_this)
-	if idx >= 0 && idx < len(scrollRestorationToWasmTable) {
-		return scrollRestorationToWasmTable[idx]
-	}
-	panic("unknown input value")
-}
-
-// ScrollRestorationFromJS is converting a javascript value into
-// a ScrollRestoration enum value.
-func ScrollRestorationFromJS(value js.Value) ScrollRestoration {
-	key := value.String()
-	conv, ok := scrollRestorationFromWasmTable[key]
-	if !ok {
-		panic("unable to convert '" + key + "'")
-	}
-	return conv
-}
-
-/*********************************************************************************
+/******************************************************************************
 * History
- */
+******************************************************************************/
 
+type HISTORY_SCROLL_RESTORATION string
+
+const (
+	HISTORY_SR_AUTO   HISTORY_SCROLL_RESTORATION = "auto"
+	HISTORY_SR_MANUAL HISTORY_SCROLL_RESTORATION = "manual"
+)
+
+// The DOM Window object provides access to the browser's session history (not to be confused for WebExtensions history)
+// through the history object.
+// It exposes useful methods and properties that let you navigate back and forth through the user's history,
+// and manipulate the contents of the history stack.
+//
 // https://developer.mozilla.org/en-US/docs/Web/API/History
 type History struct {
 	jsValue js.Value
 }
 
-// HistoryFromJS is casting a js.Value into History.
-func HistoryFromJS(value js.Value) *History {
+// NewHistoryFromJS is casting a js.Value into History.
+func NewHistoryFromJS(value js.Value) *History {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	ret := &History{}
+	ret := new(History)
 	ret.jsValue = value
 	return ret
 }
 
-// Length returning attribute 'length' with
-// type uint (idl: unsigned long).
+// Length eturns an integer representing the number of elements in the session history, including the currently loaded page.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/History/length
 func (_this *History) Length() uint {
-	var ret uint
-	value := _this.jsValue.Get("length")
-	ret = (uint)((value).Int())
-	return ret
+	return uint(_this.jsValue.Get("length").Int())
 }
 
-// ScrollRestoration returning attribute 'scrollRestoration' with
-// type ScrollRestoration (idl: ScrollRestoration).
-func (_this *History) ScrollRestoration() ScrollRestoration {
-	var ret ScrollRestoration
-	value := _this.jsValue.Get("scrollRestoration")
-	ret = ScrollRestorationFromJS(value)
-	return ret
+// ScrollRestoration  allows web applications to explicitly set default scroll restoration behavior on history navigation.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration
+func (_this *History) ScrollRestoration() HISTORY_SCROLL_RESTORATION {
+	return HISTORY_SCROLL_RESTORATION(_this.jsValue.Get("scrollRestoration").String())
 }
 
-// SetScrollRestoration setting attribute 'scrollRestoration' with
-// type ScrollRestoration (idl: ScrollRestoration).
-func (_this *History) SetScrollRestoration(value ScrollRestoration) {
-	input := value.JSValue()
-	_this.jsValue.Set("scrollRestoration", input)
+// ScrollRestoration  allows web applications to explicitly set default scroll restoration behavior on history navigation.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration
+func (_this *History) SetScrollRestoration(value HISTORY_SCROLL_RESTORATION) {
+	_this.jsValue.Set("scrollRestoration", value)
 }
 
-// State returning attribute 'state' with
-// type Any (idl: any).
+// State eturns a value representing the state at the top of the history stack.
+// This is a way to look at the state without having to wait for a popstate event.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/History/state
 func (_this *History) State() js.Value {
-	var ret js.Value
-	value := _this.jsValue.Get("state")
-	ret = value
-	return ret
+	return _this.jsValue.Get("state")
 }
 
-func (_this *History) Go(delta *int) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	if delta != nil {
-
-		var _p0 interface{}
-		if delta != nil {
-			_p0 = *(delta)
-		} else {
-			_p0 = nil
-		}
-		_args[0] = _p0
-		_end++
-	}
-	_this.jsValue.Call("go", _args[0:_end]...)
+// Go Loads a specific page from the session history.
+// You can use it to move forwards and backwards through the history depending on the value of a parameter.
+//
+// This method is asynchronous. Add a listener for the popstate event in order to determine when the navigation has completed.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/History/go
+func (_this *History) Go(delta int) {
+	_this.jsValue.Call("go", delta)
 }
 
+// causes the browser to move back one page in the session history.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/History/back
 func (_this *History) Back() {
-	var (
-		_args [0]interface{}
-		_end  int
-	)
-	_this.jsValue.Call("back", _args[0:_end]...)
+	_this.jsValue.Call("back")
 }
 
+// causes the browser to move forward one page in the session history. It has the same effect as calling history.go(1).
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/History/forward
 func (_this *History) Forward() {
-	var (
-		_args [0]interface{}
-		_end  int
-	)
-	_this.jsValue.Call("forward", _args[0:_end]...)
+	_this.jsValue.Call("forward")
 }
 
-func (_this *History) PushState(data interface{}, title string, url *string) {
-	var (
-		_args [3]interface{}
-		_end  int
-	)
-	_p0 := data
-	_args[0] = _p0
-	_end++
-	_p1 := title
-	_args[1] = _p1
-	_end++
-	if url != nil {
-
-		var _p2 interface{}
-		if url != nil {
-			_p2 = *(url)
-		} else {
-			_p2 = nil
-		}
-		_args[2] = _p2
-		_end++
+// PushState adds an entry to the browser's session history stack.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
+func (_this *History) PushState(data interface{}, url *url.URL) {
+	if url == nil {
+		_this.jsValue.Call("pushState", data)
+	} else {
+		_this.jsValue.Call("pushState", data, url.String())
 	}
-	_this.jsValue.Call("pushState", _args[0:_end]...)
 }
 
-func (_this *History) ReplaceState(data interface{}, title string, url *string) {
-	var (
-		_args [3]interface{}
-		_end  int
-	)
-	_p0 := data
-	_args[0] = _p0
-	_end++
-	_p1 := title
-	_args[1] = _p1
-	_end++
-	if url != nil {
-
-		var _p2 interface{}
-		if url != nil {
-			_p2 = *(url)
-		} else {
-			_p2 = nil
-		}
-		_args[2] = _p2
-		_end++
+// modifies the current history entry, replacing it with the state object and URL passed in the method parameters.
+// This method is particularly useful when you want to update the state object or URL
+// of the current history entry in response to some user action.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState
+func (_this *History) ReplaceState(data interface{}, url *url.URL) {
+	if url == nil {
+		_this.jsValue.Call("replaceState", data)
+	} else {
+		_this.jsValue.Call("replaceState", data, url.String())
 	}
-	_this.jsValue.Call("replaceState", _args[0:_end]...)
 }

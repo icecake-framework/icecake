@@ -24,8 +24,8 @@ type WebServer struct {
 	http_idleTimeout   int
 	http_cache_control bool
 	http_logger        bool
-	webRouter          *mux.Router
 
+	WebRouter *mux.Router
 	ApiRouter *mux.Router
 }
 
@@ -64,10 +64,10 @@ func MakeWebserver() WebServer {
 	}
 
 	// configure the server, with or without trailing slash is the same route
-	ws.webRouter = mux.NewRouter().StrictSlash(true)
+	ws.WebRouter = mux.NewRouter().StrictSlash(true)
 
 	// configure the /api subrouter
-	ws.ApiRouter = ws.webRouter.PathPrefix("/api").Subrouter()
+	ws.ApiRouter = ws.WebRouter.PathPrefix("/api").Subrouter()
 	ws.ApiRouter.HandleFunc("/health", GetHealthHandle())
 
 	return *ws
@@ -80,7 +80,7 @@ func (ws WebServer) Run() {
 
 	// the main handler serving spa static files
 	// force content-type header for wasm files
-	ws.webRouter.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ws.WebRouter.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, ".wasm") {
 			w.Header().Set("content-type", "application/wasm")
 		}
@@ -90,7 +90,7 @@ func (ws WebServer) Run() {
 	// add middleware to remove cache if requested in config file
 	if !ws.http_cache_control {
 		fmt.Println("spa server: no-cache forced in response header")
-		ws.webRouter.Use(middlewareNoCache)
+		ws.WebRouter.Use(middlewareNoCache)
 	}
 
 	// setup timeouts
@@ -104,9 +104,9 @@ func (ws WebServer) Run() {
 	// add middleware to log every request
 	if ws.http_logger {
 		fmt.Println("spa server: http logger is on")
-		srv.Handler = newLogger(ws.webRouter)
+		srv.Handler = newLogger(ws.WebRouter)
 	} else {
-		srv.Handler = ws.webRouter
+		srv.Handler = ws.WebRouter
 	}
 
 	// listen and serve in a go routine to allow catching shutdown clean request in parallel

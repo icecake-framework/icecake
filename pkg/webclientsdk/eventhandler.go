@@ -3,68 +3,6 @@ package browser
 import "syscall/js"
 
 /******************************************************************************
-* Event
-******************************************************************************/
-
-// Event represents an event which takes place in the DOM.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Event
-type Event struct {
-	jsValue js.Value
-}
-
-// JSValue returns the js.Value or js.Null() if _this is nil
-func (_this *Event) JSValue() js.Value {
-	if _this == nil {
-		return js.Null()
-	}
-	return _this.jsValue
-}
-
-// MakeEventFromJS is casting a js.Value into Event.
-func MakeEventFromJS(value js.Value) *Event {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
-	ret := &Event{}
-	ret.jsValue = value
-	return ret
-}
-
-/******************************************************************************
-* Event's properties
-******************************************************************************/
-
-// Type: there are many types of events, some of which use other interfaces based on the main Event interface.
-// Event itself contains the properties and methods which are common to all events.
-//
-// It is set when the event is constructed.
-// Commonly used to refer to the specific event, such as click, load, or error
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Event/type
-func (_this *Event) Type() string {
-	value := _this.jsValue.Get("type")
-	return (value).String()
-}
-
-// Target: a reference to the object onto which the event was dispatched.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Event/target
-func (_this *Event) Target() *EventTarget {
-	value := _this.jsValue.Get("target")
-	return MakeEventTargetFromJS(value)
-}
-
-// CurrentTarget always refers to the element to which the event handler has been attached,
-// as opposed to Event.target, which identifies the element on which the event occurred and which may be its descendant.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Event/currentTarget
-func (_this *Event) CurrentTarget() *EventTarget {
-	value := _this.jsValue.Get("currentTarget")
-	return MakeEventTargetFromJS(value)
-}
-
-/******************************************************************************
 * EventHandlerFunc
 ******************************************************************************/
 
@@ -88,12 +26,12 @@ func MakeEventHandlerFuncFromJS(_value js.Value) EventHandlerFunc {
 // Call Release() when done to release resouces allocated to this type.
 type EventHandler js.Func
 
-func MakeEventHandler(callback EventHandlerFunc) *EventHandler {
+func NewEventHandler(callback EventHandlerFunc) *EventHandler {
 	if callback == nil {
 		return nil
 	}
 	ret := EventHandler(js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		_p0 := MakeEventFromJS(args[0])
+		_p0 := NewEventFromJS(args[0])
 		_returned := callback(_p0)
 		_converted := _returned
 		return _converted
@@ -137,10 +75,10 @@ func (_this *EventListener) JSValue() js.Value {
 * EventListener's factory
 ******************************************************************************/
 
-// MakeEventListenerFromJS is taking an javascript object that reference to a
+// NewEventListenerFromJS is taking an javascript object that reference to a
 // callback interface and return a corresponding interface that can be used
 // to invoke on that element.
-func MakeEventListenerFromJS(value js.Value) *EventListener {
+func NewEventListenerFromJS(value js.Value) *EventListener {
 	if value.Type() == js.TypeObject {
 		return &EventListener{jsValue: value}
 	}
@@ -170,7 +108,7 @@ func NewEventListenerFunc(f func(event *Event)) *EventListener {
 
 func (t *EventListener) allocateHandleEvent() js.Func {
 	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		_p0 := MakeEventFromJS(args[0])
+		_p0 := NewEventFromJS(args[0])
 		if t.gofunction != nil {
 			t.gofunction(_p0)
 		} else {
@@ -226,8 +164,8 @@ func (_this *EventTarget) JSValue() js.Value {
 	return _this.jsValue
 }
 
-// MakeEventTargetFromJS is casting a js.Value into EventTarget.
-func MakeEventTargetFromJS(value js.Value) *EventTarget {
+// NewEventTargetFromJS is casting a js.Value into EventTarget.
+func NewEventTargetFromJS(value js.Value) *EventTarget {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		// TODO: error handling
 		return nil
@@ -242,7 +180,7 @@ func NewEventTarget() (_result *EventTarget) {
 	_klass := js.Global().Get("EventTarget")
 	var _args [0]interface{}
 	_returned := _klass.New(_args[0:0]...)
-	return MakeEventTargetFromJS(_returned)
+	return NewEventTargetFromJS(_returned)
 }
 
 /******************************************************************************
@@ -255,10 +193,7 @@ func NewEventTarget() (_result *EventTarget) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
 func (_this *EventTarget) AddEventListener(_type string, callback *EventListener) {
-	var _args [3]interface{}
-	_args[0] = _type
-	_args[1] = callback.JSValue()
-	_this.jsValue.Call("addEventListener", _args[0:2]...)
+	_this.jsValue.Call("addEventListener", _type, callback.JSValue())
 }
 
 // RemoveEventListener removes an event listener previously registered with EventTarget.addEventListener() from the target.
@@ -267,8 +202,5 @@ func (_this *EventTarget) AddEventListener(_type string, callback *EventListener
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener
 func (_this *EventTarget) RemoveEventListener(_type string, callback *EventListener) {
-	var _args [3]interface{}
-	_args[0] = _type
-	_args[1] = callback.JSValue()
-	_this.jsValue.Call("removeEventListener", _args[0:2]...)
+	_this.jsValue.Call("removeEventListener", _type, callback.JSValue())
 }

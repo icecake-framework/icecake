@@ -26,6 +26,7 @@ const (
 	NOTATION_NODE         NT_NodeType = 12 // Deprecated
 )
 
+// An integer value representing otherNode's position relative to node as a bitmask.
 type NodePosition int
 
 const (
@@ -46,8 +47,8 @@ type Node struct {
 	EventTarget
 }
 
-// MakeNodeFromJS is casting a js.Value into Node.
-func MakeNodeFromJS(value js.Value) *Node {
+// NewNodeFromJS is casting a js.Value into Node.
+func NewNodeFromJS(value js.Value) *Node {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -56,11 +57,32 @@ func MakeNodeFromJS(value js.Value) *Node {
 	return ret
 }
 
+// IsDefined returns true if the Element is not nil AND it's type is not TypeNull and not TypeUndefined
+func (_node *Node) IsDefined() bool {
+	if _node == nil || _node.jsValue.Type() == js.TypeNull || _node.jsValue.Type() == js.TypeUndefined {
+		return false
+	}
+	return true
+}
+
+// IsSameNode tests whether two nodes are the same (in other words, whether they reference the same object).
+// https://developer.mozilla.org/en-US/docs/Web/API/Node/isSameNode
+func (_node *Node) IsSameNode(otherNode *Node) bool {
+	var _args [1]interface{}
+	_args[0] = otherNode.jsValue
+	_returned := _node.jsValue.Call("isSameNode", _args[0:1]...)
+	return (_returned).Bool()
+}
+
+/****************************************************************************
+* Node's method and properties
+*****************************************************************************/
+
 // NodeType It distinguishes different kind of nodes from each other, such as elements, text and comments.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
-func (_this *Node) NodeType() NT_NodeType {
-	value := _this.jsValue.Get("nodeType")
+func (_node *Node) NodeType() NT_NodeType {
+	value := _node.jsValue.Get("nodeType")
 	return NT_NodeType((value).Int())
 }
 
@@ -76,24 +98,22 @@ func (_this *Node) NodeType() NT_NodeType {
 //   - Text: "#text".
 //
 // NodeName returning attribute 'nodeName' with
-func (_this *Node) NodeName() string {
-	value := _this.jsValue.Get("nodeName")
-	return (value).String()
+func (_node *Node) NodeName() string {
+	return _node.jsValue.Get("nodeName").String()
 }
 
 // BaseURI returns the absolute base URL of the document containing the node.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/baseURI
-func (_this *Node) BaseURI() string {
-	value := _this.jsValue.Get("baseURI")
-	return (value).String()
+func (_node *Node) BaseURI() string {
+	return _node.jsValue.Get("baseURI").String()
 }
 
 // IsDocConnected returns a boolean indicating whether the node is connected (directly or indirectly) to a Document object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/isConnected
-func (_this *Node) IsDocConnected() bool {
-	value := _this.jsValue.Get("isConnected")
+func (_node *Node) IsConnected() bool {
+	value := _node.jsValue.Get("isConnected")
 	return (value).Bool()
 }
 
@@ -101,261 +121,188 @@ func (_this *Node) IsDocConnected() bool {
 // on a node that is itself a document, the value is null.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/ownerDocument
-func (_this *Node) Doc() *Document {
-	value := _this.jsValue.Get("ownerDocument")
-	return MakeDocumentFromJS(value)
+func (_node *Node) Doc() *Document {
+	value := _node.jsValue.Get("ownerDocument")
+	return NewDocumentFromJS(value)
+}
+
+// GetRootNode returns the context object's root, which optionally includes the shadow root if it is available.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode
+func (_node *Node) RootNode() (_result *Node) {
+	var _args [1]interface{}
+	_returned := _node.jsValue.Call("getRootNode", _args[0:0]...)
+	return NewNodeFromJS(_returned)
 }
 
 // ParentNode returns the parent of the specified node in the DOM tree.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/parentNode
-func (_this *Node) ParentNode() *Node {
+func (_node *Node) ParentNode() *Node {
 	var ret *Node
-	value := _this.jsValue.Get("parentNode")
+	value := _node.jsValue.Get("parentNode")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = MakeNodeFromJS(value)
+		ret = NewNodeFromJS(value)
 	}
 	return ret
 }
 
 // ParentElement returns the DOM node's parent Element, or null if the node either has no parent, or its parent isn't a DOM Element.
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/parentElement
-func (_this *Node) ParentElement() *Element {
-	value := _this.jsValue.Get("parentElement")
-	return MakeElementFromJS(value)
+func (_node *Node) ParentElement() *Element {
+	value := _node.jsValue.Get("parentElement")
+	return NewElementFromJS(value)
 }
 
-// ChildNodes returns a live NodeList of child nodes of the given element where the first child node is assigned index 0. Child nodes include elements, text and comments.
+// ChildNodes returns a ~live~ static NodeList of child nodes of the given element where the first child node is assigned index 0.
+// Child nodes include elements, text and comments.
+//
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes
-func (_this *Node) ChildNodes() *NodeList {
-	value := _this.jsValue.Get("childNodes")
-	return MakeNodeListFromJS(value)
+func (_node *Node) Children() Nodes {
+	value := _node.jsValue.Get("childNodes")
+	return MakeNodesFromJSNodeList(value)
 }
 
 // FirstChild returns the node's first child in the tree, or null if the node has no children.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/firstChild
-func (_this *Node) FirstChild() *Node {
-	value := _this.jsValue.Get("firstChild")
-	return MakeNodeFromJS(value)
+func (_node *Node) ChildFirst() *Node {
+	value := _node.jsValue.Get("firstChild")
+	return NewNodeFromJS(value)
 }
 
 // LastChild returns the last child of the node. If its parent is an element, then the child is generally an element node, a text node, or a comment node. It returns null if there are no child nodes.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/lastChild
-func (_this *Node) LastChild() *Node {
-	value := _this.jsValue.Get("lastChild")
-	return MakeNodeFromJS(value)
+func (_node *Node) ChildLast() *Node {
+	value := _node.jsValue.Get("lastChild")
+	return NewNodeFromJS(value)
 }
 
 // PreviousSibling  returns the node immediately preceding the specified one in its parent's childNodes list, or null if the specified node is the first in that list.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/previousSibling
-func (_this *Node) PreviousSibling() *Node {
-	var ret *Node
-	value := _this.jsValue.Get("previousSibling")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = MakeNodeFromJS(value)
-	}
-	return ret
+func (_node *Node) SiblingPrevious() *Node {
+	value := _node.jsValue.Get("previousSibling")
+	return NewNodeFromJS(value)
 }
 
 // NextSibling returns the node immediately following the specified one in their parent's childNodes, or returns null if the specified node is the last child in the parent element.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nextSibling
-func (_this *Node) NextSibling() *Node {
-	var ret *Node
-	value := _this.jsValue.Get("nextSibling")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		ret = MakeNodeFromJS(value)
-	}
-	return ret
+func (_node *Node) SiblingNext() *Node {
+	value := _node.jsValue.Get("nextSibling")
+	return NewNodeFromJS(value)
 }
 
 // NodeValue is a string containing the value of the current node, if any.
+//
 // For the document itself, nodeValue returns null.
 // For text, comment, and CDATA nodes, nodeValue returns the content of the node.
 // For attribute nodes, the value of the attribute is returned.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue
-func (_this *Node) NodeValue() string {
-	value := _this.jsValue.Get("nodeValue")
+func (_node *Node) NodeValue() string {
+	value := _node.jsValue.Get("nodeValue")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
 		return ""
 	}
-	return (value).String()
+	return value.String()
 }
 
 // NodeValue is a string containing the value of the current node, if any.
+//
 // For the document itself, nodeValue returns null.
 // For text, comment, and CDATA nodes, nodeValue returns the content of the node.
 // For attribute nodes, the value of the attribute is returned.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue
-func (_this *Node) SetNodeValue(value string) {
+func (_node *Node) SetNodeValue(value string) (_ret *Node) {
 	var input interface{}
 	if value != "" {
 		input = value
 	} else {
 		input = nil
 	}
-	_this.jsValue.Set("nodeValue", input)
+	_node.jsValue.Set("nodeValue", input)
+	return _node
 }
 
 // TextContent represents the text content of the node and its descendants.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent
-func (_this *Node) TextContent() string {
-	value := _this.jsValue.Get("textContent")
+func (_node *Node) TextContent() string {
+	value := _node.jsValue.Get("textContent")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
 		return ""
 	}
-	return (value).String()
+	return value.String()
 }
 
 // TextContent represents the text content of the node and its descendants.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent
-func (_this *Node) SetTextContent(value string) {
+func (_node *Node) SetTextContent(value string) (_ret *Node) {
 	var input interface{}
 	if value != "" {
 		input = value
 	} else {
 		input = nil
 	}
-	_this.jsValue.Set("textContent", input)
-}
-
-// GetRootNode returns the context object's root, which optionally includes the shadow root if it is available.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode
-func (_this *Node) GetRootNode() (_result *Node) {
-	var _args [1]interface{}
-	_returned := _this.jsValue.Call("getRootNode", _args[0:0]...)
-	return MakeNodeFromJS(_returned)
+	_node.jsValue.Set("textContent", input)
+	return _node
 }
 
 // HasChildNodes returns a boolean value indicating whether the given Node has child nodes or not.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/hasChildNodes
-func (_this *Node) HasChildNodes() bool {
-	var _args [0]interface{}
-	_returned := _this.jsValue.Call("hasChildNodes", _args[0:0]...)
-	return (_returned).Bool()
-}
-
-// IsSameNode tests whether two nodes are the same (in other words, whether they reference the same object).
-// https://developer.mozilla.org/en-US/docs/Web/API/Node/isSameNode
-func (_this *Node) IsSameNode(otherNode *Node) bool {
-	var _args [1]interface{}
-	_args[0] = otherNode.jsValue
-	_returned := _this.jsValue.Call("isSameNode", _args[0:1]...)
-	return (_returned).Bool()
+func (_node *Node) HasChildren() bool {
+	_returned := _node.jsValue.Call("hasChildNodes")
+	return _returned.Bool()
 }
 
 // CompareDocumentPosition reports the position of its argument node relative to the node on which it is called.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/compareDocumentPosition
-func (_this *Node) CompareDocumentPosition(other *Node) NodePosition {
-	var _args [1]interface{}
-	_args[0] = other.jsValue
-	_returned := _this.jsValue.Call("compareDocumentPosition", _args[0:1]...)
-	return NodePosition((_returned).Int())
+func (_onenode *Node) ComparePosition(_other *Node) NodePosition {
+	_returned := _onenode.jsValue.Call("compareDocumentPosition", _other.jsValue)
+	return NodePosition(_returned.Int())
 }
 
-// InsertBefore inserts a node before a reference node as a child of a specified parent node.
+// InsertBefore inserts a newnode before a refnode.
+//
+// if refnode is nil, then newNode is inserted at the end of node's child nodes.
+//
+// If the given node already exists in the document, insertBefore() moves it from its current position to the new position.
+// (That is, it will automatically be removed from its existing parent before appending it to the specified new parent.)
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore
-func (_this *Node) InsertBefore(node *Node, child *Node) (_result *Node) {
-	var _args [2]interface{}
-	_args[0] = node.jsValue
-	_args[1] = child.jsValue
-	_returned := _this.jsValue.Call("insertBefore", _args[0:2]...)
-	return MakeNodeFromJS(_returned)
+func (_parentnode *Node) InsertBefore(newnode *Node, refnode *Node) (_result *Node) {
+	_returned := _parentnode.jsValue.Call("insertBefore", newnode.jsValue, refnode.jsValue)
+	return NewNodeFromJS(_returned)
 }
 
 // AppenChild adds a node to the end of the list of children of a specified parent node.
 // If the given child is a reference to an existing node in the document, appendChild() moves it from its current position to the new position.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild
-func (_this *Node) AppendChild(node *Node) (_result *Node) {
-	var _args [1]interface{}
-	_args[0] = node.jsValue
-	_returned := _this.jsValue.Call("appendChild", _args[0:1]...)
-	return MakeNodeFromJS(_returned)
+func (_parentnode *Node) AppendChild(newnode *Node) (_result *Node) {
+	_returned := _parentnode.jsValue.Call("appendChild", newnode.jsValue)
+	return NewNodeFromJS(_returned)
 }
 
 // ReplaceChild replaces a child node within the given (parent) node.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/replaceChild
-func (_this *Node) ReplaceChild(node *Node, child *Node) (_result *Node) {
-	var _args [2]interface{}
-	_args[0] = node.jsValue
-	_args[1] = child.jsValue
-	_returned := _this.jsValue.Call("replaceChild", _args[0:2]...)
-	return MakeNodeFromJS(_returned)
+func (_parentnode *Node) ReplaceChild(_newchild *Node, _oldchild *Node) (_result *Node) {
+	_returned := _parentnode.jsValue.Call("replaceChild", _newchild.jsValue, _oldchild.jsValue)
+	return NewNodeFromJS(_returned)
 }
 
 // RemoveChild removes a child node from the DOM and returns the removed node.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild
-func (_this *Node) RemoveChild(child *Node) (_result *Node) {
-	var _args [1]interface{}
-	_args[0] = child.jsValue
-	_returned := _this.jsValue.Call("removeChild", _args[0:1]...)
-	return MakeNodeFromJS(_returned)
-}
-
-/****************************************************************************
-* NodeList
-*****************************************************************************/
-
-// NodeList is a *live* list of notdes, returned by properties such as Node.childNodes.
-//
-// It can be converted into a static list calling MakeNodes(_this.Item(0))
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/NodeList
-type NodeList struct {
-	jsValue js.Value
-}
-
-// JSValue returns the js.Value or js.Null() if _this is nil
-func (_this *NodeList) JSValue() js.Value {
-	if _this == nil {
-		return js.Null()
-	}
-	return _this.jsValue
-}
-
-// MakeNodeListFromJS is casting a js.Value into NodeList.
-func MakeNodeListFromJS(value js.Value) *NodeList {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
-	ret := &NodeList{}
-	ret.jsValue = value
-	return ret
-}
-
-// Length returns the number of items in a NodeList.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/NodeList/length
-func (_this *NodeList) Length() uint {
-	var ret uint
-	value := _this.jsValue.Get("length")
-	ret = (uint)((value).Int())
-	return ret
-}
-
-// Item Returns a node from a NodeList by index.
-//
-// This method doesn't throw exceptions as long as you provide arguments.
-// A value of null is returned if the index is out of range, and a TypeError is thrown if no argument is provided.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/NodeList/item
-func (_this *NodeList) Item(index uint) (_result *Node) {
-	var _args [1]interface{}
-	_args[0] = index
-	_returned := _this.jsValue.Call("item", _args[0:1]...)
-	return MakeNodeFromJS(_returned)
+func (_parentnode *Node) RemoveChild(_newchild *Node) (_result *Node) {
+	_returned := _parentnode.jsValue.Call("removeChild", _newchild.jsValue)
+	return NewNodeFromJS(_returned)
 }
