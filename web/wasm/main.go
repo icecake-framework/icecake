@@ -10,8 +10,8 @@ import (
 	"os"
 
 	"github.com/sunraylab/icecake/pkg/spasdk"
-	browser "github.com/sunraylab/icecake/pkg/webclientsdk"
-	"github.com/sunraylab/icecake/web/components/mybutton"
+	// "github.com/sunraylab/icecake/pkg/dom"
+	// "github.com/sunraylab/icecake/web/components/mybutton"
 )
 
 // the main func is required by the wasm GO builder
@@ -27,14 +27,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	coll := browser.GetDocument().ChildrenByTagName("ic-button")
-	if coll != nil {
-		for i := uint(0); i < coll.Length(); i++ {
-			e := coll.Item(i)
-			icb := mybutton.Cast(e.JSValue())
-			icb.Render()
-		}
-	}
+	// coll := dom.GetDocument().ChildrenByTagName("ic-button")
+	// if coll != nil {
+	// 	for i := uint(0); i < coll.Length(); i++ {
+	// 		e := coll.Item(i)
+	// 		icb := mybutton.Cast(e.JSValue())
+	// 		icb.Render()
+	// 	}
+	// }
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")

@@ -3,7 +3,7 @@ package mybutton
 import (
 	"syscall/js"
 
-	browser "github.com/sunraylab/icecake/pkg/webclientsdk"
+	browser "github.com/sunraylab/icecake/pkg/dom"
 )
 
 type MyButton struct {

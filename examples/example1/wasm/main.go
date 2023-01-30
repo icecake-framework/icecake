@@ -11,12 +11,9 @@ import (
 
 	_ "embed"
 
-	"bytes"
-
+	// "github.com/sunraylab/icecake/pkg/dom"
+	// icecake "github.com/sunraylab/icecake/pkg/framework"
 	"github.com/sunraylab/icecake/pkg/spasdk"
-	browser "github.com/sunraylab/icecake/pkg/webclientsdk"
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/renderer/html"
 )
 
 //go:embed hello.md
@@ -35,19 +32,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	// convert markdown content to HTML
-	md := goldmark.New(
-		goldmark.WithRendererOptions(
-			html.WithUnsafe(),
-		),
-	)
-	var buf bytes.Buffer
-	if err := md.Convert([]byte(hellotxt), &buf); err != nil {
-		panic(err)
-	}
-	doc := browser.GetDocument()
-	p := doc.CreateElement("p").SetInnerHTML(buf.String())
-	doc.Body().AppendChild(&p.Node)
+	// doc := dom.GetDocument()
+
+	// data := struct{ Name string }{
+	// 	Name: "Bob",
+	// }
+	// icecake.RenderElement(`example0 : Hello <strong>{{.Name}}</strong>!`, data, doc.ChildById("example0"))
+
+	// icecake.RenderElement(`example1 : <ic-ex1 />`, data, doc.ChildById("example1"))
+
+	// icecake.RenderElement(`example2 : <ic-ex2 />`, data, doc.ChildById("example2"))
+
+	// icecake.RenderElement(`example3 : <ic-ex3 />`, data, doc.ChildById("example3"))
+
+	// icecake.RenderElement(`example4 : <ic-ex4 />`, data, doc.ChildById("example4"))
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")

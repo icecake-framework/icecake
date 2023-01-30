@@ -16,6 +16,16 @@
                 "--env",
                 "./configs/dev"
             ]
-        }
+        },
+        // {
+        //     "name": "Launch debug front",
+        //     "type": "go",
+        //     "request": "launch",
+        //     "mode": "test",
+        //     "program": "${workspaceFolder}/${file}",
+        //     "cwd": "${workspaceFolder}",
+        //     "console": "integratedTerminal",
+        //     "env": {},
+        // }
     ]
 }

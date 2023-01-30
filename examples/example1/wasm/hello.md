@@ -1,8 +1,8 @@
-Welcome to IceCake, the open-source framework solution for building modern web applications.
+Welcome to <icecake_brand/>, the open-source framework solution for building modern web applications.
 
-IceCake is a powerful and versatile framework that makes it easy to create high-performance, scalable, and user-friendly web applications. Our framework is built with the latest web technologies, <strong>generating WebAssembly code, and 100% pure go</strong>, so you can be sure that your app will be fast to be implemented, responsive, and compatible with all modern browsers.
+<icecake_brand/> is a powerful and versatile framework that makes it easy to create high-performance, scalable, and user-friendly web applications. Our framework is built with the latest web technologies, <strong>generating WebAssembly code, and 100% pure go</strong>, so you can be sure that your app will be fast to be implemented, responsive, and compatible with all modern browsers.
 
-With IceCake, you can quickly develop and deploy web applications that are optimized for speed and performance. Whether you're a small startup or a large enterprise, IceCake has everything you need to build great web apps.
+With <icecake_brand/>, you can quickly develop and deploy web applications that are optimized for speed and performance. Whether you're a small startup or a large enterprise, <icecake_brand/> has everything you need to build great web apps.
 
 ## Features:
 
@@ -11,9 +11,9 @@ With IceCake, you can quickly develop and deploy web applications that are optim
 - Customizable templates and themes
 - Advanced routing and middleware options
 - Suitable for small and large projects
-- With IceCake, you'll be able to easily build web apps that are fast, responsive, and optimized for search engines. Plus, our active community of developers is always on hand to help you with any questions or issues you may have.
+- With <icecake_brand/>, you'll be able to easily build web apps that are fast, responsive, and optimized for search engines. Plus, our active community of developers is always on hand to help you with any questions or issues you may have.
 
-- So why wait? Sign up for IceCake today and start building the web app of your dreams!
+- So why wait? Sign up for <icecake_brand/> today and start building the web app of your dreams!
 
 _Note: This information is a fictional framework, you can use it as a template but make sure to replace it with your framework's information._
 
