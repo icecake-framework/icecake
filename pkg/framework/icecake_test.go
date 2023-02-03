@@ -17,7 +17,7 @@ func TestRenderComponent(t *testing.T) {
 	log.Println("------>", out)
 
 	GData["name"] = "Alice"
-	out, err = renderComponents("example00", `html00 Hello <strong>{{.name}}</strong>!`, GData, 0)
+	out, err = renderElement("example00", `html00 Hello <strong>{{.name}}</strong>!`)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -47,13 +47,13 @@ func TestRenderComponent(t *testing.T) {
 	// }
 	// log.Println("------>", out)
 
-	out, err = renderComponents("example5", `hmlt5 <ic-ex5 />`, GData, 0)
+	out, err = renderElement("example5", `hmlt5 <ic-ex5 />`)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	log.Println("------>", out)
 
-	out, err = renderComponents("example6", `hmlt6 <ic-ex6 />`, GData, 0)
+	out, err = renderElement("example6", `hmlt6 <ic-ex6 />`)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

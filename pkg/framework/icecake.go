@@ -36,6 +36,22 @@ import (
 // 	renderComponents("body", htmlbody, nil, 0)
 // }
 
+type tree struct {
+	root  *Compounder
+	folds map[string]*Compounder
+}
+
+type idtree map[string]Compounder
+
+func renderElement(name string, _htmlstring string) (_tree tree, _rendered string, _err error) {
+
+	_rendered, _err = renderComponents(name, _htmlstring, GData, 0)
+
+	//tree := parse.New("after", idtree)
+
+	return _rendered, _err
+}
+
 // renderComponents lookup for component tags in htmlstring, and render each of them recursively.
 //
 // rendering means:

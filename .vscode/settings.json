@@ -10,8 +10,8 @@
         "key": "",
         "passphrase": ""
     },
-    // "go.toolsEnvVars": {
-    //     "GOOS":"js",
-    //     "GOARCH":"wasm",
-    // },
+     "go.toolsEnvVars": {
+         "GOOS":"js",
+         "GOARCH":"wasm",
+     },
 }
