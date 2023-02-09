@@ -8,18 +8,19 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	// "github.com/sunraylab/icecake/pkg/dom"
+
+	"github.com/sunraylab/icecake/pkg/dom"
 )
 
 /*****************************************************************************/
 
-// func RenderElement(htmlTemplate string, data any, elem *dom.Element) {
-// 	str, _ := renderComponents("App", htmlTemplate, data, 0)
-// 	elem.SetInnerHTML(str)
+func RenderElement(htmlTemplate string, data any, elem *dom.Element) {
+	str, _ := renderElement("App", htmlTemplate, data)
+	elem.SetInnerHTML(str)
 
-// ajoute tous les listeners
+	// ajoute tous les listeners
 
-// }
+}
 
 /*****************************************************************************/
 
@@ -43,9 +44,9 @@ type tree struct {
 
 type idtree map[string]Compounder
 
-func renderElement(name string, _htmlstring string) (_tree tree, _rendered string, _err error) {
+func renderElement(name string, _htmlstring string, data any) (_rendered string, _err error) {
 
-	_rendered, _err = renderComponents(name, _htmlstring, GData, 0)
+	_rendered, _err = RenderComponents(name, _htmlstring, data, 0)
 
 	//tree := parse.New("after", idtree)
 
@@ -61,7 +62,7 @@ func renderElement(name string, _htmlstring string) (_tree tree, _rendered strin
 //     3.
 //
 // NOTICE: to avoid infinit recursivity, the rendering fails at a the 10th depth
-func renderComponents(name string, _htmlstring string, data any, _deep int) (_rendered string, _err error) {
+func RenderComponents(name string, _htmlstring string, data any, _deep int) (_rendered string, _err error) {
 	if _deep >= 10 {
 		return "", fmt.Errorf("recursive rendering too deep")
 	}
@@ -152,7 +153,7 @@ func renderComponents(name string, _htmlstring string, data any, _deep int) (_re
 								Owner:  &data,
 								Global: &GData,
 							}
-							str, _err = renderComponents(newcmpid, t.InnerHtmlTemplate(), d, _deep+1)
+							str, _err = RenderComponents(newcmpid, t.InnerHtmlTemplate(), d, _deep+1)
 						}
 
 						// let's go deeper

@@ -24,7 +24,7 @@ Sources of inspiration:
 
 ## Tech
 
-- Go 1.19 and it's wasm compiler
+- Go 1.20 and it's wasm compiler
 - based on the ``syscall/js`` package
 - CSS responsive framework, without any JS code: [Bulma](https://bulma.io/)
 
@@ -55,9 +55,11 @@ icecake
 │   ├── spaserver                   # SPA server 
 │   │   ├── webserver.go                   
 │   │   └── middleware.go                   
+│   ├── framework                   # the icecake package with all framework primitives
+│   │   └── [*.go]                   
 │   ├── spasdk                      # SDK for any SPA client willing to call SPA APIs
 │   │   └── [*.go]                   
-│   ├── webclientsdk                # WebAPI js embedded in Go struct
+│   ├── dom                         # WebAPI js embedded in Go struct
 │   │   └── [*.go]                   
 │
 ├── web                             # source codes and assets required by the front, even server side described in the go file
