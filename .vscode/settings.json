@@ -1,6 +1,6 @@
 {
     "liveServer.settings.port": 5510,
-    "liveServer.settings.root": "/web/mockup",
+    "liveServer.settings.root": "/examples",
     "liveServer.settings.AdvanceCustomBrowserCmdLine": "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe --remote-debugging-port=9222",
     "liveServer.settings.NoBrowser": false,
     "liveServer.settings.fullReload": true,
@@ -10,8 +10,8 @@
         "key": "",
         "passphrase": ""
     },
-     "go.toolsEnvVars": {
-         "GOOS":"js",
-         "GOARCH":"wasm",
-     },
+    "go.toolsEnvVars": {
+        "GOOS": "js",
+        "GOARCH": "wasm",
+    },
 }

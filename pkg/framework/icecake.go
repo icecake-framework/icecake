@@ -3,23 +3,42 @@ package icecake
 import (
 	"bytes"
 	"fmt"
-	"html/template"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/sunraylab/icecake/pkg/dom"
+	"github.com/yuin/goldmark"
 )
 
 /*****************************************************************************/
 
-func RenderElement(htmlTemplate string, data any, elem *dom.Element) {
-	str, _ := renderElement("App", htmlTemplate, data)
-	elem.SetInnerHTML(str)
+func RenderElemHtml(htmlTemplate string, data any, elem *dom.Element) {
+	if elem == nil {
+		dom.ConsoleError("RenderElement failed: Unable to render nil element")
+		return
+	}
+	html, _ := RenderComponents("app", htmlTemplate, data, 0)
+	elem.SetInnerHTML(html)
+}
 
-	// ajoute tous les listeners
+func RenderElemMarkdown(mdtxt string, data any, elem *dom.Element, options ...goldmark.Option) {
+	if elem == nil {
+		dom.ConsoleError("RenderMarkdown failed: Unable to render nil element")
+		return
+	}
 
+	md := goldmark.New(options...)
+	var buf bytes.Buffer
+	err := md.Convert([]byte(mdtxt), &buf)
+	if err != nil {
+		dom.ConsoleWarn("RenderMarkdown failed: %s", err.Error())
+		return
+	}
+
+	html, _ := RenderComponents("app", buf.String(), data, 0)
+	elem.SetInnerHTML(html)
 }
 
 /*****************************************************************************/
@@ -37,12 +56,12 @@ func RenderElement(htmlTemplate string, data any, elem *dom.Element) {
 // 	renderComponents("body", htmlbody, nil, 0)
 // }
 
-type tree struct {
-	root  *Compounder
-	folds map[string]*Compounder
-}
+// type tree struct {
+// 	root  *Compounder
+// 	folds map[string]*Compounder
+// }
 
-type idtree map[string]Compounder
+// type idtree map[string]Compounder
 
 func renderElement(name string, _htmlstring string, data any) (_rendered string, _err error) {
 
@@ -59,15 +78,16 @@ func renderElement(name string, _htmlstring string, data any) (_rendered string,
 //  1. if the component does not have an ID yet, then create one and instantiate it
 //  2. parse component's template, according to go html templating standards
 //  3. execute this template with {{}} langage and component's data and global data
-//     3.
 //
-// NOTICE: to avoid infinit recursivity, the rendering fails at a the 10th depth
+// NOTICE: to avoid infinite recursivity, the rendering fails at a the 10th depth
 func RenderComponents(name string, _htmlstring string, data any, _deep int) (_rendered string, _err error) {
 	if _deep >= 10 {
-		return "", fmt.Errorf("recursive rendering too deep")
+		strerr := fmt.Sprintf("RenderComponents stop at level %d: recursive rendering too deep", _deep)
+		dom.ConsoleError(strerr)
+		return "", fmt.Errorf(strerr)
 	}
 	cmpid := name + "-" + strconv.Itoa(_deep)
-	log.Printf("component:%s level:%d rendering...\n", name, _deep)
+	fmt.Printf("component:%s level:%d rendering...\n", name, _deep)
 
 	// 1. parse
 	tmpCmp := template.Must(template.New(name).Parse(_htmlstring))
@@ -76,8 +96,9 @@ func RenderComponents(name string, _htmlstring string, data any, _deep int) (_re
 	bufCmp := new(bytes.Buffer)
 	errTmp := tmpCmp.Execute(bufCmp, data)
 	if errTmp != nil {
-		log.Printf("component:%s level:%d ERROR applying data to template: '%v'", name, _deep, _htmlstring)
-		return "", _err
+		strerr := fmt.Sprintf("RenderComponents stop at level %d: %q ERROR applying data to template: '%v'", _deep, name, _htmlstring)
+		dom.ConsoleError(strerr)
+		return "", fmt.Errorf(strerr)
 	}
 	htmlstring := bufCmp.String()
 
@@ -106,7 +127,9 @@ func RenderComponents(name string, _htmlstring string, data any, _deep int) (_re
 			// look now for it's corresponding delim_close
 			if to := strings.Index(htmlstring, delim_close); to == -1 {
 				// not corresponding delim_close then stop and return a rendering error
-				return "", fmt.Errorf("close delim not found")
+				strerr := fmt.Sprintf("RenderComponents stop at level %d: close delim not found", _deep)
+				dom.ConsoleError(strerr)
+				return "", fmt.Errorf(strerr)
 
 			} else {
 				// we got a delim_close so we've an opening element
@@ -134,7 +157,7 @@ func RenderComponents(name string, _htmlstring string, data any, _deep int) (_re
 						var str string
 
 						c := reflect.New(comptype)
-						log.Printf("component:%s level:%d instantiating %s with name:%s", name, _deep, c.Type(), newcmpid)
+						fmt.Printf("component:%s level:%d instantiating %s with name:%s", name, _deep, c.Type(), newcmpid)
 
 						switch t := c.Interface().(type) {
 						case CompoundBuilder:
@@ -162,7 +185,7 @@ func RenderComponents(name string, _htmlstring string, data any, _deep int) (_re
 					} else {
 						// the tag is empty or is not a registered component
 						out.WriteString(fmt.Sprintf("<!-- component ic-%q not registered -->", tagName))
-						log.Printf("component not registered")
+						fmt.Printf("component not registered")
 					}
 				}
 			}

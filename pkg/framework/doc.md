@@ -13,7 +13,7 @@ Use the usefull go html templating package to build a page served on the front-e
 - can be published on github pages.
 - interact with the browser API in go.
 
---> see example1
+--> see [example1](./../../examples/example1/readme.md)
 
 ## Building and Embedding standalone Web Components on a website
 
