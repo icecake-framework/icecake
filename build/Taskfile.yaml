@@ -68,6 +68,15 @@ tasks:
     cmds:
       - GOARCH=wasm GOOS=js go build -o ./website/example1.wasm ./wasm/example1.go
 
+  # task -t ./build/Taskfile.yaml build_ex2 
+  build_ex2:
+    dir: '{{.USER_WORKING_DIR}}/examples/example2'
+    sources: 
+      - "./wasm/*.*"
+      - "./../../pkg/**/*"
+    cmds:
+      - GOARCH=wasm GOOS=js go build -o ./website/example2.wasm ./wasm/example2.go
+
   # task -t ./build/Taskfile.yaml dev_front --watch 
   dev_front:
     dir: '{{.USER_WORKING_DIR}}'

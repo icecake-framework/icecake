@@ -31,7 +31,7 @@ func NewEventHandler(callback EventHandlerFunc) *EventHandler {
 		return nil
 	}
 	ret := EventHandler(js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		_p0 := NewEventFromJS(args[0])
+		_p0 := CastEvent(args[0])
 		_returned := callback(_p0)
 		_converted := _returned
 		return _converted
@@ -108,7 +108,7 @@ func NewEventListenerFunc(f func(event *Event)) *EventListener {
 
 func (t *EventListener) allocateHandleEvent() js.Func {
 	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		_p0 := NewEventFromJS(args[0])
+		_p0 := CastEvent(args[0])
 		if t.gofunction != nil {
 			t.gofunction(_p0)
 		} else {
@@ -144,63 +144,4 @@ func (_this *EventListener) HandleEvent(event *Event) {
 	} else {
 		_this.jsValue.Call("handleEvent", _args[0:1]...)
 	}
-}
-
-/******************************************************************************
-* EventTarget
-*******************************************************************************/
-
-// EventTarget
-// https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
-type EventTarget struct {
-	jsValue js.Value
-}
-
-// JSValue returns the js.Value or js.Null() if _this is nil
-func (_this *EventTarget) JSValue() js.Value {
-	if _this == nil {
-		return js.Null()
-	}
-	return _this.jsValue
-}
-
-// NewEventTargetFromJS is casting a js.Value into EventTarget.
-func NewEventTargetFromJS(value js.Value) *EventTarget {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		// TODO: error handling
-		return nil
-	}
-	ret := &EventTarget{}
-	ret.jsValue = value
-	return ret
-}
-
-// NewEventTarget create a new EventTarget
-func NewEventTarget() (_result *EventTarget) {
-	_klass := js.Global().Get("EventTarget")
-	var _args [0]interface{}
-	_returned := _klass.New(_args[0:0]...)
-	return NewEventTargetFromJS(_returned)
-}
-
-/******************************************************************************
-* EventTarget's events
-*******************************************************************************/
-
-// AddEventListener sets up a function that will be called whenever the specified event is delivered to the target.
-//
-// Common targets are Element, or its children, Document, and Window, but the target may be any object that supports events (such as XMLHttpRequest).
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
-func (_this *EventTarget) AddEventListener(_type string, callback *EventListener) {
-	_this.jsValue.Call("addEventListener", _type, callback.JSValue())
-}
-
-// RemoveEventListener removes an event listener previously registered with EventTarget.addEventListener() from the target.
-// The event listener to be removed is identified using a combination of the event type, the event listener function itself,
-// and various optional options that may affect the matching process;
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener
-func (_this *EventTarget) RemoveEventListener(_type string, callback *EventListener) {
-	_this.jsValue.Call("removeEventListener", _type, callback.JSValue())
 }

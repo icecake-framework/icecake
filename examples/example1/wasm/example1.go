@@ -11,7 +11,6 @@ import (
 
 	_ "embed"
 
-	"github.com/sunraylab/icecake/pkg/dom"
 	icecake "github.com/sunraylab/icecake/pkg/framework"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/renderer/html"
@@ -27,31 +26,29 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	doc := dom.GetDocument()
-
 	// 1. demonstrate the use of the go HTML templating package to build page content directly on the front-end.
 	var data1 struct{ Name string }
 	htmlTemplate := `Hello <strong>{{.Name}}</strong>!`
 
 	data1.Name = "Bob"
-	icecake.RenderElemHtml(htmlTemplate, data1, doc.ChildById("ex1a"))
+	icecake.GetElementById("ex1a").RenderHtml(htmlTemplate, data1)
 
 	data1.Name = "Alice"
-	icecake.RenderElemHtml(htmlTemplate, data1, doc.ChildById("ex1b"))
+	icecake.GetElementById("ex1b").RenderHtml(htmlTemplate, data1)
 
 	// To see what happend with a wrong html element ID,
 	// open the console on the browser side.
 	data1.Name = "Carol"
-	icecake.RenderElemHtml(htmlTemplate, data1, doc.ChildById("ex1c"))
+	icecake.GetElementById("ex1c").RenderHtml(htmlTemplate, data1)
 
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.
 	data1.Name = "John"
-	icecake.RenderElemMarkdown("### Markdown\nHello **{{.Name}}**", data1, doc.ChildById("ex1d"))
+	icecake.GetElementById("ex1d").RenderMarkdown("### Markdown\nHello **{{.Name}}**", data1)
 
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive
 	var data2 struct{ Brand string }
 	data2.Brand = "<span class='brand'>Icecake</span>"
-	icecake.RenderElemMarkdown(mymarkdown, data2, doc.ChildById("ex1e"),
+	icecake.GetElementById("ex1e").RenderMarkdown(mymarkdown, data2,
 		goldmark.WithRendererOptions(
 			html.WithUnsafe(),
 		),

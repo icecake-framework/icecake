@@ -16,7 +16,7 @@ func Cast(value js.Value) *MyButton {
 		return nil
 	}
 	ret := &MyButton{}
-	ret.Element = browser.NewElementFromJS(value)
+	ret.Element = browser.CastElement(value)
 	return ret
 }
 

@@ -6,7 +6,6 @@ import (
 	"syscall/js"
 
 	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/lib"
 )
 
 /****************************************************************************
@@ -30,38 +29,59 @@ type Attribute struct {
 	// attr.Value contains the value of the attribute.
 	//
 	// https://developer.mozilla.org/en-US/docs/Web/API/Attr/name
-	attr lib.Attribute
+	name  string
+	value string
 }
 
 /****************************************************************************
 * Attribute's factory
 *****************************************************************************/
 
-// AttrFromJS is casting a js.Value into Attribute
-func NewAttributeFromJS(value js.Value) *Attribute {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastAttribute is casting a js.Value into Attribute
+func CastAttribute(value js.Value) *Attribute {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting Attribute failed")
 		return nil
 	}
-	ret := &Attribute{}
-	ret.attr.Name = value.Get("name").String()
-	ret.attr.Value = value.Get("value").String()
-	ret.ownerElement = NewElementFromJS(value.Get("ownerElement"))
-	return ret
+	cast := new(Attribute)
+	cast.name = value.Get("name").String()
+	cast.value = value.Get("value").String()
+	cast.ownerElement = CastElement(value.Get("ownerElement"))
+	return cast
 }
 
 // NewAttributeToDOM create a new attribut and update the DOM with setattribute
-func NewAttributeToDOM(_attr lib.Attribute, ownerElement *Element) *Attribute {
-	ret := &Attribute{}
-	ret.attr.Name = helper.Normalize(_attr.Name)
-	ret.attr.Value = strings.Trim(_attr.Value, " ")
-	ret.ownerElement = ownerElement
-	ret.ownerElement.JSValue().Call("setAttribute", ret.attr.Name, ret.attr.Value)
-	return ret
-}
+// func NewAttribute(_attr lib.Attribute, ownerElement *Element) *Attribute {
+// 	attr := new(Attribute)
+// 	attr.name = helper.Normalize(_attr.Name)
+// 	attr.value = strings.Trim(_attr.Value, " ")
+// 	attr.ownerElement = ownerElement
+// 	attr.ownerElement.JSValue().Call("setAttribute", attr.name, attr.value)
+// 	return attr
+// }
 
 /****************************************************************************
 * Attribute's Preperties & Methods
 *****************************************************************************/
+
+// String returns normalized formated properties of this attribute
+//
+//	if value is empty, the format is `{name}`
+//	else the format is `{name}="{value}"`
+func (_attr *Attribute) String() (_str string) {
+	if _attr == nil {
+		return ""
+	}
+	_str = helper.Normalize(_attr.name)
+	if _attr.value != "" {
+		sep := "'"
+		if strings.ContainsRune(_attr.value, rune('\'')) {
+			sep = "\""
+		}
+		_str += `=` + sep + _attr.value + sep
+	}
+	return _str
+}
 
 // OwnerElement returns the Element the attribute belongs to.
 //
@@ -76,52 +96,37 @@ func (_attribute *Attribute) OwnerElement() *Element {
 	return _attribute.ownerElement
 }
 
-// String returns normalized formated properties of this attribute
-//
-//	if value is empty, the format is `{name}`
-//	else the format is `{name}="{value}"`
-func (_attribute *Attribute) String() string {
-	if _attribute == nil {
-		return ""
-	}
-	return _attribute.attr.String()
-}
-
 func (_attribute *Attribute) Name() string {
 	if _attribute == nil {
 		return ""
 	}
-	return _attribute.attr.Name
+	return _attribute.name
 }
 
 func (_attribute *Attribute) Value() string {
 	if _attribute == nil {
 		return ""
 	}
-	return _attribute.attr.Value
+	return _attribute.value
 }
 
-func (_attribute *Attribute) Bool() bool {
+func (_attribute *Attribute) IsTrue() bool {
 	if _attribute == nil {
 		return false
 	}
-	if _attribute.Value() == "false" || _attribute.Value() == "0" {
+	if _attribute.value == "false" || _attribute.value == "0" {
 		return false
 	}
 	return true
 }
 
-// Update updates the DOM of the ownerElement with this attribute's value
+// Update updates the DOM of the ownerElement with this attribute's value.
+// The value should be nomamized before call if required.
 func (_attribute *Attribute) Update(_value string) {
-	if _attribute == nil {
-		log.Println("ToDOM() call on a nil Attribute")
+	if _attribute == nil || !_attribute.ownerElement.IsDefined() {
+		log.Println("Update failed")
 		return
 	}
-	if !_attribute.ownerElement.IsDefined() {
-		log.Println("ToDOM() call on an Attribute without ownerElement")
-		return
-	}
-
-	_attribute.attr.Value = _value
-	_attribute.ownerElement.JSValue().Call("setAttribute", string(_attribute.attr.Name), _attribute.attr.Value)
+	_attribute.value = _value
+	_attribute.ownerElement.JSValue().Call("setAttribute", string(_attribute.name), _attribute.value)
 }

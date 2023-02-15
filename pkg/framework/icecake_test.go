@@ -10,14 +10,14 @@ func TestRenderComponent(t *testing.T) {
 	data := struct{ Name string }{
 		Name: "Bob",
 	}
-	out, err := RenderComponents("example0", `html0 Hello <strong>{{.Name}}</strong>!`, data, 0)
+	out, err := unfoldComponents("example0", `html0 Hello <strong>{{.Name}}</strong>!`, data, 0)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	log.Println("------>", out)
 
 	GData["name"] = "Alice"
-	out, err = renderElement("example00", `html00 Hello <strong>{{.name}}</strong>!`, GData)
+	out, err = unfoldComponents("example00", `html00 Hello <strong>{{.name}}</strong>!`, GData, 0)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -47,13 +47,13 @@ func TestRenderComponent(t *testing.T) {
 	// }
 	// log.Println("------>", out)
 
-	out, err = renderElement("example5", `hmlt5 <ic-ex5 />`, GData)
+	out, err = unfoldComponents("example5", `hmlt5 <ic-ex5 />`, GData, 0)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	log.Println("------>", out)
 
-	out, err = renderElement("example6", `hmlt6 <ic-ex6 />`, GData)
+	out, err = unfoldComponents("example6", `hmlt6 <ic-ex6 />`, GData, 0)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

@@ -16,9 +16,6 @@ import (
 	"github.com/sunraylab/icecake/pkg/spasdk"
 )
 
-//go:embed hello.md
-var hellotxt string
-
 // the main func is required by the wasm GO builder
 // outputs will appears in the console of the browser
 func main() {
@@ -31,21 +28,6 @@ func main() {
 		fmt.Println("Go/WASM stopped")
 		os.Exit(1)
 	}
-
-	// doc := dom.GetDocument()
-
-	// data := struct{ Name string }{
-	// 	Name: "Bob",
-	// }
-	// icecake.RenderElement(`example0 : Hello <strong>{{.Name}}</strong>!`, data, doc.ChildById("example0"))
-
-	// icecake.RenderElement(`example1 : <ic-ex1 />`, data, doc.ChildById("example1"))
-
-	// icecake.RenderElement(`example2 : <ic-ex2 />`, data, doc.ChildById("example2"))
-
-	// icecake.RenderElement(`example3 : <ic-ex3 />`, data, doc.ChildById("example3"))
-
-	// icecake.RenderElement(`example4 : <ic-ex4 />`, data, doc.ChildById("example4"))
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")

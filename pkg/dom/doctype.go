@@ -15,17 +15,16 @@ type DocumentType struct {
 	SystemId string // eg "http://www.w3.org/TR/html4/strict.dtd", now an empty string for HTML.
 }
 
-// MakeDocumentTypeFromJS is casting a js.Value into DocumentType.
-func MakeDocumentTypeFromJS(value js.Value) *DocumentType {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastDocumentType is casting a js.Value into DocumentType.
+func CastDocumentType(value js.Value) *DocumentType {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting DocumentType failed")
 		return nil
 	}
-	ret := &DocumentType{}
+	ret := new(DocumentType)
 	ret.jsValue = value
-
 	ret.Name = (ret.jsValue.Get("name")).String()
 	ret.PublicId = (ret.jsValue.Get("publicId")).String()
 	ret.SystemId = (ret.jsValue.Get("SystemId")).String()
-
 	return ret
 }

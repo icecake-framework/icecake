@@ -1,25 +1,20 @@
 package lib
 
 import (
-	"log"
 	"strings"
 
 	"github.com/sunraylab/icecake/internal/helper"
 )
 
-type XXXQualifiedName string
+type QualifiedName string
 
 // Prefix returns the namespace prefix of the Name, or an empty string if no prefix is specified.
 // For example, if the qualified name is xml:lang, the returned prefix is xml.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Attr/prefix
-func (_name *XXXQualifiedName) Prefix() string {
-	if _name == nil {
-		log.Println("Prefix() call on a nil Name")
-		return ""
-	}
-	if strings.Contains(string(*_name), ":") {
-		s := strings.Split(string(*_name), ":")
+func (_qname QualifiedName) Prefix() string {
+	if strings.Contains(string(_qname), ":") {
+		s := strings.Split(string(_qname), ":")
 		return helper.Normalize(s[0])
 	}
 	return ""
@@ -30,16 +25,11 @@ func (_name *XXXQualifiedName) Prefix() string {
 // For example, if the qualified name is xml:lang, the returned local name is lang.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Attr/localName
-func (_name *XXXQualifiedName) LocalName() (_ret string) {
-	if _name == nil {
-		log.Println("LocalName() call on a nil Name")
-		return ""
+func (_qname QualifiedName) LocalName() string {
+	name := helper.Normalize(string(_qname))
+	if strings.Contains(name, ":") {
+		s := strings.Split(name, ":")
+		name = s[1]
 	}
-
-	_ret = helper.Normalize(string(*_name))
-	if strings.Contains(_ret, ":") {
-		s := strings.Split(_ret, ":")
-		_ret = s[1]
-	}
-	return _ret
+	return name
 }

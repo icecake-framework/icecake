@@ -2,6 +2,7 @@ package dom
 
 import (
 	"net/url"
+	"strings"
 	"syscall/js"
 )
 
@@ -16,9 +17,10 @@ type Window struct {
 	EventTarget
 }
 
-// NewWindowFromJS is casting a js.Value into Window.
-func NewWindowFromJS(value js.Value) *Window {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastWindow is casting a js.Value into Window.
+func CastWindow(value js.Value) *Window {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting Window failed")
 		return nil
 	}
 	ret := new(Window)
@@ -30,7 +32,7 @@ func NewWindowFromJS(value js.Value) *Window {
 // type Window (idl: Window).
 func GetWindow() *Window {
 	value := js.Global().Get("window")
-	return NewWindowFromJS(value)
+	return CastWindow(value)
 }
 
 /******************************************************************************
@@ -41,9 +43,9 @@ func GetWindow() *Window {
 // type Document (idl: Document).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/document
-func (_this *Window) Document() *Document {
+func (_this *Window) GetDocument() *Document {
 	value := _this.jsValue.Get("document")
-	return NewDocumentFromJS(value)
+	return CastDocument(value)
 }
 
 // Location represents the URL of the current window.
@@ -51,7 +53,7 @@ func (_this *Window) Document() *Document {
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/location
 func (_this *Window) Location() *Location {
 	value := _this.jsValue.Get("location")
-	return NewLocationFromJS(value)
+	return CastLocation(value)
 }
 
 // History returning attribute 'history' with
@@ -61,7 +63,7 @@ func (_this *Window) Location() *Location {
 func (_this *Window) History() *History {
 	var ret *History
 	value := _this.jsValue.Get("history")
-	ret = NewHistoryFromJS(value)
+	ret = CastHistory(value)
 	return ret
 }
 
@@ -77,7 +79,7 @@ func (_this *Window) Closed() bool {
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/top
 func (_this *Window) Top() *Window {
 	value := _this.jsValue.Get("top")
-	return NewWindowFromJS(value)
+	return CastWindow(value)
 }
 
 // Navigator eturns a reference to the Navigator object, which has methods and properties about the application running the script.
@@ -86,7 +88,7 @@ func (_this *Window) Top() *Window {
 func (_this *Window) Navigator() *Navigator {
 	var ret *Navigator
 	value := _this.jsValue.Get("navigator")
-	ret = NewNavigatorFromJS(value)
+	ret = CastNavigator(value)
 	return ret
 }
 
@@ -178,7 +180,7 @@ func (_this *Window) DevicePixelRatio() float64 {
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
 func (_this *Window) SessionStorage() *Storage {
 	value := _this.jsValue.Get("sessionStorage")
-	return NewStorageFromJS(value)
+	return CastStorage(value)
 }
 
 // allows you to access a Storage object for the Document's origin; the stored data is saved across browser sessions.
@@ -187,7 +189,7 @@ func (_this *Window) SessionStorage() *Storage {
 func (_this *Window) LocalStorage() *Storage {
 	var ret *Storage
 	value := _this.jsValue.Get("localStorage")
-	ret = NewStorageFromJS(value)
+	ret = CastStorage(value)
 	return ret
 }
 
@@ -196,22 +198,23 @@ func (_this *Window) LocalStorage() *Storage {
 // The special target keywords, _self, _blank, _parent, and _top, can also be used.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/open
-func (_this *Window) Open(url *url.URL, target string) (_result *Window) {
-	var _returned js.Value
+func (_this *Window) Open(url *url.URL, target string) *Window {
+	var win js.Value
 	if url == nil {
 		// a blank page is opened into the targeted browsing context.
-		_returned = _this.jsValue.Call("open")
+		win = _this.jsValue.Call("open")
 	} else {
-		_returned = _this.jsValue.Call("open", url.String(), target)
+		win = _this.jsValue.Call("open", url.String(), target)
 
 	}
-	return NewWindowFromJS(_returned)
+	return CastWindow(win)
 }
 
 // instructs the browser to display a dialog with an optional message, and to wait until the user dismisses the dialog.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/alert
 func (_this *Window) Alert(message string) {
+	message = strings.Trim(message, " ")
 	if message == "" {
 		_this.jsValue.Call("alert")
 	} else {
@@ -222,27 +225,27 @@ func (_this *Window) Alert(message string) {
 // instructs the browser to display a dialog with an optional message, and to wait until the user either confirms or cancels the dialog.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/confirm
-func (_this *Window) Confirm(message string) (_result bool) {
-	_returned := _this.jsValue.Call("confirm", message)
-	return (_returned).Bool()
+func (_this *Window) Confirm(message string) bool {
+	ok := _this.jsValue.Call("confirm", message)
+	return (ok).Bool()
 }
 
 // instructs the browser to display a dialog with an optional message prompting the user to input some text,
 // and to wait until the user either submits the text or cancels the dialog.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/prompt
-func (_this *Window) Prompt(message string, _default string) (_result string) {
-	var _returned js.Value
+func (_this *Window) Prompt(message string, _default string) (_rsp string) {
+	var rsp js.Value
 	if message == "" {
-		_returned = _this.jsValue.Call("prompt")
+		rsp = _this.jsValue.Call("prompt")
 	} else {
-		_returned = _this.jsValue.Call("prompt", message)
+		rsp = _this.jsValue.Call("prompt", message)
 	}
 
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_result = _returned.String()
+	if rsp.Type() != js.TypeNull && rsp.Type() != js.TypeUndefined {
+		_rsp = rsp.String()
 	}
-	return _result
+	return _rsp
 }
 
 // Opens the print dialog to print the current document.
@@ -285,23 +288,21 @@ func (_this *Window) Blur() {
 * Window's GENERIC_EVENT
 ******************************************************************************/
 
-type ListenerWindow_Generic func(event *Event, target *Window)
-
 // event attribute: Event
-func makeWindow_Generic_Event(listener ListenerWindow_Generic) js.Func {
+func makeWindow_Generic_Event(listener func(event *Event, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		value := args[0]
-		evt := NewEventFromJS(value)
-		target := NewWindowFromJS(value.Get("target"))
+		evt := CastEvent(value)
+		target := CastWindow(value.Get("target"))
 		listener(evt, target)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddGenericEvent(evttype GENERIC_EVENT, listener ListenerWindow_Generic) js.Func {
+func (_this *Window) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Window)) js.Func {
 	callback := makeWindow_Generic_Event(listener)
-	_this.jsValue.Call("addEventListener", evttype, callback)
+	_this.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -309,25 +310,23 @@ func (_this *Window) AddGenericEvent(evttype GENERIC_EVENT, listener ListenerWin
 * Window's MOUSE_EVENT
 ******************************************************************************/
 
-type ListenerWindow_Mouse func(event *MouseEvent, target *Window)
-
 // event attribute: MouseEvent
-func makeWindow_Mouse_Event(listener ListenerWindow_Mouse) js.Func {
+func makeWindow_Mouse_Event(listener func(event *MouseEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *MouseEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewMouseEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastMouseEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddMouseEvent(evttype MOUSE_EVENT, listener ListenerWindow_Mouse) js.Func {
+func (_this *Window) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Window)) js.Func {
 	callback := makeWindow_Mouse_Event(listener)
-	_this.jsValue.Call("addEventListener", evttype, callback)
+	_this.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -335,23 +334,21 @@ func (_this *Window) AddMouseEvent(evttype MOUSE_EVENT, listener ListenerWindow_
 * Window's BeforeUnloadEvent
 ******************************************************************************/
 
-type ListenerWindow_BeforeUnload func(event *BeforeUnloadEvent, target *Window)
-
 // event attribute: BeforeUnloadEvent
-func makeWindow_BeforeUnload_Event(listener ListenerWindow_BeforeUnload) js.Func {
+func makeWindow_BeforeUnload_Event(listener func(event *BeforeUnloadEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *BeforeUnloadEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewBeforeUnloadEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastBeforeUnloadEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddBeforeUnloadEvent(listener func(event *BeforeUnloadEvent, currentTarget *Window)) js.Func {
+func (_this *Window) AddBeforeUnloadEvent(listener func(event *BeforeUnloadEvent, target *Window)) js.Func {
 	callback := makeWindow_BeforeUnload_Event(listener)
 	_this.jsValue.Call("addEventListener", "beforeunload", callback)
 	return callback
@@ -361,16 +358,14 @@ func (_this *Window) AddBeforeUnloadEvent(listener func(event *BeforeUnloadEvent
 * Window's FOCUS_EVENT
 ******************************************************************************/
 
-type ListenerWindow_Focus func(event *FocusEvent, target *Window)
-
 // event attribute: FocusEvent
-func makeWindow_Focus_Event(listener ListenerWindow_Focus) js.Func {
+func makeWindow_Focus_Event(listener func(event *FocusEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *FocusEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewFocusEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastFocusEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -379,9 +374,9 @@ func makeWindow_Focus_Event(listener ListenerWindow_Focus) js.Func {
 
 // AddBlur is adding doing AddEventListener for 'Blur' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_this *Window) AddFocusEvent(evttype FOCUS_EVENT, listener ListenerWindow_Focus) js.Func {
+func (_this *Window) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *FocusEvent, target *Window)) js.Func {
 	callback := makeWindow_Focus_Event(listener)
-	_this.jsValue.Call("addEventListener", evttype, callback)
+	_this.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -389,25 +384,23 @@ func (_this *Window) AddFocusEvent(evttype FOCUS_EVENT, listener ListenerWindow_
 * Window's POINTER_EVENT
 *****************************************************************************/
 
-type ListenerWindow_Pointer func(event *PointerEvent, target *Window)
-
 // event attribute: PointerEvent
-func makeWindow_Pointer_Event(listener ListenerWindow_Pointer) js.Func {
+func makeWindow_Pointer_Event(listener func(event *PointerEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *PointerEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewPointerEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastPointerEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddPointerEvent(evttype POINTER_EVENT, listener ListenerWindow_Pointer) js.Func {
+func (_this *Window) AddPointerEvent(evttype POINTER_EVENT, listener func(event *PointerEvent, target *Window)) js.Func {
 	callback := makeWindow_Pointer_Event(listener)
-	_this.jsValue.Call("addEventListener", evttype, callback)
+	_this.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -415,16 +408,14 @@ func (_this *Window) AddPointerEvent(evttype POINTER_EVENT, listener ListenerWin
 * Window's HASCHANGED_EVENT
 *****************************************************************************/
 
-type ListenerWindow_HashChanged func(event *HashChangeEvent, target *Window)
-
 // event attribute: HashChangeEvent
-func makeWindow_HashChange_Event(listener ListenerWindow_HashChanged) js.Func {
+func makeWindow_HashChange_Event(listener func(event *HashChangeEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *HashChangeEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewHashChangeEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastHashChangeEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -433,7 +424,7 @@ func makeWindow_HashChange_Event(listener ListenerWindow_HashChanged) js.Func {
 
 // AddHashChange is adding doing AddEventListener for 'HashChange' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_this *Window) AddHashChangeEvent(listener ListenerWindow_HashChanged) js.Func {
+func (_this *Window) AddHashChangeEvent(listener func(event *HashChangeEvent, target *Window)) js.Func {
 	cb := makeWindow_HashChange_Event(listener)
 	_this.jsValue.Call("addEventListener", "hashchange", cb)
 	return cb
@@ -443,16 +434,14 @@ func (_this *Window) AddHashChangeEvent(listener ListenerWindow_HashChanged) js.
 * Window's INPUT_EVENT
 *****************************************************************************/
 
-type ListenerWindow_Input func(event *InputEvent, target *Window)
-
 // event attribute: InputEvent
-func makeWindow_Input_Event(listener ListenerWindow_Input) js.Func {
+func makeWindow_Input_Event(listener func(event *InputEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *InputEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewInputEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastInputEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -461,9 +450,9 @@ func makeWindow_Input_Event(listener ListenerWindow_Input) js.Func {
 
 // AddInput is adding doing AddEventListener for 'Input' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_this *Window) AddInputEvent(evttype INPUT_EVENT, listener ListenerWindow_Input) js.Func {
+func (_this *Window) AddInputEvent(evttype INPUT_EVENT, listener func(event *InputEvent, target *Window)) js.Func {
 	callback := makeWindow_Input_Event(listener)
-	_this.jsValue.Call("addEventListener", evttype, callback)
+	_this.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -471,25 +460,23 @@ func (_this *Window) AddInputEvent(evttype INPUT_EVENT, listener ListenerWindow_
 * Window's KEYBOARD_EVENT
 *****************************************************************************/
 
-type ListenerWindow_Keyboard func(event *KeyboardEvent, target *Window)
-
 // event attribute: KeyboardEvent
-func makeWindow_Keyboard_Event(listener ListenerWindow_Keyboard) js.Func {
+func makeWindow_Keyboard_Event(listener func(event *KeyboardEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *KeyboardEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewKeyboardEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastKeyboardEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddKeyboardEvent(evttype KEYBOARD_EVENT, listener ListenerWindow_Keyboard) js.Func {
+func (_this *Window) AddKeyboardEvent(evttype KEYBOARD_EVENT, listener func(event *KeyboardEvent, target *Window)) js.Func {
 	callback := makeWindow_Keyboard_Event(listener)
-	_this.jsValue.Call("addEventListener", evttype, callback)
+	_this.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -497,25 +484,23 @@ func (_this *Window) AddKeyboardEvent(evttype KEYBOARD_EVENT, listener ListenerW
 * Window's PAGETRANSITION_EVENT
 *****************************************************************************/
 
-type ListenerWindow_PageTransition func(event *PageTransitionEvent, target *Window)
-
 // event attribute: PageTransitionEvent
-func makeWindow_PageTransition_Event(listener ListenerWindow_PageTransition) js.Func {
+func makeWindow_PageTransition_Event(listener func(event *PageTransitionEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *PageTransitionEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewPageTransitionEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastPageTransitionEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddPageTransitionEvent(evttype PAGETRANSITION_EVENT, listener ListenerWindow_PageTransition) js.Func {
+func (_this *Window) AddPageTransitionEvent(evttype PAGETRANSITION_EVENT, listener func(event *PageTransitionEvent, target *Window)) js.Func {
 	callback := makeWindow_PageTransition_Event(listener)
-	_this.jsValue.Call("addEventListener", evttype, callback)
+	_this.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -523,23 +508,21 @@ func (_this *Window) AddPageTransitionEvent(evttype PAGETRANSITION_EVENT, listen
 * Window's UI_EVENT
 *****************************************************************************/
 
-type ListenerWindow_UI func(event *UIEvent, target *Window)
-
 // event attribute: UIEvent
-func makeWindow_UI_Event(listener ListenerWindow_UI) js.Func {
+func makeWindow_UI_Event(listener func(event *UIEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *UIEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewUIEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastUIEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddResizeEvent(listener ListenerWindow_UI) js.Func {
+func (_this *Window) AddResizeEvent(listener func(event *UIEvent, target *Window)) js.Func {
 	callback := makeWindow_UI_Event(listener)
 	_this.jsValue.Call("addEventListener", "resize", callback)
 	return callback
@@ -549,16 +532,14 @@ func (_this *Window) AddResizeEvent(listener ListenerWindow_UI) js.Func {
 * Window's WHEEL_EVENT
 *****************************************************************************/
 
-type ListenerWindow_Wheel func(event *WheelEvent, target *Window)
-
 // event attribute: WheelEvent
-func makeWindow_Wheel_Event(listener ListenerWindow_Wheel) js.Func {
+func makeWindow_Wheel_Event(listener func(event *WheelEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var ret *WheelEvent
 		value := args[0]
 		incoming := value.Get("target")
-		ret = NewWheelEventFromJS(value)
-		src := NewWindowFromJS(incoming)
+		ret = CastWheelEvent(value)
+		src := CastWindow(incoming)
 		listener(ret, src)
 		return js.Undefined()
 	}
@@ -567,7 +548,7 @@ func makeWindow_Wheel_Event(listener ListenerWindow_Wheel) js.Func {
 
 // AddWheel is adding doing AddEventListener for 'Wheel' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_this *Window) AddWheelEvent(listener ListenerWindow_Wheel) js.Func {
+func (_this *Window) AddWheelEvent(listener func(event *WheelEvent, target *Window)) js.Func {
 	callback := makeWindow_Wheel_Event(listener)
 	_this.jsValue.Call("addEventListener", "wheel", callback)
 	return callback

@@ -9,34 +9,29 @@ type Navigator struct {
 	jsValue js.Value
 }
 
-// NewNavigatorFromJS is casting a js.Value into Navigator.
-func NewNavigatorFromJS(value js.Value) *Navigator {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastNavigator is casting a js.Value into Navigator.
+func CastNavigator(value js.Value) *Navigator {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting Navigator failed")
 		return nil
 	}
-	ret := new(Navigator)
-	ret.jsValue = value
-	return ret
+	cast := new(Navigator)
+	cast.jsValue = value
+	return cast
 }
 
 // UserAgent returns the user agent string for the current browser.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent
-func (_this *Navigator) UserAgent() string {
-	var ret string
-	value := _this.jsValue.Get("userAgent")
-	ret = (value).String()
-	return ret
+func (_navigator *Navigator) UserAgent() string {
+	return _navigator.jsValue.Get("userAgent").String()
 }
 
 // Language returns a string representing the preferred language of the user, usually the language of the browser UI.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
-func (_this *Navigator) Language() string {
-	var ret string
-	value := _this.jsValue.Get("language")
-	ret = (value).String()
-	return ret
+func (_navigator *Navigator) Language() string {
+	return _navigator.jsValue.Get("language").String()
 }
 
 // OnLine Returns the online status of the browser.
@@ -47,16 +42,13 @@ func (_this *Navigator) Language() string {
 // For example, the property should return false when users click links soon after they lose internet connection.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine
-func (_this *Navigator) OnLine() bool {
-	var ret bool
-	value := _this.jsValue.Get("onLine")
-	ret = (value).Bool()
-	return ret
+func (_navigator *Navigator) OnLine() bool {
+	return _navigator.jsValue.Get("onLine").Bool()
 }
 
 // CookieEnabled eturns a Boolean value that indicates whether cookies are enabled or not.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled
-func (_this *Navigator) CookieEnabled() bool {
-	return _this.jsValue.Get("cookieEnabled").Bool()
+func (_navigator *Navigator) CookieEnabled() bool {
+	return _navigator.jsValue.Get("cookieEnabled").Bool()
 }

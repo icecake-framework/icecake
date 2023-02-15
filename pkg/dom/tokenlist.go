@@ -22,14 +22,15 @@ type TokenList struct {
 }
 
 // DOMTokenListFromJS is casting a js.Value into DOMTokenList.
-func NewTokenListFromJS(value js.Value) (_ret *TokenList) {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+func CastTokenList(value js.Value) *TokenList {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting TokenList failed")
 		return nil
 	}
-	_ret = new(TokenList)
-	_ret.jsValue = value
-	_ret.tokens = lib.MakeTokens(_ret.jsValue.Get("value").String())
-	return _ret
+	cast := new(TokenList)
+	cast.jsValue = value
+	cast.tokens = lib.MakeTokens(cast.jsValue.Get("value").String())
+	return cast
 }
 
 /****************************************************************************
@@ -44,13 +45,13 @@ func (_thisList *TokenList) Count() int {
 // String returns the value of the list serialized as a string
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/value
-func (_thisList *TokenList) String() (_ret string) {
+func (_thisList *TokenList) String() string {
 	return _thisList.tokens.String()
 }
 
 // Item returns an item in the list, determined by its position in the list, its index.
 // Returns an empty string if the index is out of range.
-func (_thisList *TokenList) At(index int) (_result string) {
+func (_thisList *TokenList) At(index int) string {
 	if index >= 0 && index < len(_thisList.tokens) {
 		return _thisList.tokens[index]
 	}
@@ -60,7 +61,7 @@ func (_thisList *TokenList) At(index int) (_result string) {
 // Has return true if token is found within the list.
 // Has is the alias of the webapi.Contains
 // token is helper.Normalized before check
-func (_thisList *TokenList) Has(token string) (_result bool) {
+func (_thisList *TokenList) Has(token string) bool {
 	return _thisList.tokens.Has(token)
 }
 
@@ -93,19 +94,19 @@ func (_thisList *TokenList) Remove(tokens ...string) *TokenList {
 }
 
 // Toggle removes an existing token from the list or add it if it doesn't exist in the list.
-func (_thisList *TokenList) Toggle(token string) (_updated bool) {
-	_updated = _thisList.tokens.Toggle(token)
-	if _updated {
+func (_thisList *TokenList) Toggle(token string) bool {
+	update := _thisList.tokens.Toggle(token)
+	if update {
 		_thisList.jsValue.Set("value", _thisList.String())
 	}
-	return _updated
+	return update
 }
 
 // Replace chain a Remove and a Add
-func (_thisList *TokenList) Replace(token string, newToken string) (_updated bool) {
-	_updated = _thisList.tokens.Replace(token, newToken)
-	if _updated {
+func (_thisList *TokenList) Replace(token string, newToken string) bool {
+	update := _thisList.tokens.Replace(token, newToken)
+	if update {
 		_thisList.jsValue.Set("value", _thisList.String())
 	}
-	return _updated
+	return update
 }

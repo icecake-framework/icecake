@@ -1,6 +1,7 @@
 package dom
 
 import (
+	"net/url"
 	"syscall/js"
 )
 
@@ -80,17 +81,10 @@ type Event struct {
 	jsValue js.Value
 }
 
-// JSValue returns the js.Value or js.Null() if _this is nil
-// func (_this *Event) JSValue() js.Value {
-// 	if _this == nil {
-// 		return js.Null()
-// 	}
-// 	return _this.jsValue
-// }
-
-// NewEventFromJS is casting a js.Value into Event.
-func NewEventFromJS(value js.Value) *Event {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastEvent is casting a js.Value into Event.
+func CastEvent(value js.Value) *Event {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting Event failed")
 		return nil
 	}
 	ret := new(Event)
@@ -109,25 +103,25 @@ func NewEventFromJS(value js.Value) *Event {
 // Commonly used to refer to the specific event, such as click, load, or error
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Event/type
-func (_this *Event) Type() string {
-	return _this.jsValue.Get("type").String()
+func (_evt *Event) Type() string {
+	return _evt.jsValue.Get("type").String()
 }
 
 // Target: a reference to the object onto which the event was dispatched.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Event/target
-func (_this *Event) Target() *EventTarget {
-	value := _this.jsValue.Get("target")
-	return NewEventTargetFromJS(value)
+func (_evt *Event) Target() *EventTarget {
+	target := _evt.jsValue.Get("target")
+	return CastEventTarget(target)
 }
 
 // CurrentTarget always refers to the element to which the event handler has been attached,
 // as opposed to Event.target, which identifies the element on which the event occurred and which may be its descendant.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Event/currentTarget
-func (_this *Event) CurrentTarget() *EventTarget {
-	value := _this.jsValue.Get("currentTarget")
-	return NewEventTargetFromJS(value)
+func (_evt *Event) CurrentTarget() *EventTarget {
+	target := _evt.jsValue.Get("currentTarget")
+	return CastEventTarget(target)
 }
 
 /*********************************************************************************
@@ -141,26 +135,31 @@ type HashChangeEvent struct {
 	Event
 }
 
-// NewHashChangeEventFromJS is casting a js.Value into HashChangeEvent.
-func NewHashChangeEventFromJS(value js.Value) *HashChangeEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastHashChangeEvent is casting a js.Value into HashChangeEvent.
+func CastHashChangeEvent(value js.Value) *HashChangeEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting HashChangeEvent failed")
 		return nil
 	}
-	ret := &HashChangeEvent{}
+	ret := new(HashChangeEvent)
 	ret.jsValue = value
 	return ret
 }
 
 // OldURL returning attribute 'oldURL' with
 // type string (idl: USVString).
-func (_this *HashChangeEvent) OldURL() string {
-	return _this.jsValue.Get("oldURL").String()
+func (_evt *HashChangeEvent) OldURL() *url.URL {
+	ref := _evt.jsValue.Get("oldURL").String()
+	u, _ := url.Parse(ref)
+	return u
 }
 
 // NewURL returning attribute 'newURL' with
 // type string (idl: USVString).
-func (_this *HashChangeEvent) NewURL() string {
-	return _this.jsValue.Get("newURL").String()
+func (_evt *HashChangeEvent) NewURL() *url.URL {
+	ref := _evt.jsValue.Get("newURL").String()
+	u, _ := url.Parse(ref)
+	return u
 }
 
 /*********************************************************************************
@@ -182,9 +181,10 @@ type PageTransitionEvent struct {
 	Event
 }
 
-// NewPageTransitionEventFromJS is casting a js.Value into PageTransitionEvent.
-func NewPageTransitionEventFromJS(value js.Value) *PageTransitionEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastPageTransitionEvent is casting a js.Value into PageTransitionEvent.
+func CastPageTransitionEvent(value js.Value) *PageTransitionEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting PageTransitionEvent failed")
 		return nil
 	}
 	ret := new(PageTransitionEvent)
@@ -193,8 +193,8 @@ func NewPageTransitionEventFromJS(value js.Value) *PageTransitionEvent {
 }
 
 // Persisted returning attribute 'persisted' with
-func (_this *PageTransitionEvent) Persisted() bool {
-	return _this.jsValue.Get("persisted").Bool()
+func (_evt *PageTransitionEvent) Persisted() bool {
+	return _evt.jsValue.Get("persisted").Bool()
 }
 
 /*********************************************************************************
@@ -208,9 +208,10 @@ type BeforeUnloadEvent struct {
 	Event
 }
 
-// NewBeforeUnloadEventFromJS is casting a js.Value into BeforeUnloadEvent.
-func NewBeforeUnloadEventFromJS(value js.Value) *BeforeUnloadEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastBeforeUnloadEvent is casting a js.Value into BeforeUnloadEvent.
+func CastBeforeUnloadEvent(value js.Value) *BeforeUnloadEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting BeforeUnloadEvent failed")
 		return nil
 	}
 	ret := new(BeforeUnloadEvent)
@@ -219,13 +220,13 @@ func NewBeforeUnloadEventFromJS(value js.Value) *BeforeUnloadEvent {
 }
 
 // ReturnValue returning attribute 'returnValue' with
-func (_this *BeforeUnloadEvent) ReturnValue() string {
-	return _this.jsValue.Get("returnValue").String()
+func (_evt *BeforeUnloadEvent) ReturnValue() string {
+	return _evt.jsValue.Get("returnValue").String()
 }
 
 // SetReturnValue setting attribute 'returnValue' with
-func (_this *BeforeUnloadEvent) SetReturnValue(value string) {
-	_this.jsValue.Set("returnValue", value)
+func (_evt *BeforeUnloadEvent) SetReturnValue(value string) {
+	_evt.jsValue.Set("returnValue", value)
 }
 
 /*********************************************************************************
@@ -239,9 +240,10 @@ type UIEvent struct {
 	Event
 }
 
-// NewUIEventFromJS is casting a js.Value into UIEvent.
-func NewUIEventFromJS(value js.Value) *UIEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastUIEvent is casting a js.Value into UIEvent.
+func CastUIEvent(value js.Value) *UIEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting UIEvent failed")
 		return nil
 	}
 	ret := new(UIEvent)
@@ -250,13 +252,16 @@ func NewUIEventFromJS(value js.Value) *UIEvent {
 }
 
 // View Returns a WindowProxy that contains the view that generated the event.
-func (_this *UIEvent) View() js.Value {
-	return _this.jsValue.Get("view")
+func (_evt *UIEvent) View() *Window {
+	win := _evt.jsValue.Get("view")
+	return CastWindow(win)
 }
 
-// Detail details about the event, depending on the event type.
-func (_this *UIEvent) Detail() int {
-	return _this.jsValue.Get("detail").Int()
+// Detail when non-zero, provides the current (or next, depending on the event) click count.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
+func (_evt *UIEvent) Detail() int {
+	return _evt.jsValue.Get("detail").Int()
 }
 
 /*********************************************************************************
@@ -283,9 +288,10 @@ type MouseEvent struct {
 	UIEvent
 }
 
-// NewMouseEventFromJS is casting a js.Value into MouseEvent.
-func NewMouseEventFromJS(value js.Value) *MouseEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastMouseEvent is casting a js.Value into MouseEvent.
+func CastMouseEvent(value js.Value) *MouseEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting MouseEvent failed")
 		return nil
 	}
 	ret := new(MouseEvent)
@@ -326,7 +332,7 @@ func (_this *MouseEvent) Buttons() int {
 // RelatedTarget returning attribute 'relatedTarget' with
 func (_this *MouseEvent) RelatedTarget() *EventTarget {
 	value := _this.jsValue.Get("relatedTarget")
-	return NewEventTargetFromJS(value)
+	return CastEventTarget(value)
 }
 
 // ScreenX returning attribute 'screenX' with
@@ -389,7 +395,7 @@ func (_this *MouseEvent) MovementY() int {
 	return _this.jsValue.Get("movementY").Int()
 }
 
-func (_this *MouseEvent) GetModifierState(keyArg string) (_result bool) {
+func (_this *MouseEvent) GetModifierState(keyArg string) bool {
 	return _this.jsValue.Call("getModifierState", keyArg).Bool()
 }
 
@@ -409,9 +415,10 @@ type WheelEvent struct {
 	MouseEvent
 }
 
-// NewWheelEventFromJS is casting a js.Value into WheelEvent.
-func NewWheelEventFromJS(value js.Value) *WheelEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastWheelEvent is casting a js.Value into WheelEvent.
+func CastWheelEvent(value js.Value) *WheelEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting MouseEvent failed")
 		return nil
 	}
 	ret := &WheelEvent{}
@@ -455,8 +462,9 @@ type FocusEvent struct {
 }
 
 // NewFocusEventFromJS is casting a js.Value into FocusEvent.
-func NewFocusEventFromJS(value js.Value) *FocusEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+func CastFocusEvent(value js.Value) *FocusEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting FocusEvent failed")
 		return nil
 	}
 	ret := new(FocusEvent)
@@ -465,9 +473,9 @@ func NewFocusEventFromJS(value js.Value) *FocusEvent {
 }
 
 // RelatedTarget returning attribute 'relatedTarget'
-func (_this *FocusEvent) RelatedTarget() *EventTarget {
-	value := _this.jsValue.Get("relatedTarget")
-	return NewEventTargetFromJS(value)
+func (_evt *FocusEvent) RelatedTarget() *EventTarget {
+	value := _evt.jsValue.Get("relatedTarget")
+	return CastEventTarget(value)
 }
 
 /**********************************************************************************
@@ -493,9 +501,10 @@ type PointerEvent struct {
 	MouseEvent
 }
 
-// NewPointerEventFromJS is casting a js.Value into PointerEvent.
-func NewPointerEventFromJS(value js.Value) *PointerEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastPointerEvent is casting a js.Value into PointerEvent.
+func CastPointerEvent(value js.Value) *PointerEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting FocusEvent failed")
 		return nil
 	}
 	ret := new(PointerEvent)
@@ -570,9 +579,10 @@ type InputEvent struct {
 	UIEvent
 }
 
-// NewInputEventFromJS is casting a js.Value into InputEvent.
-func NewInputEventFromJS(value js.Value) *InputEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastInputEvent is casting a js.Value into InputEvent.
+func CastInputEvent(value js.Value) *InputEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting InputEvent failed")
 		return nil
 	}
 	ret := new(InputEvent)
@@ -584,16 +594,6 @@ func NewInputEventFromJS(value js.Value) *InputEvent {
 func (_this *InputEvent) Data() string {
 	return _this.jsValue.Get("data").String()
 }
-
-// func (_this *InputEvent) Data() *string {
-// 	var ret *string
-// 	value := _this.jsValue.Get("data")
-// 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-// 		__tmp := (value).String()
-// 		ret = &__tmp
-// 	}
-// 	return ret
-// }
 
 // IsComposing returning attribute 'isComposing' with
 func (_this *InputEvent) IsComposing() bool {
@@ -630,9 +630,10 @@ type KeyboardEvent struct {
 	UIEvent
 }
 
-// NewKeyboardEventFromJS is casting a js.Value into KeyboardEvent.
-func NewKeyboardEventFromJS(value js.Value) *KeyboardEvent {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastKeyboardEvent is casting a js.Value into KeyboardEvent.
+func CastKeyboardEvent(value js.Value) *KeyboardEvent {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting KeyboardEvent failed")
 		return nil
 	}
 	ret := new(KeyboardEvent)
@@ -698,6 +699,6 @@ func (_this *KeyboardEvent) KeyCode() uint {
 // returns the current state of the specified modifier key: true if the modifier is active (that is the modifier key is pressed or locked), otherwise, false.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState
-func (_this *KeyboardEvent) GetModifierState(keyArg string) (_result bool) {
+func (_this *KeyboardEvent) GetModifierState(keyArg string) bool {
 	return _this.jsValue.Call("getModifierState", keyArg).Bool()
 }

@@ -26,21 +26,22 @@ type History struct {
 	jsValue js.Value
 }
 
-// NewHistoryFromJS is casting a js.Value into History.
-func NewHistoryFromJS(value js.Value) *History {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastHistory is casting a js.Value into History.
+func CastHistory(value js.Value) *History {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting History failed")
 		return nil
 	}
-	ret := new(History)
-	ret.jsValue = value
-	return ret
+	cast := new(History)
+	cast.jsValue = value
+	return cast
 }
 
 // Length eturns an integer representing the number of elements in the session history, including the currently loaded page.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/length
-func (_this *History) Length() uint {
-	return uint(_this.jsValue.Get("length").Int())
+func (_this *History) Count() int {
+	return _this.jsValue.Get("length").Int()
 }
 
 // ScrollRestoration  allows web applications to explicitly set default scroll restoration behavior on history navigation.
@@ -57,8 +58,12 @@ func (_this *History) SetScrollRestoration(value HISTORY_SCROLL_RESTORATION) {
 	_this.jsValue.Set("scrollRestoration", value)
 }
 
-// State eturns a value representing the state at the top of the history stack.
+// State returns a value representing the state at the top of the history stack.
 // This is a way to look at the state without having to wait for a popstate event.
+//
+// The value is null until the pushState() or replaceState() method is used.
+//
+// TODO: handle returned value
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/state
 func (_this *History) State() js.Value {

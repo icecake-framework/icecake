@@ -3,195 +3,178 @@ package icecake
 import (
 	"bytes"
 	"fmt"
-	"reflect"
-	"strconv"
-	"strings"
-	"text/template"
+	"syscall/js"
 
+	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/yuin/goldmark"
 )
 
-/*****************************************************************************/
-
-func RenderElemHtml(htmlTemplate string, data any, elem *dom.Element) {
-	if elem == nil {
-		dom.ConsoleError("RenderElement failed: Unable to render nil element")
-		return
-	}
-	html, _ := RenderComponents("app", htmlTemplate, data, 0)
-	elem.SetInnerHTML(html)
+func DocumentBody() *ICElement {
+	// TODO: error handling
+	return &ICElement{HTMLElement: dom.GetDocument().Body()}
 }
 
-func RenderElemMarkdown(mdtxt string, data any, elem *dom.Element, options ...goldmark.Option) {
-	if elem == nil {
-		dom.ConsoleError("RenderMarkdown failed: Unable to render nil element")
-		return
-	}
-
-	md := goldmark.New(options...)
-	var buf bytes.Buffer
-	err := md.Convert([]byte(mdtxt), &buf)
-	if err != nil {
-		dom.ConsoleWarn("RenderMarkdown failed: %s", err.Error())
-		return
-	}
-
-	html, _ := RenderComponents("app", buf.String(), data, 0)
-	elem.SetInnerHTML(html)
-}
+// func DocChildById(_id string) *Element {
+// 	child := dom.GetDocument().ChildById(_id)
+// 	if child == nil || child.NodeType() != dom.NT_ELEMENT {
+// 		return nil
+// 	}
+// 	return &Element{HTMLElement: dom.NewHTMLElementFromJS(child.JSValue())}
+// }
 
 /*****************************************************************************/
 
-// scan the Docuemnts's Body to look for IC components and to render them.
-// func renderBody() {
-// 	doc := dom.GetDocument()
+// // scan the Documents's Body to look for components and to render them.
+// func RenderBody() {
+// 	body := ICElement{HTMLElement: dom.Doc().Body()}
+// 	body.RenderHtml(body.InnerHTML(), GData)
+// }
 
-// 	// check doc type & validity
-// 	if len(ComponentTypes) == 0 {
-// 		log.Println("renderBody: no customized IC component type registered")
+// func RenderValueElem(_elem *ICElement, _value any) {
+// 	if _elem == nil {
+// 		dom.ConsoleError("RenderValue failed: Unable to render nil element")
 // 		return
 // 	}
-// 	htmlbody := doc.Body().InnerHTML()
-// 	renderComponents("body", htmlbody, nil, 0)
+// 	_elem.RenderValue(_value)
 // }
 
-// type tree struct {
-// 	root  *Compounder
-// 	folds map[string]*Compounder
+// func RenderValueElem(_dome *dom.Element, _value any) {
+// 	if _dome == nil {
+// 		dom.ConsoleError("RenderValue failed: Unable to render nil element")
+// 		return
+// 	}
+// 	elem := NewElementFromJS(_dome.JSValue())
+// 	elem.RenderValue(_value)
 // }
 
-// type idtree map[string]Compounder
+// func RenderValueById(_id string, _value any) {
+// 	elem := Doc().ChildById(_id)
+// 	if elem == nil || elem.NodeType() != dom.NT_ELEMENT {
+// 		return
+// 	}
+// 	&ICElement{HTMLElement: dom.CastHTMLElement(child.JSValue())}
 
-func renderElement(name string, _htmlstring string, data any) (_rendered string, _err error) {
+// 	elem.RenderValue(_value)
+// }
 
-	_rendered, _err = RenderComponents(name, _htmlstring, data, 0)
+// func RenderHtmlElem(_elem *Element, _unsafeHtmlTemplate string, _data any) {
+// 	if _elem == nil {
+// 		dom.ConsoleError("RenderElement failed: Unable to render nil element")
+// 		return
+// 	}
+// 	_elem.RenderHtml(_unsafeHtmlTemplate, _data)
+// }
 
-	//tree := parse.New("after", idtree)
+// func RenderMarkdownElem(_elem *Element, _mdtxt string, _data any, _options ...goldmark.Option) {
+// 	if _elem == nil {
+// 		dom.ConsoleError("RenderMarkdown failed: Unable to render nil element")
+// 		return
+// 	}
+// 	_elem.RenderMarkdown(_mdtxt, _data, _options...)
+// }
 
-	return _rendered, _err
+/*****************************************************************************
+* ICElement
+******************************************************************************/
+
+// ICElement is an extension of the dom.HTMLElement
+type ICElement struct {
+	*dom.HTMLElement
 }
 
-// renderComponents lookup for component tags in htmlstring, and render each of them recursively.
-//
-// rendering means:
-//  1. if the component does not have an ID yet, then create one and instantiate it
-//  2. parse component's template, according to go html templating standards
-//  3. execute this template with {{}} langage and component's data and global data
-//
-// NOTICE: to avoid infinite recursivity, the rendering fails at a the 10th depth
-func RenderComponents(name string, _htmlstring string, data any, _deep int) (_rendered string, _err error) {
-	if _deep >= 10 {
-		strerr := fmt.Sprintf("RenderComponents stop at level %d: recursive rendering too deep", _deep)
-		dom.ConsoleError(strerr)
-		return "", fmt.Errorf(strerr)
+func CastICElement(_value js.Value) *ICElement {
+	return &ICElement{HTMLElement: dom.CastHTMLElement(_value)}
+}
+
+// GetICElementById returns an ICElement corresponding to the _id if it exists into the DOM,
+// otherwhise returns an undefined ICElement.
+func GetElementById(_id string) *ICElement {
+	child := dom.GetDocument().ChildById(_id)
+	if child.NodeType() != dom.NT_ELEMENT {
+		return &ICElement{}
 	}
-	cmpid := name + "-" + strconv.Itoa(_deep)
-	fmt.Printf("component:%s level:%d rendering...\n", name, _deep)
+	return CastICElement(child.JSValue())
+}
 
-	// 1. parse
-	tmpCmp := template.Must(template.New(name).Parse(_htmlstring))
+// SetInnerValue set the innext text of the element with a formated value.
+// The format string follow the fmt rules: https://pkg.go.dev/fmt#hdr-Printing
+func (_elem *ICElement) RenderValue(format string, _value ...any) {
+	text := fmt.Sprintf(format, _value...)
+	_elem.SetInnerText(text)
+}
 
-	// 2. execute
-	bufCmp := new(bytes.Buffer)
-	errTmp := tmpCmp.Execute(bufCmp, data)
-	if errTmp != nil {
-		strerr := fmt.Sprintf("RenderComponents stop at level %d: %q ERROR applying data to template: '%v'", _deep, name, _htmlstring)
-		dom.ConsoleError(strerr)
-		return "", fmt.Errorf(strerr)
+// RenderHtml set inner HTML with the htmlTemplate executed with the _data and unfolding components if any
+func (_elem *ICElement) RenderHtml(_unsafeHtmlTemplate string, _data any) {
+	name := _elem.TagName() + "/" + _elem.Id()
+	html, _ := unfoldComponents(name, _unsafeHtmlTemplate, _data, 0)
+	_elem.SetInnerHTML(html)
+}
+
+// RenderMarkdown process _mdtxt markdown source file and convert it to an HTML string,
+// then use it as an HTML template to render it with data and components.
+//
+// Returns an error if the markdown processor fails.
+func (_elem *ICElement) RenderMarkdown(_mdtxt string, _data any, _options ...goldmark.Option) error {
+	name := _elem.TagName() + "/" + _elem.Id()
+	md := goldmark.New(_options...)
+	var buf bytes.Buffer
+	err := md.Convert([]byte(_mdtxt), &buf)
+	if err != nil {
+		dom.ConsoleWarn("RenderMarkdown failed: %s", err.Error())
+		return err
 	}
-	htmlstring := bufCmp.String()
 
-	// 3. lookup for components
-	const (
-		delim_open  = "<ic-"
-		delim_close = "/>"
-	)
+	html, _ := unfoldComponents(name, buf.String(), _data, 0)
+	_elem.SetInnerHTML(html)
+	return nil
+}
 
-	n := 0
-	out := &bytes.Buffer{}
-	for {
-		// find next delim_open
-		if from := strings.Index(htmlstring, delim_open); from == -1 || _err != nil {
-			// no more delim_open = feed the output with what's left in htmlstring and return
-			out.WriteString(htmlstring)
-			return out.String(), _err
-		} else {
-			// we found a new delim_open
-			// so it's time to feed the output with data preceding this delim
-			out.WriteString(htmlstring[:from])
+// RenderNamedValue look recursively for any _elem children having the "data-ic-namedvalue" token matching _name
+// and render inner text with the _value
+func (_elem *ICElement) RenderChildrenValue(_name string, _format string, _value ...any) {
+	_name = helper.Normalize(_name)
+	text := fmt.Sprintf(_format, _value...)
 
-			// scrap this data and keep what's left
-			htmlstring = htmlstring[from+len(delim_open):]
+	//fmt.Println("text: ", text)
 
-			// look now for it's corresponding delim_close
-			if to := strings.Index(htmlstring, delim_close); to == -1 {
-				// not corresponding delim_close then stop and return a rendering error
-				strerr := fmt.Sprintf("RenderComponents stop at level %d: close delim not found", _deep)
-				dom.ConsoleError(strerr)
-				return "", fmt.Errorf(strerr)
-
-			} else {
-				// we got a delim_close so we've an opening element
-				// extract the element's content
-				inside := htmlstring[0:to]
-
-				// scrap it and keep what's left
-				htmlstring = htmlstring[to+len(delim_close):]
-
-				// split this opening element in fields
-				m := strings.Fields(inside)
-
-				// first field is the tagName, does nothing if empty
-				var tagName string
-				if len(m) > 0 {
-					tagName = m[0]
-
-					// is this tag a registered component ?
-					if comptype, found := ComponentTypes["ic-"+tagName]; found {
-						newcmpid := cmpid + "-" + tagName + "-" + strconv.Itoa(n)
-
-						// does it have an id ?
-						// Attr := m[1:]
-
-						var str string
-
-						c := reflect.New(comptype)
-						fmt.Printf("component:%s level:%d instantiating %s with name:%s", name, _deep, c.Type(), newcmpid)
-
-						switch t := c.Interface().(type) {
-						case CompoundBuilder:
-							t.Mount()
-						}
-
-						switch t := c.Interface().(type) {
-						case Compounder:
-							type DATA struct {
-								Me     any
-								Owner  *any
-								Global *map[string]any
-							}
-							d := DATA{
-								Me:     t,
-								Owner:  &data,
-								Global: &GData,
-							}
-							str, _err = RenderComponents(newcmpid, t.InnerHtmlTemplate(), d, _deep+1)
-						}
-
-						// let's go deeper
-						out.WriteString(fmt.Sprintf(`<span id="%s">%s</span>`, newcmpid, str))
-
-					} else {
-						// the tag is empty or is not a registered component
-						out.WriteString(fmt.Sprintf("<!-- component ic-%q not registered -->", tagName))
-						fmt.Printf("component not registered")
-					}
-				}
+	children := _elem.FilteredChildren(dom.NT_ELEMENT, 1, func(_node *dom.Node) bool {
+		elem := CastICElement(_node.JSValue())
+		fmt.Println(" element:", elem.TagName())
+		attrs := elem.Attributes()
+		fmt.Println(" attributes:", attrs.Count(), attrs.String())
+		dataset := attrs.Dataset()
+		fmt.Println(" dataset:", dataset.Count(), dataset.String())
+		for i := 0; i < dataset.Count(); i++ {
+			if dataset.At(i).Name() == "data-ic-namedvalue" && dataset.At(i).Value() == _name {
+				return true
 			}
 		}
-	}
+		return false
+	})
 
+	fmt.Println("top filter ended")
+	for _, node := range children {
+		CastICElement(node.JSValue()).RenderValue(_name, text, children)
+	}
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+* ICButton
+******************************************************************************/
+
+// ICButton is an extension of the dom.HTMLElement
+type ICButton struct {
+	*dom.HTMLButton
+}
+
+func CastICButton(_value js.Value) *ICButton {
+	return &ICButton{HTMLButton: dom.CastHTMLButton(_value)}
+}
+
+// GetButtonById returns an ICElement corresponding to the _id if it exists into the DOM,
+// otherwhise returns an undefined ICElement.
+func GetButtonById(_id string) *ICButton {
+	child := dom.GetDocument().ChildById(_id)
+	return CastICButton(child.JSValue())
+}

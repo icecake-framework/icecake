@@ -7,16 +7,17 @@ import "syscall/js"
 *****************************************************************************/
 
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLHeadElement
-type HTMLHeadElement struct {
+type HeadElement struct {
 	HTMLElement
 }
 
-// NewHTMLHeadElementFromJS is casting a js.Value into HTMLHeadElement.
-func NewHTMLHeadElementFromJS(value js.Value) *HTMLHeadElement {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastHeadElement is casting a js.Value into HTMLHeadElement.
+func CastHeadElement(value js.Value) *HeadElement {
+	if value.Type() != js.TypeObject {
+		ConsoleError("casting HeadElement failed")
 		return nil
 	}
-	ret := &HTMLHeadElement{}
+	ret := new(HeadElement)
 	ret.jsValue = value
 	return ret
 }

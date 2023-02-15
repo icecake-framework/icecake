@@ -11,8 +11,8 @@ type Storage struct {
 	jsValue js.Value
 }
 
-// NewStorageFromJS is casting a js.Value into Storage.
-func NewStorageFromJS(value js.Value) *Storage {
+// CastStorage is casting a js.Value into Storage.
+func CastStorage(value js.Value) *Storage {
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -21,53 +21,53 @@ func NewStorageFromJS(value js.Value) *Storage {
 	return ret
 }
 
-// Length eturns the number of data items stored in a given Storage object.
+// Length returns the number of data items stored in a given Storage object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/length
-func (_this *Storage) Length() uint {
-	return uint(_this.jsValue.Get("length").Int())
+func (_store *Storage) Count() int {
+	return _store.jsValue.Get("length").Int()
 }
 
 //	returns the name of the nth key in a given Storage object. The order of keys is user-agent defined, so you should not rely on it.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/key
-func (_this *Storage) Index(index uint) (_result string) {
-	_returned := _this.jsValue.Call("key", index)
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_result = _returned.String()
+func (_store *Storage) At(_idx int) (_key string) {
+	key := _store.jsValue.Call("key", uint(_idx))
+	if key.Type() != js.TypeNull && key.Type() != js.TypeUndefined {
+		_key = key.String()
 	}
-	return _result
+	return _key
 }
 
 // when passed a key name, will return that key's value, or null if the key does not exist, in the given Storage object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem
-func (_this *Storage) Item(key string) (_result string) {
-	_returned := _this.jsValue.Call("getItem", key)
-	if _returned.Type() != js.TypeNull && _returned.Type() != js.TypeUndefined {
-		_result = _returned.String()
+func (_store *Storage) Item(key string) (_item string) {
+	item := _store.jsValue.Call("getItem", key)
+	if item.Type() != js.TypeNull && item.Type() != js.TypeUndefined {
+		_item = item.String()
 	}
-	return _result
+	return _item
 }
 
 // when passed a key name, will return that key's value, or null if the key does not exist, in the given Storage object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem
-func (_this *Storage) SetItem(key string, value string) {
-	_this.jsValue.Call("setItem", key, value)
+func (_store *Storage) SetItem(key string, value string) {
+	_store.jsValue.Call("setItem", key, value)
 }
 
 // when passed a key name, will remove that key from the given Storage object if it exists.
 // The Storage interface of the Web Storage API provides access to a particular domain's session or local storage.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem
-func (_this *Storage) RemoveItem(key string) {
-	_this.jsValue.Call("removeItem", key)
+func (_store *Storage) RemoveItem(key string) {
+	_store.jsValue.Call("removeItem", key)
 }
 
 // clears all keys stored in a given Storage object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/clear
-func (_this *Storage) Clear() {
-	_this.jsValue.Call("clear")
+func (_store *Storage) Clear() {
+	_store.jsValue.Call("clear")
 }

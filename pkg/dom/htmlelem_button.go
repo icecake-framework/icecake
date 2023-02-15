@@ -4,6 +4,16 @@ import (
 	"syscall/js"
 )
 
+// A string indicating the behavior of the button
+type BUTTON_TYPE string
+
+const (
+	BT_SUBMIT BUTTON_TYPE = "submit" // The button submits the form. This is the default value if the attribute is not specified, or if it is dynamically changed to an empty or invalid value.
+	BT_RESET  BUTTON_TYPE = "reset"  // The button resets the form.
+	BT_BUTTON BUTTON_TYPE = "button" // The button does nothing with the form.
+	BT_MENU   BUTTON_TYPE = "menu"   // The button displays a menu.
+)
+
 /****************************************************************************
 * HTMLButtonElement
 *****************************************************************************/
@@ -13,12 +23,13 @@ type HTMLButton struct {
 	HTMLElement
 }
 
-// NewHTMLButtonFromJS is casting a js.Value into HTMLButtonElement.
-func NewHTMLButtonFromJS(value js.Value) *HTMLButton {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+// CastHTMLButton is casting a js.Value into HTMLButtonElement.
+func CastHTMLButton(value js.Value) *HTMLButton {
+	if value.Type() != js.TypeObject || value.Get("tagName").String() != "BUTTON" {
+		ConsoleError("casting HTMLButton failed")
 		return nil
 	}
-	ret := &HTMLButton{}
+	ret := new(HTMLButton)
 	ret.jsValue = value
 	return ret
 }
@@ -27,155 +38,80 @@ func NewHTMLButtonFromJS(value js.Value) *HTMLButton {
 * HTMLButtonElement's properties
 *****************************************************************************/
 
-// Autofocus returns a boolean value indicating whether or not the control should have input focus when the page loads,
+// IsAutofocus returns a boolean value indicating whether or not the control should have input focus when the page loads,
 // unless the user overrides it, for example by typing in a different control. Only one form-associated element in a document can have this attribute specified.
-func (_this *HTMLButton) Autofocus() bool {
-	var ret bool
-	value := _this.jsValue.Get("autofocus")
-	ret = (value).Bool()
-	return ret
+func (_btn *HTMLButton) IsAutofocus() bool {
+	return _btn.jsValue.Get("autofocus").Bool()
 }
 
 // SetAutofocus setting attribute 'autofocus' with
 // type bool (idl: boolean).
-func (_this *HTMLButton) SetAutofocus(value bool) *HTMLButton {
-	_this.jsValue.Set("autofocus", value)
-	return _this
+func (_btn *HTMLButton) SetAutofocus(value bool) *HTMLButton {
+	_btn.jsValue.Set("autofocus", value)
+	return _btn
 }
 
-// Disabled returns a boolean value indicating whether or not the control is disabled, meaning that it does not accept any clicks.
-func (_this *HTMLButton) Disabled() bool {
-	value := _this.jsValue.Get("disabled")
-	return (value).Bool()
+// IsDisabled returns a boolean value indicating whether or not the control is disabled, meaning that it does not accept any clicks.
+func (_btn *HTMLButton) IsDisabled() bool {
+	return _btn.jsValue.Get("disabled").Bool()
 }
 
 // SetDisabled setting attribute 'disabled' with
 // type bool (idl: boolean).
-func (_this *HTMLButton) SetDisabled(value bool) *HTMLButton {
-	_this.jsValue.Set("disabled", value)
-	return _this
+func (_btn *HTMLButton) SetDisabled(value bool) *HTMLButton {
+	_btn.jsValue.Set("disabled", value)
+	return _btn
 }
 
-// Form returning attribute 'form' with
-// type HTMLFormElement (idl: HTMLFormElement).
-// func (_this *HTMLButtonElement) Form() *HTMLFormElement {
-// 	var ret *HTMLFormElement
-// 	value := _this.jsValue.Get("form")
-// 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-// 		ret = HTMLFormElementFromJS(value)
-// 	}
-// 	return ret
-// }
-
-// Name returning attribute 'name' with
-// type string (idl: DOMString).
-func (_this *HTMLButton) Name() string {
-	var ret string
-	value := _this.jsValue.Get("name")
-	ret = (value).String()
-	return ret
+// Name of the object when submitted with a form. If specified, it must not be the empty string.
+func (_btn *HTMLButton) Name() string {
+	return _btn.jsValue.Get("name").String()
 }
 
-// SetName setting attribute 'name' with
-// type string (idl: DOMString).
-func (_this *HTMLButton) SetName(value string) {
-	input := value
-	_this.jsValue.Set("name", input)
+// Name of the object when submitted with a form. If specified, it must not be the empty string.
+func (_btn *HTMLButton) SetName(name string) {
+	_btn.jsValue.Set("name", name)
+}
+
+// Value A string representing the current form control value of the button.
+func (_btn *HTMLButton) Value() string {
+	return _btn.jsValue.Get("value").String()
+}
+
+// Value A string representing the current form control value of the button.
+func (_btn *HTMLButton) SetValue(value string) {
+	_btn.jsValue.Set("value", value)
 }
 
 // Type returning attribute 'type' with
 // type string (idl: DOMString).
-func (_this *HTMLButton) Type() string {
-	var ret string
-	value := _this.jsValue.Get("type")
-	ret = (value).String()
-	return ret
+func (_btn *HTMLButton) Type() BUTTON_TYPE {
+	typ := _btn.jsValue.Get("type").String()
+	return BUTTON_TYPE(typ)
 }
 
 // SetType setting attribute 'type' with
 // type string (idl: DOMString).
-func (_this *HTMLButton) SetType(value string) {
-	input := value
-	_this.jsValue.Set("type", input)
+func (_btn *HTMLButton) SetType(_typ BUTTON_TYPE) {
+	_btn.jsValue.Set("type", string(_typ))
 }
 
-// Value returning attribute 'value' with
-// type string (idl: DOMString).
-func (_this *HTMLButton) Value() string {
-	var ret string
-	value := _this.jsValue.Get("value")
-	ret = (value).String()
-	return ret
+// WillValidate returns a boolean value indicating whether the button is a candidate for constraint validation.
+// It is false if any conditions bar it from constraint validation, including: its type property is reset or button; *
+// it has a <datalist> ancestor; or the disabled property is set to true.
+func (_btn *HTMLButton) WillValidate() bool {
+	return _btn.jsValue.Get("willValidate").Bool()
 }
 
-// SetValue setting attribute 'value' with
-// type string (idl: DOMString).
-func (_this *HTMLButton) SetValue(value string) {
-	input := value
-	_this.jsValue.Set("value", input)
+// ValidationMessage a string representing the localized message that describes the validation constraints
+// that the control does not satisfy (if any). This attribute is the empty string if the control is not a
+// candidate for constraint validation (willValidate is false), or it satisfies its constraints.
+func (_btn *HTMLButton) ValidationMessage() string {
+	return _btn.jsValue.Get("validationMessage").String()
 }
 
-// WillValidate returning attribute 'willValidate' with
-// type bool (idl: boolean).
-func (_this *HTMLButton) WillValidate() bool {
-	var ret bool
-	value := _this.jsValue.Get("willValidate")
-	ret = (value).Bool()
-	return ret
-}
-
-// Validity returning attribute 'validity' with
-// type ValidityState (idl: ValidityState).
-// func (_this *HTMLButtonElement) Validity() *ValidityState {
-// 	var ret *ValidityState
-// 	value := _this.jsValue.Get("validity")
-// 	ret = ValidityStateFromJS(value)
-// 	return ret
-// }
-
-// ValidationMessage returning attribute 'validationMessage' with
-// type string (idl: DOMString).
-func (_this *HTMLButton) ValidationMessage() string {
-	var ret string
-	value := _this.jsValue.Get("validationMessage")
-	ret = (value).String()
-	return ret
-}
-
-// Labels returning attribute 'labels' with
-// type dom.NodeList (idl: NodeList).
-// func (_this *HTMLButtonElement) Labels() *dom.NodeList {
-// 	var ret *dom.NodeList
-// 	value := _this.jsValue.Get("labels")
-// 	ret = dom.NodeListFromJS(value)
-// 	return ret
-// }
-
-func (_this *HTMLButton) CheckValidity() (_result bool) {
-	var (
-		_args [0]interface{}
-		_end  int
-	)
-	_returned := _this.jsValue.Call("checkValidity", _args[0:_end]...)
-	return (_returned).Bool()
-}
-
-func (_this *HTMLButton) ReportValidity() (_result bool) {
-	var (
-		_args [0]interface{}
-		_end  int
-	)
-	_returned := _this.jsValue.Call("reportValidity", _args[0:_end]...)
-	return (_returned).Bool()
-}
-
-func (_this *HTMLButton) SetCustomValidity(_error string) {
-	var (
-		_args [1]interface{}
-		_end  int
-	)
-	_p0 := _error
-	_args[0] = _p0
-	_end++
-	_this.jsValue.Call("setCustomValidity", _args[0:_end]...)
+// https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement/labels
+func (_btn *HTMLButton) Labels() []*Node {
+	nodes := _btn.jsValue.Get("labels")
+	return MakeNodes(nodes)
 }
