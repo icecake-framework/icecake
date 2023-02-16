@@ -32,6 +32,10 @@ func CastWindow(value js.Value) *Window {
 // type Window (idl: Window).
 func GetWindow() *Window {
 	value := js.Global().Get("window")
+	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+		ConsoleError("Unable to get window")
+		panic("Unable to get window")
+	}
 	return CastWindow(value)
 }
 
@@ -45,6 +49,10 @@ func GetWindow() *Window {
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/document
 func (_this *Window) GetDocument() *Document {
 	value := _this.jsValue.Get("document")
+	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+		ConsoleError("Unable to get document")
+		panic("Unable to get document")
+	}
 	return CastDocument(value)
 }
 

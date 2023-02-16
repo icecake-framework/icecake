@@ -21,6 +21,13 @@ func (_this *EventTarget) JSValue() js.Value {
 	return _this.jsValue
 }
 
+func (_this *EventTarget) Wrap(_jsval js.Value) {
+	if _this == nil {
+		return
+	}
+	_this.jsValue = _jsval
+}
+
 // CastEventTarget is casting a js.Value into EventTarget.
 func CastEventTarget(value js.Value) *EventTarget {
 	if value.Type() != js.TypeObject {

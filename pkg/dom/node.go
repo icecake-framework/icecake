@@ -5,6 +5,10 @@ import (
 	"syscall/js"
 )
 
+const (
+	UNDEFINED_NODE string = "<undefined node>"
+)
+
 /****************************************************************************
 * enums NodeType, NodePosition
 *****************************************************************************/
@@ -12,8 +16,8 @@ import (
 type NODE_TYPE int
 
 const (
-	NT_UNDEF                  NODE_TYPE = 0x0000
 	NT_ALL                    NODE_TYPE = 0xFFFF
+	NT_UNDEF                  NODE_TYPE = 0x0000
 	NT_ELEMENT                NODE_TYPE = 0x0001 // An Element node like <p> or <div>. aka ELEMNT_NODE.
 	NT_ATTRIBUTE              NODE_TYPE = 0x0002 // An Attribute of an Element. aka ATTRIBUTE_NODE.
 	NT_TEXT                   NODE_TYPE = 0x0003 // The actual Text inside an Element or Attr. aka TEXT_NODE.
@@ -61,6 +65,7 @@ func (nt NODE_TYPE) String() string {
 type NODE_POSITION int
 
 const (
+	NODEPOS_UNDEF                   NODE_POSITION = 0x00
 	NODEPOS_DISCONNECTED            NODE_POSITION = 0x01
 	NODEPOS_PRECEDING               NODE_POSITION = 0x02
 	NODEPOS_FOLLOWING               NODE_POSITION = 0x04
@@ -82,11 +87,11 @@ type Node struct {
 func CastNode(value js.Value) *Node {
 	if value.Type() != js.TypeObject {
 		ConsoleError("casting Node failed")
-		return nil
+		return new(Node)
 	}
-	ret := new(Node)
-	ret.jsValue = value
-	return ret
+	cast := new(Node)
+	cast.jsValue = value
+	return cast
 }
 
 func MakeNodes(value js.Value) []*Node {
@@ -115,6 +120,9 @@ func (_node *Node) IsDefined() bool {
 // IsSameNode tests whether two nodes are the same (in other words, whether they reference the same object).
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/isSameNode
 func (_node *Node) IsSameNode(_otherNode *Node) bool {
+	if !_node.IsDefined() {
+		return false
+	}
 	is := _node.jsValue.Call("isSameNode", _otherNode.jsValue)
 	return is.Bool()
 }
@@ -127,6 +135,9 @@ func (_node *Node) IsSameNode(_otherNode *Node) bool {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
 func (_node *Node) NodeType() NODE_TYPE {
+	if !_node.IsDefined() {
+		return NT_UNDEF
+	}
 	nt := _node.jsValue.Get("nodeType")
 	return NODE_TYPE(nt.Int())
 }
@@ -144,6 +155,9 @@ func (_node *Node) NodeType() NODE_TYPE {
 //
 // NodeName returns the name of the current node as a string.
 func (_node *Node) NodeName() string {
+	if !_node.IsDefined() {
+		return UNDEFINED_NODE
+	}
 	return _node.jsValue.Get("nodeName").String()
 }
 
@@ -151,6 +165,9 @@ func (_node *Node) NodeName() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/baseURI
 func (_node *Node) BaseURI() string {
+	if !_node.IsDefined() {
+		return UNDEFINED_NODE
+	}
 	return _node.jsValue.Get("baseURI").String()
 }
 
@@ -158,8 +175,11 @@ func (_node *Node) BaseURI() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/isConnected
 func (_node *Node) IsConnected() bool {
+	if !_node.IsDefined() {
+		return false
+	}
 	value := _node.jsValue.Get("isConnected")
-	return (value).Bool()
+	return value.Bool()
 }
 
 // Doc returns the top-level document object of the node, the top-level object in which all the child nodes are created.
@@ -167,6 +187,9 @@ func (_node *Node) IsConnected() bool {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/ownerDocument
 func (_node *Node) Doc() *Document {
+	if !_node.IsDefined() {
+		return nil
+	}
 	value := _node.jsValue.Get("ownerDocument")
 	return CastDocument(value)
 }
@@ -175,6 +198,9 @@ func (_node *Node) Doc() *Document {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode
 func (_node *Node) RootNode() *Node {
+	if !_node.IsDefined() {
+		return nil
+	}
 	root := _node.jsValue.Call("getRootNode")
 	if typ := root.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -186,6 +212,9 @@ func (_node *Node) RootNode() *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/parentNode
 func (_node *Node) ParentNode() *Node {
+	if !_node.IsDefined() {
+		return nil
+	}
 	parent := _node.jsValue.Get("parentNode")
 	if typ := parent.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -196,6 +225,9 @@ func (_node *Node) ParentNode() *Node {
 // ParentElement returns the DOM node's parent Element, or null if the node either has no parent, or its parent isn't a DOM Element.
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/parentElement
 func (_node *Node) ParentElement() *Element {
+	if !_node.IsDefined() {
+		return nil
+	}
 	parent := _node.jsValue.Get("parentElement")
 	if typ := parent.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -207,6 +239,9 @@ func (_node *Node) ParentElement() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/hasChildNodes
 func (_node *Node) HasChildren() bool {
+	if !_node.IsDefined() {
+		return false
+	}
 	has := _node.jsValue.Call("hasChildNodes")
 	return has.Bool()
 }
@@ -216,6 +251,9 @@ func (_node *Node) HasChildren() bool {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes
 func (_node *Node) Children() []*Node {
+	if !_node.IsDefined() {
+		return make([]*Node, 0)
+	}
 	nodes := _node.jsValue.Get("childNodes")
 	return MakeNodes(nodes)
 }
@@ -223,21 +261,21 @@ func (_node *Node) Children() []*Node {
 // FilteredChildren make a slice of nodes, scaning existing nodes from root to the last sibling node.
 // Only nodes matching filter AND the optional match function are included.
 func (_root *Node) FilteredChildren(_filter NODE_TYPE, _deepmax int, match func(*Node) bool) []*Node {
+	if !_root.IsDefined() || !_root.HasChildren() {
+		return make([]*Node, 0)
+	}
 	nodes := make([]*Node, 0)
-	c := 0
-	for scan := _root; scan != nil && c < 20; scan = _root.SiblingNext() {
-		c++
-		fmt.Println("scanning :", scan.NodeName(), scan.NodeType().String())
+
+	for _, scan := range _root.Children() {
+		//DEBUG: fmt.Printf("%d:%d scanning child: %q %q", _deepmax, i, scan.NodeType().String(), scan.NodeName())
 
 		// check filtered node type
-		fn := (_filter & scan.NodeType()) > 0
+		fn := _filter == NT_ALL || scan.NodeType() == _filter
 
-		// apply the filter to children if not too deep
+		// apply the filter to children if not too deep and the type node is selected
 		if fn && scan.HasChildren() && _deepmax > 0 {
-			for _, child := range scan.Children() {
-				filteredchildren := child.FilteredChildren(_filter, _deepmax-1, match)
-				nodes = append(nodes, filteredchildren...)
-			}
+			sub := scan.FilteredChildren(_filter, _deepmax-1, match)
+			nodes = append(nodes, sub...)
 		}
 
 		// apply matching function
@@ -256,6 +294,9 @@ func (_root *Node) FilteredChildren(_filter NODE_TYPE, _deepmax int, match func(
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/firstChild
 func (_node *Node) ChildFirst() *Node {
+	if !_node.IsDefined() {
+		return nil
+	}
 	child := _node.jsValue.Get("firstChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -269,6 +310,9 @@ func (_node *Node) ChildFirst() *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/lastChild
 func (_node *Node) ChildLast() *Node {
+	if !_node.IsDefined() {
+		return nil
+	}
 	child := _node.jsValue.Get("lastChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -280,6 +324,9 @@ func (_node *Node) ChildLast() *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/previousSibling
 func (_node *Node) SiblingPrevious() *Node {
+	if !_node.IsDefined() {
+		return nil
+	}
 	sibling := _node.jsValue.Get("previousSibling")
 	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -291,6 +338,9 @@ func (_node *Node) SiblingPrevious() *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nextSibling
 func (_node *Node) SiblingNext() *Node {
+	if !_node.IsDefined() {
+		return nil
+	}
 	sibling := _node.jsValue.Get("nextSibling")
 	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -306,6 +356,9 @@ func (_node *Node) SiblingNext() *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue
 func (_node *Node) NodeValue() string {
+	if !_node.IsDefined() {
+		return UNDEFINED_NODE
+	}
 	value := _node.jsValue.Get("nodeValue")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
 		return ""
@@ -321,6 +374,9 @@ func (_node *Node) NodeValue() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue
 func (_node *Node) SetNodeValue(value string) (_ret *Node) {
+	if !_node.IsDefined() {
+		return
+	}
 	var input interface{}
 	if value != "" {
 		input = value
@@ -335,6 +391,9 @@ func (_node *Node) SetNodeValue(value string) (_ret *Node) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent
 func (_node *Node) TextContent() string {
+	if !_node.IsDefined() {
+		return UNDEFINED_NODE
+	}
 	value := _node.jsValue.Get("textContent")
 	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
 		return ""
@@ -346,13 +405,14 @@ func (_node *Node) TextContent() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent
 func (_node *Node) SetTextContent(value string) (_ret *Node) {
-	var input interface{}
-	if value != "" {
-		input = value
-	} else {
-		input = nil
+	if !_node.IsDefined() {
+		return nil
 	}
-	_node.jsValue.Set("textContent", input)
+	if value != "" {
+		_node.jsValue.Set("textContent", value)
+	} else {
+		_node.jsValue.Set("textContent", nil)
+	}
 	return _node
 }
 
@@ -360,6 +420,9 @@ func (_node *Node) SetTextContent(value string) (_ret *Node) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/compareDocumentPosition
 func (_onenode *Node) ComparePosition(_other *Node) NODE_POSITION {
+	if !_onenode.IsDefined() {
+		return NODEPOS_UNDEF
+	}
 	_returned := _onenode.jsValue.Call("compareDocumentPosition", _other.jsValue)
 	return NODE_POSITION(_returned.Int())
 }
@@ -373,6 +436,9 @@ func (_onenode *Node) ComparePosition(_other *Node) NODE_POSITION {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore
 func (_parentnode *Node) InsertBefore(newnode *Node, refnode *Node) *Node {
+	if !_parentnode.IsDefined() {
+		return nil
+	}
 	node := _parentnode.jsValue.Call("insertBefore", newnode.jsValue, refnode.jsValue)
 	return CastNode(node)
 }
@@ -382,6 +448,9 @@ func (_parentnode *Node) InsertBefore(newnode *Node, refnode *Node) *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild
 func (_parentnode *Node) AppendChild(newnode *Node) *Node {
+	if !_parentnode.IsDefined() {
+		return nil
+	}
 	node := _parentnode.jsValue.Call("appendChild", newnode.jsValue)
 	return CastNode(node)
 }
@@ -390,6 +459,9 @@ func (_parentnode *Node) AppendChild(newnode *Node) *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/replaceChild
 func (_parentnode *Node) ReplaceChild(_newchild *Node, _oldchild *Node) *Node {
+	if !_parentnode.IsDefined() {
+		return nil
+	}
 	node := _parentnode.jsValue.Call("replaceChild", _newchild.jsValue, _oldchild.jsValue)
 	return CastNode(node)
 }
@@ -398,6 +470,9 @@ func (_parentnode *Node) ReplaceChild(_newchild *Node, _oldchild *Node) *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild
 func (_parentnode *Node) RemoveChild(_newchild *Node) *Node {
+	if !_parentnode.IsDefined() {
+		return nil
+	}
 	node := _parentnode.jsValue.Call("removeChild", _newchild.jsValue)
 	return CastNode(node)
 }

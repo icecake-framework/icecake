@@ -47,7 +47,7 @@ type Document struct {
 func CastDocument(value js.Value) *Document {
 	if value.Type() != js.TypeObject {
 		ConsoleError("casting Document failed")
-		return &Document{}
+		return new(Document)
 	}
 	ret := new(Document)
 	ret.jsValue = value
@@ -57,6 +57,10 @@ func CastDocument(value js.Value) *Document {
 // GetDocument returns the current document within the current window
 func GetDocument() *Document {
 	value := js.Global().Get("document")
+	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+		ConsoleError("Unable to get document")
+		panic("Unable to get document")
+	}
 	return CastDocument(value)
 }
 
@@ -384,7 +388,7 @@ func (_doc *Document) ChildById(_elementId string) (_result *Element) {
 	elem := _doc.jsValue.Call("getElementById", _elementId)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleWarn("ChildById failed: %q not found\n", _elementId)
-		return &Element{}
+		return new(Element)
 	}
 	return CastElement(elem)
 }

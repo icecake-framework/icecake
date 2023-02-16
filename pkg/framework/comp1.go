@@ -28,7 +28,7 @@ func unfoldComponents(name string, _unsafeHtmlTemplate string, data any, _deep i
 		return "", fmt.Errorf(strerr)
 	}
 	cmpid := name + "-" + strconv.Itoa(_deep)
-	fmt.Printf("component:%s level:%d rendering...\n", name, _deep)
+	fmt.Printf("unfolding %d:%q\n", _deep, name)
 
 	// 1. parse
 	tmpCmp := template.Must(template.New(name).Parse(_unsafeHtmlTemplate))

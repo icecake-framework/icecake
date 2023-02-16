@@ -21,6 +21,13 @@ type Attributes struct {
 	attributes   []*Attribute // the internal slice of attributes (dom ones)
 }
 
+func NewAttributes(_ownerElement *Element) *Attributes {
+	attrs := new(Attributes)
+	attrs.ownerElement = _ownerElement
+	attrs.attributes = make([]*Attribute, 0)
+	return attrs
+}
+
 // NewAttributesFromJSNodeMap is casting a js.Value into DOMAttributes.
 // func NewAttributesFromJSNodeMap(_namedNodeMap js.Value, _ownerElement *Element) (_ret *Attributes) {
 // 	if typ := _namedNodeMap.Type(); typ == js.TypeNull || typ == js.TypeUndefined {

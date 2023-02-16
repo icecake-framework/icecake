@@ -35,17 +35,20 @@ type Element struct {
 func CastElement(value js.Value) *Element {
 	if value.Type() != js.TypeObject {
 		ConsoleError("casting Element failed")
-		return nil
+		return new(Element)
 	}
-	ret := new(Element)
-	ret.jsValue = value
-	return ret
+	cast := new(Element)
+	cast.jsValue = value
+	return cast
 }
 
 // Remove removes the element from the DOM.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/remove
 func (_elem *Element) Remove() {
+	if !_elem.IsDefined() {
+		return
+	}
 	_elem.jsValue.Call("remove")
 }
 
@@ -58,6 +61,9 @@ func (_elem *Element) Remove() {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/tagName
 func (_elem *Element) TagName() string {
+	if !_elem.IsDefined() {
+		return UNDEFINED_NODE
+	}
 	return _elem.jsValue.Get("tagName").String()
 }
 
@@ -65,6 +71,9 @@ func (_elem *Element) TagName() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/id
 func (_elem *Element) Id() string {
+	if !_elem.IsDefined() {
+		return UNDEFINED_NODE
+	}
 	return _elem.jsValue.Get("id").String()
 }
 
@@ -72,6 +81,9 @@ func (_elem *Element) Id() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/id
 func (_elem *Element) SetId(_id string) *Element {
+	if !_elem.IsDefined() {
+		return _elem
+	}
 	_elem.jsValue.Set("id", _id)
 	return _elem
 }
@@ -80,6 +92,9 @@ func (_elem *Element) SetId(_id string) *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/className
 func (_elem *Element) ClassName() string {
+	if !_elem.IsDefined() {
+		return UNDEFINED_NODE
+	}
 	value := _elem.jsValue.Get("className")
 	return (value).String()
 }
@@ -88,6 +103,9 @@ func (_elem *Element) ClassName() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/className
 func (_elem *Element) SetClassName(_name string) *Element {
+	if !_elem.IsDefined() {
+		return _elem
+	}
 	_elem.jsValue.Set("className", _name)
 	return _elem
 }
@@ -97,6 +115,9 @@ func (_elem *Element) SetClassName(_name string) *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
 func (_elem *Element) ClassList() *TokenList {
+	if !_elem.IsDefined() {
+		return new(TokenList)
+	}
 	value := _elem.jsValue.Get("classList")
 	return CastTokenList(value)
 }
@@ -107,10 +128,10 @@ func (_elem *Element) ClassList() *TokenList {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes
 func (_elem *Element) Attributes() *Attributes {
-	attrs := new(Attributes)
-	attrs.ownerElement = _elem
-	attrs.attributes = make([]*Attribute, 0)
-
+	if !_elem.IsDefined() {
+		return NewAttributes(_elem)
+	}
+	attrs := NewAttributes(_elem)
 	namedNodeMap := _elem.jsValue.Get("attributes")
 	if typ := namedNodeMap.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleWarn("No attributes found")
@@ -133,6 +154,9 @@ func (_elem *Element) Attributes() *Attributes {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 func (_elem *Element) InnerHTML() string {
+	if !_elem.IsDefined() {
+		return UNDEFINED_NODE
+	}
 	value := _elem.jsValue.Get("innerHTML")
 	return (value).String()
 }
@@ -146,6 +170,9 @@ func (_elem *Element) InnerHTML() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 func (_elem *Element) SetInnerHTML(_unsafeHtml string) *Element {
+	if !_elem.IsDefined() {
+		return _elem
+	}
 	_elem.jsValue.Set("innerHTML", _unsafeHtml)
 	return _elem
 }
@@ -158,6 +185,9 @@ func (_elem *Element) SetInnerHTML(_unsafeHtml string) *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
 func (_elem *Element) OuterHTML() string {
+	if !_elem.IsDefined() {
+		return UNDEFINED_NODE
+	}
 	return _elem.jsValue.Get("outerHTML").String()
 }
 
@@ -169,6 +199,9 @@ func (_elem *Element) OuterHTML() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
 func (_elem *Element) SetOuterHTML(_unsafeHtml string) *Element {
+	if !_elem.IsDefined() {
+		return _elem
+	}
 	_elem.jsValue.Set("outerHTML", _unsafeHtml)
 	return _elem
 }
@@ -176,14 +209,20 @@ func (_elem *Element) SetOuterHTML(_unsafeHtml string) *Element {
 // ChildElementCount returns the number of child elements of this element.
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/childElementCount
 func (_elem *Element) ChildrenCount() int {
+	if !_elem.IsDefined() {
+		return 0
+	}
 	count := _elem.jsValue.Get("childElementCount")
-	return (count).Int()
+	return count.Int()
 }
 
 // Children returns a live HTMLCollection which contains all of the child elements of the element upon which it was called.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/children
 func (_elem *Element) Children() []*Node {
+	if !_elem.IsDefined() {
+		return make([]*Node, 0)
+	}
 	nodes := _elem.jsValue.Get("children")
 	return MakeNodes(nodes)
 }
@@ -192,6 +231,9 @@ func (_elem *Element) Children() []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/firstElementChild
 func (_elem *Element) ChildFirst() *Element {
+	if !_elem.IsDefined() {
+		return nil
+	}
 	child := _elem.jsValue.Get("firstElementChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -203,6 +245,9 @@ func (_elem *Element) ChildFirst() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/lastElementChild
 func (_elem *Element) ChildLast() *Element {
+	if !_elem.IsDefined() {
+		return nil
+	}
 	child := _elem.jsValue.Get("lastElementChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -214,6 +259,9 @@ func (_elem *Element) ChildLast() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByTagName
 func (_elem *Element) ChildrenByTagName(_tagName string) []*Node {
+	if !_elem.IsDefined() {
+		return make([]*Node, 0)
+	}
 	nodes := _elem.jsValue.Call("getElementsByTagName", _tagName)
 	return MakeNodes(nodes)
 }
@@ -222,6 +270,9 @@ func (_elem *Element) ChildrenByTagName(_tagName string) []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByClassName
 func (_elem *Element) ChildrenByClassName(_classNames string) []*Node {
+	if !_elem.IsDefined() {
+		return make([]*Node, 0)
+	}
 	nodes := _elem.jsValue.Call("getElementsByClassName", _classNames)
 	return MakeNodes(nodes)
 }
@@ -231,6 +282,9 @@ func (_elem *Element) ChildrenByClassName(_classNames string) []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/previousElementSibling
 func (_elem *Element) SiblingPrevious() *Element {
+	if !_elem.IsDefined() {
+		return nil
+	}
 	sibling := _elem.jsValue.Get("previousElementSibling")
 	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -242,6 +296,9 @@ func (_elem *Element) SiblingPrevious() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/nextElementSibling
 func (_elem *Element) SiblingNext() *Element {
+	if !_elem.IsDefined() {
+		return nil
+	}
 	sibling := _elem.jsValue.Get("nextElementSibling")
 	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -254,6 +311,9 @@ func (_elem *Element) SiblingNext() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/closest
 func (_elem *Element) SelectorClosest(_selectors string) *Element {
+	if !_elem.IsDefined() {
+		return nil
+	}
 	elem := _elem.jsValue.Call("closest", _selectors)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -274,6 +334,9 @@ func (_elem *Element) SelectorMatches(_selectors string) bool {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector
 func (_elem *Element) SelectorQueryFirst(_selectors string) *Element {
+	if !_elem.IsDefined() {
+		return nil
+	}
 	elem := _elem.jsValue.Call("querySelector", _selectors)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
@@ -286,6 +349,9 @@ func (_elem *Element) SelectorQueryFirst(_selectors string) *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll
 func (_elem *Element) SelectorQueryAll(_selectors string) []*Node {
+	if !_elem.IsDefined() {
+		return make([]*Node, 0)
+	}
 	nodes := _elem.jsValue.Call("querySelectorAll", _selectors)
 	return MakeNodes(nodes)
 }
@@ -294,6 +360,9 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentElement
 func (_elem *Element) InsertAdjacentElement(_where WhereInsert, _element *Element) *Element {
+	if !_elem.IsDefined() {
+		return nil
+	}
 	elem := _elem.jsValue.Call("insertAdjacentElement", _where, _element.JSValue())
 	return CastElement(elem)
 }
@@ -302,6 +371,9 @@ func (_elem *Element) InsertAdjacentElement(_where WhereInsert, _element *Elemen
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentText
 func (_elem *Element) InsertAdjacentText(_where WhereInsert, _text string) {
+	if !_elem.IsDefined() {
+		return
+	}
 	_elem.jsValue.Call("insertAdjacentText", _where, _text)
 }
 
@@ -309,6 +381,9 @@ func (_elem *Element) InsertAdjacentText(_where WhereInsert, _text string) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML
 func (_elem *Element) InsertAdjacentHTML(_where WhereInsert, _text string) {
+	if !_elem.IsDefined() {
+		return
+	}
 	_elem.jsValue.Call("insertAdjacentHTML", _where, _text)
 }
 
@@ -317,6 +392,9 @@ func (_elem *Element) InsertAdjacentHTML(_where WhereInsert, _text string) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
 func (_elem *Element) PrependNodes(_nodes []*Node) {
+	if !_elem.IsDefined() {
+		return
+	}
 	var args []interface{} = make([]interface{}, len(_nodes))
 	var end int
 	for _, n := range _nodes {
@@ -334,6 +412,9 @@ func (_elem *Element) PrependNodes(_nodes []*Node) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
 func (_elem *Element) PrependStrings(_strs []string) {
+	if !_elem.IsDefined() {
+		return
+	}
 	var args []interface{} = make([]interface{}, len(_strs))
 	var end int
 	for _, n := range _strs {
@@ -356,6 +437,9 @@ func (_elem *Element) PrependStrings(_strs []string) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/append
 func (_elem *Element) AppendNodes(_nodes []*Node) {
+	if !_elem.IsDefined() {
+		return
+	}
 	var args []interface{} = make([]interface{}, len(_nodes))
 	var end int
 	for _, n := range _nodes {
@@ -381,6 +465,9 @@ func (_elem *Element) AppendNodes(_nodes []*Node) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/append
 func (_elem *Element) AppendStrings(_strs []string) {
+	if !_elem.IsDefined() {
+		return
+	}
 	var args []interface{} = make([]interface{}, len(_strs))
 	var end int
 	for _, n := range _strs {
@@ -391,6 +478,9 @@ func (_elem *Element) AppendStrings(_strs []string) {
 }
 
 func (_elem *Element) InsertNodesBefore(_nodes []*Node) {
+	if !_elem.IsDefined() {
+		return
+	}
 	var _args []interface{} = make([]interface{}, len(_nodes))
 	var _end int
 	for _, n := range _nodes {
@@ -404,6 +494,9 @@ func (_elem *Element) InsertNodesBefore(_nodes []*Node) {
 }
 
 func (_elem *Element) InsertNodesAfter(_nodes []*Node) {
+	if !_elem.IsDefined() {
+		return
+	}
 	var _args []interface{} = make([]interface{}, len(_nodes))
 	var _end int
 	for _, n := range _nodes {
@@ -422,6 +515,9 @@ func (_elem *Element) InsertNodesAfter(_nodes []*Node) {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth
 func (_elem *Element) ScrollRect() (_rect lib.Rect) {
+	if !_elem.IsDefined() {
+		return
+	}
 	_rect.X = _elem.jsValue.Get("scrollLeft").Float()
 	_rect.Y = _elem.jsValue.Get("scrollTop").Float()
 	_rect.Width = _elem.jsValue.Get("scrollWidth").Float()
@@ -436,6 +532,9 @@ func (_elem *Element) ScrollRect() (_rect lib.Rect) {
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft
 func (_elem *Element) ClientRect() (_rect lib.Rect) {
+	if !_elem.IsDefined() {
+		return lib.Rect{}
+	}
 	_rect.X = float64(_elem.jsValue.Get("clientLeft").Int())
 	_rect.Y = float64(_elem.jsValue.Get("clientTop").Int())
 	_rect.Width = float64(_elem.jsValue.Get("clientWidth").Int())
@@ -446,15 +545,21 @@ func (_elem *Element) ClientRect() (_rect lib.Rect) {
 // GetBoundingClientRect eturns a DOMRect object providing information about the size of an element and its position relative to the viewport.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-func (_elem *Element) BoundingClientRect() *lib.Rect {
+func (_elem *Element) BoundingClientRect() lib.Rect {
+	if !_elem.IsDefined() {
+		return lib.Rect{}
+	}
 	rect := _elem.jsValue.Call("getBoundingClientRect")
-	return CastRect(rect)
+	return *CastRect(rect)
 }
 
 // ScrollIntoView scrolls the element's ancestor containers such that the element on which scrollIntoView() is called is visible to the user.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
 func (_elem *Element) ScrollIntoView() {
+	if !_elem.IsDefined() {
+		return
+	}
 	_elem.jsValue.Call("scrollIntoView")
 }
 
@@ -479,6 +584,10 @@ func eventFuncElement_Event(listener func(event *Event, target *Element)) js.Fun
 // AddFullscreenChange is adding doing AddEventListener for 'FullscreenChange' on target.
 // This method is returning allocated javascript function that need to be released.
 func (_elem *Element) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func(event *Event, target *Element)) js.Func {
+	if !_elem.IsDefined() {
+		ConsoleWarn("AddFullscreenEvent not listening on nil Element")
+		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+	}
 	cb := eventFuncElement_Event(listener)
 	_elem.jsValue.Call("addEventListener", string(evttype), cb)
 	return cb
