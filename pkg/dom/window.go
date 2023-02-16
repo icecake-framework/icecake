@@ -47,8 +47,8 @@ func GetWindow() *Window {
 // type Document (idl: Document).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/document
-func (_this *Window) GetDocument() *Document {
-	value := _this.jsValue.Get("document")
+func (_win *Window) GetDocument() *Document {
+	value := _win.jsValue.Get("document")
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleError("Unable to get document")
 		panic("Unable to get document")
@@ -59,8 +59,8 @@ func (_this *Window) GetDocument() *Document {
 // Location represents the URL of the current window.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/location
-func (_this *Window) Location() *Location {
-	value := _this.jsValue.Get("location")
+func (_win *Window) Location() *Location {
+	value := _win.jsValue.Get("location")
 	return CastLocation(value)
 }
 
@@ -68,50 +68,46 @@ func (_this *Window) Location() *Location {
 // type htmlmisc.History (idl: History).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/history
-func (_this *Window) History() *History {
-	var ret *History
-	value := _this.jsValue.Get("history")
-	ret = CastHistory(value)
-	return ret
+func (_win *Window) History() *History {
+	value := _win.jsValue.Get("history")
+	return CastHistory(value)
 }
 
 // Closed ndicates whether the referenced window is closed or not.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/closed
-func (_this *Window) Closed() bool {
-	return _this.jsValue.Get("closed").Bool()
+func (_win *Window) Closed() bool {
+	return _win.jsValue.Get("closed").Bool()
 }
 
 // Top returns a reference to the topmost window in the window hierarchy.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/top
-func (_this *Window) Top() *Window {
-	value := _this.jsValue.Get("top")
+func (_win *Window) Top() *Window {
+	value := _win.jsValue.Get("top")
 	return CastWindow(value)
 }
 
 // Navigator eturns a reference to the Navigator object, which has methods and properties about the application running the script.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/navigator
-func (_this *Window) Navigator() *Navigator {
-	var ret *Navigator
-	value := _this.jsValue.Get("navigator")
-	ret = CastNavigator(value)
-	return ret
+func (_win *Window) Navigator() *Navigator {
+	value := _win.jsValue.Get("navigator")
+	return CastNavigator(value)
 }
 
 // InnerWidth returns the interior width of the window in pixels. This includes the width of the vertical scroll bar, if one is present.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth
-func (_this *Window) InnerWidth() int {
-	return _this.jsValue.Get("innerWidth").Int()
+func (_win *Window) InnerWidth() int {
+	return _win.jsValue.Get("innerWidth").Int()
 }
 
 // InnerHeight returns the interior height of the window in pixels, including the height of the horizontal scroll bar, if present.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/innerHeight
-func (_this *Window) InnerHeight() int {
-	return _this.jsValue.Get("innerHeight").Int()
+func (_win *Window) InnerHeight() int {
+	return _win.jsValue.Get("innerHeight").Int()
 }
 
 // ScrollX returns the number of pixels that the document is currently scrolled horizontally.
@@ -119,65 +115,62 @@ func (_this *Window) InnerHeight() int {
 // You can get the number of pixels the document is scrolled vertically from the scrollY property.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollX
-func (_this *Window) ScrollX() float64 {
-	return _this.jsValue.Get("scrollX").Float()
+func (_win *Window) ScrollX() float64 {
+	return _win.jsValue.Get("scrollX").Float()
 }
 
 // PageXOffset returning attribute 'pageXOffset' with
 // type float64 (idl: double).
-func (_this *Window) PageXOffset() float64 {
-	return _this.jsValue.Get("pageXOffset").Float()
+func (_win *Window) PageXOffset() float64 {
+	return _win.jsValue.Get("pageXOffset").Float()
 }
 
 // ScrollY returning attribute 'scrollY' with
 // type float64 (idl: double).
-func (_this *Window) ScrollY() float64 {
-	return _this.jsValue.Get("scrollY").Float()
+func (_win *Window) ScrollY() float64 {
+	return _win.jsValue.Get("scrollY").Float()
 }
 
 // PageYOffset returning attribute 'pageYOffset' with
 // type float64 (idl: double).
-func (_this *Window) PageYOffset() float64 {
-	return _this.jsValue.Get("pageYOffset").Float()
+func (_win *Window) PageYOffset() float64 {
+	return _win.jsValue.Get("pageYOffset").Float()
 }
 
 // ScreenX returning attribute 'screenX' with
-func (_this *Window) ScreenX() int {
-	return _this.jsValue.Get("screenX").Int()
+func (_win *Window) ScreenX() int {
+	return _win.jsValue.Get("screenX").Int()
 }
 
 // ScreenLeft returning attribute 'screenLeft' with
-func (_this *Window) ScreenLeft() int {
-	return _this.jsValue.Get("screenLeft").Int()
+func (_win *Window) ScreenLeft() int {
+	return _win.jsValue.Get("screenLeft").Int()
 }
 
 // ScreenY returning attribute 'screenY' with
-func (_this *Window) ScreenY() int {
-	return _this.jsValue.Get("screenY").Int()
+func (_win *Window) ScreenY() int {
+	return _win.jsValue.Get("screenY").Int()
 }
 
 // ScreenTop returning attribute 'screenTop' with
-func (_this *Window) ScreenTop() int {
-	return _this.jsValue.Get("screenTop").Int()
+func (_win *Window) ScreenTop() int {
+	return _win.jsValue.Get("screenTop").Int()
 }
 
 // OuterWidth returning attribute 'outerWidth' with
-func (_this *Window) OuterWidth() int {
-	return _this.jsValue.Get("outerWidth").Int()
+func (_win *Window) OuterWidth() int {
+	return _win.jsValue.Get("outerWidth").Int()
 }
 
 // OuterHeight returning attribute 'outerHeight' with
-func (_this *Window) OuterHeight() int {
-	return _this.jsValue.Get("outerHeight").Int()
+func (_win *Window) OuterHeight() int {
+	return _win.jsValue.Get("outerHeight").Int()
 }
 
 // DevicePixelRatio returns the ratio of the resolution in physical pixels to the resolution in CSS pixels for the current display device.
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
-func (_this *Window) DevicePixelRatio() float64 {
-	var ret float64
-	value := _this.jsValue.Get("devicePixelRatio")
-	ret = (value).Float()
-	return ret
+func (_win *Window) DevicePixelRatio() float64 {
+	return _win.jsValue.Get("devicePixelRatio").Float()
 }
 
 // accesses a session Storage object for the current origin.
@@ -186,19 +179,24 @@ func (_this *Window) DevicePixelRatio() float64 {
 // data in sessionStorage is cleared when the page session ends.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
-func (_this *Window) SessionStorage() *Storage {
-	value := _this.jsValue.Get("sessionStorage")
+func (_win *Window) SessionStorage() *Storage {
+	value := _win.jsValue.Get("sessionStorage")
 	return CastStorage(value)
 }
 
 // allows you to access a Storage object for the Document's origin; the stored data is saved across browser sessions.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
-func (_this *Window) LocalStorage() *Storage {
-	var ret *Storage
-	value := _this.jsValue.Get("localStorage")
-	ret = CastStorage(value)
-	return ret
+func (_win *Window) LocalStorage() *Storage {
+	//value := _win.jsValue.Get("localStorage")
+
+	value := js.Global().Get("window").Get("localStorage")
+
+	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+		ConsoleError("unable to access localstorage in this browser")
+		return nil
+	}
+	return CastStorage(value)
 }
 
 // Loads a specified resource into a new or existing browsing context (that is, a tab, a window, or an iframe) under a specified name.
@@ -206,13 +204,13 @@ func (_this *Window) LocalStorage() *Storage {
 // The special target keywords, _self, _blank, _parent, and _top, can also be used.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/open
-func (_this *Window) Open(url *url.URL, target string) *Window {
+func (_win *Window) Open(url *url.URL, target string) *Window {
 	var win js.Value
 	if url == nil {
 		// a blank page is opened into the targeted browsing context.
-		win = _this.jsValue.Call("open")
+		win = _win.jsValue.Call("open")
 	} else {
-		win = _this.jsValue.Call("open", url.String(), target)
+		win = _win.jsValue.Call("open", url.String(), target)
 
 	}
 	return CastWindow(win)
@@ -221,20 +219,20 @@ func (_this *Window) Open(url *url.URL, target string) *Window {
 // instructs the browser to display a dialog with an optional message, and to wait until the user dismisses the dialog.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/alert
-func (_this *Window) Alert(message string) {
+func (_win *Window) Alert(message string) {
 	message = strings.Trim(message, " ")
 	if message == "" {
-		_this.jsValue.Call("alert")
+		_win.jsValue.Call("alert")
 	} else {
-		_this.jsValue.Call("alert", message)
+		_win.jsValue.Call("alert", message)
 	}
 }
 
 // instructs the browser to display a dialog with an optional message, and to wait until the user either confirms or cancels the dialog.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/confirm
-func (_this *Window) Confirm(message string) bool {
-	ok := _this.jsValue.Call("confirm", message)
+func (_win *Window) Confirm(message string) bool {
+	ok := _win.jsValue.Call("confirm", message)
 	return (ok).Bool()
 }
 
@@ -242,12 +240,12 @@ func (_this *Window) Confirm(message string) bool {
 // and to wait until the user either submits the text or cancels the dialog.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/prompt
-func (_this *Window) Prompt(message string, _default string) (_rsp string) {
+func (_win *Window) Prompt(message string, _default string) (_rsp string) {
 	var rsp js.Value
 	if message == "" {
-		rsp = _this.jsValue.Call("prompt")
+		rsp = _win.jsValue.Call("prompt")
 	} else {
-		rsp = _this.jsValue.Call("prompt", message)
+		rsp = _win.jsValue.Call("prompt", message)
 	}
 
 	if rsp.Type() != js.TypeNull && rsp.Type() != js.TypeUndefined {
@@ -259,37 +257,37 @@ func (_this *Window) Prompt(message string, _default string) (_rsp string) {
 // Opens the print dialog to print the current document.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/print
-func (_this *Window) Print() {
-	_this.jsValue.Call("print")
+func (_win *Window) Print() {
+	_win.jsValue.Call("print")
 }
 
 // method closes the current window, or the window on which it was called.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/close
-func (_this *Window) Close() {
-	_this.jsValue.Call("close")
+func (_win *Window) Close() {
+	_win.jsValue.Call("close")
 }
 
 // stops further resource loading in the current browsing context, equivalent to the stop button in the browser.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/stop
-func (_this *Window) Stop() {
-	_this.jsValue.Call("stop")
+func (_win *Window) Stop() {
+	_win.jsValue.Call("stop")
 }
 
 // Makes a request to bring the window to the front.
 // It may fail due to user settings and the window isn't guaranteed to be frontmost before this method returns.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/focus
-func (_this *Window) Focus() {
-	_this.jsValue.Call("focus")
+func (_win *Window) Focus() {
+	_win.jsValue.Call("focus")
 }
 
 // Shifts focus away from the window.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/blur_event
-func (_this *Window) Blur() {
-	_this.jsValue.Call("blur")
+func (_win *Window) Blur() {
+	_win.jsValue.Call("blur")
 }
 
 /******************************************************************************
@@ -308,9 +306,9 @@ func makeWindow_Generic_Event(listener func(event *Event, target *Window)) js.Fu
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Window)) js.Func {
+func (_win *Window) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Window)) js.Func {
 	callback := makeWindow_Generic_Event(listener)
-	_this.jsValue.Call("addEventListener", string(evttype), callback)
+	_win.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -332,9 +330,9 @@ func makeWindow_Mouse_Event(listener func(event *MouseEvent, target *Window)) js
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Window)) js.Func {
+func (_win *Window) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Window)) js.Func {
 	callback := makeWindow_Mouse_Event(listener)
-	_this.jsValue.Call("addEventListener", string(evttype), callback)
+	_win.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -356,9 +354,9 @@ func makeWindow_BeforeUnload_Event(listener func(event *BeforeUnloadEvent, targe
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddBeforeUnloadEvent(listener func(event *BeforeUnloadEvent, target *Window)) js.Func {
+func (_win *Window) AddBeforeUnloadEvent(listener func(event *BeforeUnloadEvent, target *Window)) js.Func {
 	callback := makeWindow_BeforeUnload_Event(listener)
-	_this.jsValue.Call("addEventListener", "beforeunload", callback)
+	_win.jsValue.Call("addEventListener", "beforeunload", callback)
 	return callback
 }
 
@@ -382,9 +380,9 @@ func makeWindow_Focus_Event(listener func(event *FocusEvent, target *Window)) js
 
 // AddBlur is adding doing AddEventListener for 'Blur' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_this *Window) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *FocusEvent, target *Window)) js.Func {
+func (_win *Window) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *FocusEvent, target *Window)) js.Func {
 	callback := makeWindow_Focus_Event(listener)
-	_this.jsValue.Call("addEventListener", string(evttype), callback)
+	_win.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -406,9 +404,9 @@ func makeWindow_Pointer_Event(listener func(event *PointerEvent, target *Window)
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddPointerEvent(evttype POINTER_EVENT, listener func(event *PointerEvent, target *Window)) js.Func {
+func (_win *Window) AddPointerEvent(evttype POINTER_EVENT, listener func(event *PointerEvent, target *Window)) js.Func {
 	callback := makeWindow_Pointer_Event(listener)
-	_this.jsValue.Call("addEventListener", string(evttype), callback)
+	_win.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -432,9 +430,9 @@ func makeWindow_HashChange_Event(listener func(event *HashChangeEvent, target *W
 
 // AddHashChange is adding doing AddEventListener for 'HashChange' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_this *Window) AddHashChangeEvent(listener func(event *HashChangeEvent, target *Window)) js.Func {
+func (_win *Window) AddHashChangeEvent(listener func(event *HashChangeEvent, target *Window)) js.Func {
 	cb := makeWindow_HashChange_Event(listener)
-	_this.jsValue.Call("addEventListener", "hashchange", cb)
+	_win.jsValue.Call("addEventListener", "hashchange", cb)
 	return cb
 }
 
@@ -458,9 +456,9 @@ func makeWindow_Input_Event(listener func(event *InputEvent, target *Window)) js
 
 // AddInput is adding doing AddEventListener for 'Input' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_this *Window) AddInputEvent(evttype INPUT_EVENT, listener func(event *InputEvent, target *Window)) js.Func {
+func (_win *Window) AddInputEvent(evttype INPUT_EVENT, listener func(event *InputEvent, target *Window)) js.Func {
 	callback := makeWindow_Input_Event(listener)
-	_this.jsValue.Call("addEventListener", string(evttype), callback)
+	_win.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -482,9 +480,9 @@ func makeWindow_Keyboard_Event(listener func(event *KeyboardEvent, target *Windo
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddKeyboardEvent(evttype KEYBOARD_EVENT, listener func(event *KeyboardEvent, target *Window)) js.Func {
+func (_win *Window) AddKeyboardEvent(evttype KEYBOARD_EVENT, listener func(event *KeyboardEvent, target *Window)) js.Func {
 	callback := makeWindow_Keyboard_Event(listener)
-	_this.jsValue.Call("addEventListener", string(evttype), callback)
+	_win.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -506,9 +504,9 @@ func makeWindow_PageTransition_Event(listener func(event *PageTransitionEvent, t
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddPageTransitionEvent(evttype PAGETRANSITION_EVENT, listener func(event *PageTransitionEvent, target *Window)) js.Func {
+func (_win *Window) AddPageTransitionEvent(evttype PAGETRANSITION_EVENT, listener func(event *PageTransitionEvent, target *Window)) js.Func {
 	callback := makeWindow_PageTransition_Event(listener)
-	_this.jsValue.Call("addEventListener", string(evttype), callback)
+	_win.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -530,9 +528,9 @@ func makeWindow_UI_Event(listener func(event *UIEvent, target *Window)) js.Func 
 	return js.FuncOf(fn)
 }
 
-func (_this *Window) AddResizeEvent(listener func(event *UIEvent, target *Window)) js.Func {
+func (_win *Window) AddResizeEvent(listener func(event *UIEvent, target *Window)) js.Func {
 	callback := makeWindow_UI_Event(listener)
-	_this.jsValue.Call("addEventListener", "resize", callback)
+	_win.jsValue.Call("addEventListener", "resize", callback)
 	return callback
 }
 
@@ -556,8 +554,8 @@ func makeWindow_Wheel_Event(listener func(event *WheelEvent, target *Window)) js
 
 // AddWheel is adding doing AddEventListener for 'Wheel' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_this *Window) AddWheelEvent(listener func(event *WheelEvent, target *Window)) js.Func {
+func (_win *Window) AddWheelEvent(listener func(event *WheelEvent, target *Window)) js.Func {
 	callback := makeWindow_Wheel_Event(listener)
-	_this.jsValue.Call("addEventListener", "wheel", callback)
+	_win.jsValue.Call("addEventListener", "wheel", callback)
 	return callback
 }

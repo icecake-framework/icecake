@@ -1,7 +1,9 @@
-Simple use of BULMA css framework.
+Use of BULMA css framework.
 
-2 solutions for rendering formated value.
+Rendering formated value with the use of `data-ic-namedvalue` attribute or directly within an element by Id.
 
-Simple event handling.
+Basic event handling.
 
-work with local storage.
+Work with local storage.
+
+

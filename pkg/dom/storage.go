@@ -1,6 +1,11 @@
 package dom
 
-import "syscall/js"
+import (
+	"strconv"
+	"syscall/js"
+
+	"github.com/sunraylab/icecake/internal/helper"
+)
 
 /******************************************************************************
 * Storage
@@ -42,18 +47,42 @@ func (_store *Storage) At(_idx int) (_key string) {
 // when passed a key name, will return that key's value, or null if the key does not exist, in the given Storage object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem
-func (_store *Storage) Item(key string) (_item string) {
-	item := _store.jsValue.Call("getItem", key)
-	if item.Type() != js.TypeNull && item.Type() != js.TypeUndefined {
-		_item = item.String()
+func (_store *Storage) Get(key string) (_value string) {
+	val := _store.jsValue.Call("getItem", key)
+	if val.Type() != js.TypeNull && val.Type() != js.TypeUndefined {
+		_value = val.String()
 	}
-	return _item
+	return _value
+}
+
+// return true if the key exists and the value is not "false" nor "0"
+func (_store *Storage) GetBool(key string) (_value bool) {
+	jsval := _store.jsValue.Call("getItem", key)
+	if jsval.Type() != js.TypeNull && jsval.Type() != js.TypeUndefined {
+		val := helper.Normalize(jsval.String())
+		if val != "false" && val != "0" {
+			return true
+		}
+	}
+	return false
+}
+
+// convert the returned value in int. returns 0 if the key does not exists
+func (_store *Storage) GetInt(key string) (_value int) {
+	jsval := _store.jsValue.Call("getItem", key)
+	if jsval.Type() != js.TypeNull && jsval.Type() != js.TypeUndefined {
+		i, err := strconv.Atoi(jsval.String())
+		if err != nil {
+			_value = i
+		}
+	}
+	return _value
 }
 
 // when passed a key name, will return that key's value, or null if the key does not exist, in the given Storage object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem
-func (_store *Storage) SetItem(key string, value string) {
+func (_store *Storage) Set(key string, value string) {
 	_store.jsValue.Call("setItem", key, value)
 }
 
@@ -61,7 +90,7 @@ func (_store *Storage) SetItem(key string, value string) {
 // The Storage interface of the Web Storage API provides access to a particular domain's session or local storage.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem
-func (_store *Storage) RemoveItem(key string) {
+func (_store *Storage) Remove(key string) {
 	_store.jsValue.Call("removeItem", key)
 }
 
