@@ -18,7 +18,7 @@ type DocumentType struct {
 // CastDocumentType is casting a js.Value into DocumentType.
 func CastDocumentType(value js.Value) *DocumentType {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting DocumentType failed")
+		ICKError("casting DocumentType failed")
 		return nil
 	}
 	ret := new(DocumentType)

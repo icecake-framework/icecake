@@ -46,7 +46,7 @@ type Document struct {
 // CastDocument is casting a js.Value into Document.
 func CastDocument(value js.Value) *Document {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting Document failed")
+		ICKError("casting Document failed")
 		return new(Document)
 	}
 	ret := new(Document)
@@ -58,7 +58,7 @@ func CastDocument(value js.Value) *Document {
 func GetDocument() *Document {
 	value := js.Global().Get("document")
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleError("Unable to get document")
+		ICKError("Unable to get document")
 		panic("Unable to get document")
 	}
 	return CastDocument(value)
@@ -349,7 +349,7 @@ func (_doc *Document) ChildLast() *Element {
 func (_doc *Document) ChildrenByTagName(qualifiedName string) []*Node {
 	nodes := _doc.jsValue.Call("getElementsByTagName", qualifiedName)
 	if typ := nodes.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleWarn("ChildrenByTagName failed: %q not found\n", qualifiedName)
+		ICKWarn("ChildrenByTagName failed: %q not found\n", qualifiedName)
 		return make([]*Node, 0)
 	}
 	return MakeNodes(nodes)
@@ -361,7 +361,7 @@ func (_doc *Document) ChildrenByTagName(qualifiedName string) []*Node {
 func (_doc *Document) ChildrenByClassName(classNames string) []*Node {
 	nodes := _doc.jsValue.Call("getElementsByClassName", classNames)
 	if typ := nodes.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleWarn("ChildrenByClassName failed: %q not found\n", classNames)
+		ICKWarn("ChildrenByClassName failed: %q not found\n", classNames)
 		return make([]*Node, 0)
 	}
 	return MakeNodes(nodes)
@@ -373,7 +373,7 @@ func (_doc *Document) ChildrenByClassName(classNames string) []*Node {
 func (_doc *Document) ChildrenByName(elementName string) []*Node {
 	nodes := _doc.jsValue.Call("getElementsByName", elementName)
 	if typ := nodes.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleWarn("ChildrenByName failed: %q not found\n", elementName)
+		ICKWarn("ChildrenByName failed: %q not found\n", elementName)
 		return make([]*Node, 0)
 	}
 	return MakeNodes(nodes)
@@ -387,7 +387,7 @@ func (_doc *Document) ChildById(_elementId string) (_result *Element) {
 	_elementId = helper.Normalize(_elementId)
 	elem := _doc.jsValue.Call("getElementById", _elementId)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleWarn("ChildById failed: %q not found\n", _elementId)
+		ICKWarn("ChildById failed: %q not found\n", _elementId)
 		return new(Element)
 	}
 	return CastElement(elem)
@@ -411,7 +411,7 @@ func (_doc *Document) SelectorQueryFirst(selectors string) *Element {
 func (_doc *Document) SelectorQueryAll(selectors string) []*Node {
 	nodes := _doc.jsValue.Call("querySelectorAll", selectors)
 	if typ := nodes.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleWarn("SelectorQueryAll failed: %q not found\n", selectors)
+		ICKWarn("SelectorQueryAll failed: %q not found\n", selectors)
 		return nil
 	}
 	return MakeNodes(nodes)

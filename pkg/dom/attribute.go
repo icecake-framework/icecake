@@ -40,7 +40,7 @@ type Attribute struct {
 // CastAttribute is casting a js.Value into Attribute
 func CastAttribute(value js.Value) *Attribute {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting Attribute failed")
+		ICKError("casting Attribute failed")
 		return nil
 	}
 	cast := new(Attribute)

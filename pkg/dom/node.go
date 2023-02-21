@@ -86,7 +86,7 @@ type Node struct {
 // CastNode is casting a js.Value into Node.
 func CastNode(value js.Value) *Node {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting Node failed")
+		ICKError("casting Node failed")
 		return new(Node)
 	}
 	cast := new(Node)
@@ -97,7 +97,7 @@ func CastNode(value js.Value) *Node {
 func MakeNodes(value js.Value) []*Node {
 	nodes := make([]*Node, 0)
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting Nodes failed")
+		ICKError("casting Nodes failed")
 		return nil
 	}
 	len := value.Get("length").Int()
@@ -469,10 +469,10 @@ func (_parentnode *Node) ReplaceChild(_newchild *Node, _oldchild *Node) *Node {
 // RemoveChild removes a child node from the DOM and returns the removed node.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild
-func (_parentnode *Node) RemoveChild(_newchild *Node) *Node {
+func (_parentnode *Node) RemoveChild(_child *Node) *Node {
 	if !_parentnode.IsDefined() {
 		return nil
 	}
-	node := _parentnode.jsValue.Call("removeChild", _newchild.jsValue)
+	node := _parentnode.jsValue.Call("removeChild", _child.jsValue)
 	return CastNode(node)
 }

@@ -13,7 +13,7 @@ type Location struct {
 // CastLocation is casting a js.Value into Location.
 func CastLocation(value js.Value) *Location {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting Location failed")
+		ICKError("casting Location failed")
 		return nil
 	}
 	ret := new(Location)

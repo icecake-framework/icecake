@@ -14,7 +14,7 @@ type HeadElement struct {
 // CastHeadElement is casting a js.Value into HTMLHeadElement.
 func CastHeadElement(value js.Value) *HeadElement {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting HeadElement failed")
+		ICKError("casting HeadElement failed")
 		return new(HeadElement)
 	}
 	cast := new(HeadElement)

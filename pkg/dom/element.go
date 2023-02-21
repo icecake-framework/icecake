@@ -34,7 +34,7 @@ type Element struct {
 // CastElement is casting a js.Value into Element.
 func CastElement(value js.Value) *Element {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting Element failed")
+		ICKError("casting Element failed")
 		return new(Element)
 	}
 	cast := new(Element)
@@ -134,7 +134,7 @@ func (_elem *Element) Attributes() *Attributes {
 	attrs := NewAttributes(_elem)
 	namedNodeMap := _elem.jsValue.Get("attributes")
 	if typ := namedNodeMap.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleWarn("No attributes found")
+		ICKWarn("No attributes found")
 		return attrs
 	}
 
@@ -232,11 +232,11 @@ func (_elem *Element) Children() []*Node {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/firstElementChild
 func (_elem *Element) ChildFirst() *Element {
 	if !_elem.IsDefined() {
-		return nil
+		return new(Element)
 	}
 	child := _elem.jsValue.Get("firstElementChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
+		return new(Element)
 	}
 	return CastElement(child)
 }
@@ -246,11 +246,11 @@ func (_elem *Element) ChildFirst() *Element {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/lastElementChild
 func (_elem *Element) ChildLast() *Element {
 	if !_elem.IsDefined() {
-		return nil
+		return new(Element)
 	}
 	child := _elem.jsValue.Get("lastElementChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
+		return new(Element)
 	}
 	return CastElement(child)
 }
@@ -283,11 +283,11 @@ func (_elem *Element) ChildrenByClassName(_classNames string) []*Node {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/previousElementSibling
 func (_elem *Element) SiblingPrevious() *Element {
 	if !_elem.IsDefined() {
-		return nil
+		return new(Element)
 	}
 	sibling := _elem.jsValue.Get("previousElementSibling")
 	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
+		return new(Element)
 	}
 	return CastElement(sibling)
 }
@@ -297,11 +297,11 @@ func (_elem *Element) SiblingPrevious() *Element {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/nextElementSibling
 func (_elem *Element) SiblingNext() *Element {
 	if !_elem.IsDefined() {
-		return nil
+		return new(Element)
 	}
 	sibling := _elem.jsValue.Get("nextElementSibling")
 	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
+		return new(Element)
 	}
 	return CastElement(sibling)
 }
@@ -312,11 +312,11 @@ func (_elem *Element) SiblingNext() *Element {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/closest
 func (_elem *Element) SelectorClosest(_selectors string) *Element {
 	if !_elem.IsDefined() {
-		return nil
+		return new(Element)
 	}
 	elem := _elem.jsValue.Call("closest", _selectors)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
+		return new(Element)
 	}
 	return CastElement(elem)
 }
@@ -335,11 +335,11 @@ func (_elem *Element) SelectorMatches(_selectors string) bool {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector
 func (_elem *Element) SelectorQueryFirst(_selectors string) *Element {
 	if !_elem.IsDefined() {
-		return nil
+		return new(Element)
 	}
 	elem := _elem.jsValue.Call("querySelector", _selectors)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
+		return new(Element)
 	}
 	return CastElement(elem)
 }
@@ -361,7 +361,7 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Node {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentElement
 func (_elem *Element) InsertAdjacentElement(_where WhereInsert, _element *Element) *Element {
 	if !_elem.IsDefined() {
-		return nil
+		return new(Element)
 	}
 	elem := _elem.jsValue.Call("insertAdjacentElement", _where, _element.JSValue())
 	return CastElement(elem)
@@ -585,7 +585,7 @@ func eventFuncElement_Event(listener func(event *Event, target *Element)) js.Fun
 // This method is returning allocated javascript function that need to be released.
 func (_elem *Element) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func(event *Event, target *Element)) js.Func {
 	if !_elem.IsDefined() {
-		ConsoleWarn("AddFullscreenEvent not listening on nil Element")
+		ICKWarn("AddFullscreenEvent not listening on nil Element")
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	cb := eventFuncElement_Event(listener)

@@ -24,7 +24,7 @@ type TokenList struct {
 // DOMTokenListFromJS is casting a js.Value into DOMTokenList.
 func CastTokenList(value js.Value) *TokenList {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting TokenList failed")
+		ICKError("casting TokenList failed")
 		return nil
 	}
 	cast := new(TokenList)

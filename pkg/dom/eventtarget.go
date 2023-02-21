@@ -31,7 +31,7 @@ func (_this *EventTarget) Wrap(_jsval js.Value) {
 // CastEventTarget is casting a js.Value into EventTarget.
 func CastEventTarget(value js.Value) *EventTarget {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting EventTarget failed")
+		ICKError("casting EventTarget failed")
 		return nil
 	}
 	ret := new(EventTarget)

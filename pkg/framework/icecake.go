@@ -74,6 +74,61 @@ func DocumentBody() *ICElement {
 // 	_elem.RenderMarkdown(_mdtxt, _data, _options...)
 // }
 
+// InsertComponent
+func InsertComponent(_id string, _cmp any) {
+	elem := GetElementById(_id)
+	if !elem.IsDefined() {
+		return
+	}
+
+	name := elem.TagName() + "/" + elem.Id()
+
+	// unfold and render html
+	switch t := _cmp.(type) {
+	case HtmlCompounder:
+		fmt.Println(_id, " is a compounder")
+		html, _ := unfoldComponents(name, t.Template(), _cmp, 0)
+		elem.SetInnerHTML(html)
+	}
+
+	switch t := _cmp.(type) {
+	case dom.JSWrapper:
+		if typ := t.JSValue().Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+			fmt.Println(_id, " is an undefined JS Wrapper")
+			t.Wrap(elem.JSValue())
+		}
+	}
+
+	// add style
+
+	// addlisteners
+	switch t := _cmp.(type) {
+	case HtmlListener:
+		fmt.Println(_id, " is a listener")
+		t.AddListeners()
+	}
+
+	// return the instance of the component
+	//return _cmp
+}
+
+/*****************************************************************************
+* ICWebApp
+******************************************************************************/
+
+// ICWebApp
+type ICWebApp struct {
+	*dom.Window
+	*dom.Document
+}
+
+func NewWebApp() *ICWebApp {
+	webapp := new(ICWebApp)
+	webapp.Window = dom.GetWindow()
+	webapp.Document = dom.GetDocument()
+	return webapp
+}
+
 /*****************************************************************************
 * ICElement
 ******************************************************************************/
@@ -85,7 +140,7 @@ type ICElement struct {
 
 func CastICElement(_value js.Value) *ICElement {
 	if _value.Type() != js.TypeObject {
-		dom.ConsoleError("casting ICElement failed")
+		dom.ICKError("casting ICElement failed")
 		return new(ICElement)
 	}
 	cast := new(ICElement)
@@ -103,7 +158,7 @@ func GetElementById(_id string) *ICElement {
 		elem.Wrap(jse)
 		return elem
 	}
-	dom.ConsoleWarn("GetElementById failed: %q not found, or not a <Element>", _id)
+	dom.ICKWarn("GetElementById failed: %q not found, or not a <Element>", _id)
 	return new(ICElement)
 }
 
@@ -140,7 +195,7 @@ func (_elem *ICElement) RenderMarkdown(_mdtxt string, _data any, _options ...gol
 	var buf bytes.Buffer
 	err := md.Convert([]byte(_mdtxt), &buf)
 	if err != nil {
-		dom.ConsoleWarn("RenderMarkdown has error: %s", err.Error())
+		dom.ICKWarn("RenderMarkdown has error: %s", err.Error())
 		return err
 	}
 
@@ -184,7 +239,7 @@ type ICButton struct {
 
 func CastICButton(_value js.Value) *ICButton {
 	if _value.Type() != js.TypeObject || _value.Get("tagName").String() != "BUTTON" {
-		dom.ConsoleError("casting ICButton failed")
+		dom.ICKError("casting ICButton failed")
 		return new(ICButton)
 	}
 	ret := new(ICButton)
@@ -204,6 +259,6 @@ func GetButtonById(_id string) *ICButton {
 			return btn
 		}
 	}
-	dom.ConsoleWarn("GetElementById failed: %q not found, or not a <Element>", _id)
+	dom.ICKWarn("GetElementById failed: %q not found, or not a <Element>", _id)
 	return new(ICButton)
 }

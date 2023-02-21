@@ -29,7 +29,7 @@ type History struct {
 // CastHistory is casting a js.Value into History.
 func CastHistory(value js.Value) *History {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting History failed")
+		ICKError("casting History failed")
 		return nil
 	}
 	cast := new(History)

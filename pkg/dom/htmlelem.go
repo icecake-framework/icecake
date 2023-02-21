@@ -16,7 +16,7 @@ type HTMLElement struct {
 // CastHTMLElement is casting a js.Value into HTMLElement.
 func CastHTMLElement(value js.Value) *HTMLElement {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting HTMLElement failed")
+		ICKError("casting HTMLElement failed")
 		return new(HTMLElement)
 	}
 	cast := new(HTMLElement)
@@ -116,7 +116,7 @@ func makeHTMLElement_domcore_Event(listener func(event *Event, target *HTMLEleme
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *HTMLElement) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *HTMLElement)) js.Func {
 	if !_htmle.IsDefined() {
-		ConsoleWarn("AddGenericEvent not listening on nil Element")
+		ICKWarn("AddGenericEvent not listening on nil Element")
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_domcore_Event(listener)
@@ -144,7 +144,7 @@ func makeHTMLElement_Mouse_Event(listener func(event *MouseEvent, target *HTMLEl
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *HTMLElement) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *HTMLElement)) js.Func {
 	if !_htmle.IsDefined() {
-		ConsoleWarn("AddMouseEvent not listening on nil Element")
+		ICKWarn("AddMouseEvent not listening on nil Element")
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_Mouse_Event(listener)
@@ -172,7 +172,7 @@ func makeHTMLElement_FocusEvent(listener func(event *FocusEvent, target *HTMLEle
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *HTMLElement) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *FocusEvent, target *HTMLElement)) js.Func {
 	if !_htmle.IsDefined() {
-		ConsoleWarn("AddFocusEvent not listening on nil Element")
+		ICKWarn("AddFocusEvent not listening on nil Element")
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_FocusEvent(listener)
@@ -201,7 +201,7 @@ func makeHTMLElement_PointerEvent(listener func(event *PointerEvent, target *HTM
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *HTMLElement) AddPointerEvent(evttype POINTER_EVENT, listener func(event *PointerEvent, target *HTMLElement)) js.Func {
 	if !_htmle.IsDefined() {
-		ConsoleWarn("AddPointerEvent not listening on nil Element")
+		ICKWarn("AddPointerEvent not listening on nil Element")
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_PointerEvent(listener)
@@ -229,7 +229,7 @@ func makeHTMLElement_InputEvent(listener func(event *InputEvent, target *HTMLEle
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *HTMLElement) AddInputEvent(evttype INPUT_EVENT, listener func(event *InputEvent, target *HTMLElement)) js.Func {
 	if !_htmle.IsDefined() {
-		ConsoleWarn("AddInputEvent not listening on nil Element")
+		ICKWarn("AddInputEvent not listening on nil Element")
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_InputEvent(listener)
@@ -257,7 +257,7 @@ func makeHTMLElement_KeyboardEvent(listener func(event *KeyboardEvent, target *H
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *HTMLElement) AddKeyboard(evttype KEYBOARD_EVENT, listener func(event *KeyboardEvent, target *HTMLElement)) js.Func {
 	if !_htmle.IsDefined() {
-		ConsoleWarn("AddKeyboard not listening on nil Element")
+		ICKWarn("AddKeyboard not listening on nil Element")
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_KeyboardEvent(listener)
@@ -285,7 +285,7 @@ func makeHTMLElement_UIEvent(listener func(event *UIEvent, target *HTMLElement))
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *HTMLElement) AddResizeEvent(listener func(event *UIEvent, target *HTMLElement)) js.Func {
 	if !_htmle.IsDefined() {
-		ConsoleWarn("AddResizeEvent not listening on nil Element")
+		ICKWarn("AddResizeEvent not listening on nil Element")
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_UIEvent(listener)
@@ -314,7 +314,7 @@ func makeHTMLElement_WheelEvent(listener func(event *WheelEvent, target *HTMLEle
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
 func (_htmle *HTMLElement) AddWheelEvent(listener func(event *WheelEvent, target *HTMLElement)) js.Func {
 	if !_htmle.IsDefined() {
-		ConsoleWarn("AddWheelEvent not listening on nil Element")
+		ICKWarn("AddWheelEvent not listening on nil Element")
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_WheelEvent(listener)

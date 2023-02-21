@@ -26,7 +26,7 @@ type HTMLButton struct {
 // CastHTMLButton is casting a js.Value into HTMLButtonElement.
 func CastHTMLButton(_value js.Value) *HTMLButton {
 	if _value.Type() != js.TypeObject || _value.Get("tagName").String() != "BUTTON" {
-		ConsoleError("casting HTMLButton failed")
+		ICKError("casting HTMLButton failed")
 		return new(HTMLButton)
 	}
 	cast := new(HTMLButton)

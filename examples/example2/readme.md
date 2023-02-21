@@ -5,11 +5,10 @@ icecake can be used to build Single-Page Application (SPA) in Go in different wa
 1. Building and Embedding Web Components on a stateless website
 1. Building a full SPA with state and API calls
 
-Example2 illustrates how to use icecake for Building and Enhancing a static HTML website.
+Example2 illustrates how to use icecake for Building and Enhancing a static HTML website:
 
 1. demonstrate the use of the BULMA CSS framework 
-- interact with the browser API in go.
-- can be published on github pages.
+1. interact with the LocalStorage browser API in go.
 
 ## Build
 

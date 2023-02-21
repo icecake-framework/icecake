@@ -20,7 +20,7 @@ type Window struct {
 // CastWindow is casting a js.Value into Window.
 func CastWindow(value js.Value) *Window {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting Window failed")
+		ICKError("casting Window failed")
 		return nil
 	}
 	ret := new(Window)
@@ -33,7 +33,7 @@ func CastWindow(value js.Value) *Window {
 func GetWindow() *Window {
 	value := js.Global().Get("window")
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleError("Unable to get window")
+		ICKError("Unable to get window")
 		panic("Unable to get window")
 	}
 	return CastWindow(value)
@@ -50,7 +50,7 @@ func GetWindow() *Window {
 func (_win *Window) GetDocument() *Document {
 	value := _win.jsValue.Get("document")
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleError("Unable to get document")
+		ICKError("Unable to get document")
 		panic("Unable to get document")
 	}
 	return CastDocument(value)
@@ -180,23 +180,25 @@ func (_win *Window) DevicePixelRatio() float64 {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
 func (_win *Window) SessionStorage() *Storage {
-	value := _win.jsValue.Get("sessionStorage")
-	return CastStorage(value)
+	rsp := _win.jsValue.Call("ickSessionStorage")
+	if typ := rsp.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+		return nil
+	}
+	return CastStorage(rsp)
 }
 
 // allows you to access a Storage object for the Document's origin; the stored data is saved across browser sessions.
 //
+// returns nil if access is denied to the localstorage
+//
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
 func (_win *Window) LocalStorage() *Storage {
 	//value := _win.jsValue.Get("localStorage")
-
-	value := js.Global().Get("window").Get("localStorage")
-
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleError("unable to access localstorage in this browser")
+	rsp := _win.jsValue.Call("ickLocalStorage")
+	if typ := rsp.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
-	return CastStorage(value)
+	return CastStorage(rsp)
 }
 
 // Loads a specified resource into a new or existing browsing context (that is, a tab, a window, or an iframe) under a specified name.

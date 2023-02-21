@@ -29,15 +29,8 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	// proceed with localstorage
-	stor := dom.GetWindow().LocalStorage()
-	if stor == nil {
-		// TODO: display message
-	} else {
-		gdark = stor.GetBool("darkmode")
-	}
+	gdark := dom.GetWindow().LocalStorage().GetBool("darkmode")
 	updateDarkMode(gdark)
-
-	//time.Sleep(5 * time.Second)
 
 	icecake.GetElementById("introduction").RenderMarkdown(introduction, nil)
 
@@ -93,8 +86,5 @@ func updateDarkMode(dark bool) {
 	icecake.GetButtonById("btn-lightmode").SetDisabled(!dark)
 	icecake.GetButtonById("btn-darkmode").SetDisabled(dark)
 
-	stor := dom.GetWindow().LocalStorage()
-	if stor != nil {
-		stor.Set("darkmode", fmt.Sprintf("%v", dark))
-	}
+	dom.GetWindow().LocalStorage().Set("darkmode", fmt.Sprintf("%v", dark))
 }

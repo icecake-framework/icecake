@@ -5,7 +5,7 @@
 *.so
 *.dylib
 *_bin
-website/
+./website/
 
 # Test binary, built with `go test -c`
 *.test

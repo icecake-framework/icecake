@@ -12,7 +12,7 @@ type Navigator struct {
 // CastNavigator is casting a js.Value into Navigator.
 func CastNavigator(value js.Value) *Navigator {
 	if value.Type() != js.TypeObject {
-		ConsoleError("casting Navigator failed")
+		ICKError("casting Navigator failed")
 		return nil
 	}
 	cast := new(Navigator)
