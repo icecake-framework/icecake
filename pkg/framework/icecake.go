@@ -3,17 +3,19 @@ package icecake
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"syscall/js"
+	"text/template"
 
 	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/yuin/goldmark"
 )
 
-func DocumentBody() *ICElement {
-	// TODO: error handling
-	return &ICElement{HTMLElement: *dom.GetDocument().Body()}
-}
+// func DocumentBody() *ICElement {
+// 	// TODO: error handling
+// 	return &ICElement{Element: *dom.GetDocument().Body()}
+// }
 
 // func DocChildById(_id string) *Element {
 // 	child := dom.GetDocument().ChildById(_id)
@@ -83,21 +85,49 @@ func InsertComponent(_id string, _cmp any) {
 
 	name := elem.TagName() + "/" + elem.Id()
 
+	var cmpelem *dom.Element
+
 	// unfold and render html
 	switch t := _cmp.(type) {
 	case HtmlCompounder:
 		fmt.Println(_id, " is a compounder")
-		html, _ := unfoldComponents(name, t.Template(), _cmp, 0)
-		elem.SetInnerHTML(html)
+		tagname, classname := t.Build()
+		tagname = helper.Normalize(tagname)
+		classname = strings.Trim(classname, "")
+
+		cmpelem = dom.GetDocument().CreateElement(tagname)
+
+		if classname != "" {
+			//classname = " class='" + classname + "'"
+
+			tclass := template.Must(template.New(name).Parse(classname))
+			buft := new(bytes.Buffer)
+			err := tclass.Execute(buft, t)
+			if err != nil {
+				dom.ICKWarn(fmt.Sprintf("%q unable to generate component class", name))
+			} else {
+				cmpelem.SetClassName(buft.String())
+			}
+		}
+
+		//build := "<" + tagname + classname + ">" + t.Template() + "</" + tagname + ">"
+
+		html, _ := unfoldComponents(name, t.Template(), t, 0)
+		cmpelem.SetInnerHTML(html)
+
+		//elem.InsertAdjacentHTML(dom.WI_INSIDEFIRST, html)
+		elem.PrependNodes(&cmpelem.Node)
 	}
 
-	switch t := _cmp.(type) {
-	case dom.JSWrapper:
-		if typ := t.JSValue().Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-			fmt.Println(_id, " is an undefined JS Wrapper")
-			t.Wrap(elem.JSValue())
-		}
-	}
+	// switch tt := _cmp.(type) {
+	// case dom.JSWrapper:
+	// 	// jsv := tt.JSValue()
+	// 	// if typ := jsv.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+	// 	// 	fmt.Println(_id, " is an undefined JS Wrapper")
+	// 	jsv := cmpelem.JSValue()
+	// 	tt.Wrap(jsv)
+	// 	// }
+	// }
 
 	// add style
 
@@ -135,7 +165,7 @@ func NewWebApp() *ICWebApp {
 
 // ICElement is an extension of the dom.HTMLElement
 type ICElement struct {
-	dom.HTMLElement
+	dom.Element
 }
 
 func CastICElement(_value js.Value) *ICElement {

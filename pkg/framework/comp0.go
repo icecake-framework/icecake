@@ -7,6 +7,7 @@ import (
 )
 
 type HtmlCompounder interface {
+	Build() (_tagname string, _classname string)
 	Template() string
 }
 

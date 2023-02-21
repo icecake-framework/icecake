@@ -20,7 +20,7 @@ const (
 
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLButton
 type HTMLButton struct {
-	HTMLElement
+	Element
 }
 
 // CastHTMLButton is casting a js.Value into HTMLButtonElement.

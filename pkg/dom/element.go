@@ -42,6 +42,14 @@ func CastElement(value js.Value) *Element {
 	return cast
 }
 
+// IsDefined returns true if the Element is not nil AND it's type is not TypeNull and not TypeUndefined
+func (_node *Element) IsDefined() bool {
+	if _node == nil || _node.jsValue.Type() == js.TypeNull || _node.jsValue.Type() == js.TypeUndefined {
+		return false
+	}
+	return true
+}
+
 // Remove removes the element from the DOM.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/remove
@@ -363,7 +371,7 @@ func (_elem *Element) InsertAdjacentElement(_where WhereInsert, _element *Elemen
 	if !_elem.IsDefined() {
 		return new(Element)
 	}
-	elem := _elem.jsValue.Call("insertAdjacentElement", _where, _element.JSValue())
+	elem := _elem.jsValue.Call("insertAdjacentElement", string(_where), _element.JSValue())
 	return CastElement(elem)
 }
 
@@ -374,7 +382,7 @@ func (_elem *Element) InsertAdjacentText(_where WhereInsert, _text string) {
 	if !_elem.IsDefined() {
 		return
 	}
-	_elem.jsValue.Call("insertAdjacentText", _where, _text)
+	_elem.jsValue.Call("insertAdjacentText", string(_where), _text)
 }
 
 // InsertAdjacentHTML parses the specified text as HTML or XML and inserts the resulting nodes into the DOM tree at a specified position.
@@ -384,14 +392,14 @@ func (_elem *Element) InsertAdjacentHTML(_where WhereInsert, _text string) {
 	if !_elem.IsDefined() {
 		return
 	}
-	_elem.jsValue.Call("insertAdjacentHTML", _where, _text)
+	_elem.jsValue.Call("insertAdjacentHTML", string(_where), _text)
 }
 
 // Prepend inserts a set of Node objects or string objects before the first child of the Element.
 // String objects are inserted as equivalent Text nodes.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
-func (_elem *Element) PrependNodes(_nodes []*Node) {
+func (_elem *Element) PrependNodes(_nodes ...*Node) {
 	if !_elem.IsDefined() {
 		return
 	}
@@ -464,7 +472,7 @@ func (_elem *Element) AppendNodes(_nodes []*Node) {
 // Can append several nodes and strings, whereas Node.appendChild() can only append one node.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/append
-func (_elem *Element) AppendStrings(_strs []string) {
+func (_elem *Element) AppendStrings(_strs ...string) {
 	if !_elem.IsDefined() {
 		return
 	}
@@ -564,6 +572,78 @@ func (_elem *Element) ScrollIntoView() {
 }
 
 /****************************************************************************
+* HTMLElement's properties & methods
+*****************************************************************************/
+
+// AccessKey A string indicating the single-character keyboard key to give access to the button.
+func (_elem *Element) AccessKey() string {
+	if !_elem.IsDefined() {
+		return UNDEFINED_NODE
+	}
+	return _elem.jsValue.Get("accessKey").String()
+}
+
+// AccessKey A string indicating the single-character keyboard key to give access to the button.
+func (_htmle *Element) SetAccessKey(key bool) *Element {
+	if !_htmle.IsDefined() {
+		return nil
+	}
+	_htmle.jsValue.Set("accessKey", key)
+	return _htmle
+}
+
+// InnerText represents the rendered text content of a node and its descendants.
+//
+// InnerText gets pure text, removing any html or css, while TextContent keeps the representation.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerText
+func (_htmle *Element) InnerText() string {
+	if !_htmle.IsDefined() {
+		return UNDEFINED_NODE
+	}
+	var ret string
+	value := _htmle.jsValue.Get("innerText")
+	ret = (value).String()
+	return ret
+}
+
+// InnerText represents the rendered text content of a node and its descendants.
+//
+// InnerText gets pure text, removing any html or css, while TextContent keeps the representation.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerText
+func (_htmle *Element) SetInnerText(value string) {
+	if !_htmle.IsDefined() {
+		return
+	}
+	input := value
+	_htmle.jsValue.Set("innerText", input)
+}
+
+// Focus sets focus on the specified element, if it can be focused. The focused element is the element that will receive keyboard and similar events by default.
+//
+// By default the browser will scroll the element into view after focusing it,
+// and it may also provide visible indication of the focused element (typically by displaying a "focus ring" around the element).
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/focus
+func (_htmle *Element) Focus() {
+	if !_htmle.IsDefined() {
+		return
+	}
+	_htmle.jsValue.Call("focus")
+}
+
+// Blur removes keyboard focus from the current element.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/blur
+func (_htmle *Element) Blur() {
+	if !_htmle.IsDefined() {
+		return
+	}
+	_htmle.jsValue.Call("blur")
+}
+
+/****************************************************************************
 * Element's events
 *****************************************************************************/
 
@@ -591,4 +671,230 @@ func (_elem *Element) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func
 	cb := eventFuncElement_Event(listener)
 	_elem.jsValue.Call("addEventListener", string(evttype), cb)
 	return cb
+}
+
+/****************************************************************************
+* HTMLElement's GENERIC_EVENT
+*****************************************************************************/
+
+// event attribute: Event
+func makeHTMLElement_domcore_Event(listener func(event *Event, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		value := args[0]
+		evt := CastEvent(value)
+		target := CastElement(value.Get("target"))
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// AddAbort is adding doing AddEventListener for 'Abort' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Element)) js.Func {
+	if !_htmle.IsDefined() {
+		ICKWarn("AddGenericEvent not listening on nil Element")
+		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+	}
+	callback := makeHTMLElement_domcore_Event(listener)
+	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	return callback
+}
+
+/****************************************************************************
+* HTMLElement's MOUSE_EVENT
+*****************************************************************************/
+
+// event attribute: MouseEvent
+func makeHTMLElement_Mouse_Event(listener func(event *MouseEvent, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		value := args[0]
+		evt := CastMouseEvent(value)
+		target := CastElement(value.Get("target"))
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// AddClick is adding doing AddEventListener for 'Click' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Element)) js.Func {
+	if !_htmle.IsDefined() {
+		ICKWarn("AddMouseEvent not listening on nil Element")
+		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+	}
+	callback := makeHTMLElement_Mouse_Event(listener)
+	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	return callback
+}
+
+/****************************************************************************
+* HTMLElement's FOCUS_EVENT
+*****************************************************************************/
+
+// event attribute: FocusEvent
+func makeHTMLElement_FocusEvent(listener func(event *FocusEvent, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		value := args[0]
+		evt := CastFocusEvent(value)
+		target := CastElement(value.Get("target"))
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// AddBlur is adding doing AddEventListener for 'Blur' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *FocusEvent, target *Element)) js.Func {
+	if !_htmle.IsDefined() {
+		ICKWarn("AddFocusEvent not listening on nil Element")
+		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+	}
+	callback := makeHTMLElement_FocusEvent(listener)
+	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	return callback
+}
+
+/****************************************************************************
+* HTMLElement's POINTER_EVENT
+*****************************************************************************/
+
+// event attribute: PointerEvent
+func makeHTMLElement_PointerEvent(listener func(event *PointerEvent, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		var evt *PointerEvent
+		value := args[0]
+		evt = CastPointerEvent(value)
+		target := CastElement(value.Get("target"))
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// AddGotPointerCapture is adding doing AddEventListener for 'GotPointerCapture' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddPointerEvent(evttype POINTER_EVENT, listener func(event *PointerEvent, target *Element)) js.Func {
+	if !_htmle.IsDefined() {
+		ICKWarn("AddPointerEvent not listening on nil Element")
+		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+	}
+	callback := makeHTMLElement_PointerEvent(listener)
+	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	return callback
+}
+
+/****************************************************************************
+* HTMLElement's INPUT_EVENT
+*****************************************************************************/
+
+// event attribute: InputEvent
+func makeHTMLElement_InputEvent(listener func(event *InputEvent, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		value := args[0]
+		evt := CastInputEvent(value)
+		target := CastElement(value.Get("target"))
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// AddInput is adding doing AddEventListener for 'Input' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddInputEvent(evttype INPUT_EVENT, listener func(event *InputEvent, target *Element)) js.Func {
+	if !_htmle.IsDefined() {
+		ICKWarn("AddInputEvent not listening on nil Element")
+		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+	}
+	callback := makeHTMLElement_InputEvent(listener)
+	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	return callback
+}
+
+/****************************************************************************
+* HTMLElement's KEYBOARD_EVENT
+*****************************************************************************/
+
+// event attribute: KeyboardEvent
+func makeHTMLElement_KeyboardEvent(listener func(event *KeyboardEvent, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		value := args[0]
+		evt := CastKeyboardEvent(value)
+		target := CastElement(value.Get("target"))
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// AddKeyDown is adding doing AddEventListener for 'KeyDown' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddKeyboard(evttype KEYBOARD_EVENT, listener func(event *KeyboardEvent, target *Element)) js.Func {
+	if !_htmle.IsDefined() {
+		ICKWarn("AddKeyboard not listening on nil Element")
+		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+	}
+	callback := makeHTMLElement_KeyboardEvent(listener)
+	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	return callback
+}
+
+/****************************************************************************
+* HTMLElement's UI_EVENT
+*****************************************************************************/
+
+// event attribute: UIEvent
+func makeHTMLElement_UIEvent(listener func(event *UIEvent, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		value := args[0]
+		evt := CastUIEvent(value)
+		target := CastElement(value.Get("target"))
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// AddResize is adding doing AddEventListener for 'Resize' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddResizeEvent(listener func(event *UIEvent, target *Element)) js.Func {
+	if !_htmle.IsDefined() {
+		ICKWarn("AddResizeEvent not listening on nil Element")
+		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+	}
+	callback := makeHTMLElement_UIEvent(listener)
+	_htmle.jsValue.Call("addEventListener", "resize", callback)
+	return callback
+}
+
+/****************************************************************************
+* HTMLElement's WHEEL_EVENT
+*****************************************************************************/
+
+// event attribute: WheelEvent
+func makeHTMLElement_WheelEvent(listener func(event *WheelEvent, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		value := args[0]
+		evt := CastWheelEvent(value)
+		target := CastElement(value.Get("target"))
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// The wheel event fires when the user rotates a wheel button on a pointing device (typically a mouse).
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
+func (_htmle *Element) AddWheelEvent(listener func(event *WheelEvent, target *Element)) js.Func {
+	if !_htmle.IsDefined() {
+		ICKWarn("AddWheelEvent not listening on nil Element")
+		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+	}
+	callback := makeHTMLElement_WheelEvent(listener)
+	_htmle.jsValue.Call("addEventListener", "wheel", callback)
+	return callback
 }

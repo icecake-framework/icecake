@@ -8,7 +8,7 @@ import "syscall/js"
 
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLHeadElement
 type HeadElement struct {
-	HTMLElement
+	Element
 }
 
 // CastHeadElement is casting a js.Value into HTMLHeadElement.

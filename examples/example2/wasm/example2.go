@@ -51,16 +51,16 @@ func main() {
 * browser event handlers
 ******************************************************************************/
 
-func OnClickBtnEx2(event *dom.MouseEvent, target *dom.HTMLElement) {
+func OnClickBtnEx2(event *dom.MouseEvent, target *dom.Element) {
 	gcount += 0.5
 	updateUI()
 }
 
-func OnClickBtnLightMode(event *dom.MouseEvent, target *dom.HTMLElement) {
+func OnClickBtnLightMode(event *dom.MouseEvent, target *dom.Element) {
 	updateDarkMode(false)
 }
 
-func OnClickBtnDarkMode(event *dom.MouseEvent, target *dom.HTMLElement) {
+func OnClickBtnDarkMode(event *dom.MouseEvent, target *dom.Element) {
 	updateDarkMode(true)
 }
 
@@ -79,9 +79,9 @@ func updateUI() {
 
 func updateDarkMode(dark bool) {
 	if dark {
-		icecake.DocumentBody().ClassList().Set("dark")
+		dom.GetDocument().Body().ClassList().Set("dark")
 	} else {
-		icecake.DocumentBody().ClassList().Remove("dark")
+		dom.GetDocument().Body().ClassList().Remove("dark")
 	}
 	icecake.GetButtonById("btn-lightmode").SetDisabled(!dark)
 	icecake.GetButtonById("btn-darkmode").SetDisabled(dark)

@@ -168,15 +168,15 @@ func (_doc *Document) SetTitle(value string) *Document {
 // The Document.body property represents the <body> or <frameset> node of the current document, or null if no such element exists.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/body
-func (_doc *Document) Body() *HTMLElement {
+func (_doc *Document) Body() *Element {
 	value := _doc.jsValue.Get("body")
-	return CastHTMLElement(value)
+	return CastElement(value)
 }
 
 // The Document.body property represents the <body> or <frameset> node of the current document, or null if no such element exists.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/body
-func (_doc *Document) SetBody(value *HTMLElement) *Document {
+func (_doc *Document) SetBody(value *Element) *Document {
 	_doc.jsValue.Set("body", value.JSValue())
 	return _doc
 }
@@ -420,8 +420,8 @@ func (_doc *Document) SelectorQueryAll(selectors string) []*Node {
 // CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
-func (_doc *Document) CreateElement(localName string) *Element {
-	elem := _doc.jsValue.Call("createElement", localName)
+func (_doc *Document) CreateElement(tagName string) *Element {
+	elem := _doc.jsValue.Call("createElement", tagName)
 	return CastElement(elem)
 }
 
