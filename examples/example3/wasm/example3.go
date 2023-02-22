@@ -1,29 +1,24 @@
 // Copyright 2023 by lolorenzo777. All rights reserved.
 // Use of this source code is governed by MIT licence that can be found in the LICENSE file.
 
-// this main package contains the web assembly source code for the icecake example2.
+// this main package contains the web assembly source code for the icecake example3.
 //
 // It's compiled into a '.wasm' file with the build_ex2 task
 package main
 
 import (
 	"fmt"
-	"reflect"
+	"time"
 
 	_ "embed"
 
 	"github.com/sunraylab/icecake/pkg/html"
 	ick "github.com/sunraylab/icecake/pkg/icecake"
+	"github.com/sunraylab/icecake/pkg/markdown"
 )
 
 //go:embed "readme.md"
 var readme string
-
-//var notif *CmpNotif
-
-func init() {
-	ick.RegisterComponentType("ick-notiftoast", reflect.TypeOf(NotificationToast{}))
-}
 
 // the main func is required by the wasm GO builder
 // outputs will appears in the console of the browser
@@ -33,10 +28,13 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	// render introduction
-	ick.GetElementById("introduction").RenderMarkdown(readme, nil)
+	markdown.RenderMarkdown(ick.GetElementById("introduction"), readme, nil)
 
 	// add simple event hendling
-	html.GetButtonById("btn0").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtn0)
+	html.GetButtonById("btnw").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnw)
+	html.GetButtonById("btna").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtna)
+	html.GetButtonById("btns").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtns)
+	html.GetButtonById("btni").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtni)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
@@ -47,46 +45,60 @@ func main() {
 * browser event handlers
 ******************************************************************************/
 
-func OnClickBtn0(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtnw(event *ick.MouseEvent, target *ick.Element) {
 
-	//	where := icecake.GetElementById("notif0") //.BuildComponent("<ick-notif/>", nil)
-
-	// create the component and init its data
+	// instantiate the NotificationToast component and init its data
 	toast := &NotificationToast{
-		Notification: `Primar lorem ipsum dolor sit amet, consectetur adipiscing elit lorem ipsum dolor. 
+		Message: `Primar lorem ipsum dolor sit amet, consectetur adipiscing elit lorem ipsum dolor. 
 		<strong>Pellentesque risus mi</strong>, tempus quis placerat ut, porta nec nulla. Vestibulum rhoncus ac ex sit amet fringilla. 
 		Nullam <a>gravida purus diam</a>, et dictum felis venenatis efficitur.`,
+		ColorClass: "is-warning is-light",
 	}
-	toast.Color = "is-warning is-light"
-	err := ick.InsertComponent(toast, "notif0")
-	if err != nil {
+
+	// Insert the component into the DOM
+	if _, err := ick.GetElementById("notif_container").InsertNewComponent(toast); err != nil {
 		ick.ConsoleErrorf(err.Error())
 	}
 }
 
-/******************************************************************************
-* Component
-******************************************************************************/
+func OnClickBtna(event *ick.MouseEvent, target *ick.Element) {
 
-type NotificationToast struct {
-	ick.Element
+	// instantiate the NotificationToast component and init its data
+	toast := &NotificationToast{
+		Message:    `lorem ipsum dolor sit amet`,
+		ColorClass: "is-danger",
+		Timeout:    time.Second * 4,
+	}
 
-	Color        string
-	Notification string
+	// Insert the component into the DOM
+	if _, err := ick.GetElementById("notif_container").InsertNewComponent(toast); err != nil {
+		ick.ConsoleErrorf(err.Error())
+	}
 }
 
-func (c *NotificationToast) Envelope() (_tagname string, _classname string) {
-	return "div", "notification {{.Color}}"
+func OnClickBtns(event *ick.MouseEvent, target *ick.Element) {
+
+	// instantiate the NotificationToast component and init its data
+	// toast := &NotificationToast{
+	// 	Message:    `Single`,
+	// 	ColorClass: "is-primary",
+	// }
+
+	// // Insert the component into the DOM
+	// singlenotifid, err := ick.GetElementById("notif_container").InsertNewComponent(toast)
+	// if err != nil {
+	// 	ick.ConsoleErrorf(err.Error())
+	// }
 }
 
-func (c *NotificationToast) Template() (_html string) {
-	return `<button class="delete"></button>
-			{{.Notification}}`
-}
+func OnClickBtni(event *ick.MouseEvent, target *ick.Element) {
 
-func (c *NotificationToast) AddListeners() {
-	btndel := c.SelectorQueryFirst(".delete")
-	btndel.AddMouseEvent(ick.MOUSE_ONCLICK, func(*ick.MouseEvent, *ick.Element) {
-		c.Remove()
-	})
+	html := `<div class="box">I'm in a box.<div class="block">
+	<ick-notiftoast message="This is the message" colorclass="is-info"/>
+	</div></box>`
+
+	// Insert the component into the DOM
+	if err := ick.GetElementById("inside_container").RenderHtml(html, nil); err != nil {
+		ick.ConsoleErrorf(err.Error())
+	}
 }

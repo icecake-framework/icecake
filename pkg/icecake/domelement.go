@@ -1,8 +1,13 @@
 package ick
 
 import (
+	"errors"
+	"fmt"
+	"reflect"
+	"strconv"
 	"syscall/js"
 
+	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/lib"
 )
 
@@ -40,6 +45,20 @@ func CastElement(value js.Value) *Element {
 	cast := new(Element)
 	cast.jsValue = value
 	return cast
+}
+
+// GetICElementById returns an ICElement corresponding to the _id if it exists into the DOM,
+// otherwhise returns an undefined ICElement.
+func GetElementById(_id string) *Element {
+	_id = helper.Normalize(_id)
+	jse := GetDocument().JSValue().Call("getElementById", _id)
+	if etyp := jse.Type(); etyp != js.TypeNull && etyp != js.TypeUndefined {
+		elem := new(Element)
+		elem.Wrap(jse)
+		return elem
+	}
+	ConsoleWarnf("GetElementById failed: %q not found, or not a <Element>", _id)
+	return new(Element)
 }
 
 // IsDefined returns true if the Element is not nil AND it's type is not TypeNull and not TypeUndefined
@@ -680,7 +699,7 @@ func (_elem *Element) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func
 }
 
 /****************************************************************************
-* HTMLElement's GENERIC_EVENT
+* HTMLElement's events
 *****************************************************************************/
 
 // event attribute: Event
@@ -707,10 +726,6 @@ func (_htmle *Element) AddGenericEvent(evttype GENERIC_EVENT, listener func(even
 	return callback
 }
 
-/****************************************************************************
-* HTMLElement's MOUSE_EVENT
-*****************************************************************************/
-
 // event attribute: MouseEvent
 func makeHTMLElement_Mouse_Event(listener func(event *MouseEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
@@ -735,10 +750,6 @@ func (_htmle *Element) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *M
 	return callback
 }
 
-/****************************************************************************
-* HTMLElement's FOCUS_EVENT
-*****************************************************************************/
-
 // event attribute: FocusEvent
 func makeHTMLElement_FocusEvent(listener func(event *FocusEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
@@ -762,10 +773,6 @@ func (_htmle *Element) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *F
 	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
-
-/****************************************************************************
-* HTMLElement's POINTER_EVENT
-*****************************************************************************/
 
 // event attribute: PointerEvent
 func makeHTMLElement_PointerEvent(listener func(event *PointerEvent, target *Element)) js.Func {
@@ -792,10 +799,6 @@ func (_htmle *Element) AddPointerEvent(evttype POINTER_EVENT, listener func(even
 	return callback
 }
 
-/****************************************************************************
-* HTMLElement's INPUT_EVENT
-*****************************************************************************/
-
 // event attribute: InputEvent
 func makeHTMLElement_InputEvent(listener func(event *InputEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
@@ -819,10 +822,6 @@ func (_htmle *Element) AddInputEvent(evttype INPUT_EVENT, listener func(event *I
 	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
-
-/****************************************************************************
-* HTMLElement's KEYBOARD_EVENT
-*****************************************************************************/
 
 // event attribute: KeyboardEvent
 func makeHTMLElement_KeyboardEvent(listener func(event *KeyboardEvent, target *Element)) js.Func {
@@ -848,10 +847,6 @@ func (_htmle *Element) AddKeyboard(evttype KEYBOARD_EVENT, listener func(event *
 	return callback
 }
 
-/****************************************************************************
-* HTMLElement's UI_EVENT
-*****************************************************************************/
-
 // event attribute: UIEvent
 func makeHTMLElement_UIEvent(listener func(event *UIEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
@@ -876,10 +871,6 @@ func (_htmle *Element) AddResizeEvent(listener func(event *UIEvent, target *Elem
 	return callback
 }
 
-/****************************************************************************
-* HTMLElement's WHEEL_EVENT
-*****************************************************************************/
-
 // event attribute: WheelEvent
 func makeHTMLElement_WheelEvent(listener func(event *WheelEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
@@ -903,4 +894,131 @@ func (_htmle *Element) AddWheelEvent(listener func(event *WheelEvent, target *El
 	callback := makeHTMLElement_WheelEvent(listener)
 	_htmle.jsValue.Call("addEventListener", "wheel", callback)
 	return callback
+}
+
+/****************************************************************************
+* Extra rendering
+*****************************************************************************/
+
+// SetInnerValue set the innext text of the element with a formated value.
+// The format string follow the fmt rules: https://pkg.go.dev/fmt#hdr-Printing
+func (_elem *Element) RenderValue(format string, _value ...any) {
+	if !_elem.IsDefined() {
+		return
+	}
+	text := fmt.Sprintf(format, _value...)
+	_elem.SetInnerText(text)
+}
+
+// RenderHtml set inner HTML with the htmlTemplate executed with the _data and unfolding components if any
+func (_elem *Element) RenderHtml(_unsafeHtmlTemplate string, _data any) (_err error) {
+	if !_elem.IsDefined() {
+		return
+	}
+	name := _elem.TagName() + "/" + _elem.Id()
+	var html string
+	html, _err = unfoldComponents(name, _unsafeHtmlTemplate, _data, 0)
+	if _err == nil {
+		_elem.SetInnerHTML(html)
+	}
+	return _err
+}
+
+// RenderNamedValue look recursively for any _elem children having the "data-ic-namedvalue" token matching _name
+// and render inner text with the _value
+func (_elem *Element) RenderChildrenValue(_name string, _format string, _value ...any) {
+	if !_elem.IsDefined() {
+		return
+	}
+	_name = helper.Normalize(_name)
+	text := fmt.Sprintf(_format, _value...)
+
+	children := _elem.FilteredChildren(NT_ELEMENT, 99, func(_node *Node) bool {
+		dataset := CastElement(_node.JSValue()).Attributes().Dataset()
+		for i := 0; i < dataset.Count(); i++ {
+			if dataset.At(i).Name() == "data-ic-namedvalue" && dataset.At(i).Value() == _name {
+				return true
+			}
+		}
+		return false
+	})
+
+	for _, node := range children {
+		CastElement(node.JSValue()).RenderValue(text)
+	}
+}
+
+// InsertComponent
+func (_elem *Element) InsertNewComponent(_newcmp any) (_newcmpid string, _err error) {
+	if !_elem.IsDefined() {
+		_err = errors.New("InsertComponent failed on nil element")
+		ConsoleWarnf(_err.Error())
+		return "", _err
+	}
+
+	// check if _newcmp is a registered component and get its tagname
+	cmptype := LookupComponent(reflect.TypeOf(_newcmp))
+	if cmptype == "" {
+		ConsoleWarnf("InsertNewComponent: Inserting a non registered component %q...", reflect.TypeOf(_newcmp).String())
+	}
+
+	var cmpelem *Element
+	switch compounder := _newcmp.(type) {
+	case HtmlCompounder:
+
+		// create the HTML component into the DOM
+		cmpelem, _err = CreateCompoundElement(compounder)
+		if _err == nil {
+			nc := GetNextComponentIndex()
+			_newcmpid = "c" + strconv.Itoa(nc)
+			if cmptype != "" {
+				_newcmpid = cmptype + "-" + _newcmpid
+			}
+			cmpelem.SetId(_newcmpid)
+
+			// name the component
+			name := cmpelem.TagName() + "/" + _newcmpid
+
+			// unfold and render html for a compounder
+			data := TemplateData{
+				Me:     _newcmp,
+				Global: &GData,
+			}
+			html, _ := unfoldComponents(name, compounder.Template(), data, 0)
+			cmpelem.SetInnerHTML(html)
+
+			//elem.InsertAdjacentHTML(WI_INSIDEFIRST, html)
+			_elem.PrependNodes(&cmpelem.Node)
+
+			// wrap this new html element to th _cmp
+			switch wrapper := _newcmp.(type) {
+			case JSWrapper:
+				if typ := wrapper.JSValue().Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+					// fmt.Println("_newcmp is a Element")
+					wrapper.Wrap(cmpelem.JSValue())
+				} else {
+					return "", fmt.Errorf("component %q has already been inserted", reflect.TypeOf(_newcmp).String())
+				}
+			default:
+				return "", fmt.Errorf("component %q is not an Element", reflect.TypeOf(_newcmp).String())
+			}
+
+			// TODO: add style
+
+			// addlisteners
+			switch listener := _newcmp.(type) {
+			case HtmlListener:
+				// fmt.Println("_newcmp is a listener")
+				listener.AddListeners()
+			}
+
+		} else {
+			ConsoleWarnf(_err.Error())
+			return "", _err
+		}
+	default:
+		return "", errors.New("InsertComponent failed: _newcmp is not a compounder")
+	}
+
+	return _newcmpid, nil
 }

@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"syscall/js"
 	"text/template"
 )
 
-/*****************************************************************************/
+type TemplateData struct {
+	Me     any
+	Global *map[string]any
+}
 
 // unfoldComponents lookup for component tags in htmlstring, and render each of them recursively.
 //
@@ -86,7 +90,7 @@ func unfoldComponents(name string, _unsafeHtmlTemplate string, data any, _deep i
 					tagName = m[0]
 
 					// is this tag a registered component ?
-					if comptype, found := ComponentRegistry["ick-"+tagName]; found {
+					if comptype, found := GComponentRegistry["ick-"+tagName]; found {
 						newcmpid := fmt.Sprintf("ick-%s-%d-%d", tagName, _deep, n)
 
 						// does it have an id ?
@@ -96,35 +100,49 @@ func unfoldComponents(name string, _unsafeHtmlTemplate string, data any, _deep i
 
 						c := reflect.New(comptype)
 
-						switch t := c.Interface().(type) {
+						switch compounder := c.Interface().(type) {
 						case HtmlCompounder:
 
 							fmt.Printf("instantiating %s of type %s\n", newcmpid, c.Type())
 
 							var cmpelem *Element
-							cmpelem, _err = CreateCompoundElement(t)
+							cmpelem, _err = CreateCompoundElement(compounder)
 							if _err == nil {
-
-								type DATA struct {
-									Me any
-									//									Owner  *any
-									Global *map[string]any
-								}
-								d := DATA{
-									Me: t,
-									//									Owner:  &data,
+								data := TemplateData{
+									Me:     compounder,
 									Global: &GData,
 								}
-								html, _err = unfoldComponents(newcmpid, t.Template(), d, _deep+1)
-
-								//								html, _ := unfoldComponents(name, t.Template(), t, 0)
-
+								html, _err = unfoldComponents(newcmpid, compounder.Template(), data, _deep+1)
 								cmpelem.SetInnerHTML(html)
+
+								// wrap this new html element to th _cmp
+								switch wrapper := c.Interface().(type) {
+								case JSWrapper:
+									if typ := wrapper.JSValue().Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+										// fmt.Println("_newcmp is a Element")
+										wrapper.Wrap(cmpelem.JSValue())
+									} else {
+										return "", fmt.Errorf("component %q has already been inserted", reflect.TypeOf(c).String())
+									}
+								default:
+									return "", fmt.Errorf("component %q is not an Element", reflect.TypeOf(c).String())
+								}
+
+								// addlisteners
+								switch listener := c.Interface().(type) {
+								case HtmlListener:
+									fmt.Println("cmp is a listener")
+									listener.AddListeners()
+								}
 
 							} else {
 								ConsoleWarnf(_err.Error())
 								return "", _err
 							}
+
+						default:
+							// TODO
+							ConsoleErrorf("Not a, HtmlCompounder")
 						}
 
 						// let's go deeper

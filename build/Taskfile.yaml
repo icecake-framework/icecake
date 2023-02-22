@@ -13,7 +13,7 @@ tasks:
       - rm -rf ./website
       - mkdir -p ./website
       - cp -R ./web/static/** ./website/
-      - GOARCH=wasm GOOS=js go build -o ./website/static/spa.wasm ./web/wasm/main.go
+      - GOARCH=wasm GOOS=js go build -o ./website/static/spa.wasm ./web/wasm/
       - go build -o ./website/icecake ./cmd/icecake/icecake.go
 
   unit_test:
@@ -29,7 +29,7 @@ tasks:
     sources: 
       - "web/wasm/main.go"
     cmds: 
-      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
+      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/
 
   # task -t ./build/Taskfile.yaml dev_framework
   dev_framework:
@@ -38,7 +38,7 @@ tasks:
       - "pkg/framework/**/*"
       - "pkg/webclientsdk/**/*"
     cmds: 
-      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
+      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/
 
   # task -t ./build/Taskfile.yaml dev_components
   dev_components:
@@ -46,7 +46,7 @@ tasks:
     sources: 
       - "web/components/**/*"
     cmds: 
-      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/main.go
+      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/
 
   # task -t ./build/Taskfile.yaml dev_static
   dev_static: 
@@ -66,7 +66,7 @@ tasks:
       - "./example1/wasm/*.*"
       - "./../pkg/**/*"
     cmds:
-      - GOARCH=wasm GOOS=js go build -o ./website/example1.wasm ./example1/wasm/example1.go
+      - GOARCH=wasm GOOS=js go build -o ./website/example1.wasm ./example1/wasm/
 
   # task -t ./build/Taskfile.yaml build_ex2 
   build_ex2:
@@ -77,7 +77,7 @@ tasks:
       - "./../assets/*"
     cmds:
       - cp -R ./../assets/icecake.js ./website
-      - GOARCH=wasm GOOS=js go build -o ./website/example2.wasm ./example2/wasm/example2.go
+      - GOARCH=wasm GOOS=js go build -o ./website/example2.wasm ./example2/wasm/
 
   # task -t ./build/Taskfile.yaml build_ex3 
   build_ex3:
@@ -88,7 +88,7 @@ tasks:
       - "./../assets/*"
     cmds:
       - cp -R ./../assets/icecake.js ./website
-      - GOARCH=wasm GOOS=js go build -o ./website/example3.wasm ./example3/wasm/example3.go
+      - GOARCH=wasm GOOS=js go build -o ./website/example3.wasm ./example3/wasm/
 
   # task -t ./build/Taskfile.yaml dev_front --watch 
   dev_front:

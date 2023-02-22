@@ -23,18 +23,38 @@ type HtmlListener interface {
 // 	Style() string
 // }
 
-var ComponentRegistry map[string]reflect.Type
+var gComponents int
+
+func GetNextComponentIndex() (_index int) {
+	_index = gComponents + 1
+	gComponents++
+	return _index
+}
+
+var GComponentRegistry map[string]reflect.Type
 
 /*****************************************************************************/
 
 func init() {
-	ComponentRegistry = make(map[string]reflect.Type, 0)
+	GComponentRegistry = make(map[string]reflect.Type, 0)
 }
 
 func RegisterComponentType(key string, typ reflect.Type) {
 	// TODO: check component type and name convention with an hyphen aka "ick-XXXX"
 	key = helper.Normalize(key)
-	ComponentRegistry[key] = typ
+	GComponentRegistry[key] = typ
+	ConsoleWarnf("RegisterComponentType: %s %q", key, typ.String())
+}
+
+func LookupComponent(typ reflect.Type) string {
+	st := strings.TrimLeft(typ.String(), "*")
+	for k, v := range GComponentRegistry {
+		sv := strings.TrimLeft(v.String(), "*")
+		if sv == st {
+			return k
+		}
+	}
+	return ""
 }
 
 /*****************************************************************************/
@@ -57,7 +77,11 @@ func CreateCompoundElement(_compounder HtmlCompounder) (_elem *Element, _err err
 
 		tclass, _err = template.New("class").Parse(classtemplate)
 		if _err == nil {
-			_err = tclass.Execute(buf, _compounder)
+			data := TemplateData{
+				Me:     _compounder,
+				Global: &GData,
+			}
+			_err = tclass.Execute(buf, data)
 		}
 		if _err == nil {
 			_elem.SetClassName(buf.String())
