@@ -29,7 +29,7 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	// proceed with localstorage
-	gdark := ick.GetWindow().LocalStorage().GetBool("darkmode")
+	gdark := ick.App().Browser().LocalStorage().GetBool("darkmode")
 	updateDarkMode(gdark)
 
 	markdown.RenderMarkdown(ick.GetElementById("introduction"), introduction, nil)
@@ -79,12 +79,12 @@ func updateUI() {
 
 func updateDarkMode(dark bool) {
 	if dark {
-		ick.GetDocument().Body().ClassList().Set("dark")
+		ick.App().Body().ClassList().Set("dark")
 	} else {
-		ick.GetDocument().Body().ClassList().Remove("dark")
+		ick.App().Body().ClassList().Remove("dark")
 	}
 	html.GetButtonById("btn-lightmode").SetDisabled(!dark)
 	html.GetButtonById("btn-darkmode").SetDisabled(dark)
 
-	ick.GetWindow().LocalStorage().Set("darkmode", fmt.Sprintf("%v", dark))
+	ick.App().Browser().LocalStorage().Set("darkmode", fmt.Sprintf("%v", dark))
 }

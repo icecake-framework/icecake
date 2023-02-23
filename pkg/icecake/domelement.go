@@ -43,16 +43,16 @@ func CastElement(value js.Value) *Element {
 		return new(Element)
 	}
 	cast := new(Element)
-	cast.jsValue = value
+	cast.Value = value
 	return cast
 }
 
-// GetICElementById returns an ICElement corresponding to the _id if it exists into the DOM,
-// otherwhise returns an undefined ICElement.
+// GetICElementById returns an Element corresponding to the _id if it exists into the DOM,
+// otherwhise returns an undefined Element.
+// The _id must be normalized before call
 func GetElementById(_id string) *Element {
-	_id = helper.Normalize(_id)
-	jse := GetDocument().JSValue().Call("getElementById", _id)
-	if etyp := jse.Type(); etyp != js.TypeNull && etyp != js.TypeUndefined {
+	jse := App().Call("getElementById", _id)
+	if jse.Truthy() && CastNode(jse).NodeType() == NT_ELEMENT {
 		elem := new(Element)
 		elem.Wrap(jse)
 		return elem
@@ -63,7 +63,7 @@ func GetElementById(_id string) *Element {
 
 // IsDefined returns true if the Element is not nil AND it's type is not TypeNull and not TypeUndefined
 func (_node *Element) IsDefined() bool {
-	if _node == nil || _node.jsValue.Type() == js.TypeNull || _node.jsValue.Type() == js.TypeUndefined {
+	if _node == nil || _node.Value.Type() == js.TypeNull || _node.Value.Type() == js.TypeUndefined {
 		return false
 	}
 	return true
@@ -76,7 +76,7 @@ func (_elem *Element) Remove() {
 	if !_elem.IsDefined() {
 		return
 	}
-	_elem.jsValue.Call("remove")
+	_elem.Call("remove")
 }
 
 /****************************************************************************
@@ -91,7 +91,7 @@ func (_elem *Element) TagName() string {
 	if !_elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _elem.jsValue.Get("tagName").String()
+	return _elem.Get("tagName").String()
 }
 
 // Id rrepresents the element's identifier, reflecting the id global attribute.
@@ -101,7 +101,7 @@ func (_elem *Element) Id() string {
 	if !_elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _elem.jsValue.Get("id").String()
+	return _elem.Get("id").String()
 }
 
 // Id rrepresents the element's identifier, reflecting the id global attribute.
@@ -111,7 +111,7 @@ func (_elem *Element) SetId(_id string) *Element {
 	if !_elem.IsDefined() {
 		return _elem
 	}
-	_elem.jsValue.Set("id", _id)
+	_elem.Set("id", _id)
 	return _elem
 }
 
@@ -122,7 +122,7 @@ func (_elem *Element) ClassName() string {
 	if !_elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	value := _elem.jsValue.Get("className")
+	value := _elem.Get("className")
 	return (value).String()
 }
 
@@ -133,7 +133,7 @@ func (_elem *Element) SetClassName(_name string) *Element {
 	if !_elem.IsDefined() {
 		return _elem
 	}
-	_elem.jsValue.Set("className", _name)
+	_elem.Set("className", _name)
 	return _elem
 }
 
@@ -145,7 +145,7 @@ func (_elem *Element) ClassList() *TokenList {
 	if !_elem.IsDefined() {
 		return new(TokenList)
 	}
-	value := _elem.jsValue.Get("classList")
+	value := _elem.Get("classList")
 	return CastTokenList(value)
 }
 
@@ -159,7 +159,7 @@ func (_elem *Element) Attributes() *Attributes {
 		return NewAttributes(_elem)
 	}
 	attrs := NewAttributes(_elem)
-	namedNodeMap := _elem.jsValue.Get("attributes")
+	namedNodeMap := _elem.Get("attributes")
 	if typ := namedNodeMap.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleWarnf("No attributes found")
 		return attrs
@@ -184,7 +184,7 @@ func (_elem *Element) InnerHTML() string {
 	if !_elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	value := _elem.jsValue.Get("innerHTML")
+	value := _elem.Get("innerHTML")
 	return (value).String()
 }
 
@@ -200,7 +200,7 @@ func (_elem *Element) SetInnerHTML(_unsafeHtml string) *Element {
 	if !_elem.IsDefined() {
 		return _elem
 	}
-	_elem.jsValue.Set("innerHTML", _unsafeHtml)
+	_elem.Set("innerHTML", _unsafeHtml)
 	return _elem
 }
 
@@ -215,7 +215,7 @@ func (_elem *Element) OuterHTML() string {
 	if !_elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _elem.jsValue.Get("outerHTML").String()
+	return _elem.Get("outerHTML").String()
 }
 
 // OuterHTML gets the serialized HTML fragment describing the element including its descendants.
@@ -229,7 +229,7 @@ func (_elem *Element) SetOuterHTML(_unsafeHtml string) *Element {
 	if !_elem.IsDefined() {
 		return _elem
 	}
-	_elem.jsValue.Set("outerHTML", _unsafeHtml)
+	_elem.Set("outerHTML", _unsafeHtml)
 	return _elem
 }
 
@@ -239,7 +239,7 @@ func (_elem *Element) ChildrenCount() int {
 	if !_elem.IsDefined() {
 		return 0
 	}
-	count := _elem.jsValue.Get("childElementCount")
+	count := _elem.Get("childElementCount")
 	return count.Int()
 }
 
@@ -250,7 +250,7 @@ func (_elem *Element) Children() []*Node {
 	if !_elem.IsDefined() {
 		return make([]*Node, 0)
 	}
-	nodes := _elem.jsValue.Get("children")
+	nodes := _elem.Get("children")
 	return MakeNodes(nodes)
 }
 
@@ -261,7 +261,7 @@ func (_elem *Element) ChildFirst() *Element {
 	if !_elem.IsDefined() {
 		return new(Element)
 	}
-	child := _elem.jsValue.Get("firstElementChild")
+	child := _elem.Get("firstElementChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return new(Element)
 	}
@@ -275,7 +275,7 @@ func (_elem *Element) ChildLast() *Element {
 	if !_elem.IsDefined() {
 		return new(Element)
 	}
-	child := _elem.jsValue.Get("lastElementChild")
+	child := _elem.Get("lastElementChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return new(Element)
 	}
@@ -289,7 +289,7 @@ func (_elem *Element) ChildrenByTagName(_tagName string) []*Node {
 	if !_elem.IsDefined() {
 		return make([]*Node, 0)
 	}
-	nodes := _elem.jsValue.Call("getElementsByTagName", _tagName)
+	nodes := _elem.Call("getElementsByTagName", _tagName)
 	return MakeNodes(nodes)
 }
 
@@ -300,7 +300,7 @@ func (_elem *Element) ChildrenByClassName(_classNames string) []*Node {
 	if !_elem.IsDefined() {
 		return make([]*Node, 0)
 	}
-	nodes := _elem.jsValue.Call("getElementsByClassName", _classNames)
+	nodes := _elem.Call("getElementsByClassName", _classNames)
 	return MakeNodes(nodes)
 }
 
@@ -312,7 +312,7 @@ func (_elem *Element) SiblingPrevious() *Element {
 	if !_elem.IsDefined() {
 		return new(Element)
 	}
-	sibling := _elem.jsValue.Get("previousElementSibling")
+	sibling := _elem.Get("previousElementSibling")
 	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return new(Element)
 	}
@@ -326,7 +326,7 @@ func (_elem *Element) SiblingNext() *Element {
 	if !_elem.IsDefined() {
 		return new(Element)
 	}
-	sibling := _elem.jsValue.Get("nextElementSibling")
+	sibling := _elem.Get("nextElementSibling")
 	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return new(Element)
 	}
@@ -341,7 +341,7 @@ func (_elem *Element) SelectorClosest(_selectors string) *Element {
 	if !_elem.IsDefined() {
 		return new(Element)
 	}
-	elem := _elem.jsValue.Call("closest", _selectors)
+	elem := _elem.Call("closest", _selectors)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return new(Element)
 	}
@@ -352,7 +352,7 @@ func (_elem *Element) SelectorClosest(_selectors string) *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/matches
 func (_elem *Element) SelectorMatches(_selectors string) bool {
-	ok := _elem.jsValue.Call("matches", _selectors)
+	ok := _elem.Call("matches", _selectors)
 	return ok.Bool()
 }
 
@@ -364,7 +364,7 @@ func (_elem *Element) SelectorQueryFirst(_selectors string) *Element {
 	if !_elem.IsDefined() {
 		return new(Element)
 	}
-	elem := _elem.jsValue.Call("querySelector", _selectors)
+	elem := _elem.Call("querySelector", _selectors)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return new(Element)
 	}
@@ -379,7 +379,7 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Node {
 	if !_elem.IsDefined() {
 		return make([]*Node, 0)
 	}
-	nodes := _elem.jsValue.Call("querySelectorAll", _selectors)
+	nodes := _elem.Call("querySelectorAll", _selectors)
 	return MakeNodes(nodes)
 }
 
@@ -390,7 +390,7 @@ func (_elem *Element) InsertAdjacentElement(_where WhereInsert, _element *Elemen
 	if !_elem.IsDefined() {
 		return new(Element)
 	}
-	elem := _elem.jsValue.Call("insertAdjacentElement", string(_where), _element.JSValue())
+	elem := _elem.Call("insertAdjacentElement", string(_where), _element.JSValue())
 	return CastElement(elem)
 }
 
@@ -401,7 +401,7 @@ func (_elem *Element) InsertAdjacentText(_where WhereInsert, _text string) {
 	if !_elem.IsDefined() {
 		return
 	}
-	_elem.jsValue.Call("insertAdjacentText", string(_where), _text)
+	_elem.Call("insertAdjacentText", string(_where), _text)
 }
 
 // InsertAdjacentHTML parses the specified text as HTML or XML and inserts the resulting nodes into the DOM tree at a specified position.
@@ -411,7 +411,7 @@ func (_elem *Element) InsertAdjacentHTML(_where WhereInsert, _text string) {
 	if !_elem.IsDefined() {
 		return
 	}
-	_elem.jsValue.Call("insertAdjacentHTML", string(_where), _text)
+	_elem.Call("insertAdjacentHTML", string(_where), _text)
 }
 
 // Prepend inserts a set of Node objects or string objects before the first child of the Element.
@@ -431,7 +431,7 @@ func (_elem *Element) PrependNodes(_nodes ...*Node) {
 			end++
 		}
 	}
-	_elem.jsValue.Call("prepend", args[0:end]...)
+	_elem.Call("prepend", args[0:end]...)
 }
 
 // Prepend inserts a set of Node objects or string objects before the first child of the Element.
@@ -448,7 +448,7 @@ func (_elem *Element) PrependStrings(_strs []string) {
 		args[end] = n
 		end++
 	}
-	_elem.jsValue.Call("prepend", args[0:end]...)
+	_elem.Call("prepend", args[0:end]...)
 }
 
 // Append inserts a set of Node objects or string objects after the last child of the Element.
@@ -476,7 +476,7 @@ func (_elem *Element) AppendNodes(_nodes []*Node) {
 			end++
 		}
 	}
-	_elem.jsValue.Call("append", args[0:end]...)
+	_elem.Call("append", args[0:end]...)
 }
 
 // Append inserts a set of Node objects or string objects after the last child of the Element.
@@ -501,7 +501,7 @@ func (_elem *Element) AppendStrings(_strs ...string) {
 		args[end] = n
 		end++
 	}
-	_elem.jsValue.Call("append", args[0:end]...)
+	_elem.Call("append", args[0:end]...)
 }
 
 func (_elem *Element) InsertNodesBefore(_nodes []*Node) {
@@ -517,7 +517,7 @@ func (_elem *Element) InsertNodesBefore(_nodes []*Node) {
 			_end++
 		}
 	}
-	_elem.jsValue.Call("before", _args[0:_end]...)
+	_elem.Call("before", _args[0:_end]...)
 }
 
 func (_elem *Element) InsertNodesAfter(_nodes []*Node) {
@@ -533,7 +533,7 @@ func (_elem *Element) InsertNodesAfter(_nodes []*Node) {
 			_end++
 		}
 	}
-	_elem.jsValue.Call("after", _args[0:_end]...)
+	_elem.Call("after", _args[0:_end]...)
 }
 
 // ScrollTop gets or sets the number of pixels that an element's content is scrolled vertically.
@@ -545,10 +545,10 @@ func (_elem *Element) ScrollRect() (_rect lib.Rect) {
 	if !_elem.IsDefined() {
 		return
 	}
-	_rect.X = _elem.jsValue.Get("scrollLeft").Float()
-	_rect.Y = _elem.jsValue.Get("scrollTop").Float()
-	_rect.Width = _elem.jsValue.Get("scrollWidth").Float()
-	_rect.Height = _elem.jsValue.Get("scrollHeight").Float()
+	_rect.X = _elem.Get("scrollLeft").Float()
+	_rect.Y = _elem.Get("scrollTop").Float()
+	_rect.Width = _elem.Get("scrollWidth").Float()
+	_rect.Height = _elem.Get("scrollHeight").Float()
 	return _rect
 }
 
@@ -562,10 +562,10 @@ func (_elem *Element) ClientRect() (_rect lib.Rect) {
 	if !_elem.IsDefined() {
 		return lib.Rect{}
 	}
-	_rect.X = float64(_elem.jsValue.Get("clientLeft").Int())
-	_rect.Y = float64(_elem.jsValue.Get("clientTop").Int())
-	_rect.Width = float64(_elem.jsValue.Get("clientWidth").Int())
-	_rect.Height = float64(_elem.jsValue.Get("clientHeight").Int())
+	_rect.X = float64(_elem.Get("clientLeft").Int())
+	_rect.Y = float64(_elem.Get("clientTop").Int())
+	_rect.Width = float64(_elem.Get("clientWidth").Int())
+	_rect.Height = float64(_elem.Get("clientHeight").Int())
 	return _rect
 }
 
@@ -576,7 +576,7 @@ func (_elem *Element) BoundingClientRect() lib.Rect {
 	if !_elem.IsDefined() {
 		return lib.Rect{}
 	}
-	jsrect := _elem.jsValue.Call("getBoundingClientRect")
+	jsrect := _elem.Call("getBoundingClientRect")
 
 	rect := new(lib.Rect)
 	rect.X = jsrect.Get("x").Float()
@@ -593,7 +593,7 @@ func (_elem *Element) ScrollIntoView() {
 	if !_elem.IsDefined() {
 		return
 	}
-	_elem.jsValue.Call("scrollIntoView")
+	_elem.Call("scrollIntoView")
 }
 
 /****************************************************************************
@@ -605,7 +605,7 @@ func (_elem *Element) AccessKey() string {
 	if !_elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _elem.jsValue.Get("accessKey").String()
+	return _elem.Get("accessKey").String()
 }
 
 // AccessKey A string indicating the single-character keyboard key to give access to the button.
@@ -613,7 +613,7 @@ func (_htmle *Element) SetAccessKey(key bool) *Element {
 	if !_htmle.IsDefined() {
 		return nil
 	}
-	_htmle.jsValue.Set("accessKey", key)
+	_htmle.Set("accessKey", key)
 	return _htmle
 }
 
@@ -627,7 +627,7 @@ func (_htmle *Element) InnerText() string {
 		return UNDEFINED_NODE
 	}
 	var ret string
-	value := _htmle.jsValue.Get("innerText")
+	value := _htmle.Get("innerText")
 	ret = (value).String()
 	return ret
 }
@@ -642,7 +642,7 @@ func (_htmle *Element) SetInnerText(value string) {
 		return
 	}
 	input := value
-	_htmle.jsValue.Set("innerText", input)
+	_htmle.Set("innerText", input)
 }
 
 // Focus sets focus on the specified element, if it can be focused. The focused element is the element that will receive keyboard and similar events by default.
@@ -655,7 +655,7 @@ func (_htmle *Element) Focus() {
 	if !_htmle.IsDefined() {
 		return
 	}
-	_htmle.jsValue.Call("focus")
+	_htmle.Call("focus")
 }
 
 // Blur removes keyboard focus from the current element.
@@ -665,7 +665,7 @@ func (_htmle *Element) Blur() {
 	if !_htmle.IsDefined() {
 		return
 	}
-	_htmle.jsValue.Call("blur")
+	_htmle.Call("blur")
 }
 
 /****************************************************************************
@@ -694,7 +694,7 @@ func (_elem *Element) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	cb := eventFuncElement_Event(listener)
-	_elem.jsValue.Call("addEventListener", string(evttype), cb)
+	_elem.Call("addEventListener", string(evttype), cb)
 	return cb
 }
 
@@ -722,7 +722,7 @@ func (_htmle *Element) AddGenericEvent(evttype GENERIC_EVENT, listener func(even
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_domcore_Event(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	_htmle.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -746,7 +746,7 @@ func (_htmle *Element) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *M
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_Mouse_Event(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	_htmle.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -770,7 +770,7 @@ func (_htmle *Element) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *F
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_FocusEvent(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	_htmle.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -795,7 +795,7 @@ func (_htmle *Element) AddPointerEvent(evttype POINTER_EVENT, listener func(even
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_PointerEvent(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	_htmle.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -819,7 +819,7 @@ func (_htmle *Element) AddInputEvent(evttype INPUT_EVENT, listener func(event *I
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_InputEvent(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	_htmle.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -843,7 +843,7 @@ func (_htmle *Element) AddKeyboard(evttype KEYBOARD_EVENT, listener func(event *
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_KeyboardEvent(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
+	_htmle.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -867,7 +867,7 @@ func (_htmle *Element) AddResizeEvent(listener func(event *UIEvent, target *Elem
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_UIEvent(listener)
-	_htmle.jsValue.Call("addEventListener", "resize", callback)
+	_htmle.Call("addEventListener", "resize", callback)
 	return callback
 }
 
@@ -892,7 +892,7 @@ func (_htmle *Element) AddWheelEvent(listener func(event *WheelEvent, target *El
 		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
 	}
 	callback := makeHTMLElement_WheelEvent(listener)
-	_htmle.jsValue.Call("addEventListener", "wheel", callback)
+	_htmle.Call("addEventListener", "wheel", callback)
 	return callback
 }
 

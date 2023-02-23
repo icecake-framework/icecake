@@ -158,7 +158,7 @@ func (_attrs *Attributes) remove(_name string) bool {
 	for i, a := range _attrs.attributes {
 		if a.Name() == _name {
 			_attrs.attributes = append(_attrs.attributes[:i], _attrs.attributes[i+1:]...)
-			_attrs.ownerElement.jsValue.Call("removeAttribute", string(_name))
+			_attrs.ownerElement.Call("removeAttribute", string(_name))
 			removed = true
 		}
 	}

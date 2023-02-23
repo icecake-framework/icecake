@@ -63,7 +63,7 @@ func CreateCompoundElement(_compounder HtmlCompounder) (_elem *Element, _err err
 	// create the HTML element
 	tagname, classtemplate := _compounder.Envelope()
 	tagname = helper.Normalize(tagname)
-	_elem = GetDocument().CreateElement(tagname)
+	_elem = App().CreateElement(tagname)
 	if !_elem.IsDefined() {
 		// TODO: test HTMLUnknownElement
 		return nil, fmt.Errorf("CreateCompoundElement failed: invalid tagname %q", tagname)

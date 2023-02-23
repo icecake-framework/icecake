@@ -41,7 +41,7 @@ func CastButton(_value js.Value) *Button {
 // otherwhise returns an undefined Button.
 func GetButtonById(_id string) *Button {
 	_id = helper.Normalize(_id)
-	jse := ick.GetDocument().JSValue().Call("getElementById", _id)
+	jse := ick.App().Call("getElementById", _id)
 	if etyp := jse.Type(); etyp != js.TypeNull && etyp != js.TypeUndefined {
 		if jse.Get("tagName").String() == "BUTTON" {
 			btn := new(Button)

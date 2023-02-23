@@ -20,6 +20,12 @@ Sources of inspiration:
 
 ## Backlog
 
+### Front side
+
+- [ ] pages and routes
+
+### Back side
+
 - [ ] "hello world" wasm served by a SPA server, with dev environment setup.
 
 ## Tech
@@ -55,11 +61,11 @@ icecake
 │   ├── spaserver                   # SPA server 
 │   │   ├── webserver.go                   
 │   │   └── middleware.go                   
-│   ├── framework                   # the icecake package with all framework primitives
+│   ├── ick                         # icecake package with framework primitives, ic WebAPI embedded 
 │   │   └── [*.go]                   
 │   ├── spasdk                      # SDK for any SPA client willing to call SPA APIs
 │   │   └── [*.go]                   
-│   ├── dom                         # WebAPI js embedded in Go struct
+│   ├── dom                         # 
 │   │   └── [*.go]                   
 │
 ├── web                             # source codes and assets required by the front, even server side described in the go file

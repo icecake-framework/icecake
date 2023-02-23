@@ -10,7 +10,8 @@ import "syscall/js"
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
 type EventTarget struct {
-	jsValue js.Value
+	//jsValue js.Value
+	js.Value
 }
 
 // JSValue returns the js.Value or js.Null() if _this is nil
@@ -18,14 +19,14 @@ func (_this *EventTarget) JSValue() js.Value {
 	if _this == nil {
 		return js.Null()
 	}
-	return _this.jsValue
+	return _this.Value
 }
 
 func (_this *EventTarget) Wrap(_jsval js.Value) {
 	if _this == nil {
 		return
 	}
-	_this.jsValue = _jsval
+	_this.Value = _jsval
 }
 
 // CastEventTarget is casting a js.Value into EventTarget.
@@ -35,7 +36,7 @@ func CastEventTarget(value js.Value) *EventTarget {
 		return nil
 	}
 	ret := new(EventTarget)
-	ret.jsValue = value
+	ret.Value = value
 	return ret
 }
 

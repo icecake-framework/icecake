@@ -3,18 +3,34 @@ package ick
 var GData map[string]any = make(map[string]any, 0)
 
 /*****************************************************************************
-* ICKWebApp
+* WebApp
 ******************************************************************************/
 
-// ICWebApp
-type ICWebApp struct {
-	*Window
-	*Document
+var (
+	app *WebApp
+)
+
+func init() {
+	app = NewWebApp()
 }
 
-func NewWebApp() *ICWebApp {
-	webapp := new(ICWebApp)
-	webapp.Window = GetWindow()
-	webapp.Document = GetDocument()
+func App() *WebApp {
+	return app
+}
+
+// WebApp
+type WebApp struct {
+	*Document
+	win *Window
+}
+
+func NewWebApp() *WebApp {
+	webapp := new(WebApp)
+	webapp.win = getWindow()
+	webapp.Document = getDocument()
 	return webapp
+}
+
+func (_app *WebApp) Browser() *Window {
+	return _app.win
 }
