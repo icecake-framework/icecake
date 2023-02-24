@@ -18,6 +18,6 @@ func CastHeadElement(value js.Value) *HeadElement {
 		return new(HeadElement)
 	}
 	cast := new(HeadElement)
-	cast.Value = value
+	cast.jsValue = value
 	return cast
 }

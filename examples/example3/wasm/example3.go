@@ -30,6 +30,8 @@ func main() {
 	// render introduction
 	markdown.RenderMarkdown(ick.GetElementById("introduction"), readme, nil)
 
+	ick.GData["msgnumber"] = 0
+
 	// add simple event hendling
 	html.GetButtonById("btnw").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnw)
 	html.GetButtonById("btna").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtna)
@@ -48,14 +50,13 @@ func main() {
 func OnClickBtnw(event *ick.MouseEvent, target *ick.Element) {
 
 	// instantiate the NotificationToast component and init its data
-	toast := &NotificationToast{
-		Message: `Primar lorem ipsum dolor sit amet, consectetur adipiscing elit lorem ipsum dolor. 
-		<strong>Pellentesque risus mi</strong>, tempus quis placerat ut, porta nec nulla. Vestibulum rhoncus ac ex sit amet fringilla. 
-		Nullam <a>gravida purus diam</a>, et dictum felis venenatis efficitur.`,
+	toast := &Notify{
+		Message:    `This is a typical notification message <strong>including html</strong> event html links.<br/><a href="#">link1</a>&nbsp;|&nbsp;<a href="#">link2</a>`,
 		ColorClass: "is-warning is-light",
 	}
 
 	// Insert the component into the DOM
+	ick.GData["msgnumber"] = ick.GData["msgnumber"].(int) + 1
 	if _, err := ick.GetElementById("notif_container").InsertNewComponent(toast); err != nil {
 		ick.ConsoleErrorf(err.Error())
 	}
@@ -64,19 +65,23 @@ func OnClickBtnw(event *ick.MouseEvent, target *ick.Element) {
 func OnClickBtna(event *ick.MouseEvent, target *ick.Element) {
 
 	// instantiate the NotificationToast component and init its data
-	toast := &NotificationToast{
-		Message:    `lorem ipsum dolor sit amet`,
-		ColorClass: "is-danger",
+	toast := &Notify{
+		Message:    `This message will be automatically removed in <strong>4 seconds</strong>, unless you close it before. 😀`,
+		ColorClass: "is-danger is-light",
 		Timeout:    time.Second * 4,
 	}
+	//TODO: toast.Attributes().Set("class", "myclass")
 
 	// Insert the component into the DOM
+	ick.GData["msgnumber"] = ick.GData["msgnumber"].(int) + 1
 	if _, err := ick.GetElementById("notif_container").InsertNewComponent(toast); err != nil {
 		ick.ConsoleErrorf(err.Error())
 	}
 }
 
 func OnClickBtns(event *ick.MouseEvent, target *ick.Element) {
+
+	ick.GData["msgnumber"] = ick.GData["msgnumber"].(int) + 1
 
 	// instantiate the NotificationToast component and init its data
 	// toast := &NotificationToast{
@@ -93,12 +98,17 @@ func OnClickBtns(event *ick.MouseEvent, target *ick.Element) {
 
 func OnClickBtni(event *ick.MouseEvent, target *ick.Element) {
 
-	html := `<div class="box">I'm in a box.<div class="block">
-	<ick-notiftoast message="This is the message" colorclass="is-info"/>
+	html := `<div class="box"><p class="pb-2">This is an html template object embedding the &lt;ick-notify&gt; element.</p><div class="block">
+	<ick-notify 
+	Message="This message comes from the Notify Component <strong>embedded into an html template</strong>."
+	ColorClass="is-info" 
+	role="alert"/>
 	</div></box>`
 
 	// Insert the component into the DOM
+	ick.GData["msgnumber"] = ick.GData["msgnumber"].(int) + 1
 	if err := ick.GetElementById("inside_container").RenderHtml(html, nil); err != nil {
 		ick.ConsoleErrorf(err.Error())
 	}
+
 }

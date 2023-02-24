@@ -7,17 +7,18 @@ import (
 
 func TestRenderComponent(t *testing.T) {
 
+	unfoldedCmps := make(map[string]HtmlListener, 0)
 	data := struct{ Name string }{
 		Name: "Bob",
 	}
-	out, err := unfoldComponents("example0", `html0 Hello <strong>{{.Name}}</strong>!`, data, 0)
+	out, err := unfoldComponents(unfoldedCmps, "example0", `html0 Hello <strong>{{.Name}}</strong>!`, data, 0)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	log.Println("------>", out)
 
 	GData["name"] = "Alice"
-	out, err = unfoldComponents("example00", `html00 Hello <strong>{{.name}}</strong>!`, GData, 0)
+	out, err = unfoldComponents(unfoldedCmps, "example00", `html00 Hello <strong>{{.name}}</strong>!`, GData, 0)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -47,13 +48,13 @@ func TestRenderComponent(t *testing.T) {
 	// }
 	// log.Println("------>", out)
 
-	out, err = unfoldComponents("example5", `hmlt5 <ic-ex5 />`, GData, 0)
+	out, err = unfoldComponents(unfoldedCmps, "example5", `hmlt5 <ic-ex5 />`, GData, 0)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	log.Println("------>", out)
 
-	out, err = unfoldComponents("example6", `hmlt6 <ic-ex6 />`, GData, 0)
+	out, err = unfoldComponents(unfoldedCmps, "example6", `hmlt6 <ic-ex6 />`, GData, 0)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

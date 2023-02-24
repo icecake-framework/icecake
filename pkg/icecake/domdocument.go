@@ -50,7 +50,7 @@ func CastDocument(value js.Value) *Document {
 		return new(Document)
 	}
 	ret := new(Document)
-	ret.Value = value
+	ret.jsValue = value
 	return ret
 }
 
@@ -72,21 +72,21 @@ func getDocument() *Document {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/compatMode
 func (_doc *Document) CompatMode() string {
-	return _doc.Get("compatMode").String()
+	return _doc.jsValue.Get("compatMode").String()
 }
 
 // CharacterSet returns the character encoding of the document that it's currently rendered with.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/characterSet
 func (_doc *Document) CharacterSet() string {
-	return _doc.Get("characterSet").String()
+	return _doc.jsValue.Get("characterSet").String()
 }
 
 // Doctype Returns the Document Type Declaration (DTD) associated with current document.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/doctype
 func (_doc *Document) Doctype() *DocumentType {
-	value := _doc.Get("doctype")
+	value := _doc.jsValue.Get("doctype")
 	return CastDocumentType(value)
 }
 
@@ -96,14 +96,14 @@ func (_doc *Document) Doctype() *DocumentType {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/contentType
 func (_doc *Document) ContentType() string {
-	return _doc.Get("contentType").String()
+	return _doc.jsValue.Get("contentType").String()
 }
 
 // Referrer returns the URI of the page that linked to this page.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/referrer
 func (_doc *Document) Referrer() *url.URL {
-	ref := _doc.Get("referrer").String()
+	ref := _doc.jsValue.Get("referrer").String()
 	u, _ := url.Parse(ref)
 	return u
 }
@@ -113,7 +113,7 @@ func (_doc *Document) Referrer() *url.URL {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
 func (_doc *Document) Cookie() string {
-	return _doc.Get("cookie").String()
+	return _doc.jsValue.Get("cookie").String()
 }
 
 // Cookie lets you read and write cookies associated with the document.
@@ -121,7 +121,7 @@ func (_doc *Document) Cookie() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
 func (_doc *Document) SetCookie(value string) *Document {
-	_doc.Set("cookie", value)
+	_doc.jsValue.Set("cookie", value)
 	return _doc
 }
 
@@ -131,14 +131,14 @@ func (_doc *Document) SetCookie(value string) *Document {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/lastModified
 func (_doc *Document) LastModified() string {
-	return _doc.Get("lastModified").String()
+	return _doc.jsValue.Get("lastModified").String()
 }
 
 // ReadyState describes the loading state of the document. When the value of this property changes, a readystatechange event fires on the document object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState
 func (_doc *Document) ReadyState() DOC_READYSTATE {
-	value := _doc.Get("readyState").String()
+	value := _doc.jsValue.Get("readyState").String()
 	return DOC_READYSTATE(value)
 }
 
@@ -146,14 +146,14 @@ func (_doc *Document) ReadyState() DOC_READYSTATE {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/title
 func (_doc *Document) Title() string {
-	return _doc.Get("title").String()
+	return _doc.jsValue.Get("title").String()
 }
 
 // Title gets or sets the current title of the document. When present, it defaults to the value of the <title>.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/title
 func (_doc *Document) SetTitle(value string) *Document {
-	_doc.Set("title", value)
+	_doc.jsValue.Set("title", value)
 	return _doc
 }
 
@@ -161,7 +161,7 @@ func (_doc *Document) SetTitle(value string) *Document {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/body
 func (_doc *Document) Body() *Element {
-	value := _doc.Get("body")
+	value := _doc.jsValue.Get("body")
 	return CastElement(value)
 }
 
@@ -169,7 +169,7 @@ func (_doc *Document) Body() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/body
 func (_doc *Document) SetBody(value *Element) *Document {
-	_doc.Set("body", value.JSValue())
+	_doc.jsValue.Set("body", value.JSValue())
 	return _doc
 }
 
@@ -177,7 +177,7 @@ func (_doc *Document) SetBody(value *Element) *Document {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/head
 func (_doc *Document) Head() *HeadElement {
-	elem := _doc.Get("head")
+	elem := _doc.jsValue.Get("head")
 	return CastHeadElement(elem)
 }
 
@@ -185,7 +185,7 @@ func (_doc *Document) Head() *HeadElement {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/images
 func (_doc *Document) Images() []*Node {
-	nodes := _doc.Get("images")
+	nodes := _doc.jsValue.Get("images")
 	return MakeNodes(nodes)
 }
 
@@ -193,7 +193,7 @@ func (_doc *Document) Images() []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/embeds
 func (_doc *Document) Embeds() []*Node {
-	nodes := _doc.Get("embeds")
+	nodes := _doc.jsValue.Get("embeds")
 	return MakeNodes(nodes)
 }
 
@@ -201,7 +201,7 @@ func (_doc *Document) Embeds() []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/plugins
 func (_doc *Document) Plugins() []*Node {
-	nodes := _doc.Get("plugins")
+	nodes := _doc.jsValue.Get("plugins")
 	return MakeNodes(nodes)
 }
 
@@ -209,7 +209,7 @@ func (_doc *Document) Plugins() []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/links
 func (_doc *Document) Links() []*Node {
-	nodes := _doc.Get("links")
+	nodes := _doc.jsValue.Get("links")
 	return MakeNodes(nodes)
 }
 
@@ -217,7 +217,7 @@ func (_doc *Document) Links() []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/forms
 func (_doc *Document) Forms() []*Node {
-	nodes := _doc.Get("forms")
+	nodes := _doc.jsValue.Get("forms")
 	return MakeNodes(nodes)
 }
 
@@ -225,7 +225,7 @@ func (_doc *Document) Forms() []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/documentElement
 func (_doc *Document) RootElement() *Element {
-	elem := _doc.Get("documentElement")
+	elem := _doc.jsValue.Get("documentElement")
 	return CastElement(elem)
 }
 
@@ -233,7 +233,7 @@ func (_doc *Document) RootElement() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement
 func (_doc *Document) FocusedElement() *Element {
-	elem := _doc.Get("activeElement")
+	elem := _doc.jsValue.Get("activeElement")
 	return CastElement(elem)
 }
 
@@ -241,7 +241,7 @@ func (_doc *Document) FocusedElement() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenElement
 func (_doc *Document) FullscreenElement() *Element {
-	elem := _doc.Get("fullscreenElement")
+	elem := _doc.jsValue.Get("fullscreenElement")
 	return CastElement(elem)
 }
 
@@ -252,7 +252,7 @@ func (_doc *Document) FullscreenElement() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode
 func (_doc *Document) DesignMode() string {
-	return _doc.Get("designMode").String()
+	return _doc.jsValue.Get("designMode").String()
 }
 
 // DesignMode controls whether the entire document is editable.
@@ -262,7 +262,7 @@ func (_doc *Document) DesignMode() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode
 func (_doc *Document) SetDesignMode(value string) *Document {
-	_doc.Set("designMode", value)
+	_doc.jsValue.Set("designMode", value)
 	return _doc
 }
 
@@ -270,7 +270,7 @@ func (_doc *Document) SetDesignMode(value string) *Document {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/hidden
 func (_doc *Document) Hidden() bool {
-	return _doc.Get("hidden").Bool()
+	return _doc.jsValue.Get("hidden").Bool()
 }
 
 // VisibilityState returns the visibility of the document, that is in which context this element is now visible.
@@ -278,7 +278,7 @@ func (_doc *Document) Hidden() bool {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState
 func (_doc *Document) VisibilityState() DOC_VISIBILITYSTATE {
-	value := _doc.Get("visibilityState").String()
+	value := _doc.jsValue.Get("visibilityState").String()
 	return DOC_VISIBILITYSTATE(value)
 }
 
@@ -287,21 +287,21 @@ func (_doc *Document) VisibilityState() DOC_VISIBILITYSTATE {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/hasFocus
 func (_doc *Document) HasFocus() bool {
-	return _doc.Call("hasFocus").Bool()
+	return _doc.jsValue.Call("hasFocus").Bool()
 }
 
 // ChildElementCount returns the number of child elements of the document.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/childElementCount
 func (_doc *Document) ChildrenCount() int {
-	return _doc.Get("childElementCount").Int()
+	return _doc.jsValue.Get("childElementCount").Int()
 }
 
 // Children returns a live HTMLCollection which contains all of the child elements of the document upon which it was called.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/children
 func (_doc *Document) Children() []*Node {
-	nodes := _doc.Get("children")
+	nodes := _doc.jsValue.Get("children")
 	return MakeNodes(nodes)
 }
 
@@ -309,7 +309,7 @@ func (_doc *Document) Children() []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/firstElementChild
 func (_doc *Document) ChildFirst() *Element {
-	child := _doc.Get("firstElementChild")
+	child := _doc.jsValue.Get("firstElementChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -320,7 +320,7 @@ func (_doc *Document) ChildFirst() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/lastElementChild
 func (_doc *Document) ChildLast() *Element {
-	child := _doc.Get("lastElementChild")
+	child := _doc.jsValue.Get("lastElementChild")
 	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -331,7 +331,7 @@ func (_doc *Document) ChildLast() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByTagName
 func (_doc *Document) ChildrenByTagName(qualifiedName string) []*Node {
-	nodes := _doc.Call("getElementsByTagName", qualifiedName)
+	nodes := _doc.jsValue.Call("getElementsByTagName", qualifiedName)
 	if typ := nodes.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleWarnf("ChildrenByTagName failed: %q not found\n", qualifiedName)
 		return make([]*Node, 0)
@@ -343,7 +343,7 @@ func (_doc *Document) ChildrenByTagName(qualifiedName string) []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByClassName
 func (_doc *Document) ChildrenByClassName(classNames string) []*Node {
-	nodes := _doc.Call("getElementsByClassName", classNames)
+	nodes := _doc.jsValue.Call("getElementsByClassName", classNames)
 	if typ := nodes.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleWarnf("ChildrenByClassName failed: %q not found\n", classNames)
 		return make([]*Node, 0)
@@ -355,7 +355,7 @@ func (_doc *Document) ChildrenByClassName(classNames string) []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByName
 func (_doc *Document) ChildrenByName(elementName string) []*Node {
-	nodes := _doc.Call("getElementsByName", elementName)
+	nodes := _doc.jsValue.Call("getElementsByName", elementName)
 	if typ := nodes.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleWarnf("ChildrenByName failed: %q not found\n", elementName)
 		return make([]*Node, 0)
@@ -369,7 +369,7 @@ func (_doc *Document) ChildrenByName(elementName string) []*Node {
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
 func (_doc *Document) ChildById(_elementId string) (_result *Element) {
 	_elementId = helper.Normalize(_elementId)
-	elem := _doc.Call("getElementById", _elementId)
+	elem := _doc.jsValue.Call("getElementById", _elementId)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleWarnf("ChildById failed: %q not found\n", _elementId)
 		return new(Element)
@@ -382,7 +382,7 @@ func (_doc *Document) ChildById(_elementId string) (_result *Element) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
 func (_doc *Document) SelectorQueryFirst(selectors string) *Element {
-	elem := _doc.Call("querySelector", selectors)
+	elem := _doc.jsValue.Call("querySelector", selectors)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -393,7 +393,7 @@ func (_doc *Document) SelectorQueryFirst(selectors string) *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
 func (_doc *Document) SelectorQueryAll(selectors string) []*Node {
-	nodes := _doc.Call("querySelectorAll", selectors)
+	nodes := _doc.jsValue.Call("querySelectorAll", selectors)
 	if typ := nodes.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleWarnf("SelectorQueryAll failed: %q not found\n", selectors)
 		return nil
@@ -405,7 +405,7 @@ func (_doc *Document) SelectorQueryAll(selectors string) []*Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
 func (_doc *Document) CreateElement(tagName string) *Element {
-	elem := _doc.Call("createElement", tagName)
+	elem := _doc.jsValue.Call("createElement", tagName)
 	return CastElement(elem)
 }
 
@@ -415,16 +415,16 @@ func (_doc *Document) CreateElement(tagName string) *Element {
 // # TODO test CreateAttribute
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/createAttribute
-func (_doc *Document) CreateAttribute(localName string) *Attribute {
-	attr := _doc.Call("createAttribute", localName)
-	return CastAttribute(attr)
-}
+// func (_doc *Document) CreateAttribute(localName string) *Attribute {
+// 	attr := _doc.jsValue.Call("createAttribute", localName)
+// 	return CastAttribute(attr)
+// }
 
 // GetElementAtPoint returns the topmost Element at the specified coordinates (relative to the viewport).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/elementFromPoint
 func (_doc *Document) ChildAtPoint(x float64, y float64) *Element {
-	elem := _doc.Call("elementFromPoint", x, y)
+	elem := _doc.jsValue.Call("elementFromPoint", x, y)
 	if typ := elem.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		return nil
 	}
@@ -436,7 +436,7 @@ func (_doc *Document) ChildAtPoint(x float64, y float64) *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/elementsFromPoint
 func (_doc *Document) ChildrenAtPoint(x float64, y float64) (_result []*Element) {
-	elems := _doc.Call("elementsFromPoint", x, y)
+	elems := _doc.jsValue.Call("elementsFromPoint", x, y)
 	len := elems.Length()
 	_result = make([]*Element, len)
 	for i := 0; i < len; i++ {
@@ -460,7 +460,7 @@ func (_doc *Document) PrependNodes(nodes []*Node) {
 			_end++
 		}
 	}
-	_doc.Call("prepend", _args[0:_end]...)
+	_doc.jsValue.Call("prepend", _args[0:_end]...)
 }
 
 // Prepend inserts a set of Node objects or string objects before the first child of the document.
@@ -474,7 +474,7 @@ func (_doc *Document) PrepenStrings(strs []string) {
 		_args[_end] = n
 		_end++
 	}
-	_doc.Call("prepend", _args[0:_end]...)
+	_doc.jsValue.Call("prepend", _args[0:_end]...)
 }
 
 // Append inserts a set of Node objects or string objects after the last child of the document.
@@ -491,7 +491,7 @@ func (_doc *Document) AppendNodes(nodes []*Node) {
 			_end++
 		}
 	}
-	_doc.Call("append", _args[0:_end]...)
+	_doc.jsValue.Call("append", _args[0:_end]...)
 }
 
 // Append inserts a set of Node objects or string objects after the last child of the document.
@@ -505,7 +505,7 @@ func (_doc *Document) AppendStrings(strs []string) {
 		_args[_end] = n
 		_end++
 	}
-	_doc.Call("append", _args[0:_end]...)
+	_doc.jsValue.Call("append", _args[0:_end]...)
 }
 
 /******************************************************************************
@@ -525,7 +525,7 @@ func makeDoc_Generic_Event(listener func(event *Event, target *Document)) js.Fun
 
 func (_doc *Document) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Document)) js.Func {
 	callback := makeDoc_Generic_Event(listener)
-	_doc.Call("addEventListener", string(evttype), callback)
+	_doc.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -546,7 +546,7 @@ func makeDoc_Mouse_Event(listener func(event *MouseEvent, target *Document)) js.
 
 func (_doc *Document) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Document)) js.Func {
 	callback := makeDoc_Mouse_Event(listener)
-	_doc.Call("addEventListener", string(evttype), callback)
+	_doc.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -567,7 +567,7 @@ func makeDoc_Focus_Event(listener func(event *FocusEvent, target *Document)) js.
 
 func (_doc *Document) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *FocusEvent, target *Document)) js.Func {
 	callback := makeDoc_Focus_Event(listener)
-	_doc.Call("addEventListener", string(evttype), callback)
+	_doc.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -588,7 +588,7 @@ func makeDoc_Pointer_Event(listener func(event *PointerEvent, target *Document))
 
 func (_doc *Document) AddPointerEvent(evttype POINTER_EVENT, listener func(event *PointerEvent, target *Document)) js.Func {
 	callback := makeDoc_Pointer_Event(listener)
-	_doc.Call("addEventListener", string(evttype), callback)
+	_doc.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -609,7 +609,7 @@ func makeDoc_Input_Event(listener func(event *InputEvent, target *Document)) js.
 
 func (_doc *Document) AddInputEvent(evttype INPUT_EVENT, listener func(event *InputEvent, target *Document)) js.Func {
 	callback := makeDoc_Input_Event(listener)
-	_doc.Call("addEventListener", string(evttype), callback)
+	_doc.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -630,7 +630,7 @@ func makeDoc_Keyboard_Event(listener func(event *KeyboardEvent, target *Document
 
 func (_doc *Document) AddKeyboardEvent(evttype KEYBOARD_EVENT, listener func(event *KeyboardEvent, target *Document)) js.Func {
 	callback := makeDoc_Keyboard_Event(listener)
-	_doc.Call("addEventListener", string(evttype), callback)
+	_doc.jsValue.Call("addEventListener", string(evttype), callback)
 	return callback
 }
 
@@ -654,7 +654,7 @@ func makeDoc_UIEvent(listener func(event *UIEvent, target *Document)) js.Func {
 // This method is returning allocated javascript function that need to be released.
 func (_doc *Document) AddEventResize(listener func(event *UIEvent, target *Document)) js.Func {
 	callback := makeDoc_UIEvent(listener)
-	_doc.Call("addEventListener", "resize", callback)
+	_doc.jsValue.Call("addEventListener", "resize", callback)
 	return callback
 }
 
@@ -677,7 +677,7 @@ func makeDoc_Wheel_Event(listener func(event *WheelEvent, target *Document)) js.
 // This method is returning allocated javascript function that need to be released.
 func (_doc *Document) AddEventWheel(listener func(event *WheelEvent, currentTarget *Document)) js.Func {
 	callback := makeDoc_Wheel_Event(listener)
-	_doc.Call("addEventListener", "wheel", callback)
+	_doc.jsValue.Call("addEventListener", "wheel", callback)
 	return callback
 }
 
@@ -687,8 +687,8 @@ func (_doc *Document) AddEventWheel(listener func(event *WheelEvent, currentTarg
 
 // AddFullscreenChange is adding doing AddEventListener for 'FullscreenChange' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_elem *Document) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func(event *Event, target *Document)) js.Func {
+func (_doc *Document) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func(event *Event, target *Document)) js.Func {
 	cb := makeDoc_Generic_Event(listener)
-	_elem.Call("addEventListener", string(evttype), cb)
+	_doc.jsValue.Call("addEventListener", string(evttype), cb)
 	return cb
 }

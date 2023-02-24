@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"syscall/js"
 	"text/template"
 )
 
 type TemplateData struct {
-	Me     any
+	Me any
+	// Page
 	Global *map[string]any
 }
 
@@ -22,7 +22,7 @@ type TemplateData struct {
 //  3. execute this template with {{}} langage and component's data and global data
 //
 // NOTICE: to avoid infinite recursivity, the rendering fails at a the 10th depth
-func unfoldComponents(name string, _unsafeHtmlTemplate string, data any, _deep int) (_rendered string, _err error) {
+func unfoldComponents(_unfoldedCmps map[string]HtmlListener, name string, _unsafeHtmlTemplate string, data any, _deep int) (_rendered string, _err error) {
 	if _deep >= 10 {
 		strerr := fmt.Sprintf("RenderComponents stop at level %d: recursive rendering too deep", _deep)
 		ConsoleErrorf(strerr)
@@ -52,6 +52,7 @@ func unfoldComponents(name string, _unsafeHtmlTemplate string, data any, _deep i
 
 	n := 0
 	out := &bytes.Buffer{}
+nextdelim:
 	for {
 		// find next delim_open
 		if from := strings.Index(htmlstring, delim_open); from == -1 || _err != nil {
@@ -74,89 +75,101 @@ func unfoldComponents(name string, _unsafeHtmlTemplate string, data any, _deep i
 				return "", fmt.Errorf(strerr)
 
 			} else {
-				// we got a delim_close so we've an opening element
-				// extract the element's content
+
+				// we got a delim_close so we've a new ick element, extract its content
 				inside := htmlstring[0:to]
+				tagname, leftinside, _ := strings.Cut(inside, " ")
+				htmlstring = htmlstring[to+len(delim_close):] // scrap it and keep what's left
 
-				// scrap it and keep what's left
-				htmlstring = htmlstring[to+len(delim_close):]
+				if tagname == "" { // <ick-/> !
+					continue nextdelim
+				}
 
-				// split this opening element in fields
-				m := strings.Fields(inside)
+				// DEBUG:
+				//fmt.Println("embedded ick component:'", tagname, "' leftinside:", leftinside)
 
-				// first field is the tagName, does nothing if empty
-				var tagName string
-				if len(m) > 0 {
-					tagName = m[0]
+				// does this tag refer to a registered component ?
+				if comptype, found := GComponentRegistry["ick-"+tagname]; found {
 
-					// is this tag a registered component ?
-					if comptype, found := GComponentRegistry["ick-"+tagName]; found {
-						newcmpid := fmt.Sprintf("ick-%s-%d-%d", tagName, _deep, n)
+					// Instantiate the component and add it to the unfoldied stack
+					newcmpreflect := reflect.New(comptype)
+					newcmp := newcmpreflect.Interface().(Composer)
+					newcmpid := fmt.Sprintf("ick-%s-%d-%d", tagname, _deep, n)
+					_unfoldedCmps[newcmpid] = newcmpreflect.Interface().(HtmlListener) // newcmp
 
-						// does it have an id ?
-						// Attr := m[1:]
+					// DEBUG:
+					fmt.Printf("instantiating %s of type %s\n", newcmpid, newcmpreflect.Type())
 
-						var html string
+					var newcmpelem *Element
+					if newcmpelem, _err = CreateComponentElement(newcmp); _err == nil {
 
-						c := reflect.New(comptype)
-
-						switch compounder := c.Interface().(type) {
-						case HtmlCompounder:
-
-							fmt.Printf("instantiating %s of type %s\n", newcmpid, c.Type())
-
-							var cmpelem *Element
-							cmpelem, _err = CreateCompoundElement(compounder)
-							if _err == nil {
-								data := TemplateData{
-									Me:     compounder,
-									Global: &GData,
-								}
-								html, _err = unfoldComponents(newcmpid, compounder.Template(), data, _deep+1)
-								cmpelem.SetInnerHTML(html)
-
-								// wrap this new html element to th _cmp
-								switch wrapper := c.Interface().(type) {
-								case JSWrapper:
-									if typ := wrapper.JSValue().Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-										// fmt.Println("_newcmp is a Element")
-										wrapper.Wrap(cmpelem.JSValue())
-									} else {
-										return "", fmt.Errorf("component %q has already been inserted", reflect.TypeOf(c).String())
-									}
-								default:
-									return "", fmt.Errorf("component %q is not an Element", reflect.TypeOf(c).String())
-								}
-
-								// addlisteners
-								switch listener := c.Interface().(type) {
-								case HtmlListener:
-									fmt.Println("cmp is a listener")
-									listener.AddListeners()
-								}
-
-							} else {
-								ConsoleWarnf(_err.Error())
-								return "", _err
-							}
-
-						default:
-							// TODO
-							ConsoleErrorf("Not a, HtmlCompounder")
+						// process component's attributes
+						var attrs *Attributes
+						attrs, _err = ParseAttributes(leftinside)
+						if _err != nil {
+							continue nextdelim
 						}
 
-						// let's go deeper
-						//out.WriteString(fmt.Sprintf(`<span id="%s">%s</span>`, newcmpid, str))
-						out.WriteString(html)
+						// set the id, overwrite the one in the template
+						attrs.Set("id", newcmpid)
 
-					} else {
-						// the tag is empty or is not a registered component
-						out.WriteString(fmt.Sprintf("<!-- component ick-%s not registered -->", tagName))
-						fmt.Println("component not registered")
+						anames := attrs.Sort()
+						// DEBUG:
+						//fmt.Println(anames, " => ", attrs)
+
+						for _, aname := range anames {
+							_, found := newcmpreflect.Elem().Type().FieldByName(aname)
+							if !found {
+								// DEBUG:
+								// fmt.Printf("attribute %v: %q is kept asis\n", i, aname)
+								// keep it as is
+								newcmpelem.SetAttribute(aname, attrs.Get(aname))
+							} else {
+								// DEBUG:
+								// fmt.Printf("attribute %v: %q corresponds to a component's data\n", i, aname)
+								// feed data struct with the value
+								fieldvalue := newcmpreflect.Elem().FieldByName(aname)
+								switch fieldvalue.Kind() {
+								case reflect.String:
+									fieldvalue.SetString(attrs.Get(aname))
+								default:
+									ConsoleWarnf("Unmanaged type for attribute %q of component %q", aname, newcmpid)
+								}
+							}
+						}
+
+						// recursively unfold the component template
+						data := TemplateData{
+							Me:     newcmp,
+							Global: &GData,
+						}
+						var htmlin string
+						htmlin, _err = unfoldComponents(_unfoldedCmps, newcmpid, newcmp.Template(), data, _deep+1)
+						newcmpelem.SetInnerHTML(htmlin)
+						htmlout := newcmpelem.OuterHTML()
+
+						// TODO add style
+
+						// let's go deeper
+						out.WriteString(htmlout)
 					}
+
+				} else {
+					// the tag is not a registered component
+					htmlmsg := fmt.Sprintf("<!-- unable to unfold unregistered component ick-%s -->", tagname)
+					out.WriteString(htmlmsg)
+					ConsoleWarnf(htmlmsg)
 				}
 			}
 		}
 	}
+}
 
+// addComponentslisteners call addlisteners for every unfolded Components
+func addComponentslisteners(_unfoldedCmps map[string]HtmlListener) {
+	for id, ufc := range _unfoldedCmps {
+		e := GetElementById(id)
+		ufc.Wrap(e.jsValue)
+		ufc.AddListeners()
+	}
 }

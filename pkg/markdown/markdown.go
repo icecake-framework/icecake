@@ -23,6 +23,7 @@ func RenderMarkdown(_elem *ick.Element, _mdtxt string, _data any, _options ...go
 		return err
 	}
 
+	// HACK:
 	_elem.RenderHtml(buf.String(), _data)
 	return nil
 }

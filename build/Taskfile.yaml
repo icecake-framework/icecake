@@ -60,6 +60,12 @@ tasks:
       - find ./examples -type f | xargs -i cp {} ./tmp/website/
 
   # task -t ./build/Taskfile.yaml build_ex1 
+  test_wasm:
+    dir: '{{.USER_WORKING_DIR}}/internal/wasmtest'
+    cmds:
+      - GOARCH=wasm GOOS=js go build -o ./test.wasm 
+
+  # task -t ./build/Taskfile.yaml build_ex1 
   build_ex1:
     dir: '{{.USER_WORKING_DIR}}/examples'
     sources: 

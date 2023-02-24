@@ -22,9 +22,9 @@ func CastDocumentType(value js.Value) *DocumentType {
 		return nil
 	}
 	ret := new(DocumentType)
-	ret.Value = value
-	ret.Name = (ret.Get("name")).String()
-	ret.PublicId = (ret.Get("publicId")).String()
-	ret.SystemId = (ret.Get("SystemId")).String()
+	ret.jsValue = value
+	ret.Name = (value.Get("name")).String()
+	ret.PublicId = (value.Get("publicId")).String()
+	ret.SystemId = (value.Get("SystemId")).String()
 	return ret
 }

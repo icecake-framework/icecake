@@ -32,6 +32,7 @@ func main() {
 	htmlTemplate := `Hello <strong>{{.Name}}</strong>!`
 
 	data1.Name = "Bob"
+	// HACK:
 	ick.GetElementById("ex1a").RenderHtml(htmlTemplate, data1)
 
 	data1.Name = "Alice"

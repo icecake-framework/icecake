@@ -41,11 +41,11 @@ func CastButton(_value js.Value) *Button {
 // otherwhise returns an undefined Button.
 func GetButtonById(_id string) *Button {
 	_id = helper.Normalize(_id)
-	jse := ick.App().Call("getElementById", _id)
-	if etyp := jse.Type(); etyp != js.TypeNull && etyp != js.TypeUndefined {
-		if jse.Get("tagName").String() == "BUTTON" {
+	jse := ick.GetElementById(_id)
+	if etyp := jse.JSValue().Type(); etyp != js.TypeNull && etyp != js.TypeUndefined {
+		if jse.JSValue().Get("tagName").String() == "BUTTON" {
 			btn := new(Button)
-			btn.Wrap(jse)
+			btn.Wrap(jse.JSValue())
 			return btn
 		}
 	}
