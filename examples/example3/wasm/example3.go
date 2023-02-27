@@ -12,9 +12,10 @@ import (
 
 	_ "embed"
 
-	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/sunraylab/icecake/pkg/extensions/markdown"
 	ick "github.com/sunraylab/icecake/pkg/icecake"
-	"github.com/sunraylab/icecake/pkg/markdown"
+	"github.com/sunraylab/icecake/pkg/uicomponent"
+	"github.com/sunraylab/icecake/pkg/uielement"
 )
 
 //go:embed "readme.md"
@@ -33,10 +34,10 @@ func main() {
 	ick.GData["msgnumber"] = 0
 
 	// add simple event hendling
-	html.GetButtonById("btnw").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnw)
-	html.GetButtonById("btna").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtna)
-	html.GetButtonById("btns").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtns)
-	html.GetButtonById("btni").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtni)
+	uielement.GetButtonById("btnw").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnw)
+	uielement.GetButtonById("btna").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtna)
+	uielement.GetButtonById("btns").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtns)
+	uielement.GetButtonById("btni").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtni)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
@@ -50,7 +51,7 @@ func main() {
 func OnClickBtnw(event *ick.MouseEvent, target *ick.Element) {
 
 	// instantiate the NotificationToast component and init its data
-	toast := &Notify{
+	toast := &uicomponent.Notify{
 		Message:    `This is a typical notification message <strong>including html</strong> event html links.<br/><a href="#">link1</a>&nbsp;|&nbsp;<a href="#">link2</a>`,
 		ColorClass: "is-warning is-light",
 	}
@@ -65,7 +66,7 @@ func OnClickBtnw(event *ick.MouseEvent, target *ick.Element) {
 func OnClickBtna(event *ick.MouseEvent, target *ick.Element) {
 
 	// instantiate the NotificationToast component and init its data
-	toast := &Notify{
+	toast := &uicomponent.Notify{
 		Message:    `This message will be automatically removed in <strong>4 seconds</strong>, unless you close it before. 😀`,
 		ColorClass: "is-danger is-light",
 		Timeout:    time.Second * 4,

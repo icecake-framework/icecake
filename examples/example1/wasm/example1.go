@@ -11,8 +11,8 @@ import (
 
 	_ "embed"
 
+	"github.com/sunraylab/icecake/pkg/extension/markdown"
 	ick "github.com/sunraylab/icecake/pkg/icecake"
-	"github.com/sunraylab/icecake/pkg/markdown"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/renderer/html"
 )

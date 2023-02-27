@@ -4,6 +4,12 @@ import (
 	"syscall/js"
 )
 
+type eventHandler struct {
+	eventtype string // 'onclick'...
+	jsHandler js.Func
+	close     func()
+}
+
 /******************************************************************************
 * EventTarget
 *******************************************************************************/
@@ -12,24 +18,25 @@ import (
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
 type EventTarget struct {
-	jsValue js.Value // update with Wrap(), get with JSValue()
+	jsValue       js.Value // update with Wrap(), get with JSValue()
+	eventHandlers []*eventHandler
 }
 
 // JSValue returns the js.Value or js.Null() if _this is nil
-func (_this *EventTarget) JSValue() js.Value {
-	return _this.jsValue
+func (_evttget EventTarget) JSValue() js.Value {
+	return _evttget.jsValue
 }
 
-func (_this *EventTarget) Wrap(_jsval js.Value) {
-	if _this == nil {
+func (_evttget *EventTarget) Wrap(_jsval js.Value) {
+	if _evttget == nil {
 		ConsoleErrorf("unable to wrap a nil element, abort")
 		return
 	}
-	if _this.jsValue.Truthy() {
-		// TODO: clean associated listeners
+	if _evttget.jsValue.Truthy() {
 		ConsoleWarnf("wrapping an already wrapped element")
+		_evttget.RemoveListeners()
 	}
-	_this.jsValue = _jsval
+	_evttget.jsValue = _jsval
 }
 
 // CastEventTarget is casting a js.Value into EventTarget.
@@ -38,9 +45,9 @@ func CastEventTarget(value js.Value) *EventTarget {
 		ConsoleErrorf("casting EventTarget failed")
 		return nil
 	}
-	ret := new(EventTarget)
-	ret.jsValue = value
-	return ret
+	evttget := new(EventTarget)
+	evttget.jsValue = value
+	return evttget
 }
 
 // NewEventTarget create a new EventTarget
@@ -52,7 +59,7 @@ func CastEventTarget(value js.Value) *EventTarget {
 // }
 
 /******************************************************************************
-* EventTarget's events
+* EventTarget's methods
 *******************************************************************************/
 
 // AddEventListener sets up a function that will be called whenever the specified event is delivered to the target.
@@ -60,9 +67,27 @@ func CastEventTarget(value js.Value) *EventTarget {
 // Common targets are Element, or its children, Document, and Window, but the target may be any object that supports events (such as XMLHttpRequest).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
-// func (_this *EventTarget) AddEventListener(_type string, callback *EventListener) {
-// 	_this.jsValue.Call("addEventListener", _type, callback.JSValue())
-// }
+func (_evttget *EventTarget) AddEventListener(evh *eventHandler) {
+	if _evttget.eventHandlers == nil {
+		_evttget.eventHandlers = make([]*eventHandler, 0, 1)
+	}
+	evh.close = func() {
+		_evttget.jsValue.Call("removeEventListener", evh.eventtype, evh.jsHandler)
+		evh.jsHandler.Release()
+	}
+	_evttget.eventHandlers = append(_evttget.eventHandlers, evh)
+	_evttget.jsValue.Call("addEventListener", evh.eventtype, evh.jsHandler)
+}
+
+// Release need to be called only when avent handlers have been added to the Event-target.
+// Release removes all event listeners and release ressources allocated fot the associated js func
+func (_evttget *EventTarget) RemoveListeners() {
+	if len(_evttget.eventHandlers) > 0 {
+		for _, evh := range _evttget.eventHandlers {
+			evh.close()
+		}
+	}
+}
 
 // RemoveEventListener removes an event listener previously registered with EventTarget.addEventListener() from the target.
 // The event listener to be removed is identified using a combination of the event type, the event listener function itself,

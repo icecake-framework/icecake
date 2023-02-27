@@ -65,8 +65,13 @@ icecake
 │   │   └── [*.go]                   
 │   ├── spasdk                      # SDK for any SPA client willing to call SPA APIs
 │   │   └── [*.go]                   
-│   ├── dom                         # 
+│   ├── uielements                  # UI Elements
 │   │   └── [*.go]                   
+│   ├── uicomponents                # UI Components, using bulma CSS framework
+│   │   └── [*.go]                   
+│   ├── extensions                  # Extensions of the standard icecake package
+│       └── {extensionName}
+│           └── [*.go]                   
 │
 ├── web                             # source codes and assets required by the front, even server side described in the go file
 │   ├── static

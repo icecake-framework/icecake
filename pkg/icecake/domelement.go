@@ -681,68 +681,14 @@ func (_htmle *Element) Blur() {
 *****************************************************************************/
 
 // event attribute: Event
-func eventFuncElement_Event(listener func(event *Event, target *Element)) js.Func {
-
+func makelistenerElement_Event(listener func(event *Event, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		value := args[0]
 		evt := CastEvent(value)
-		targ := CastElement(value.Get("target"))
-		listener(evt, targ)
-		return js.Undefined()
-	}
-
-	return js.FuncOf(fn)
-}
-
-// AddFullscreenChange is adding doing AddEventListener for 'FullscreenChange' on target.
-// This method is returning allocated javascript function that need to be released.
-func (_elem *Element) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func(event *Event, target *Element)) js.Func {
-	if !_elem.IsDefined() {
-		ConsoleWarnf("AddFullscreenEvent not listening on nil Element")
-		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
-	}
-	cb := eventFuncElement_Event(listener)
-	_elem.jsValue.Call("addEventListener", string(evttype), cb)
-	return cb
-}
-
-/****************************************************************************
-* HTMLElement's events
-*****************************************************************************/
-
-// event attribute: Event
-func makeHTMLElement_domcore_Event(listener func(event *Event, target *Element)) js.Func {
-	fn := func(this js.Value, args []js.Value) interface{} {
-		value := args[0]
-		evt := CastEvent(value)
-		target := CastElement(value.Get("target"))
-		listener(evt, target)
-		return js.Undefined()
-	}
-	return js.FuncOf(fn)
-}
-
-// AddAbort is adding doing AddEventListener for 'Abort' on target.
-// This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Element)) js.Func {
-	if !_htmle.IsDefined() {
-		ConsoleWarnf("AddGenericEvent not listening on nil Element")
-		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
-	}
-	callback := makeHTMLElement_domcore_Event(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
-	return callback
-}
-
-// event attribute: MouseEvent
-func makeHTMLElement_Mouse_Event(listener func(event *MouseEvent, target *Element)) js.Func {
-	fn := func(this js.Value, args []js.Value) interface{} {
-		value := args[0]
-		evt := CastMouseEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				ConsolePanicf(r, "Error occurs processing mouse event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				ConsolePanicf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -751,24 +697,89 @@ func makeHTMLElement_Mouse_Event(listener func(event *MouseEvent, target *Elemen
 	return js.FuncOf(fn)
 }
 
-// AddClick is adding doing AddEventListener for 'Click' on target.
+// AddFullscreenChange is adding doing AddEventListener for 'FullscreenChange' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Element)) js.Func {
+func (_elem *Element) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func(event *Event, target *Element)) {
+	if !_elem.IsDefined() || !_elem.IsInDOM() {
+		ConsoleWarnf("AddFullscreenEvent not listening on nil Element")
+		return
+	}
+	evh := makelistenerElement_Event(listener)
+	_elem.jsValue.Call("addEventListener", string(evttype), evh)
+	_elem.AddEventListener(&eventHandler{eventtype: string(evttype), jsHandler: evh})
+}
+
+/****************************************************************************
+* HTMLElement's events
+*****************************************************************************/
+
+// event attribute: Event
+func makehandler_Element_Event(listener func(event *Event, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		value := args[0]
+		evt := CastEvent(value)
+		target := CastElement(value.Get("target"))
+		defer func() {
+			if r := recover(); r != nil {
+				ConsolePanicf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+			}
+		}()
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// AddGenericEvent adds Event Listener for a GENERIC_EVENT  on target.
+// Returns the function to call to remove and release the listener
+func (_htmle *Element) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		ConsoleWarnf("AddGenericEvent failed: nil Element or not in DOM")
+		return
+	}
+	jsevh := makehandler_Element_Event(listener)
+	_htmle.AddEventListener(&eventHandler{eventtype: string(evttype), jsHandler: jsevh})
+}
+
+// event attribute: MouseEvent
+func makehandler_Element_MouseEvent(listener func(event *MouseEvent, target *Element)) js.Func {
+	fn := func(this js.Value, args []js.Value) interface{} {
+		value := args[0]
+		evt := CastMouseEvent(value)
+		target := CastElement(value.Get("target"))
+		defer func() {
+			if r := recover(); r != nil {
+				ConsolePanicf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+			}
+		}()
+		listener(evt, target)
+		return js.Undefined()
+	}
+	return js.FuncOf(fn)
+}
+
+// AddClick adds Event Listener for MOUSE_EVENT on target.
+// Returns the function to call to remove and release the listener
+func (_htmle *Element) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Element)) {
 	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
 		ConsoleWarnf("AddMouseEvent failed: nil Element or not in DOM")
-		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+		return
 	}
-	callback := makeHTMLElement_Mouse_Event(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
-	return callback
+	evh := makehandler_Element_MouseEvent(listener)
+	_htmle.AddEventListener(&eventHandler{eventtype: string(evttype), jsHandler: evh})
 }
 
 // event attribute: FocusEvent
-func makeHTMLElement_FocusEvent(listener func(event *FocusEvent, target *Element)) js.Func {
+func makelistenerElement_FocusEvent(listener func(event *FocusEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		value := args[0]
 		evt := CastFocusEvent(value)
 		target := CastElement(value.Get("target"))
+		defer func() {
+			if r := recover(); r != nil {
+				ConsolePanicf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+			}
+		}()
 		listener(evt, target)
 		return js.Undefined()
 	}
@@ -777,23 +788,28 @@ func makeHTMLElement_FocusEvent(listener func(event *FocusEvent, target *Element
 
 // AddBlur is adding doing AddEventListener for 'Blur' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *FocusEvent, target *Element)) js.Func {
-	if !_htmle.IsDefined() {
-		ConsoleWarnf("AddFocusEvent not listening on nil Element")
-		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+func (_htmle *Element) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *FocusEvent, target *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		ConsoleWarnf("AddFocusEvent failed: nil Element or not in DOM")
+		return
 	}
-	callback := makeHTMLElement_FocusEvent(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
-	return callback
+	evh := makelistenerElement_FocusEvent(listener)
+	_htmle.jsValue.Call("addEventListener", string(evttype), evh)
+	_htmle.AddEventListener(&eventHandler{eventtype: string(evttype), jsHandler: evh})
 }
 
 // event attribute: PointerEvent
-func makeHTMLElement_PointerEvent(listener func(event *PointerEvent, target *Element)) js.Func {
+func makelistenerElement_PointerEvent(listener func(event *PointerEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		var evt *PointerEvent
 		value := args[0]
 		evt = CastPointerEvent(value)
 		target := CastElement(value.Get("target"))
+		defer func() {
+			if r := recover(); r != nil {
+				ConsolePanicf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+			}
+		}()
 		listener(evt, target)
 		return js.Undefined()
 	}
@@ -802,22 +818,27 @@ func makeHTMLElement_PointerEvent(listener func(event *PointerEvent, target *Ele
 
 // AddGotPointerCapture is adding doing AddEventListener for 'GotPointerCapture' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddPointerEvent(evttype POINTER_EVENT, listener func(event *PointerEvent, target *Element)) js.Func {
-	if !_htmle.IsDefined() {
-		ConsoleWarnf("AddPointerEvent not listening on nil Element")
-		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+func (_htmle *Element) AddPointerEvent(evttype POINTER_EVENT, listener func(event *PointerEvent, target *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		ConsoleWarnf("AddPointerEvent failed: nil Element or not in DOM")
+		return
 	}
-	callback := makeHTMLElement_PointerEvent(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
-	return callback
+	evh := makelistenerElement_PointerEvent(listener)
+	_htmle.jsValue.Call("addEventListener", string(evttype), evh)
+	_htmle.AddEventListener(&eventHandler{eventtype: string(evttype), jsHandler: evh})
 }
 
 // event attribute: InputEvent
-func makeHTMLElement_InputEvent(listener func(event *InputEvent, target *Element)) js.Func {
+func makelistenerElement_InputEvent(listener func(event *InputEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		value := args[0]
 		evt := CastInputEvent(value)
 		target := CastElement(value.Get("target"))
+		defer func() {
+			if r := recover(); r != nil {
+				ConsolePanicf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+			}
+		}()
 		listener(evt, target)
 		return js.Undefined()
 	}
@@ -826,22 +847,26 @@ func makeHTMLElement_InputEvent(listener func(event *InputEvent, target *Element
 
 // AddInput is adding doing AddEventListener for 'Input' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddInputEvent(evttype INPUT_EVENT, listener func(event *InputEvent, target *Element)) js.Func {
-	if !_htmle.IsDefined() {
-		ConsoleWarnf("AddInputEvent not listening on nil Element")
-		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+func (_htmle *Element) AddInputEvent(evttype INPUT_EVENT, listener func(event *InputEvent, target *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		ConsoleWarnf("AddInputEvent failed: nil Element or not in DOM")
+		return
 	}
-	callback := makeHTMLElement_InputEvent(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
-	return callback
+	evh := makelistenerElement_InputEvent(listener)
+	_htmle.AddEventListener(&eventHandler{eventtype: string(evttype), jsHandler: evh})
 }
 
 // event attribute: KeyboardEvent
-func makeHTMLElement_KeyboardEvent(listener func(event *KeyboardEvent, target *Element)) js.Func {
+func makelistenerElement_KeyboardEvent(listener func(event *KeyboardEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		value := args[0]
 		evt := CastKeyboardEvent(value)
 		target := CastElement(value.Get("target"))
+		defer func() {
+			if r := recover(); r != nil {
+				ConsolePanicf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+			}
+		}()
 		listener(evt, target)
 		return js.Undefined()
 	}
@@ -850,22 +875,27 @@ func makeHTMLElement_KeyboardEvent(listener func(event *KeyboardEvent, target *E
 
 // AddKeyDown is adding doing AddEventListener for 'KeyDown' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddKeyboard(evttype KEYBOARD_EVENT, listener func(event *KeyboardEvent, target *Element)) js.Func {
-	if !_htmle.IsDefined() {
-		ConsoleWarnf("AddKeyboard not listening on nil Element")
-		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+func (_htmle *Element) AddKeyboard(evttype KEYBOARD_EVENT, listener func(event *KeyboardEvent, target *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		ConsoleWarnf("AddKeyboard failed: nil Element or not in DOM")
+		return
 	}
-	callback := makeHTMLElement_KeyboardEvent(listener)
-	_htmle.jsValue.Call("addEventListener", string(evttype), callback)
-	return callback
+	evh := makelistenerElement_KeyboardEvent(listener)
+	_htmle.jsValue.Call("addEventListener", string(evttype), evh)
+	_htmle.AddEventListener(&eventHandler{eventtype: string(evttype), jsHandler: evh})
 }
 
 // event attribute: UIEvent
-func makeHTMLElement_UIEvent(listener func(event *UIEvent, target *Element)) js.Func {
+func makelistenerElement_UIEvent(listener func(event *UIEvent, target *Element)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
 		value := args[0]
 		evt := CastUIEvent(value)
 		target := CastElement(value.Get("target"))
+		defer func() {
+			if r := recover(); r != nil {
+				ConsolePanicf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+			}
+		}()
 		listener(evt, target)
 		return js.Undefined()
 	}
@@ -874,14 +904,14 @@ func makeHTMLElement_UIEvent(listener func(event *UIEvent, target *Element)) js.
 
 // AddResize is adding doing AddEventListener for 'Resize' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddResizeEvent(listener func(event *UIEvent, target *Element)) js.Func {
-	if !_htmle.IsDefined() {
-		ConsoleWarnf("AddResizeEvent not listening on nil Element")
-		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+func (_htmle *Element) AddResizeEvent(listener func(event *UIEvent, target *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		ConsoleWarnf("AddResizeEvent failed: nil Element or not in DOM")
+		return
 	}
-	callback := makeHTMLElement_UIEvent(listener)
-	_htmle.jsValue.Call("addEventListener", "resize", callback)
-	return callback
+	evh := makelistenerElement_UIEvent(listener)
+	_htmle.jsValue.Call("addEventListener", "resize", evh)
+	_htmle.AddEventListener(&eventHandler{eventtype: "resize", jsHandler: evh})
 }
 
 // event attribute: WheelEvent
@@ -890,6 +920,11 @@ func makeHTMLElement_WheelEvent(listener func(event *WheelEvent, target *Element
 		value := args[0]
 		evt := CastWheelEvent(value)
 		target := CastElement(value.Get("target"))
+		defer func() {
+			if r := recover(); r != nil {
+				ConsolePanicf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+			}
+		}()
 		listener(evt, target)
 		return js.Undefined()
 	}
@@ -899,14 +934,14 @@ func makeHTMLElement_WheelEvent(listener func(event *WheelEvent, target *Element
 // The wheel event fires when the user rotates a wheel button on a pointing device (typically a mouse).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
-func (_htmle *Element) AddWheelEvent(listener func(event *WheelEvent, target *Element)) js.Func {
-	if !_htmle.IsDefined() {
-		ConsoleWarnf("AddWheelEvent not listening on nil Element")
-		return js.FuncOf(func(this js.Value, args []js.Value) interface{} { return js.Undefined() })
+func (_htmle *Element) AddWheelEvent(listener func(event *WheelEvent, target *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		ConsoleWarnf("AddWheelEvent failed: nil Element or not in DOM")
+		return
 	}
-	callback := makeHTMLElement_WheelEvent(listener)
-	_htmle.jsValue.Call("addEventListener", "wheel", callback)
-	return callback
+	evh := makeHTMLElement_WheelEvent(listener)
+	_htmle.jsValue.Call("addEventListener", "wheel", evh)
+	_htmle.AddEventListener(&eventHandler{eventtype: "wheel", jsHandler: evh})
 }
 
 /****************************************************************************

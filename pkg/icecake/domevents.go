@@ -252,7 +252,7 @@ func CastUIEvent(value js.Value) *UIEvent {
 }
 
 // View Returns a WindowProxy that contains the view that generated the event.
-func (_evt *UIEvent) View() *Window {
+func (_evt *UIEvent) View() Window {
 	win := _evt.jsValue.Get("view")
 	return CastWindow(win)
 }

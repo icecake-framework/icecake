@@ -95,6 +95,11 @@ func RegisterComponentType(key string, cmp any) {
 		return
 	}
 
+	if _, found := GComponentRegistry[key]; found {
+		ConsoleErrorf("RegisterComponentType faild: %q already registered", key)
+		return
+	}
+
 	GComponentRegistry[key] = typ
 	ConsoleLogf("RegisterComponentType: %s %q", key, typ.String())
 }

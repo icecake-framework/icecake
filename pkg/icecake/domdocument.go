@@ -44,18 +44,18 @@ type Document struct {
 }
 
 // CastDocument is casting a js.Value into Document.
-func CastDocument(value js.Value) *Document {
+func CastDocument(value js.Value) Document {
 	if value.Type() != js.TypeObject {
 		ConsoleErrorf("casting Document failed")
-		return new(Document)
+		return Document{}
 	}
-	ret := new(Document)
-	ret.jsValue = value
-	return ret
+	doc := new(Document)
+	doc.jsValue = value
+	return *doc
 }
 
 // GetDocument returns the current document within the current window
-func getDocument() *Document {
+func getDocument() Document {
 	value := js.Global().Get("document")
 	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		ConsoleErrorf("Unable to get document")
@@ -517,16 +517,25 @@ func makeDoc_Generic_Event(listener func(event *Event, target *Document)) js.Fun
 		value := args[0]
 		evt := CastEvent(value)
 		target := CastDocument(value.Get("target"))
-		listener(evt, target)
+		defer func() {
+			if r := recover(); r != nil {
+				ConsolePanicf(r, "Error occurs processing event %q on Document", evt.Type())
+			}
+		}()
+		listener(evt, &target)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
 }
 
-func (_doc *Document) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Document)) js.Func {
-	callback := makeDoc_Generic_Event(listener)
-	_doc.jsValue.Call("addEventListener", string(evttype), callback)
-	return callback
+func (_doc *Document) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Document)) func() {
+	evh := makeDoc_Generic_Event(listener)
+	_doc.jsValue.Call("addEventListener", string(evttype), evh)
+	close := func() {
+		_doc.jsValue.Call("removeEventListener", string(evttype), evh)
+		evh.Release()
+	}
+	return close
 }
 
 /******************************************************************************
@@ -538,16 +547,20 @@ func makeDoc_Mouse_Event(listener func(event *MouseEvent, target *Document)) js.
 		value := args[0]
 		evt := CastMouseEvent(value)
 		target := CastDocument(value.Get("target"))
-		listener(evt, target)
+		listener(evt, &target)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
 }
 
-func (_doc *Document) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Document)) js.Func {
-	callback := makeDoc_Mouse_Event(listener)
-	_doc.jsValue.Call("addEventListener", string(evttype), callback)
-	return callback
+func (_doc *Document) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Document)) func() {
+	evh := makeDoc_Mouse_Event(listener)
+	_doc.jsValue.Call("addEventListener", string(evttype), evh)
+	close := func() {
+		_doc.jsValue.Call("removeEventListener", string(evttype), evh)
+		evh.Release()
+	}
+	return close
 }
 
 /******************************************************************************
@@ -559,7 +572,7 @@ func makeDoc_Focus_Event(listener func(event *FocusEvent, target *Document)) js.
 		value := args[0]
 		evt := CastFocusEvent(value)
 		target := CastDocument(value.Get("target"))
-		listener(evt, target)
+		listener(evt, &target)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
@@ -580,7 +593,7 @@ func makeDoc_Pointer_Event(listener func(event *PointerEvent, target *Document))
 		value := args[0]
 		evt := CastPointerEvent(value)
 		target := CastDocument(value.Get("target"))
-		listener(evt, target)
+		listener(evt, &target)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
@@ -601,7 +614,7 @@ func makeDoc_Input_Event(listener func(event *InputEvent, target *Document)) js.
 		value := args[0]
 		evt := CastInputEvent(value)
 		target := CastDocument(value.Get("target"))
-		listener(evt, target)
+		listener(evt, &target)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
@@ -622,7 +635,7 @@ func makeDoc_Keyboard_Event(listener func(event *KeyboardEvent, target *Document
 		value := args[0]
 		evt := CastKeyboardEvent(value)
 		target := CastDocument(value.Get("target"))
-		listener(evt, target)
+		listener(evt, &target)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
@@ -644,7 +657,7 @@ func makeDoc_UIEvent(listener func(event *UIEvent, target *Document)) js.Func {
 		value := args[0]
 		evt := CastUIEvent(value)
 		target := CastDocument(value.Get("target"))
-		listener(evt, target)
+		listener(evt, &target)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)
@@ -667,7 +680,7 @@ func makeDoc_Wheel_Event(listener func(event *WheelEvent, target *Document)) js.
 		value := args[0]
 		evt := CastWheelEvent(value)
 		target := CastDocument(value.Get("target"))
-		listener(evt, target)
+		listener(evt, &target)
 		return js.Undefined()
 	}
 	return js.FuncOf(fn)

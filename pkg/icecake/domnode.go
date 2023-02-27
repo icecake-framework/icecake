@@ -187,9 +187,9 @@ func (_node *Node) IsInDOM() (_is bool) {
 	if !_node.IsDefined() {
 		return false
 	}
-	body := getDocument().Body()
-	if body.jsValue.Truthy() {
-		is := body.jsValue.Call("contains", _node.jsValue)
+	doc := getDocument()
+	if doc.Body().jsValue.Truthy() {
+		is := doc.Body().jsValue.Call("contains", _node.jsValue)
 		_is = is.Bool()
 	}
 	return _is

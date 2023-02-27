@@ -6,6 +6,7 @@ import (
 	"syscall/js"
 )
 
+// JSWrapper is implemented by types that are backed by a JavaScript value.
 type JSWrapper interface {
 	JSValue() js.Value
 	Wrap(js.Value)
