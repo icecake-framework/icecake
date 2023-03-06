@@ -14,7 +14,7 @@ type WebApp struct {
 // NewWebApp is the WebApp factory. Must be call once at the begining of the wasm main code.
 func NewWebApp() *WebApp {
 	webapp := new(WebApp)
-	webapp.browser.Wrap(getWindow())
+	webapp.browser.Wrap(GetWindow())
 	webapp.Document.Wrap(GetDocument())
 	return webapp
 }

@@ -26,10 +26,10 @@ type TemplateData struct {
 // NOTICE: to avoid infinite recursivity, the rendering fails at a the 10th depth
 func unfoldComponents(_unfoldedCmps map[string]HtmlListener, name string, _unsafeHtmlTemplate string, _data any, _deep int) (_rendered string, _err error) {
 	if _deep >= 10 {
-		return "", errors.ConsoleErrorf("RenderComponents stop at level %d: recursive rendering too deep", _deep)
+		return "", errors.ConsoleErrorf("unfoldComponents stopped at level %d. Recursive rendering too deep", _deep)
 	}
 	//cmpid := name + "-" + strconv.Itoa(_deep)
-	fmt.Printf("unfolding %d:%q\n", _deep, name)
+	errors.ConsoleLogf("unfolding %d:%q\n", _deep, name)
 
 	// 1. parse
 	tmpCmp := template.Must(template.New(name).Parse(_unsafeHtmlTemplate))
@@ -38,7 +38,7 @@ func unfoldComponents(_unfoldedCmps map[string]HtmlListener, name string, _unsaf
 	bufCmp := new(bytes.Buffer)
 	errTmp := tmpCmp.Execute(bufCmp, _data)
 	if errTmp != nil {
-		return "", errors.ConsoleErrorf("unfoldComponents stop at level %d: %q ERROR applying data to template: '%v'", _deep, name, _unsafeHtmlTemplate)
+		return "", errors.ConsoleErrorf("unfoldComponents stopped at level %d. %q ERROR applying data to %s", _deep, name, errTmp.Error())
 	}
 	htmlstring := bufCmp.String()
 
@@ -68,7 +68,7 @@ nextdelim:
 			// look now for it's corresponding delim_close
 			if to := strings.Index(htmlstring, delim_close); to == -1 {
 				// not corresponding delim_close then stop and return a rendering error
-				return "", errors.ConsoleErrorf("unfoldComponents stop at level %d: close delim not found", _deep)
+				return "", errors.ConsoleErrorf("unfoldComponents stopped at level %d. Close delim not found", _deep)
 
 			} else {
 
@@ -93,8 +93,7 @@ nextdelim:
 					newcmpid := fmt.Sprintf("ick-%s-%d-%d", tagname, _deep, n)
 					_unfoldedCmps[newcmpid] = newcmpreflect.Interface().(HtmlListener) // newcmp
 
-					// DEBUG:
-					fmt.Printf("instantiating %s of type %s\n", newcmpid, newcmpreflect.Type())
+					errors.ConsoleLogf("unfoldComponents instantiating %s of type %s\n", newcmpid, newcmpreflect.Type())
 
 					var newcmpelem *Element
 					if newcmpelem, _err = CreateComponentElement(newcmp); _err == nil {
@@ -106,8 +105,20 @@ nextdelim:
 							continue nextdelim
 						}
 
-						// set the id, overwrite the one in the template
+						// set the id, overwrite the one in the template if any
 						attrs.Set("id", newcmpid)
+
+						// init classes and attributes
+						initc := newcmp.GetInitClasses()
+						if initc != nil {
+							fmt.Println("GetInitClasses:", initc.String())
+							// DEBUG:
+							newcmpelem.SetClasses(*initc)
+						}
+						inita := newcmp.GetInitAttributes()
+						if inita != nil {
+							newcmpelem.SetAttributes(*inita)
+						}
 
 						anames := attrs.Sort()
 						// DEBUG:
@@ -118,18 +129,27 @@ nextdelim:
 							if !found {
 								// DEBUG:
 								// fmt.Printf("attribute %v: %q is kept asis\n", i, aname)
-								// keep it as is
-								newcmpelem.SetAttribute(aname, attrs.Get(aname))
+
+								// this attribute is not a field of the componenent
+								// keep it as is unless it is the class attribute, in this case, add the tokens
+								aval := attrs.Get(aname)
+								if aname == "class" {
+									newcmpelem.SetClasses(*ParseClasses(aval))
+								} else {
+									newcmpelem.SetAttribute(aname, aval)
+								}
 							} else {
 								// DEBUG:
 								// fmt.Printf("attribute %v: %q corresponds to a component's data\n", i, aname)
+
 								// feed data struct with the value
 								fieldvalue := newcmpreflect.Elem().FieldByName(aname)
 								switch fieldvalue.Kind() {
 								case reflect.String:
 									fieldvalue.SetString(attrs.Get(aname))
 								default:
-									errors.ConsoleWarnf("Unmanaged type for attribute %q of component %q", aname, newcmpid)
+									// TODO: handle other data types
+									errors.ConsoleWarnf("unfoldComponents %q: unmanaged type for attribute %q", newcmpid, aname)
 								}
 							}
 						}
@@ -152,7 +172,7 @@ nextdelim:
 
 				} else {
 					// the tag is not a registered component
-					htmlmsg := fmt.Sprintf("<!-- unable to unfold unregistered component ick-%s -->", tagname)
+					htmlmsg := fmt.Sprintf("<!-- unable to unfold unregistered ick-%s component -->", tagname)
 					out.WriteString(htmlmsg)
 					errors.ConsoleWarnf(htmlmsg)
 				}

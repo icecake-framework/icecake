@@ -18,8 +18,8 @@ import (
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes
 type Attributes struct {
-	ownerElement *Element          // the Element the attributes belongs to. If nil the DOM is not upfdated, if not nil the DOM is updated
-	attributes   map[string]string // the internal slice of attributes
+	ownerElement *Element          // the Element the attributes belongs to. The DOM is only updated when ownerElement is not nil.
+	attributes   map[string]string // the internal map of attributes
 }
 
 func NewAttributes(_ownerElement *Element) *Attributes {

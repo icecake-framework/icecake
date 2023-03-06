@@ -32,7 +32,7 @@ func CastWindow(_jsv JSValueProvider) Window {
 
 // GetWindow returning attribute 'window' with
 // type Window (idl: Window).
-func getWindow() Window {
+func GetWindow() Window {
 	jsv := js.Global().Get("window")
 	if typ := jsv.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
 		errors.ConsolePanicf(nil, "Unable to get window")

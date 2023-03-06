@@ -14,11 +14,13 @@
         body {
             background-color: hsl(0, 0%, 96%);
             color: hsl(0, 0%, 21%);
+            height: 100vh;
         }
 
         body.dark {
             background-color: hsl(0, 0%, 21%);
             color: hsl(0, 0%, 96%);
+            height: 100vh;
         }
 
         .dark .title,
@@ -33,17 +35,17 @@
         <div class="container">
             <h1 class="title">Icecake Go Wasm Framework</h1>
             <h2 class="subtitle">Example2</h2>
-            <p class="block" id="introduction"></p>
+            <div class="content" id="readme"></div>
 
-            <div class="columns has-text-centered is-vcentered">
+            <div class="columns has-text-centered is-vcentered pt-5">
                 <div class="column">
-                    <button class="button is-primary" id="btn-ex2">Count:&nbsp;<span data-ic-namedvalue="count1"></span></button>
+                    <button class="button is-primary" id="btn-ex2">Count:&nbsp;<span data-ick-namedvalue="count1"></span></button>
                 </div>
                 <div class="column">
-                    <div class="block">Count:&nbsp;<span data-ic-namedvalue="count1"></span></div>
+                    <div class="block subtitle is-4">Count:&nbsp;<span data-ick-namedvalue="count1"></span></div>
                 </div>
                 <div class="column">
-                    <div class="block">Count:&nbsp;<span id="count1"></span></div>
+                    <div class="block subtitle is-4">Count:&nbsp;<span id="count1"></span></div>
                 </div>
             </div>
 

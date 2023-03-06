@@ -7,7 +7,6 @@ import (
 
 	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/errors"
-	"github.com/sunraylab/icecake/pkg/lib"
 )
 
 /****************************************************************************
@@ -65,16 +64,17 @@ func (_elem *Element) IsDefined() bool {
 	if _elem == nil {
 		return false
 	}
-	return _elem.Node.IsDefined()
+	return _elem.JSValue.IsDefined()
 }
 
 // Remove removes the element from the DOM.
-// d
+//
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/remove
 func (_elem *Element) Remove() {
 	if !_elem.IsDefined() {
 		return
 	}
+	_elem.RemoveListeners()
 	_elem.Call("remove")
 }
 
@@ -107,44 +107,62 @@ func (_elem *Element) Id() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/id
 func (_elem *Element) SetId(_id string) *Element {
-	if !_elem.IsDefined() {
-		return _elem
-	}
 	_elem.Set("id", _id)
 	return _elem
 }
 
-// SetClassName gets and sets the value of the class attribute of the specified element.
+// ClassString returns classes in asingle string
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/className
-func (_elem *Element) Classes() string {
-	if !_elem.IsDefined() {
-		return UNDEFINED_NODE
-	}
-	return _elem.GetString("className")
-}
+// func (_elem *Element) ClassString() string {
+// 	if !_elem.IsDefined() {
+// 		return UNDEFINED_NODE
+// 	}
+// 	return _elem.GetString("className")
+// }
 
 // SetClassName gets and sets the value of the class attribute of the specified element.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/className
-func (_elem *Element) SetClasses(_name string) *Element {
-	if !_elem.IsDefined() {
-		return _elem
-	}
-	_elem.Set("className", _name)
+// func (_elem *Element) SetClasses(_name string) *Element {
+// 	_elem.Set("className", _name)
+// 	return _elem
+// }
+
+// SetClasses adds the value, if does not already exists, of the class attribute of the specified element.
+// Does not remove existing classes
+func (_elem *Element) SetClasses(_list Classes) *Element {
+	c := _elem.Classes()
+	c.SetTokens(_list.tokens...)
+	_elem.Set("className", c.String())
 	return _elem
 }
 
-// ClassList returns a live DOMTokenList collection of the class attributes of the element.
+// SetClasses set the value of the class attribute of the specified element.
+// Replace existed ones if any.
+func (_elem *Element) ResetClasses(_list Classes) *Element {
+	str := _list.String()
+	_elem.Set("className", str)
+	return _elem
+}
+
+// SetClasse set a single class to the class liist if the element, does nothing if the class already exists
+func (_elem *Element) SetClasse(_class string) *Element {
+	list := _elem.Classes()
+	list.SetTokens(_class)
+	return _elem
+}
+
+// Classes returns a live DOMTokenList collection of the class attributes of the element.
 // This can then be used to manipulate the class list.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-func (_elem *Element) ClassList() *TokenList {
+func (_elem *Element) Classes() *Classes {
 	if !_elem.IsDefined() {
-		return new(TokenList)
+		return NewClasses(nil)
 	}
 	value := _elem.Get("classList")
-	return CastTokenList(value)
+	return NewClasses(value)
 }
 
 // Attributes returns a live collection of all attribute nodes registered to the specified node.
@@ -154,7 +172,7 @@ func (_elem *Element) ClassList() *TokenList {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes
 func (_elem *Element) Attributes() *Attributes {
 	if !_elem.IsDefined() {
-		return NewAttributes(_elem)
+		return NewAttributes(nil)
 	}
 	attrs := NewAttributes(_elem)
 	namedNodeMap := _elem.Get("attributes")
@@ -536,7 +554,7 @@ func (_elem *Element) InsertNodesAfter(_nodes []*Node) {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth
-func (_elem *Element) ScrollRect() (_rect lib.Rect) {
+func (_elem *Element) ScrollRect() (_rect Rect) {
 	if !_elem.IsDefined() {
 		return
 	}
@@ -553,9 +571,9 @@ func (_elem *Element) ScrollRect() (_rect lib.Rect) {
 //
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft
-func (_elem *Element) ClientRect() (_rect lib.Rect) {
+func (_elem *Element) ClientRect() (_rect Rect) {
 	if !_elem.IsDefined() {
-		return lib.Rect{}
+		return Rect{}
 	}
 	_rect.X = _elem.GetFloat("clientLeft")
 	_rect.Y = _elem.GetFloat("clientTop")
@@ -567,13 +585,13 @@ func (_elem *Element) ClientRect() (_rect lib.Rect) {
 // GetBoundingClientRect eturns a DOMRect object providing information about the size of an element and its position relative to the viewport.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-func (_elem *Element) BoundingClientRect() lib.Rect {
+func (_elem *Element) BoundingClientRect() Rect {
 	if !_elem.IsDefined() {
-		return lib.Rect{}
+		return Rect{}
 	}
 	jsrect := _elem.Call("getBoundingClientRect")
 
-	rect := new(lib.Rect)
+	rect := new(Rect)
 	rect.X = jsrect.GetFloat("x")
 	rect.Y = jsrect.GetFloat("y")
 	rect.Width = jsrect.GetFloat("width")
@@ -978,19 +996,31 @@ func (_elem *Element) RenderChildrenValue(_name string, _format string, _value .
 // InsertComponent
 func (_elem *Element) InsertNewComponent(_newcmp Composer, _appdata any) (_newcmpid string, _err error) {
 	if !_elem.IsDefined() {
-		return "", errors.ConsoleWarnf("InsertNewComponent failed: nil element")
+		return "", errors.ConsoleErrorf("InsertNewComponent: failed on undefined element")
 	}
 
 	// check if _newcmp is a registered component and get its tagname
-	cmptype := LookupComponent(reflect.TypeOf(_newcmp))
-	if cmptype == "" {
+	t := LookupComponent(reflect.TypeOf(_newcmp))
+	if t == "" {
 		errors.ConsoleWarnf("InsertNewComponent: inserting a non registered component %q...", reflect.TypeOf(_newcmp).String())
 	}
 
 	// create the HTML component into the DOM
 	if newcmpelem, err := CreateComponentElement(_newcmp); err == nil {
-		_newcmpid = GetNextComponentId(cmptype)
+		_newcmpid = GetNextComponentId(t)
 		newcmpelem.SetId(_newcmpid)
+
+		// init classes and attributes
+		initc := _newcmp.GetInitClasses()
+		if initc != nil {
+			newcmpelem.SetClasses(*initc)
+		}
+		inita := _newcmp.GetInitAttributes()
+		if inita != nil {
+			newcmpelem.SetAttributes(*inita)
+		}
+
+		// TODO: add style
 
 		// name the component
 		name := newcmpelem.TagName() + "/" + _newcmpid
@@ -1001,20 +1031,19 @@ func (_elem *Element) InsertNewComponent(_newcmp Composer, _appdata any) (_newcm
 			Me:  _newcmp,
 			App: _appdata,
 		}
+		// TODO: handle unfolding errors
 		html, _ := unfoldComponents(unfoldedCmps, name, _newcmp.Template(), data, 0)
 		newcmpelem.SetInnerHTML(html)
 
 		// Insert the component element into the DOM
 		_elem.PrependNodes(&newcmpelem.Node) //elem.InsertAdjacentHTML(WI_INSIDEFIRST, html)
 
-		// TODO: add style
-
 		// addlisteners
 		addComponentslisteners(unfoldedCmps)
 		_newcmp.AddListeners()
 
 	} else {
-		return "", errors.ConsoleWarnf(err.Error())
+		return "", errors.ConsoleWarnf("InsertNewComponent:", err.Error())
 	}
 
 	return _newcmpid, nil

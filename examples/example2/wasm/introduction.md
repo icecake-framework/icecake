@@ -1,4 +1,0 @@
-- Use of BULMA css framework.
-- Rendering formated value with the use of `data-ic-namedvalue` attribute or directly within an element by Id.
-- Basic event handling.
-- Work with local storage.

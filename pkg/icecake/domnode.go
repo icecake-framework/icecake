@@ -115,7 +115,7 @@ func (_node *Node) IsDefined() bool {
 	if _node == nil {
 		return false
 	}
-	return _node.IsDefined()
+	return _node.JSValue.IsDefined()
 }
 
 // IsSameNode tests whether two nodes are the same (in other words, whether they reference the same object).

@@ -12,23 +12,18 @@ import (
 
 	_ "embed"
 
-	"github.com/sunraylab/icecake/pkg/errors"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
 	ick "github.com/sunraylab/icecake/pkg/icecake"
-	"github.com/sunraylab/icecake/pkg/uicomponent"
+	"github.com/sunraylab/icecake/pkg/ui"
+	"github.com/yuin/goldmark"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 //go:embed "readme.md"
 var readme string
 
-// our own APP with global app data that can be used within components templates
-type myApp struct {
-	*ick.WebApp // embedded icecake app structure
-
-	LastMsgNumber int // the last message number used by our components in this example. Must be scopped outside the package (so start with an uppercase) to enable reading by html template
-}
-
-var app myApp
+var webapp *ick.WebApp
 
 // the main func is required by the wasm GO builder
 // outputs will appears in the console of the browser
@@ -38,36 +33,21 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	// we must call the icecake webapp factory once
-	app.WebApp = ick.NewWebApp()
+	webapp = ick.NewWebApp()
 
-	// we can make some app init
-	app.LastMsgNumber = 0
+	// render readme
+	markdown.RenderMarkdown(webapp.ChildById("readme"), readme, nil,
+		goldmark.WithRendererOptions(
+			html.WithUnsafe()),
+		goldmark.WithExtensions(
+			highlighting.Highlighting,
+		))
 
-	// render introduction
-	markdown.RenderMarkdown(app.ChildById("introduction"), readme, nil)
-
-	// app.Body().FilteredChildren(ick.NT_ELEMENT, 9, func(n *ick.Node) bool {
-	// 	e := ick.CastElement(n.JSValue())
-	// 	switch tagname := e.TagName(); tagname {
-	// 	case "H1":
-	// 		e.ClassList().Set("title is-1")
-	// 	case "H2":
-	// 		e.ClassList().Set("title is-2")
-	// 	case "H3":
-	// 		e.ClassList().Set("title is-3")
-	// 	case "H4":
-	// 		e.ClassList().Set("title is-4")
-	// 	default:
-	// 		ick.ConsoleWarnf("%s\n", tagname)
-	// 	}
-	// 	return false
-	// })
-
-	// add simple event hendling
-	app.ChildById("btnw").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnw)
-	app.ChildById("btna").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtna)
-	app.ChildById("btns").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtns)
-	app.ChildById("btni").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtni)
+	// add global event handling
+	webapp.ChildById("btn1").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtn1)
+	webapp.ChildById("btn2").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtn2)
+	webapp.ChildById("btn3").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtn3)
+	webapp.ChildById("btn4").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtn4)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
@@ -78,43 +58,51 @@ func main() {
 * browser event handlers
 ******************************************************************************/
 
-func OnClickBtnw(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtn1(event *ick.MouseEvent, target *ick.Element) {
 
-	// instantiate the NotificationToast component and init its data
-	toast := &uicomponent.Notify{
-		Message: `This is a typical notification message <strong>including html</strong> event html links.<br/><a href="#">link1</a>&nbsp;|&nbsp;<a href="#">link2</a>`,
-		// ColorClass: "is-warning is-light",
+	// instantiate the Notify component and init its data
+	notif := &ui.Notify{
+		Message: `This is a typical notification message <strong>including html</strong> links. Use the closing button on the right corner to remove this notification.<br/><a href="#">link1</a>&nbsp;|&nbsp;<a href="#">link2</a>`,
 	}
-	toast.SetClasses("is-warning is-light")
+	notif.InitClasses = ick.ParseClasses("is-warning is-light")
 
 	// Insert the component into the DOM
-	app.LastMsgNumber += 1
-	if _, err := app.ChildById("notif_container").InsertNewComponent(toast, app); err != nil {
-		errors.ConsoleErrorf(err.Error())
-	}
+	webapp.ChildById("notif_container").InsertNewComponent(notif, nil)
 }
 
-func OnClickBtna(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtn2(event *ick.MouseEvent, target *ick.Element) {
 
 	// instantiate the NotificationToast component and init its data
-	toast := &uicomponent.Notify{
-		Message: `This message will be automatically removed in <strong>4 seconds</strong>, unless you close it before. 😀`,
-		// ColorClass: "is-danger is-light",
-		Timeout: time.Second * 4,
+	notif := &ui.Notify{
+		Timeout: time.Second * 10,
+		Message: `This message will be automatically removed in <strong>10 seconds</strong>, unless you close it before. 😀`,
 	}
-	toast.SetClasses("is-danger is-light")
-	//TODO: toast.Attributes().Set("class", "myclass")
+	notif.InitClasses = ick.ParseClasses("is-danger is-light")
+	notif.InitAttributes, _ = ick.ParseAttributes("role='alert'")
 
 	// Insert the component into the DOM
-	app.LastMsgNumber += 1
-	if _, err := app.ChildById("notif_container").InsertNewComponent(toast, app); err != nil {
-		errors.ConsoleErrorf(err.Error())
-	}
+	webapp.ChildById("notif_container").InsertNewComponent(notif, nil)
 }
 
-func OnClickBtns(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtn3(event *ick.MouseEvent, target *ick.Element) {
 
-	app.LastMsgNumber += 1
+	// define the HTML template
+	html := `<div class="box">
+	<p class="pb-2">This is an html template object embedding the &lt;ick-notify&gt; element.</p>
+	<div class="block">
+		<ick-notify Message="This message comes from the Notify Component <strong>embedded into an html template</strong>."
+		class="is-info is-light"
+		role="success"/>
+	</div>
+	</box>`
+
+	// Insert the component into the DOM
+	webapp.ChildById("ex3_container").RenderHtml(html, nil)
+}
+
+func OnClickBtn4(event *ick.MouseEvent, target *ick.Element) {
+
+	//	<button class="button" id="btn4">Embedded into another component</button>
 
 	// instantiate the NotificationToast component and init its data
 	// toast := &NotificationToast{
@@ -127,21 +115,4 @@ func OnClickBtns(event *ick.MouseEvent, target *ick.Element) {
 	// if err != nil {
 	// 	ick.ConsoleErrorf(err.Error())
 	// }
-}
-
-func OnClickBtni(event *ick.MouseEvent, target *ick.Element) {
-
-	html := `<div class="box"><p class="pb-2">This is an html template object embedding the &lt;ick-notify&gt; element.</p><div class="block">
-	<ick-notify 
-	Message="This message comes from the Notify Component <strong>embedded into an html template</strong>."
-	ColorClass="is-info" 
-	role="alert"/>
-	</div></box>`
-
-	// Insert the component into the DOM
-	app.LastMsgNumber += 1
-	if err := app.ChildById("inside_container").RenderHtml(html, nil); err != nil {
-		errors.ConsoleErrorf(err.Error())
-	}
-
 }

@@ -377,7 +377,7 @@ func (_doc *Document) ChildById(_elementId string) (_result *Element) {
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
 		return CastElement(elem)
 	}
-	errors.ConsoleWarnf("ChildById failed: %q not found, or not a <Element>\n", _elementId)
+	errors.ConsoleWarnf("ChildById failed: %q not found, or not an <Element>\n", _elementId)
 	return new(Element)
 }
 

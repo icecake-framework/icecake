@@ -36,7 +36,7 @@ func (_v JSValue) Value() JSValue {
 	return _v
 }
 
-func (_v JSValue) Wrap(_jsvp JSValueProvider) {
+func (_v *JSValue) Wrap(_jsvp JSValueProvider) {
 	if _v.jsvalue.Truthy() {
 		errors.ConsoleWarnf("wrapping an already wrapped element")
 	}

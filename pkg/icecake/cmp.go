@@ -13,24 +13,46 @@ import (
 type Component struct {
 	Element
 
-	// ID string
-	// Attributes
-	// Classes TokenList
+	InitClasses    *Classes
+	InitAttributes *Attributes
 }
 
-func (c *Component) Envelope() (_tagname string, _classTemplate string) { return "span", "" }
+func (c *Component) Container() (_tagname string, _classes string, _attrs string) {
+	fmt.Printf("Component.Container returns default <SPAN> value\n")
+	return "SPAN", "", ""
+}
 
-func (c *Component) Template() (_html string) { return "" }
+func (c *Component) Template() (_html string) {
+	fmt.Printf("Component.Template returns default empty value\n")
+	return ""
+}
 
-func (c *Component) AddListeners() {}
+func (c *Component) AddListeners() {
+	fmt.Printf("Component.AddListeners is empty\n")
+}
+
+func (c *Component) GetInitClasses() *Classes {
+	return c.InitClasses
+}
+
+func (c *Component) GetInitAttributes() *Attributes {
+	return c.InitAttributes
+}
+
+func (c *Component) UpdateUI() {
+
+}
 
 type HtmlContainer interface {
 	Wrap(JSValueProvider)
 	Container() (_tagname string, _classes string, _attrs string)
+	GetInitClasses() *Classes
+	GetInitAttributes() *Attributes
 }
 
 type HtmlTemplater interface {
 	Template() (_html string)
+	UpdateUI()
 }
 type HtmlListener interface {
 	Wrap(JSValueProvider)
@@ -112,42 +134,27 @@ func LookupComponent(typ reflect.Type) string {
 
 func CreateComponentElement(_composer HtmlContainer) (_elem *Element, _err error) {
 	// create the HTML element
-	tagname, classes, strattrs := _composer.Container()
+	tagname, strclasses, strattrs := _composer.Container()
 	tagname = helper.Normalize(tagname)
 	_elem = GetDocument().CreateElement(tagname)
 	if !_elem.IsDefined() {
-		// TODO: test HTMLUnknownElement
+		// TODO: check HTMLUnknownElement returns
 		return nil, fmt.Errorf("CreateComponentElement failed: invalid tagname %q", tagname)
 	}
 
-	// set the class, executing the class template
-	classes = strings.Trim(classes, "")
-	_elem.SetClasses(classes)
+	// set the container classes
+	strclasses = strings.Trim(strclasses, " ")
+	_elem.Classes().Parse(strclasses)
 
-	strattrs = strings.Trim(strattrs, "")
-	attrs, err := ParseAttributes(strattrs)
-	if err != nil {
+	// set the container attributes
+	var attrs *Attributes
+	strattrs = strings.Trim(strattrs, " ")
+	attrs, _err = ParseAttributes(strattrs)
+	if _err != nil {
 		// TODO: handle attribute parsing errors
-	} else {
+	} else if attrs.Count() > 0 {
 		_elem.SetAttributes(*attrs)
 	}
-
-	// if classtemplate != "" {
-	// 	var tclass *template.Template
-	// 	buf := new(bytes.Buffer)
-
-	// 	tclass, _err = template.New("class").Parse(classtemplate)
-	// 	if _err == nil {
-	// 		data := TemplateData{
-	// 			Me:     _composer,
-	// 			Global: &GData,
-	// 		}
-	// 		_err = tclass.Execute(buf, data)
-	// 	}
-	// 	if _err == nil {
-	// 		_elem.SetClassName(buf.String())
-	// 	}
-	// }
 
 	// wrap the composer with the newly created component
 	if _err == nil {
