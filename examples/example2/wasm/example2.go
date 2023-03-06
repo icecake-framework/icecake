@@ -28,14 +28,18 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
+	app := ick.NewWebApp()
+
 	// proceed with localstorage
-	gdark := ick.App().Browser().LocalStorage().GetBool("darkmode")
+	gdark := app.Browser().LocalStorage().GetBool("darkmode")
 	updateDarkMode(gdark)
 
-	markdown.RenderMarkdown(ick.GetElementById("introduction"), introduction, nil)
+	markdown.RenderMarkdown(app.ChildById("introduction"), introduction, nil)
 
 	// init UI with a first update
 	updateUI()
+
+	uielement.CastButton(app.ChildById("btn-ex2").JSValue())
 
 	// add simple event hendling
 	uielement.GetButtonById("btn-ex2").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnEx2)

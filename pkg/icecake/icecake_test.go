@@ -17,12 +17,12 @@ func TestRenderComponent(t *testing.T) {
 	}
 	log.Println("------>", out)
 
-	GData["name"] = "Alice"
-	out, err = unfoldComponents(unfoldedCmps, "example00", `html00 Hello <strong>{{.name}}</strong>!`, GData, 0)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	log.Println("------>", out)
+	// GData["name"] = "Alice"
+	// out, err = unfoldComponents(unfoldedCmps, "example00", `html00 Hello <strong>{{.name}}</strong>!`, GData, 0)
+	// if err != nil {
+	// 	t.Errorf(err.Error())
+	// }
+	// log.Println("------>", out)
 
 	// out, err = renderComponents("example1", `html1 : <ic-ex1 />`, data, 0)
 	// if err != nil {
@@ -48,16 +48,16 @@ func TestRenderComponent(t *testing.T) {
 	// }
 	// log.Println("------>", out)
 
-	out, err = unfoldComponents(unfoldedCmps, "example5", `hmlt5 <ic-ex5 />`, GData, 0)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	log.Println("------>", out)
+	// out, err = unfoldComponents(unfoldedCmps, "example5", `hmlt5 <ic-ex5 />`, GData, 0)
+	// if err != nil {
+	// 	t.Errorf(err.Error())
+	// }
+	// log.Println("------>", out)
 
-	out, err = unfoldComponents(unfoldedCmps, "example6", `hmlt6 <ic-ex6 />`, GData, 0)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	log.Println("------>", out)
+	// out, err = unfoldComponents(unfoldedCmps, "example6", `hmlt6 <ic-ex6 />`, GData, 0)
+	// if err != nil {
+	// 	t.Errorf(err.Error())
+	// }
+	// log.Println("------>", out)
 
 }

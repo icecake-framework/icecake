@@ -1,6 +1,17 @@
-Example3 illustrates basic use of componnents for building a static HTML website:
+# Icecake Go Wasm Framework
+## Example3
 
-1. Insert UI components into the DOM inside an ID
-1. Embed components within a template
-1. Handle local and global state
+Example3 illustrates basic use of componnents for building a static HTML website
+
+### Insert UI components into the DOM inside an ID
+
+In this example we use the uicomponent `Notify`
+
+```go
+
+```
+
+### Embed components within a template
+
+### Handle local and global state
 

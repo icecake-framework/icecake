@@ -6,12 +6,14 @@ import (
 	"reflect"
 	"strings"
 	"text/template"
+
+	"github.com/sunraylab/icecake/pkg/errors"
 )
 
 type TemplateData struct {
 	Me any
 	// Page
-	Global *map[string]any
+	App any
 }
 
 // unfoldComponents lookup for component tags in htmlstring, and render each of them recursively.
@@ -22,11 +24,9 @@ type TemplateData struct {
 //  3. execute this template with {{}} langage and component's data and global data
 //
 // NOTICE: to avoid infinite recursivity, the rendering fails at a the 10th depth
-func unfoldComponents(_unfoldedCmps map[string]HtmlListener, name string, _unsafeHtmlTemplate string, data any, _deep int) (_rendered string, _err error) {
+func unfoldComponents(_unfoldedCmps map[string]HtmlListener, name string, _unsafeHtmlTemplate string, _data any, _deep int) (_rendered string, _err error) {
 	if _deep >= 10 {
-		strerr := fmt.Sprintf("RenderComponents stop at level %d: recursive rendering too deep", _deep)
-		ConsoleErrorf(strerr)
-		return "", fmt.Errorf(strerr)
+		return "", errors.ConsoleErrorf("RenderComponents stop at level %d: recursive rendering too deep", _deep)
 	}
 	//cmpid := name + "-" + strconv.Itoa(_deep)
 	fmt.Printf("unfolding %d:%q\n", _deep, name)
@@ -36,11 +36,9 @@ func unfoldComponents(_unfoldedCmps map[string]HtmlListener, name string, _unsaf
 
 	// 2. execute
 	bufCmp := new(bytes.Buffer)
-	errTmp := tmpCmp.Execute(bufCmp, data)
+	errTmp := tmpCmp.Execute(bufCmp, _data)
 	if errTmp != nil {
-		strerr := fmt.Sprintf("unfoldComponents stop at level %d: %q ERROR applying data to template: '%v'", _deep, name, _unsafeHtmlTemplate)
-		ConsoleErrorf(strerr)
-		return "", fmt.Errorf(strerr)
+		return "", errors.ConsoleErrorf("unfoldComponents stop at level %d: %q ERROR applying data to template: '%v'", _deep, name, _unsafeHtmlTemplate)
 	}
 	htmlstring := bufCmp.String()
 
@@ -70,9 +68,7 @@ nextdelim:
 			// look now for it's corresponding delim_close
 			if to := strings.Index(htmlstring, delim_close); to == -1 {
 				// not corresponding delim_close then stop and return a rendering error
-				strerr := fmt.Sprintf("unfoldComponents stop at level %d: close delim not found", _deep)
-				ConsoleErrorf(strerr)
-				return "", fmt.Errorf(strerr)
+				return "", errors.ConsoleErrorf("unfoldComponents stop at level %d: close delim not found", _deep)
 
 			} else {
 
@@ -133,15 +129,15 @@ nextdelim:
 								case reflect.String:
 									fieldvalue.SetString(attrs.Get(aname))
 								default:
-									ConsoleWarnf("Unmanaged type for attribute %q of component %q", aname, newcmpid)
+									errors.ConsoleWarnf("Unmanaged type for attribute %q of component %q", aname, newcmpid)
 								}
 							}
 						}
 
 						// recursively unfold the component template
 						data := TemplateData{
-							Me:     newcmp,
-							Global: &GData,
+							Me:  newcmp,
+							App: _data,
 						}
 						var htmlin string
 						htmlin, _err = unfoldComponents(_unfoldedCmps, newcmpid, newcmp.Template(), data, _deep+1)
@@ -158,7 +154,7 @@ nextdelim:
 					// the tag is not a registered component
 					htmlmsg := fmt.Sprintf("<!-- unable to unfold unregistered component ick-%s -->", tagname)
 					out.WriteString(htmlmsg)
-					ConsoleWarnf(htmlmsg)
+					errors.ConsoleWarnf(htmlmsg)
 				}
 			}
 		}
@@ -168,8 +164,8 @@ nextdelim:
 // addComponentslisteners call addlisteners for every unfolded Components
 func addComponentslisteners(_unfoldedCmps map[string]HtmlListener) {
 	for id, ufc := range _unfoldedCmps {
-		e := GetElementById(id)
-		ufc.Wrap(e.jsValue)
+		e := GetDocument().ChildById(id)
+		ufc.Wrap(e)
 		ufc.AddListeners()
 	}
 }

@@ -14,16 +14,16 @@ import (
 
 // https://developer.mozilla.org/fr/docs/Web/API/Web_Storage_API
 type Storage struct {
-	jsValue js.Value
+	JSValue
 }
 
 // CastStorage is casting a js.Value into Storage.
-func CastStorage(value js.Value) *Storage {
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+func CastStorage(_jsv JSValueProvider) *Storage {
+	if !_jsv.Value().IsObject() {
 		return nil
 	}
 	ret := new(Storage)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.Value().jsvalue
 	return ret
 }
 
@@ -36,21 +36,18 @@ func (_store *Storage) Count() int {
 	if _store == nil {
 		return -1
 	}
-	return _store.jsValue.Get("length").Int()
+	return _store.GetInt("length")
 }
 
 //	returns the name of the nth key in a given Storage object. The order of keys is user-agent defined, so you should not rely on it.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/key
-func (_store *Storage) At(_idx int) (_key string) {
+func (_store *Storage) At(_idx int) string {
 	if _store == nil {
 		return ""
 	}
-	key := _store.jsValue.Call("key", uint(_idx))
-	if key.Type() != js.TypeNull && key.Type() != js.TypeUndefined {
-		_key = key.String()
-	}
-	return _key
+	key := _store.Call("key", uint(_idx))
+	return key.String()
 }
 
 // when passed a key name, will return that key's value, or null if the key does not exist, in the given Storage object.
@@ -60,8 +57,8 @@ func (_store *Storage) Get(key string) (_value string) {
 	if _store == nil {
 		return ""
 	}
-	val := _store.jsValue.Call("getItem", key)
-	if val.Type() != js.TypeNull && val.Type() != js.TypeUndefined {
+	val := _store.Call("getItem", key)
+	if val.Type() == TypeString {
 		_value = val.String()
 	}
 	return _value
@@ -72,8 +69,8 @@ func (_store *Storage) GetBool(key string) (_value bool) {
 	if _store == nil {
 		return false
 	}
-	jsval := _store.jsValue.Call("getItem", key)
-	if jsval.Type() != js.TypeNull && jsval.Type() != js.TypeUndefined {
+	jsval := _store.Call("getItem", key)
+	if jsval.Type() == TypeString {
 		val := helper.Normalize(jsval.String())
 		if val != "false" && val != "0" {
 			return true
@@ -87,8 +84,8 @@ func (_store *Storage) GetInt(key string) (_value int) {
 	if _store == nil {
 		return 0
 	}
-	jsval := _store.jsValue.Call("getItem", key)
-	if jsval.Type() != js.TypeNull && jsval.Type() != js.TypeUndefined {
+	jsval := _store.Call("getItem", key)
+	if jsval.IsDefined() {
 		i, err := strconv.Atoi(jsval.String())
 		if err != nil {
 			_value = i
@@ -106,7 +103,7 @@ func (_store *Storage) Set(key string, value string) error {
 	}
 	//_store.jsValue.Call("setItem", key, value)
 
-	rsp := js.Global().Call("ickStorageSetItem", _store.jsValue, key, value)
+	rsp := js.Global().Call("ickStorageSetItem", _store.jsvalue, key, value)
 	if rsp.Type() == js.TypeString {
 		return fmt.Errorf(rsp.String())
 	}
@@ -121,7 +118,7 @@ func (_store *Storage) Remove(key string) {
 	if _store == nil {
 		return
 	}
-	_store.jsValue.Call("removeItem", key)
+	_store.Call("removeItem", key)
 }
 
 // clears all keys stored in a given Storage object.
@@ -131,5 +128,5 @@ func (_store *Storage) Clear() {
 	if _store == nil {
 		return
 	}
-	_store.jsValue.Call("clear")
+	_store.Call("clear")
 }

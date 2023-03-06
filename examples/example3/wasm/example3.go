@@ -12,14 +12,23 @@ import (
 
 	_ "embed"
 
+	"github.com/sunraylab/icecake/pkg/errors"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
 	ick "github.com/sunraylab/icecake/pkg/icecake"
 	"github.com/sunraylab/icecake/pkg/uicomponent"
-	"github.com/sunraylab/icecake/pkg/uielement"
 )
 
 //go:embed "readme.md"
 var readme string
+
+// our own APP with global app data that can be used within components templates
+type myApp struct {
+	*ick.WebApp // embedded icecake app structure
+
+	LastMsgNumber int // the last message number used by our components in this example. Must be scopped outside the package (so start with an uppercase) to enable reading by html template
+}
+
+var app myApp
 
 // the main func is required by the wasm GO builder
 // outputs will appears in the console of the browser
@@ -28,16 +37,37 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	// render introduction
-	markdown.RenderMarkdown(ick.GetElementById("introduction"), readme, nil)
+	// we must call the icecake webapp factory once
+	app.WebApp = ick.NewWebApp()
 
-	ick.GData["msgnumber"] = 0
+	// we can make some app init
+	app.LastMsgNumber = 0
+
+	// render introduction
+	markdown.RenderMarkdown(app.ChildById("introduction"), readme, nil)
+
+	// app.Body().FilteredChildren(ick.NT_ELEMENT, 9, func(n *ick.Node) bool {
+	// 	e := ick.CastElement(n.JSValue())
+	// 	switch tagname := e.TagName(); tagname {
+	// 	case "H1":
+	// 		e.ClassList().Set("title is-1")
+	// 	case "H2":
+	// 		e.ClassList().Set("title is-2")
+	// 	case "H3":
+	// 		e.ClassList().Set("title is-3")
+	// 	case "H4":
+	// 		e.ClassList().Set("title is-4")
+	// 	default:
+	// 		ick.ConsoleWarnf("%s\n", tagname)
+	// 	}
+	// 	return false
+	// })
 
 	// add simple event hendling
-	uielement.GetButtonById("btnw").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnw)
-	uielement.GetButtonById("btna").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtna)
-	uielement.GetButtonById("btns").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtns)
-	uielement.GetButtonById("btni").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtni)
+	app.ChildById("btnw").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnw)
+	app.ChildById("btna").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtna)
+	app.ChildById("btns").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtns)
+	app.ChildById("btni").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtni)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
@@ -52,14 +82,15 @@ func OnClickBtnw(event *ick.MouseEvent, target *ick.Element) {
 
 	// instantiate the NotificationToast component and init its data
 	toast := &uicomponent.Notify{
-		Message:    `This is a typical notification message <strong>including html</strong> event html links.<br/><a href="#">link1</a>&nbsp;|&nbsp;<a href="#">link2</a>`,
-		ColorClass: "is-warning is-light",
+		Message: `This is a typical notification message <strong>including html</strong> event html links.<br/><a href="#">link1</a>&nbsp;|&nbsp;<a href="#">link2</a>`,
+		// ColorClass: "is-warning is-light",
 	}
+	toast.SetClasses("is-warning is-light")
 
 	// Insert the component into the DOM
-	ick.GData["msgnumber"] = ick.GData["msgnumber"].(int) + 1
-	if _, err := ick.GetElementById("notif_container").InsertNewComponent(toast); err != nil {
-		ick.ConsoleErrorf(err.Error())
+	app.LastMsgNumber += 1
+	if _, err := app.ChildById("notif_container").InsertNewComponent(toast, app); err != nil {
+		errors.ConsoleErrorf(err.Error())
 	}
 }
 
@@ -67,22 +98,23 @@ func OnClickBtna(event *ick.MouseEvent, target *ick.Element) {
 
 	// instantiate the NotificationToast component and init its data
 	toast := &uicomponent.Notify{
-		Message:    `This message will be automatically removed in <strong>4 seconds</strong>, unless you close it before. 😀`,
-		ColorClass: "is-danger is-light",
-		Timeout:    time.Second * 4,
+		Message: `This message will be automatically removed in <strong>4 seconds</strong>, unless you close it before. 😀`,
+		// ColorClass: "is-danger is-light",
+		Timeout: time.Second * 4,
 	}
+	toast.SetClasses("is-danger is-light")
 	//TODO: toast.Attributes().Set("class", "myclass")
 
 	// Insert the component into the DOM
-	ick.GData["msgnumber"] = ick.GData["msgnumber"].(int) + 1
-	if _, err := ick.GetElementById("notif_container").InsertNewComponent(toast); err != nil {
-		ick.ConsoleErrorf(err.Error())
+	app.LastMsgNumber += 1
+	if _, err := app.ChildById("notif_container").InsertNewComponent(toast, app); err != nil {
+		errors.ConsoleErrorf(err.Error())
 	}
 }
 
 func OnClickBtns(event *ick.MouseEvent, target *ick.Element) {
 
-	ick.GData["msgnumber"] = ick.GData["msgnumber"].(int) + 1
+	app.LastMsgNumber += 1
 
 	// instantiate the NotificationToast component and init its data
 	// toast := &NotificationToast{
@@ -107,9 +139,9 @@ func OnClickBtni(event *ick.MouseEvent, target *ick.Element) {
 	</div></box>`
 
 	// Insert the component into the DOM
-	ick.GData["msgnumber"] = ick.GData["msgnumber"].(int) + 1
-	if err := ick.GetElementById("inside_container").RenderHtml(html, nil); err != nil {
-		ick.ConsoleErrorf(err.Error())
+	app.LastMsgNumber += 1
+	if err := app.ChildById("inside_container").RenderHtml(html, nil); err != nil {
+		errors.ConsoleErrorf(err.Error())
 	}
 
 }

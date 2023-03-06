@@ -2,7 +2,8 @@ package ick
 
 import (
 	"net/url"
-	"syscall/js"
+
+	"github.com/sunraylab/icecake/pkg/errors"
 )
 
 /******************************************************************************
@@ -23,17 +24,17 @@ const (
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History
 type History struct {
-	jsValue js.Value
+	JSValue
 }
 
 // CastHistory is casting a js.Value into History.
-func CastHistory(value js.Value) *History {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting History failed")
+func CastHistory(_jsvp JSValueProvider) *History {
+	if _jsvp.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting History failed")
 		return nil
 	}
 	cast := new(History)
-	cast.jsValue = value
+	cast.jsvalue = _jsvp.Value().jsvalue
 	return cast
 }
 
@@ -41,21 +42,21 @@ func CastHistory(value js.Value) *History {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/length
 func (_this *History) Count() int {
-	return _this.jsValue.Get("length").Int()
+	return _this.GetInt("length")
 }
 
 // ScrollRestoration  allows web applications to explicitly set default scroll restoration behavior on history navigation.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration
 func (_this *History) ScrollRestoration() HISTORY_SCROLL_RESTORATION {
-	return HISTORY_SCROLL_RESTORATION(_this.jsValue.Get("scrollRestoration").String())
+	return HISTORY_SCROLL_RESTORATION(_this.GetString("scrollRestoration"))
 }
 
 // ScrollRestoration  allows web applications to explicitly set default scroll restoration behavior on history navigation.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration
 func (_this *History) SetScrollRestoration(value HISTORY_SCROLL_RESTORATION) {
-	_this.jsValue.Set("scrollRestoration", value)
+	_this.Set("scrollRestoration", value)
 }
 
 // State returns a value representing the state at the top of the history stack.
@@ -66,8 +67,8 @@ func (_this *History) SetScrollRestoration(value HISTORY_SCROLL_RESTORATION) {
 // TODO: handle returned value
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/state
-func (_this *History) State() js.Value {
-	return _this.jsValue.Get("state")
+func (_this *History) State() JSValue {
+	return _this.Get("state")
 }
 
 // Go Loads a specific page from the session history.
@@ -77,21 +78,21 @@ func (_this *History) State() js.Value {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/go
 func (_this *History) Go(delta int) {
-	_this.jsValue.Call("go", delta)
+	_this.Call("go", delta)
 }
 
 // causes the browser to move back one page in the session history.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/back
 func (_this *History) Back() {
-	_this.jsValue.Call("back")
+	_this.Call("back")
 }
 
 // causes the browser to move forward one page in the session history. It has the same effect as calling history.go(1).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/forward
 func (_this *History) Forward() {
-	_this.jsValue.Call("forward")
+	_this.Call("forward")
 }
 
 // PushState adds an entry to the browser's session history stack.
@@ -99,9 +100,9 @@ func (_this *History) Forward() {
 // https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
 func (_this *History) PushState(data interface{}, url *url.URL) {
 	if url == nil {
-		_this.jsValue.Call("pushState", data)
+		_this.Call("pushState", data)
 	} else {
-		_this.jsValue.Call("pushState", data, url.String())
+		_this.Call("pushState", data, url.String())
 	}
 }
 
@@ -112,8 +113,8 @@ func (_this *History) PushState(data interface{}, url *url.URL) {
 // https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState
 func (_this *History) ReplaceState(data interface{}, url *url.URL) {
 	if url == nil {
-		_this.jsValue.Call("replaceState", data)
+		_this.Call("replaceState", data)
 	} else {
-		_this.jsValue.Call("replaceState", data, url.String())
+		_this.Call("replaceState", data, url.String())
 	}
 }

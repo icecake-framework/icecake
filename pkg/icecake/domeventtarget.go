@@ -2,6 +2,8 @@ package ick
 
 import (
 	"syscall/js"
+
+	"github.com/sunraylab/icecake/pkg/errors"
 )
 
 type eventHandler struct {
@@ -18,35 +20,40 @@ type eventHandler struct {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
 type EventTarget struct {
-	jsValue       js.Value // update with Wrap(), get with JSValue()
-	eventHandlers []*eventHandler
+	JSValue                       // embedded js.Value
+	eventHandlers []*eventHandler // eventhandlers added with an listener to this eventtarget
 }
 
-// JSValue returns the js.Value or js.Null() if _this is nil
-func (_evttget EventTarget) JSValue() js.Value {
-	return _evttget.jsValue
-}
+// EventTarget implements JSWrapper interfaces.
+// JSValue returns the js.Value
+// func (_evttget EventTarget) JSValue() js.Value {
+// 	return _evttget.jsValue
+// }
 
-func (_evttget *EventTarget) Wrap(_jsval js.Value) {
-	if _evttget == nil {
-		ConsoleErrorf("unable to wrap a nil element, abort")
-		return
-	}
-	if _evttget.jsValue.Truthy() {
-		ConsoleWarnf("wrapping an already wrapped element")
-		_evttget.RemoveListeners()
-	}
-	_evttget.jsValue = _jsval
-}
+// func (_evttget EventTarget) Type() js.Type {
+// 	return _evttget.jsValue.Type()
+// }
+
+// func (_evttget *EventTarget) Wrap(_jsval JSWrapper) {
+// 	if _evttget == nil {
+// 		errors.ConsoleErrorf("unable to wrap a nil element, abort")
+// 		return
+// 	}
+// 	if _evttget.jsValue.Truthy() {
+// 		errors.ConsoleWarnf("wrapping an already wrapped element")
+// 		_evttget.RemoveListeners()
+// 	}
+// 	_evttget.jsValue = _jsval.JSValue()
+// }
 
 // CastEventTarget is casting a js.Value into EventTarget.
-func CastEventTarget(value js.Value) *EventTarget {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting EventTarget failed")
+func CastEventTarget(_jsv JSValue) *EventTarget {
+	if _jsv.Type() != TypeObject {
+		errors.ConsoleErrorf("casting EventTarget failed")
 		return nil
 	}
 	evttget := new(EventTarget)
-	evttget.jsValue = value
+	evttget.jsvalue = _jsv.jsvalue
 	return evttget
 }
 
@@ -72,11 +79,11 @@ func (_evttget *EventTarget) AddEventListener(evh *eventHandler) {
 		_evttget.eventHandlers = make([]*eventHandler, 0, 1)
 	}
 	evh.close = func() {
-		_evttget.jsValue.Call("removeEventListener", evh.eventtype, evh.jsHandler)
+		_evttget.Call("removeEventListener", evh.eventtype, evh.jsHandler)
 		evh.jsHandler.Release()
 	}
 	_evttget.eventHandlers = append(_evttget.eventHandlers, evh)
-	_evttget.jsValue.Call("addEventListener", evh.eventtype, evh.jsHandler)
+	_evttget.Call("addEventListener", evh.eventtype, evh.jsHandler)
 }
 
 // Release need to be called only when avent handlers have been added to the Event-target.

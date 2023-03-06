@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/sunraylab/icecake/pkg/errors"
 	ick "github.com/sunraylab/icecake/pkg/icecake"
 )
 
@@ -20,14 +21,14 @@ type Notify struct {
 
 	timer *time.Timer
 
-	ColorClass string        // class string added to the class of the envelop element
-	Message    string        // message to display
-	Timeout    time.Duration // the notification will close automatically after Timeour duration
+	//ColorClass string        // class string added to the class of the envelop element
+	Message string        // message to display
+	Timeout time.Duration // the notification will close automatically after Timeour duration
 }
 
-func (c *Notify) Envelope() (_tagname string, _classes string) {
+func (c *Notify) Container() (_tagname string, _classes string, _attrs string) {
 	fmt.Printf("c %p envelope\n", c)
-	return "div", "notification {{.Me.ColorClass}}"
+	return "div", "notification", ""
 }
 
 func (c *Notify) Template() (_html string) {
@@ -44,7 +45,7 @@ func (c *Notify) AddListeners() {
 	btndel := c.SelectorQueryFirst(".delete")
 	//ick.App().Body().AddMouseEvent(ick.MOUSE_ONCLICK, func(*ick.MouseEvent, *ick.Element) {
 	btndel.AddMouseEvent(ick.MOUSE_ONCLICK, func(*ick.MouseEvent, *ick.Element) {
-		ick.ConsoleWarnf("Mouse Event Fired on %s id=%q, %s\n", c.TagName(), c.Id(), c.NodeName())
+		errors.ConsoleWarnf("Mouse Event Fired on %s id=%q, %s\n", c.TagName(), c.Id(), c.NodeName())
 		if c.timer != nil {
 			c.timer.Stop()
 		}

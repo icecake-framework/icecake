@@ -1,8 +1,7 @@
 package ick
 
 import (
-	"syscall/js"
-
+	"github.com/sunraylab/icecake/pkg/errors"
 	"github.com/sunraylab/icecake/pkg/lib"
 )
 
@@ -17,19 +16,19 @@ import (
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/TokenList
 type TokenList struct {
-	jsValue js.Value
-	tokens  lib.Tokens
+	JSValue
+	tokens lib.Tokens
 }
 
 // DOMTokenListFromJS is casting a js.Value into DOMTokenList.
-func CastTokenList(value js.Value) *TokenList {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting TokenList failed")
+func CastTokenList(_jsvp JSValueProvider) *TokenList {
+	if _jsvp.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting TokenList failed")
 		return nil
 	}
 	cast := new(TokenList)
-	cast.jsValue = value
-	cast.tokens = lib.MakeTokens(cast.jsValue.Get("value").String())
+	cast.jsvalue = _jsvp.Value().jsvalue
+	cast.tokens = lib.MakeTokens(cast.GetString("value"))
 	return cast
 }
 
@@ -70,7 +69,7 @@ func (_thisList *TokenList) Has(token string) bool {
 // https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/value
 func (_thisList *TokenList) Parse(value string) *TokenList {
 	if _thisList.tokens.Parse(value) {
-		_thisList.jsValue.Set("value", _thisList.tokens.String())
+		_thisList.Set("value", _thisList.tokens.String())
 	}
 	return _thisList
 }
@@ -79,7 +78,7 @@ func (_thisList *TokenList) Parse(value string) *TokenList {
 // Always converted in lowercase.
 func (_thisList *TokenList) Set(tokens ...string) *TokenList {
 	if _thisList.tokens.Set(tokens...) {
-		_thisList.jsValue.Set("value", _thisList.String())
+		_thisList.Set("value", _thisList.String())
 	}
 	return _thisList
 }
@@ -88,7 +87,7 @@ func (_thisList *TokenList) Set(tokens ...string) *TokenList {
 // Returns the tokenlist to enable chaining calls.
 func (_thisList *TokenList) Remove(tokens ...string) *TokenList {
 	if _thisList.tokens.Remove(tokens...) {
-		_thisList.jsValue.Set("value", _thisList.String())
+		_thisList.Set("value", _thisList.String())
 	}
 	return _thisList
 }
@@ -97,7 +96,7 @@ func (_thisList *TokenList) Remove(tokens ...string) *TokenList {
 func (_thisList *TokenList) Toggle(token string) bool {
 	update := _thisList.tokens.Toggle(token)
 	if update {
-		_thisList.jsValue.Set("value", _thisList.String())
+		_thisList.Set("value", _thisList.String())
 	}
 	return update
 }
@@ -106,7 +105,7 @@ func (_thisList *TokenList) Toggle(token string) bool {
 func (_thisList *TokenList) Replace(token string, newToken string) bool {
 	update := _thisList.tokens.Replace(token, newToken)
 	if update {
-		_thisList.jsValue.Set("value", _thisList.String())
+		_thisList.Set("value", _thisList.String())
 	}
 	return update
 }

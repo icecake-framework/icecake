@@ -81,7 +81,7 @@ func (_attrs *Attributes) Set(_name string, _value string) {
 	_value = strings.Trim(strings.Trim(_value, "'"), "\"")
 	_attrs.attributes[_name] = _value
 	if _attrs.ownerElement != nil {
-		_attrs.ownerElement.jsValue.Call("setAttribute", _name, _value)
+		_attrs.ownerElement.Call("setAttribute", _name, _value)
 	}
 }
 
@@ -91,7 +91,7 @@ func (_attrs *Attributes) Remove(_name string) {
 	_name = strings.Trim(_name, " ")
 	delete(_attrs.attributes, _name)
 	if _attrs.ownerElement != nil {
-		_attrs.ownerElement.jsValue.Call("removeAttribute", string(_name))
+		_attrs.ownerElement.Call("removeAttribute", string(_name))
 	}
 }
 

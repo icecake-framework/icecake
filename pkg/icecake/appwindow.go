@@ -4,6 +4,8 @@ import (
 	"net/url"
 	"strings"
 	"syscall/js"
+
+	"github.com/sunraylab/icecake/pkg/errors"
 )
 
 /******************************************************************************
@@ -18,26 +20,25 @@ type Window struct {
 }
 
 // CastWindow is casting a js.Value into Window.
-func CastWindow(value js.Value) Window {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting Window failed")
+func CastWindow(_jsv JSValueProvider) Window {
+	if _jsv.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting Window failed")
 		return Window{}
 	}
 	win := new(Window)
-	win.jsValue = value
+	win.jsvalue = _jsv.Value().jsvalue
 	return *win
 }
 
 // GetWindow returning attribute 'window' with
 // type Window (idl: Window).
 func getWindow() Window {
-	value := js.Global().Get("window")
-	if typ := value.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		ConsoleErrorf("Unable to get window")
-		panic("Unable to get window")
+	jsv := js.Global().Get("window")
+	if typ := jsv.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+		errors.ConsolePanicf(nil, "Unable to get window")
 	}
 	win := new(Window)
-	win.jsValue = value
+	win.jsvalue = jsv
 	return *win
 }
 
@@ -47,7 +48,7 @@ func getWindow() Window {
 
 // extract the URL object from the js Location
 func (_win Window) URL() *url.URL {
-	href := _win.jsValue.Get("Location").Get("href").String()
+	href := _win.Get("Location").Get("href").String()
 	u, _ := url.Parse(href)
 	return u
 }
@@ -58,7 +59,7 @@ func (_win Window) URL() *url.URL {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Location/assign
 func (_win Window) Navigate(url url.URL) {
-	_win.jsValue.Get("Location").Call("assign", url.String())
+	_win.Get("Location").Call("assign", url.String())
 }
 
 // Load and Display the provided URL.
@@ -68,12 +69,12 @@ func (_win Window) Navigate(url url.URL) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Location/replace
 func (_win Window) Display(url url.URL) {
-	_win.jsValue.Get("Location").Call("replace", url.String())
+	_win.Get("Location").Call("replace", url.String())
 }
 
 // Reloads the current URL, like the Refresh button.
 func (_win Window) Reload() {
-	_win.jsValue.Get("Location").Call("reload")
+	_win.Get("Location").Call("reload")
 }
 
 // Loads a specified resource into a new or existing browsing context (that is, a tab, a window, or an iframe) under a specified name.
@@ -82,12 +83,12 @@ func (_win Window) Reload() {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/open
 func (_win Window) Open(url *url.URL, target string) Window {
-	var win js.Value
+	var win JSValue
 	if url == nil {
 		// a blank page is opened into the targeted browsing context.
-		win = _win.jsValue.Call("open")
+		win = _win.Call("open")
 	} else {
-		win = _win.jsValue.Call("open", url.String(), target)
+		win = _win.Call("open", url.String(), target)
 
 	}
 	return CastWindow(win)
@@ -97,7 +98,7 @@ func (_win Window) Open(url *url.URL, target string) Window {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/closed
 func (_win Window) Closed() bool {
-	return _win.jsValue.Get("closed").Bool()
+	return _win.GetBool("closed")
 }
 
 // History returning attribute 'history' with
@@ -105,7 +106,7 @@ func (_win Window) Closed() bool {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/history
 func (_win Window) History() *History {
-	value := _win.jsValue.Get("history")
+	value := _win.Get("history")
 	return CastHistory(value)
 }
 
@@ -113,7 +114,7 @@ func (_win Window) History() *History {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/top
 func (_win Window) Top() Window {
-	value := _win.jsValue.Get("top")
+	value := _win.Get("top")
 	return CastWindow(value)
 }
 
@@ -121,14 +122,14 @@ func (_win Window) Top() Window {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent
 func (_win Window) UserAgent() string {
-	return _win.jsValue.Get("navigator").Get("userAgent").String()
+	return _win.Get("navigator").Get("userAgent").String()
 }
 
 // Language returns a string representing the preferred language of the user, usually the language of the browser UI.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
 func (_win Window) Language() string {
-	return _win.jsValue.Get("navigator").Get("language").String()
+	return _win.Get("navigator").Get("language").String()
 }
 
 // OnLine Returns the online status of the browser.
@@ -140,29 +141,29 @@ func (_win Window) Language() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine
 func (_win Window) OnLine() bool {
-	return _win.jsValue.Get("navigator").Get("onLine").Bool()
+	return _win.Get("navigator").Get("onLine").Bool()
 }
 
 // CookieEnabled eturns a Boolean value that indicates whether cookies are enabled or not.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled
 func (_win Window) CookieEnabled() bool {
-	return _win.jsValue.Get("navigator").Get("cookieEnabled").Bool()
+	return _win.Get("navigator").Get("cookieEnabled").Bool()
 }
 
 // InnerWidth returns the interior width of the window in pixels. This includes the width of the vertical scroll bar, if one is present.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth
 func (_win Window) InnerSize() (_width int, _height int) {
-	_width = _win.jsValue.Get("innerWidth").Int()
-	_height = _win.jsValue.Get("innerHeight").Int()
+	_width = _win.GetInt("innerWidth")
+	_height = _win.GetInt("innerHeight")
 	return _width, _height
 }
 
 // OuterWidth returning attribute 'outerWidth' with
 func (_win Window) OuterSize() (_width int, _height int) {
-	_width = _win.jsValue.Get("outerWidth").Int()
-	_height = _win.jsValue.Get("outerHeight").Int()
+	_width = _win.GetInt("outerWidth")
+	_height = _win.GetInt("outerHeight")
 	return _width, _height
 }
 
@@ -172,15 +173,15 @@ func (_win Window) OuterSize() (_width int, _height int) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollX
 func (_win Window) ScrollPos() (_x float64, _y float64) {
-	_x = _win.jsValue.Get("scrollX").Float()
-	_y = _win.jsValue.Get("scrollY").Float()
+	_x = _win.GetFloat("scrollX")
+	_y = _win.GetFloat("scrollY")
 	return _x, _y
 }
 
 // DevicePixelRatio returns the ratio of the resolution in physical pixels to the resolution in CSS pixels for the current display device.
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
 func (_win Window) DevicePixelRatio() float64 {
-	return _win.jsValue.Get("devicePixelRatio").Float()
+	return _win.GetFloat("devicePixelRatio")
 }
 
 // accesses a session Storage object for the current origin.
@@ -190,10 +191,8 @@ func (_win Window) DevicePixelRatio() float64 {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
 func (_win Window) SessionStorage() *Storage {
-	rsp := _win.jsValue.Call("ickSessionStorage")
-	if typ := rsp.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
+	// TODO: tryget
+	rsp := _win.Call("ickSessionStorage")
 	return CastStorage(rsp)
 }
 
@@ -203,12 +202,10 @@ func (_win Window) SessionStorage() *Storage {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
 func (_win Window) LocalStorage() *Storage {
+	// TODO: tryget
 	//value := _win.jsValue.Get("localStorage")
-	rsp := _win.jsValue.Call("ickLocalStorage")
-	if typ := rsp.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
-	return CastStorage(rsp)
+	jsv := _win.Call("ickLocalStorage")
+	return CastStorage(jsv)
 }
 
 // instructs the browser to display a dialog with an optional message, and to wait until the user dismisses the dialog.
@@ -217,9 +214,9 @@ func (_win Window) LocalStorage() *Storage {
 func (_win Window) Alert(message string) {
 	message = strings.Trim(message, " ")
 	if message == "" {
-		_win.jsValue.Call("alert")
+		_win.Call("alert")
 	} else {
-		_win.jsValue.Call("alert", message)
+		_win.Call("alert", message)
 	}
 }
 
@@ -227,21 +224,21 @@ func (_win Window) Alert(message string) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/print
 func (_win Window) Print() {
-	_win.jsValue.Call("print")
+	_win.Call("print")
 }
 
 // method closes the current window, or the window on which it was called.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/close
 func (_win Window) Close() {
-	_win.jsValue.Call("close")
+	_win.Call("close")
 }
 
 // stops further resource loading in the current browsing context, equivalent to the stop button in the browser.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/stop
 func (_win Window) Stop() {
-	_win.jsValue.Call("stop")
+	_win.Call("stop")
 }
 
 // Makes a request to bring the window to the front.
@@ -249,14 +246,14 @@ func (_win Window) Stop() {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/focus
 func (_win Window) Focus() {
-	_win.jsValue.Call("focus")
+	_win.Call("focus")
 }
 
 // Shifts focus away from the window.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/blur_event
 func (_win Window) Blur() {
-	_win.jsValue.Call("blur")
+	_win.Call("blur")
 }
 
 /******************************************************************************
@@ -266,12 +263,12 @@ func (_win Window) Blur() {
 // event attribute: Event
 func makeWindow_Generic_Event(listener func(event *Event, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
-		value := args[0]
+		value := val(args[0])
 		evt := CastEvent(value)
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -292,12 +289,12 @@ func (_win Window) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *E
 // event attribute: BeforeUnloadEvent
 func makeWindow_BeforeUnload_Event(listener func(event *BeforeUnloadEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
-		value := args[0]
+		value := val(args[0])
 		evt := CastBeforeUnloadEvent(value)
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -318,12 +315,12 @@ func (_win Window) AddBeforeUnloadEvent(listener func(event *BeforeUnloadEvent, 
 // event attribute: HashChangeEvent
 func makeWindow_HashChange_Event(listener func(event *HashChangeEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
-		value := args[0]
+		value := val(args[0])
 		evt := CastHashChangeEvent(value)
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -346,12 +343,12 @@ func (_win Window) AddHashChangeEvent(listener func(event *HashChangeEvent, targ
 // event attribute: PageTransitionEvent
 func makeWindow_PageTransition_Event(listener func(event *PageTransitionEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
-		value := args[0]
+		value := val(args[0])
 		evt := CastPageTransitionEvent(value)
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -372,12 +369,12 @@ func (_win Window) AddPageTransitionEvent(evttype PAGETRANSITION_EVENT, listener
 // event attribute: UIEvent
 func makeWindow_UI_Event(listener func(event *UIEvent, target *Window)) js.Func {
 	fn := func(this js.Value, args []js.Value) interface{} {
-		value := args[0]
+		value := val(args[0])
 		evt := CastUIEvent(value)
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)

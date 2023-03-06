@@ -1,15 +1,13 @@
 package ick
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
-	"syscall/js"
-	"text/template"
 
 	"github.com/sunraylab/icecake/internal/helper"
+	"github.com/sunraylab/icecake/pkg/errors"
 )
 
 type Component struct {
@@ -27,15 +25,15 @@ func (c *Component) Template() (_html string) { return "" }
 func (c *Component) AddListeners() {}
 
 type HtmlContainer interface {
-	Wrap(js.Value)
-	Envelope() (_tagname string, _classTemplate string)
+	Wrap(JSValueProvider)
+	Container() (_tagname string, _classes string, _attrs string)
 }
 
 type HtmlTemplater interface {
 	Template() (_html string)
 }
 type HtmlListener interface {
-	Wrap(js.Value)
+	Wrap(JSValueProvider)
 	AddListeners()
 }
 
@@ -72,36 +70,31 @@ func init() {
 	GComponentRegistry = make(map[string]reflect.Type, 0)
 }
 
-func RegisterComponentType(key string, cmp any) {
+func RegisterComponentType(key string, cmp any) error {
 	key = helper.Normalize(key)
 	if !strings.HasPrefix(key, "ick-") {
-		ConsoleErrorf("RegisterComponentType faild: key %q does not match allowed pattern", key)
-		return
+		return errors.ConsoleErrorf("RegisterComponentType faild: key %q does not match allowed pattern\n", key)
 	}
 	name := strings.TrimPrefix(key, "ick-")
 	if len(name) == 0 {
-		ConsoleErrorf("RegisterComponentType faild: invalid key name %q", key)
-		return
+		return errors.ConsoleErrorf("RegisterComponentType faild: invalid key name %q\n", key)
 	}
 
 	typ := reflect.TypeOf(cmp)
 	if typ.Kind() == reflect.Pointer {
-		ConsoleErrorf("RegisterComponentType faild: must register a component not a pointer to a component %q", typ.String())
-		return
+		return errors.ConsoleErrorf("RegisterComponentType faild: must register a component not a pointer to a component %q\n", typ.String())
 	}
 
 	if _, found := typ.FieldByName("Component"); !found {
-		ConsoleErrorf("RegisterComponentType faild: your component must embed the ick.Component value")
-		return
+		return errors.ConsoleErrorf("RegisterComponentType faild: your component must embed the ick.Component value\n")
 	}
 
 	if _, found := GComponentRegistry[key]; found {
-		ConsoleErrorf("RegisterComponentType faild: %q already registered", key)
-		return
+		return errors.ConsoleErrorf("RegisterComponentType faild: %q already registered\n", key)
 	}
 
 	GComponentRegistry[key] = typ
-	ConsoleLogf("RegisterComponentType: %s %q", key, typ.String())
+	return errors.ConsoleLogf("RegisterComponentType: %s %q\n", key, typ.String())
 }
 
 func LookupComponent(typ reflect.Type) string {
@@ -119,36 +112,46 @@ func LookupComponent(typ reflect.Type) string {
 
 func CreateComponentElement(_composer HtmlContainer) (_elem *Element, _err error) {
 	// create the HTML element
-	tagname, classtemplate := _composer.Envelope()
+	tagname, classes, strattrs := _composer.Container()
 	tagname = helper.Normalize(tagname)
-	_elem = App().CreateElement(tagname)
+	_elem = GetDocument().CreateElement(tagname)
 	if !_elem.IsDefined() {
 		// TODO: test HTMLUnknownElement
 		return nil, fmt.Errorf("CreateComponentElement failed: invalid tagname %q", tagname)
 	}
 
 	// set the class, executing the class template
-	classtemplate = strings.Trim(classtemplate, "")
-	if classtemplate != "" {
-		var tclass *template.Template
-		buf := new(bytes.Buffer)
+	classes = strings.Trim(classes, "")
+	_elem.SetClasses(classes)
 
-		tclass, _err = template.New("class").Parse(classtemplate)
-		if _err == nil {
-			data := TemplateData{
-				Me:     _composer,
-				Global: &GData,
-			}
-			_err = tclass.Execute(buf, data)
-		}
-		if _err == nil {
-			_elem.SetClassName(buf.String())
-		}
+	strattrs = strings.Trim(strattrs, "")
+	attrs, err := ParseAttributes(strattrs)
+	if err != nil {
+		// TODO: handle attribute parsing errors
+	} else {
+		_elem.SetAttributes(*attrs)
 	}
+
+	// if classtemplate != "" {
+	// 	var tclass *template.Template
+	// 	buf := new(bytes.Buffer)
+
+	// 	tclass, _err = template.New("class").Parse(classtemplate)
+	// 	if _err == nil {
+	// 		data := TemplateData{
+	// 			Me:     _composer,
+	// 			Global: &GData,
+	// 		}
+	// 		_err = tclass.Execute(buf, data)
+	// 	}
+	// 	if _err == nil {
+	// 		_elem.SetClassName(buf.String())
+	// 	}
+	// }
 
 	// wrap the composer with the newly created component
 	if _err == nil {
-		_composer.Wrap(_elem.JSValue())
+		_composer.Wrap(_elem)
 	}
 
 	return _elem, _err

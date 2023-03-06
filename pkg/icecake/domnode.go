@@ -2,7 +2,8 @@ package ick
 
 import (
 	"fmt"
-	"syscall/js"
+
+	"github.com/sunraylab/icecake/pkg/errors"
 )
 
 const (
@@ -84,25 +85,25 @@ type Node struct {
 }
 
 // CastNode is casting a js.Value into Node.
-func CastNode(value js.Value) *Node {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting Node failed")
+func CastNode(_jsvp JSValueProvider) *Node {
+	if _jsvp.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting Node failed")
 		return new(Node)
 	}
 	cast := new(Node)
-	cast.jsValue = value
+	cast.jsvalue = _jsvp.Value().jsvalue
 	return cast
 }
 
-func MakeNodes(value js.Value) []*Node {
+func MakeNodes(_jsvp JSValueProvider) []*Node {
 	nodes := make([]*Node, 0)
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting Nodes failed")
+	if _jsvp.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting Nodes failed")
 		return nil
 	}
-	len := value.Get("length").Int()
+	len := _jsvp.Value().GetInt("length")
 	for i := 0; i < len; i++ {
-		_returned := value.Call("item", uint(i))
+		_returned := _jsvp.Value().Call("item", uint(i))
 		node := CastNode(_returned)
 		nodes = append(nodes, node)
 	}
@@ -111,19 +112,16 @@ func MakeNodes(value js.Value) []*Node {
 
 // IsDefined returns true if the Element is not nil AND it's type is not TypeNull and not TypeUndefined
 func (_node *Node) IsDefined() bool {
-	if _node == nil || _node.jsValue.Type() == js.TypeNull || _node.jsValue.Type() == js.TypeUndefined {
+	if _node == nil {
 		return false
 	}
-	return true
+	return _node.IsDefined()
 }
 
 // IsSameNode tests whether two nodes are the same (in other words, whether they reference the same object).
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/isSameNode
 func (_node *Node) IsSameNode(_otherNode *Node) bool {
-	if !_node.IsDefined() {
-		return false
-	}
-	is := _node.jsValue.Call("isSameNode", _otherNode.jsValue)
+	is := _node.Call("isSameNode", _otherNode.jsvalue)
 	return is.Bool()
 }
 
@@ -138,8 +136,8 @@ func (_node *Node) NodeType() NODE_TYPE {
 	if !_node.IsDefined() {
 		return NT_UNDEF
 	}
-	nt := _node.jsValue.Get("nodeType")
-	return NODE_TYPE(nt.Int())
+	nt := _node.GetInt("nodeType")
+	return NODE_TYPE(nt)
 }
 
 // Values for the different types of nodes are:
@@ -158,7 +156,7 @@ func (_node *Node) NodeName() string {
 	if !_node.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _node.jsValue.Get("nodeName").String()
+	return _node.GetString("nodeName")
 }
 
 // BaseURI returns the absolute base URL of the document containing the node.
@@ -168,18 +166,14 @@ func (_node *Node) BaseURI() string {
 	if !_node.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _node.jsValue.Get("baseURI").String()
+	return _node.GetString("baseURI")
 }
 
 // IsDocConnected returns a boolean indicating whether the node is connected (directly or indirectly) to a Document object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/isConnected
 func (_node *Node) IsConnected() bool {
-	if !_node.IsDefined() {
-		return false
-	}
-	value := _node.jsValue.Get("isConnected")
-	return value.Bool()
+	return _node.GetBool("isConnected")
 }
 
 // IsInDOM check if this Node is in the DOM, may not added yet or already suppressed
@@ -187,9 +181,9 @@ func (_node *Node) IsInDOM() (_is bool) {
 	if !_node.IsDefined() {
 		return false
 	}
-	doc := getDocument()
-	if doc.Body().jsValue.Truthy() {
-		is := doc.Body().jsValue.Call("contains", _node.jsValue)
+	body := GetDocument().Body()
+	if body.Truthy() {
+		is := body.Call("contains", _node.jsvalue)
 		_is = is.Bool()
 	}
 	return _is
@@ -202,10 +196,7 @@ func (_node *Node) RootNode() *Node {
 	if !_node.IsDefined() {
 		return nil
 	}
-	root := _node.jsValue.Call("getRootNode")
-	if typ := root.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
+	root := _node.Call("getRootNode")
 	return CastNode(root)
 }
 
@@ -216,10 +207,7 @@ func (_node *Node) ParentNode() *Node {
 	if !_node.IsDefined() {
 		return nil
 	}
-	parent := _node.jsValue.Get("parentNode")
-	if typ := parent.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
+	parent := _node.Get("parentNode")
 	return CastNode(parent)
 }
 
@@ -229,8 +217,8 @@ func (_node *Node) ParentElement() *Element {
 	if !_node.IsDefined() {
 		return nil
 	}
-	parent := _node.jsValue.Get("parentElement")
-	if typ := parent.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
+	parent := _node.Get("parentElement")
+	if !parent.IsObject() {
 		return nil
 	}
 	return CastElement(parent)
@@ -240,10 +228,7 @@ func (_node *Node) ParentElement() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/hasChildNodes
 func (_node *Node) HasChildren() bool {
-	if !_node.IsDefined() {
-		return false
-	}
-	has := _node.jsValue.Call("hasChildNodes")
+	has := _node.Call("hasChildNodes")
 	return has.Bool()
 }
 
@@ -255,7 +240,7 @@ func (_node *Node) Children() []*Node {
 	if !_node.IsDefined() {
 		return make([]*Node, 0)
 	}
-	nodes := _node.jsValue.Get("childNodes")
+	nodes := _node.Get("childNodes")
 	return MakeNodes(nodes)
 }
 
@@ -295,13 +280,7 @@ func (_root *Node) FilteredChildren(_filter NODE_TYPE, _deepmax int, match func(
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/firstChild
 func (_node *Node) ChildFirst() *Node {
-	if !_node.IsDefined() {
-		return nil
-	}
-	child := _node.jsValue.Get("firstChild")
-	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
+	child := _node.Get("firstChild")
 	return CastNode(child)
 }
 
@@ -311,13 +290,7 @@ func (_node *Node) ChildFirst() *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/lastChild
 func (_node *Node) ChildLast() *Node {
-	if !_node.IsDefined() {
-		return nil
-	}
-	child := _node.jsValue.Get("lastChild")
-	if typ := child.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
+	child := _node.Get("lastChild")
 	return CastNode(child)
 }
 
@@ -325,13 +298,7 @@ func (_node *Node) ChildLast() *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/previousSibling
 func (_node *Node) SiblingPrevious() *Node {
-	if !_node.IsDefined() {
-		return nil
-	}
-	sibling := _node.jsValue.Get("previousSibling")
-	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
+	sibling := _node.Get("previousSibling")
 	return CastNode(sibling)
 }
 
@@ -342,10 +309,7 @@ func (_node *Node) SiblingNext() *Node {
 	if !_node.IsDefined() {
 		return nil
 	}
-	sibling := _node.jsValue.Get("nextSibling")
-	if typ := sibling.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		return nil
-	}
+	sibling := _node.Get("nextSibling")
 	return CastNode(sibling)
 }
 
@@ -360,8 +324,8 @@ func (_node *Node) NodeValue() string {
 	if !_node.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	value := _node.jsValue.Get("nodeValue")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
+	value := _node.Get("nodeValue")
+	if typ := value.Type(); typ != TypeString {
 		return ""
 	}
 	return value.String()
@@ -384,7 +348,7 @@ func (_node *Node) SetNodeValue(value string) (_ret *Node) {
 	} else {
 		input = nil
 	}
-	_node.jsValue.Set("nodeValue", input)
+	_node.Set("nodeValue", input)
 	return _node
 }
 
@@ -395,11 +359,7 @@ func (_node *Node) TextContent() string {
 	if !_node.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	value := _node.jsValue.Get("textContent")
-	if value.Type() != js.TypeNull && value.Type() != js.TypeUndefined {
-		return ""
-	}
-	return value.String()
+	return _node.GetString("textContent")
 }
 
 // TextContent represents the text content of the node and its descendants.
@@ -410,9 +370,9 @@ func (_node *Node) SetTextContent(value string) (_ret *Node) {
 		return nil
 	}
 	if value != "" {
-		_node.jsValue.Set("textContent", value)
+		_node.Set("textContent", value)
 	} else {
-		_node.jsValue.Set("textContent", nil)
+		_node.Set("textContent", nil)
 	}
 	return _node
 }
@@ -424,7 +384,7 @@ func (_onenode *Node) ComparePosition(_other *Node) NODE_POSITION {
 	if !_onenode.IsDefined() {
 		return NODEPOS_UNDEF
 	}
-	_returned := _onenode.jsValue.Call("compareDocumentPosition", _other.jsValue)
+	_returned := _onenode.Call("compareDocumentPosition", _other.jsvalue)
 	return NODE_POSITION(_returned.Int())
 }
 
@@ -440,7 +400,7 @@ func (_parentnode *Node) InsertBefore(newnode *Node, refnode *Node) *Node {
 	if !_parentnode.IsDefined() {
 		return nil
 	}
-	node := _parentnode.jsValue.Call("insertBefore", newnode.jsValue, refnode.jsValue)
+	node := _parentnode.Call("insertBefore", newnode.jsvalue, refnode.jsvalue)
 	return CastNode(node)
 }
 
@@ -452,7 +412,7 @@ func (_parentnode *Node) AppendChild(newnode *Node) *Node {
 	if !_parentnode.IsDefined() {
 		return nil
 	}
-	node := _parentnode.jsValue.Call("appendChild", newnode.jsValue)
+	node := _parentnode.Call("appendChild", newnode.jsvalue)
 	return CastNode(node)
 }
 
@@ -463,7 +423,7 @@ func (_parentnode *Node) ReplaceChild(_newchild *Node, _oldchild *Node) *Node {
 	if !_parentnode.IsDefined() {
 		return nil
 	}
-	node := _parentnode.jsValue.Call("replaceChild", _newchild.jsValue, _oldchild.jsValue)
+	node := _parentnode.Call("replaceChild", _newchild.jsvalue, _oldchild.jsvalue)
 	return CastNode(node)
 }
 
@@ -474,6 +434,6 @@ func (_parentnode *Node) RemoveChild(_child *Node) *Node {
 	if !_parentnode.IsDefined() {
 		return nil
 	}
-	node := _parentnode.jsValue.Call("removeChild", _child.jsValue)
+	node := _parentnode.Call("removeChild", _child.jsvalue)
 	return CastNode(node)
 }

@@ -1,7 +1,7 @@
 package ick
 
 import (
-	"syscall/js"
+	"github.com/sunraylab/icecake/pkg/errors"
 )
 
 // The DocumentType interface represents a Node containing a doctype.
@@ -16,15 +16,17 @@ type DocumentType struct {
 }
 
 // CastDocumentType is casting a js.Value into DocumentType.
-func CastDocumentType(value js.Value) *DocumentType {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting DocumentType failed")
-		return nil
+func CastDocumentType(_jsvp JSValueProvider) *DocumentType {
+	// TODO: test defer on error
+	jsv := _jsvp.Value()
+	if jsv.Type() != TypeObject {
+		errors.ConsoleErrorf("casting DocumentType failed")
+		return &DocumentType{}
 	}
 	ret := new(DocumentType)
-	ret.jsValue = value
-	ret.Name = (value.Get("name")).String()
-	ret.PublicId = (value.Get("publicId")).String()
-	ret.SystemId = (value.Get("SystemId")).String()
+	ret.jsvalue = jsv.jsvalue
+	ret.Name = jsv.GetString("name")
+	ret.PublicId = jsv.GetString("publicId")
+	ret.SystemId = jsv.GetString("SystemId")
 	return ret
 }

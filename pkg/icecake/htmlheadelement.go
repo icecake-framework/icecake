@@ -1,6 +1,8 @@
 package ick
 
-import "syscall/js"
+import (
+	"github.com/sunraylab/icecake/pkg/errors"
+)
 
 /****************************************************************************
 * HTMLHeadElement
@@ -12,12 +14,12 @@ type HeadElement struct {
 }
 
 // CastHeadElement is casting a js.Value into HTMLHeadElement.
-func CastHeadElement(value js.Value) *HeadElement {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting HeadElement failed")
+func CastHeadElement(_jsvp JSValueProvider) *HeadElement {
+	if _jsvp.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting HeadElement failed")
 		return new(HeadElement)
 	}
 	cast := new(HeadElement)
-	cast.jsValue = value
+	cast.jsvalue = _jsvp.Value().jsvalue
 	return cast
 }

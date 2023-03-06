@@ -2,7 +2,8 @@ package ick
 
 import (
 	"net/url"
-	"syscall/js"
+
+	"github.com/sunraylab/icecake/pkg/errors"
 )
 
 /*********************************************************************************
@@ -78,17 +79,17 @@ const (
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Event
 type Event struct {
-	jsValue js.Value
+	JSValue
 }
 
 // CastEvent is casting a js.Value into Event.
-func CastEvent(value js.Value) *Event {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting Event failed")
+func CastEvent(_jsv JSValueProvider) *Event {
+	if _jsv.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting Event failed")
 		return nil
 	}
 	ret := new(Event)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.Value().jsvalue
 	return ret
 }
 
@@ -104,14 +105,14 @@ func CastEvent(value js.Value) *Event {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Event/type
 func (_evt *Event) Type() string {
-	return _evt.jsValue.Get("type").String()
+	return _evt.Get("type").String()
 }
 
 // Target: a reference to the object onto which the event was dispatched.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Event/target
 func (_evt *Event) Target() *EventTarget {
-	target := _evt.jsValue.Get("target")
+	target := _evt.Get("target")
 	return CastEventTarget(target)
 }
 
@@ -120,7 +121,7 @@ func (_evt *Event) Target() *EventTarget {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Event/currentTarget
 func (_evt *Event) CurrentTarget() *EventTarget {
-	target := _evt.jsValue.Get("currentTarget")
+	target := _evt.Get("currentTarget")
 	return CastEventTarget(target)
 }
 
@@ -136,20 +137,20 @@ type HashChangeEvent struct {
 }
 
 // CastHashChangeEvent is casting a js.Value into HashChangeEvent.
-func CastHashChangeEvent(value js.Value) *HashChangeEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting HashChangeEvent failed")
+func CastHashChangeEvent(_jsv JSValueProvider) *HashChangeEvent {
+	if _jsv.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting HashChangeEvent failed")
 		return nil
 	}
 	ret := new(HashChangeEvent)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.Value().jsvalue
 	return ret
 }
 
 // OldURL returning attribute 'oldURL' with
 // type string (idl: USVString).
 func (_evt *HashChangeEvent) OldURL() *url.URL {
-	ref := _evt.jsValue.Get("oldURL").String()
+	ref := _evt.Get("oldURL").String()
 	u, _ := url.Parse(ref)
 	return u
 }
@@ -157,7 +158,7 @@ func (_evt *HashChangeEvent) OldURL() *url.URL {
 // NewURL returning attribute 'newURL' with
 // type string (idl: USVString).
 func (_evt *HashChangeEvent) NewURL() *url.URL {
-	ref := _evt.jsValue.Get("newURL").String()
+	ref := _evt.Get("newURL").String()
 	u, _ := url.Parse(ref)
 	return u
 }
@@ -182,19 +183,19 @@ type PageTransitionEvent struct {
 }
 
 // CastPageTransitionEvent is casting a js.Value into PageTransitionEvent.
-func CastPageTransitionEvent(value js.Value) *PageTransitionEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting PageTransitionEvent failed")
+func CastPageTransitionEvent(_jsv JSValueProvider) *PageTransitionEvent {
+	if _jsv.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting PageTransitionEvent failed")
 		return nil
 	}
 	ret := new(PageTransitionEvent)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.Value().jsvalue
 	return ret
 }
 
 // Persisted returning attribute 'persisted' with
 func (_evt *PageTransitionEvent) Persisted() bool {
-	return _evt.jsValue.Get("persisted").Bool()
+	return _evt.Get("persisted").Bool()
 }
 
 /*********************************************************************************
@@ -209,24 +210,24 @@ type BeforeUnloadEvent struct {
 }
 
 // CastBeforeUnloadEvent is casting a js.Value into BeforeUnloadEvent.
-func CastBeforeUnloadEvent(value js.Value) *BeforeUnloadEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting BeforeUnloadEvent failed")
+func CastBeforeUnloadEvent(_jsv JSValueProvider) *BeforeUnloadEvent {
+	if _jsv.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting BeforeUnloadEvent failed")
 		return nil
 	}
 	ret := new(BeforeUnloadEvent)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.Value().jsvalue
 	return ret
 }
 
 // ReturnValue returning attribute 'returnValue' with
 func (_evt *BeforeUnloadEvent) ReturnValue() string {
-	return _evt.jsValue.Get("returnValue").String()
+	return _evt.Get("returnValue").String()
 }
 
 // SetReturnValue setting attribute 'returnValue' with
 func (_evt *BeforeUnloadEvent) SetReturnValue(value string) {
-	_evt.jsValue.Set("returnValue", value)
+	_evt.Set("returnValue", value)
 }
 
 /*********************************************************************************
@@ -241,19 +242,19 @@ type UIEvent struct {
 }
 
 // CastUIEvent is casting a js.Value into UIEvent.
-func CastUIEvent(value js.Value) *UIEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting UIEvent failed")
+func CastUIEvent(_jsv JSValueProvider) *UIEvent {
+	if _jsv.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting UIEvent failed")
 		return nil
 	}
 	ret := new(UIEvent)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.Value().jsvalue
 	return ret
 }
 
 // View Returns a WindowProxy that contains the view that generated the event.
 func (_evt *UIEvent) View() Window {
-	win := _evt.jsValue.Get("view")
+	win := _evt.Get("view")
 	return CastWindow(win)
 }
 
@@ -261,7 +262,7 @@ func (_evt *UIEvent) View() Window {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
 func (_evt *UIEvent) Detail() int {
-	return _evt.jsValue.Get("detail").Int()
+	return _evt.Get("detail").Int()
 }
 
 /*********************************************************************************
@@ -289,114 +290,114 @@ type MouseEvent struct {
 }
 
 // CastMouseEvent is casting a js.Value into MouseEvent.
-func CastMouseEvent(value js.Value) *MouseEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting MouseEvent failed")
+func CastMouseEvent(_jsv JSValueProvider) *MouseEvent {
+	if _jsv.Value().Type() != TypeObject {
+		errors.ConsoleErrorf("casting MouseEvent failed")
 		return nil
 	}
 	ret := new(MouseEvent)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.Value().jsvalue
 	return ret
 }
 
 // CtrlKey returning attribute 'ctrlKey' with
 func (_this *MouseEvent) CtrlKey() bool {
-	return _this.jsValue.Get("ctrlKey").Bool()
+	return _this.Get("ctrlKey").Bool()
 }
 
 // ShiftKey returning attribute 'shiftKey' with
 func (_this *MouseEvent) ShiftKey() bool {
-	return _this.jsValue.Get("shiftKey").Bool()
+	return _this.Get("shiftKey").Bool()
 }
 
 // AltKey returning attribute 'altKey' with
 func (_this *MouseEvent) AltKey() bool {
-	return _this.jsValue.Get("altKey").Bool()
+	return _this.Get("altKey").Bool()
 }
 
 // MetaKey returning attribute 'metaKey' with
 func (_this *MouseEvent) MetaKey() bool {
-	return _this.jsValue.Get("metaKey").Bool()
+	return _this.Get("metaKey").Bool()
 }
 
 // Button returning attribute 'button' with
 func (_this *MouseEvent) Button() int {
-	return _this.jsValue.Get("button").Int()
+	return _this.Get("button").Int()
 }
 
 // Buttons returning attribute 'buttons' with
 func (_this *MouseEvent) Buttons() int {
-	return _this.jsValue.Get("buttons").Int()
+	return _this.Get("buttons").Int()
 }
 
 // RelatedTarget returning attribute 'relatedTarget' with
 func (_this *MouseEvent) RelatedTarget() *EventTarget {
-	value := _this.jsValue.Get("relatedTarget")
+	value := _this.Get("relatedTarget")
 	return CastEventTarget(value)
 }
 
 // ScreenX returning attribute 'screenX' with
 func (_this *MouseEvent) ScreenX() float64 {
-	return _this.jsValue.Get("screenX").Float()
+	return _this.Get("screenX").Float()
 }
 
 // ScreenY returning attribute 'screenY' with
 func (_this *MouseEvent) ScreenY() float64 {
-	return _this.jsValue.Get("screenY").Float()
+	return _this.Get("screenY").Float()
 }
 
 // PageX returning attribute 'pageX' with
 func (_this *MouseEvent) PageX() float64 {
-	return _this.jsValue.Get("pageX").Float()
+	return _this.Get("pageX").Float()
 }
 
 // PageY returning attribute 'pageY' with
 func (_this *MouseEvent) PageY() float64 {
-	return _this.jsValue.Get("pageY").Float()
+	return _this.Get("pageY").Float()
 }
 
 // ClientX returning attribute 'clientX' with
 func (_this *MouseEvent) ClientX() float64 {
-	return _this.jsValue.Get("clientX").Float()
+	return _this.Get("clientX").Float()
 }
 
 // ClientY returning attribute 'clientY' with
 func (_this *MouseEvent) ClientY() float64 {
-	return _this.jsValue.Get("clientY").Float()
+	return _this.Get("clientY").Float()
 }
 
 // X returning attribute 'x' with
 func (_this *MouseEvent) X() float64 {
-	return _this.jsValue.Get("x").Float()
+	return _this.Get("x").Float()
 }
 
 // Y returning attribute 'y' with
 func (_this *MouseEvent) Y() float64 {
-	return _this.jsValue.Get("y").Float()
+	return _this.Get("y").Float()
 }
 
 // OffsetX returning attribute 'offsetX' with
 func (_this *MouseEvent) OffsetX() float64 {
-	return _this.jsValue.Get("offsetX").Float()
+	return _this.Get("offsetX").Float()
 }
 
 // OffsetY returning attribute 'offsetY' with
 func (_this *MouseEvent) OffsetY() float64 {
-	return _this.jsValue.Get("offsetY").Float()
+	return _this.Get("offsetY").Float()
 }
 
 // MovementX returning attribute 'movementX' with
 func (_this *MouseEvent) MovementX() int {
-	return _this.jsValue.Get("movementX").Int()
+	return _this.Get("movementX").Int()
 }
 
 // MovementY returning attribute 'movementY' with
 func (_this *MouseEvent) MovementY() int {
-	return _this.jsValue.Get("movementY").Int()
+	return _this.Get("movementY").Int()
 }
 
 func (_this *MouseEvent) GetModifierState(keyArg string) bool {
-	return _this.jsValue.Call("getModifierState", keyArg).Bool()
+	return _this.Call("getModifierState", keyArg).Bool()
 }
 
 /*********************************************************************************
@@ -416,34 +417,34 @@ type WheelEvent struct {
 }
 
 // CastWheelEvent is casting a js.Value into WheelEvent.
-func CastWheelEvent(value js.Value) *WheelEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting MouseEvent failed")
+func CastWheelEvent(_jsv JSValue) *WheelEvent {
+	if _jsv.Type() != TypeObject {
+		errors.ConsoleErrorf("casting MouseEvent failed")
 		return nil
 	}
 	ret := &WheelEvent{}
-	ret.jsValue = value
+	ret.jsvalue = _jsv.jsvalue
 	return ret
 }
 
 // DeltaX returning attribute 'deltaX' with
 func (_this *WheelEvent) DeltaX() float64 {
-	return _this.jsValue.Get("deltaX").Float()
+	return _this.Get("deltaX").Float()
 }
 
 // DeltaY returning attribute 'deltaY' with
 func (_this *WheelEvent) DeltaY() float64 {
-	return _this.jsValue.Get("deltaY").Float()
+	return _this.Get("deltaY").Float()
 }
 
 // DeltaZ returning attribute 'deltaZ' with
 func (_this *WheelEvent) DeltaZ() float64 {
-	return _this.jsValue.Get("deltaZ").Float()
+	return _this.Get("deltaZ").Float()
 }
 
 // DeltaMode returning attribute 'deltaMode' with
 func (_this *WheelEvent) DeltaMode() DOM_DELTA {
-	return DOM_DELTA(_this.jsValue.Get("deltaMode").Int())
+	return DOM_DELTA(_this.Get("deltaMode").Int())
 }
 
 /**********************************************************************************
@@ -462,19 +463,19 @@ type FocusEvent struct {
 }
 
 // NewFocusEventFromJS is casting a js.Value into FocusEvent.
-func CastFocusEvent(value js.Value) *FocusEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting FocusEvent failed")
+func CastFocusEvent(_jsv JSValue) *FocusEvent {
+	if _jsv.Type() != TypeObject {
+		errors.ConsoleErrorf("casting FocusEvent failed")
 		return nil
 	}
 	ret := new(FocusEvent)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.jsvalue
 	return ret
 }
 
 // RelatedTarget returning attribute 'relatedTarget'
 func (_evt *FocusEvent) RelatedTarget() *EventTarget {
-	value := _evt.jsValue.Get("relatedTarget")
+	value := _evt.Get("relatedTarget")
 	return CastEventTarget(value)
 }
 
@@ -502,64 +503,64 @@ type PointerEvent struct {
 }
 
 // CastPointerEvent is casting a js.Value into PointerEvent.
-func CastPointerEvent(value js.Value) *PointerEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting FocusEvent failed")
+func CastPointerEvent(_jsv JSValue) *PointerEvent {
+	if _jsv.Type() != TypeObject {
+		errors.ConsoleErrorf("casting FocusEvent failed")
 		return nil
 	}
 	ret := new(PointerEvent)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.jsvalue
 	return ret
 }
 
 // PointerId returning attribute 'pointerId' with
 func (_this *PointerEvent) PointerId() int {
-	return _this.jsValue.Get("pointerId").Int()
+	return _this.Get("pointerId").Int()
 }
 
 // Width returning attribute 'width' with
 func (_this *PointerEvent) Width() float64 {
-	return _this.jsValue.Get("width").Float()
+	return _this.Get("width").Float()
 }
 
 // Height returning attribute 'height' with
 func (_this *PointerEvent) Height() float64 {
-	return _this.jsValue.Get("height").Float()
+	return _this.Get("height").Float()
 }
 
 // Pressure returning attribute 'pressure' with
 func (_this *PointerEvent) Pressure() float64 {
-	return _this.jsValue.Get("pressure").Float()
+	return _this.Get("pressure").Float()
 }
 
 // TangentialPressure returning attribute 'tangentialPressure' with
 func (_this *PointerEvent) TangentialPressure() float64 {
-	return _this.jsValue.Get("tangentialPressure").Float()
+	return _this.Get("tangentialPressure").Float()
 }
 
 // TiltX returning attribute 'tiltX' with
 func (_this *PointerEvent) TiltX() int {
-	return _this.jsValue.Get("tiltX").Int()
+	return _this.Get("tiltX").Int()
 }
 
 // TiltY returning attribute 'tiltY' with
 func (_this *PointerEvent) TiltY() int {
-	return _this.jsValue.Get("tiltY").Int()
+	return _this.Get("tiltY").Int()
 }
 
 // Twist returning attribute 'twist' with
 func (_this *PointerEvent) Twist() int {
-	return _this.jsValue.Get("twist").Int()
+	return _this.Get("twist").Int()
 }
 
 // PointerType returning attribute 'pointerType' with
 func (_this *PointerEvent) PointerType() string {
-	return _this.jsValue.Get("pointerType").String()
+	return _this.Get("pointerType").String()
 }
 
 // IsPrimary returning attribute 'isPrimary' with
 func (_this *PointerEvent) IsPrimary() bool {
-	return _this.jsValue.Get("isPrimary").Bool()
+	return _this.Get("isPrimary").Bool()
 }
 
 /**********************************************************************************
@@ -580,29 +581,29 @@ type InputEvent struct {
 }
 
 // CastInputEvent is casting a js.Value into InputEvent.
-func CastInputEvent(value js.Value) *InputEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting InputEvent failed")
+func CastInputEvent(_jsv JSValue) *InputEvent {
+	if _jsv.Type() != TypeObject {
+		errors.ConsoleErrorf("casting InputEvent failed")
 		return nil
 	}
 	ret := new(InputEvent)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.jsvalue
 	return ret
 }
 
 // Data returning attribute 'data' with
 func (_this *InputEvent) Data() string {
-	return _this.jsValue.Get("data").String()
+	return _this.Get("data").String()
 }
 
 // IsComposing returning attribute 'isComposing' with
 func (_this *InputEvent) IsComposing() bool {
-	return _this.jsValue.Get("isComposing").Bool()
+	return _this.Get("isComposing").Bool()
 }
 
 // InputType returning attribute 'inputType' with
 func (_this *InputEvent) InputType() string {
-	return _this.jsValue.Get("inputType").String()
+	return _this.Get("inputType").String()
 }
 
 /**********************************************************************************
@@ -631,74 +632,74 @@ type KeyboardEvent struct {
 }
 
 // CastKeyboardEvent is casting a js.Value into KeyboardEvent.
-func CastKeyboardEvent(value js.Value) *KeyboardEvent {
-	if value.Type() != js.TypeObject {
-		ConsoleErrorf("casting KeyboardEvent failed")
+func CastKeyboardEvent(_jsv JSValue) *KeyboardEvent {
+	if _jsv.Type() != TypeObject {
+		errors.ConsoleErrorf("casting KeyboardEvent failed")
 		return nil
 	}
 	ret := new(KeyboardEvent)
-	ret.jsValue = value
+	ret.jsvalue = _jsv.jsvalue
 	return ret
 }
 
 // Key returning attribute 'key' with
 func (_this *KeyboardEvent) Key() string {
-	return _this.jsValue.Get("key").String()
+	return _this.Get("key").String()
 }
 
 // Code returning attribute 'code' with
 func (_this *KeyboardEvent) Code() string {
-	return _this.jsValue.Get("code").String()
+	return _this.Get("code").String()
 }
 
 // Location returning attribute 'location' with
 func (_this *KeyboardEvent) Location() DOM_KEY_LOCATION {
-	return DOM_KEY_LOCATION(_this.jsValue.Get("location").Int())
+	return DOM_KEY_LOCATION(_this.Get("location").Int())
 }
 
 // CtrlKey returning attribute 'ctrlKey' with
 func (_this *KeyboardEvent) CtrlKey() bool {
-	return _this.jsValue.Get("ctrlKey").Bool()
+	return _this.Get("ctrlKey").Bool()
 }
 
 // ShiftKey returning attribute 'shiftKey' with
 func (_this *KeyboardEvent) ShiftKey() bool {
-	return _this.jsValue.Get("shiftKey").Bool()
+	return _this.Get("shiftKey").Bool()
 }
 
 // AltKey returning attribute 'altKey' with
 func (_this *KeyboardEvent) AltKey() bool {
-	return _this.jsValue.Get("altKey").Bool()
+	return _this.Get("altKey").Bool()
 }
 
 // MetaKey returning attribute 'metaKey' with
 func (_this *KeyboardEvent) MetaKey() bool {
-	return _this.jsValue.Get("metaKey").Bool()
+	return _this.Get("metaKey").Bool()
 }
 
 // Repeat returning attribute 'repeat' with
 func (_this *KeyboardEvent) Repeat() bool {
-	return _this.jsValue.Get("repeat").Bool()
+	return _this.Get("repeat").Bool()
 }
 
 // IsComposing returning attribute 'isComposing' with
 func (_this *KeyboardEvent) IsComposing() bool {
-	return _this.jsValue.Get("isComposing").Bool()
+	return _this.Get("isComposing").Bool()
 }
 
 // CharCode returning attribute 'charCode' with
 func (_this *KeyboardEvent) CharCode() uint {
-	return uint(_this.jsValue.Get("charCode").Int())
+	return uint(_this.Get("charCode").Int())
 }
 
 // KeyCode returning attribute 'keyCode' with
 func (_this *KeyboardEvent) KeyCode() uint {
-	return uint(_this.jsValue.Get("keyCode").Int())
+	return uint(_this.Get("keyCode").Int())
 }
 
 // returns the current state of the specified modifier key: true if the modifier is active (that is the modifier key is pressed or locked), otherwise, false.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState
 func (_this *KeyboardEvent) GetModifierState(keyArg string) bool {
-	return _this.jsValue.Call("getModifierState", keyArg).Bool()
+	return _this.Call("getModifierState", keyArg).Bool()
 }

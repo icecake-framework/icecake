@@ -1,9 +1,8 @@
 package uielement
 
 import (
-	"syscall/js"
-
 	"github.com/sunraylab/icecake/internal/helper"
+	"github.com/sunraylab/icecake/pkg/errors"
 	ick "github.com/sunraylab/icecake/pkg/icecake"
 )
 
@@ -27,13 +26,13 @@ type Button struct {
 }
 
 // CastButton is casting a js.Value into HTMLButtonElement.
-func CastButton(_value js.Value) *Button {
-	if _value.Type() != js.TypeObject || _value.Get("tagName").String() != "BUTTON" {
-		ick.ConsoleErrorf("casting HTMLButton failed")
-		return new(Button)
+func CastButton(_jsvp ick.JSValueProvider) *Button {
+	if _jsvp.Value().Type() != ick.TypeObject || _jsvp.Value().GetString("tagName") != "BUTTON" {
+		errors.ConsoleErrorf("casting HTMLButton failed")
+		return &Button{}
 	}
 	cast := new(Button)
-	cast.Wrap(_value)
+	cast.JSValue = _jsvp.Value()
 	return cast
 }
 
@@ -41,15 +40,14 @@ func CastButton(_value js.Value) *Button {
 // otherwhise returns an undefined Button.
 func GetButtonById(_id string) *Button {
 	_id = helper.Normalize(_id)
-	jse := ick.GetElementById(_id)
-	if etyp := jse.JSValue().Type(); etyp != js.TypeNull && etyp != js.TypeUndefined {
-		if jse.JSValue().Get("tagName").String() == "BUTTON" {
-			btn := new(Button)
-			btn.Wrap(jse.JSValue())
-			return btn
-		}
+	jse := ick.GetDocument().ChildById(_id)
+	if jse.IsObject() && jse.GetString("tagName") == "BUTTON" {
+		btn := new(Button)
+		btn.JSValue = jse.JSValue
+		return btn
 	}
-	ick.ConsoleWarnf("GetElementById failed: %q not found, or not a <Element>", _id)
+
+	errors.ConsoleWarnf("GetElementById failed: %q not found, or not a <Element>", _id)
 	return new(Button)
 }
 
@@ -63,7 +61,7 @@ func (_btn *Button) IsAutofocus() bool {
 	if !_btn.IsDefined() {
 		return false
 	}
-	return _btn.JSValue().Get("autofocus").Bool()
+	return _btn.GetBool("autofocus")
 }
 
 // SetAutofocus setting attribute 'autofocus' with
@@ -72,7 +70,7 @@ func (_btn *Button) SetAutofocus(value bool) *Button {
 	if !_btn.IsDefined() {
 		return nil
 	}
-	_btn.JSValue().Set("autofocus", value)
+	_btn.Set("autofocus", value)
 	return _btn
 }
 
@@ -81,7 +79,7 @@ func (_btn *Button) IsDisabled() bool {
 	if !_btn.IsDefined() {
 		return false
 	}
-	return _btn.JSValue().Get("disabled").Bool()
+	return _btn.GetBool("disabled")
 }
 
 // SetDisabled setting attribute 'disabled' with
@@ -90,7 +88,7 @@ func (_btn *Button) SetDisabled(value bool) *Button {
 	if !_btn.IsDefined() {
 		return nil
 	}
-	_btn.JSValue().Set("disabled", value)
+	_btn.Set("disabled", value)
 	return _btn
 }
 
@@ -99,7 +97,7 @@ func (_btn *Button) Name() string {
 	if !_btn.IsDefined() {
 		return ick.UNDEFINED_NODE
 	}
-	return _btn.JSValue().Get("name").String()
+	return _btn.GetString("name")
 }
 
 // Name of the object when submitted with a form. If specified, it must not be the empty string.
@@ -107,7 +105,7 @@ func (_btn *Button) SetName(name string) {
 	if !_btn.IsDefined() {
 		return
 	}
-	_btn.JSValue().Set("name", name)
+	_btn.Set("name", name)
 }
 
 // Value A string representing the current form control value of the button.
@@ -115,7 +113,7 @@ func (_btn *Button) Value() string {
 	if !_btn.IsDefined() {
 		return ick.UNDEFINED_NODE
 	}
-	return _btn.JSValue().Get("value").String()
+	return _btn.GetString("value")
 }
 
 // Value A string representing the current form control value of the button.
@@ -123,7 +121,7 @@ func (_btn *Button) SetValue(value string) {
 	if !_btn.IsDefined() {
 		return
 	}
-	_btn.JSValue().Set("value", value)
+	_btn.Set("value", value)
 }
 
 // Type returning attribute 'type' with
@@ -132,7 +130,7 @@ func (_btn *Button) Type() BUTTON_TYPE {
 	if !_btn.IsDefined() {
 		return BTNT_SUBMIT
 	}
-	typ := _btn.JSValue().Get("type").String()
+	typ := _btn.GetString("type")
 	return BUTTON_TYPE(typ)
 }
 
@@ -142,7 +140,7 @@ func (_btn *Button) SetType(_typ BUTTON_TYPE) {
 	if !_btn.IsDefined() {
 		return
 	}
-	_btn.JSValue().Set("type", string(_typ))
+	_btn.Set("type", string(_typ))
 }
 
 // WillValidate returns a boolean value indicating whether the button is a candidate for constraint validation.
@@ -152,7 +150,7 @@ func (_btn *Button) WillValidate() bool {
 	if !_btn.IsDefined() {
 		return false
 	}
-	return _btn.JSValue().Get("willValidate").Bool()
+	return _btn.GetBool("willValidate")
 }
 
 // ValidationMessage a string representing the localized message that describes the validation constraints
@@ -162,7 +160,7 @@ func (_btn *Button) ValidationMessage() string {
 	if !_btn.IsDefined() {
 		return ick.UNDEFINED_NODE
 	}
-	return _btn.JSValue().Get("validationMessage").String()
+	return _btn.GetString("validationMessage")
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement/labels
@@ -170,25 +168,6 @@ func (_btn *Button) Labels() []*ick.Node {
 	if !_btn.IsDefined() {
 		return make([]*ick.Node, 0)
 	}
-	nodes := _btn.JSValue().Get("labels")
+	nodes := _btn.Get("labels")
 	return ick.MakeNodes(nodes)
 }
-
-/*****************************************************************************
-* ICButton
-******************************************************************************/
-
-// ICButton is an extension of the ick.HTMLElement
-// type ICButton struct {
-// 	ick.HTMLButton
-// }
-
-// func CastICButton(_value js.Value) *ICButton {
-// 	if _value.Type() != js.TypeObject || _value.Get("tagName").String() != "BUTTON" {
-// 		ick.ConsoleError("casting ICButton failed")
-// 		return new(ICButton)
-// 	}
-// 	ret := new(ICButton)
-// 	ret.Wrap(_value)
-// 	return ret
-// }
