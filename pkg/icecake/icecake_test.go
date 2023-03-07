@@ -7,7 +7,7 @@ import (
 
 func TestRenderComponent(t *testing.T) {
 
-	unfoldedCmps := make(map[string]HtmlListener, 0)
+	unfoldedCmps := make(map[string]Composer, 0)
 	data := struct{ Name string }{
 		Name: "Bob",
 	}

@@ -3,6 +3,8 @@ package ui
 import (
 	"time"
 
+	_ "embed"
+
 	ick "github.com/sunraylab/icecake/pkg/icecake"
 )
 
@@ -10,12 +12,15 @@ import (
 * Component
 ******************************************************************************/
 
+//go:embed "notify.css"
+var css string
+
 func init() {
-	ick.RegisterComponentType("ick-notify", Notify{})
+	ick.App.RegisterComponent("ick-notify", Notify{}, css)
 }
 
 type Notify struct {
-	ick.Component // embedded Component, with default implementation of composer interfaces
+	ick.UIComponent // embedded Component, with default implementation of composer interfaces
 
 	timer  *time.Timer  // internal timer related to the Tiemout property
 	ticker *time.Ticker // internal ticker to handle time left before closing
@@ -31,12 +36,20 @@ type Notify struct {
 	Timeout time.Duration
 }
 
+func (c *Notify) TimeLeft() time.Duration {
+	tl := time.Until(c.PopupTime.Add(c.Timeout))
+	if tl < 0 {
+		tl = 0
+	}
+	return tl
+}
+
 func (c *Notify) Container() (_tagname string, _classes string, _attrs string) {
-	return "div", "notification", ""
+	return "div", "notification ick-notify", "hidden"
 }
 
 func (c *Notify) Template() (_html string) {
-	return `<button class="delete"></button>{{.Me.Message}}`
+	return `<button class="delete"></button>` + c.Message
 }
 
 // AddListeners is called by the dispatcher after DOM rendering
@@ -54,14 +67,19 @@ func (c *Notify) AddListeners() {
 			c.TickerStep = 1 * time.Second
 		}
 		c.PopupTime = time.Now()
-		go func() {
-			c.ticker = time.NewTicker(c.TickerStep)
-			for _ = range c.ticker.C {
+		if c.UpdateUI != nil {
+			go func() {
+				c.ticker = time.NewTicker(c.TickerStep)
 				if c.IsInDOM() {
-					c.UpdateUI()
+					c.UpdateUI(c)
 				}
-			}
-		}()
+				for _ = range c.ticker.C {
+					if c.IsInDOM() {
+						c.UpdateUI(c)
+					}
+				}
+			}()
+		}
 		c.timer = time.AfterFunc(c.Timeout, func() {
 			c.Stop()
 			c.Remove()

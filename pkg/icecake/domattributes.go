@@ -66,7 +66,7 @@ func (_attrs Attributes) Count() int {
 // GetAttribue returns the attribute with the given name in the list.
 // Returns an nil if Attribute not found.
 // Case sensitive and must be trimed.
-func (_attrs Attributes) Get(_name string) string {
+func (_attrs Attributes) GetAttribute(_name string) string {
 	return _attrs.attributes[_name]
 }
 
@@ -76,7 +76,7 @@ func (_attrs Attributes) Get(_name string) string {
 // case sensitive.
 //
 // Name and Value will be trimed. Quotes delimiters of the value will be removed if any.
-func (_attrs *Attributes) Set(_name string, _value string) {
+func (_attrs *Attributes) SetAttribute(_name string, _value string) {
 	_name = strings.Trim(_name, " ")
 	_value = strings.Trim(strings.Trim(_value, "'"), "\"")
 	_attrs.attributes[_name] = _value
@@ -85,9 +85,27 @@ func (_attrs *Attributes) Set(_name string, _value string) {
 	}
 }
 
+// SetAttribue adds an attribute in the list. If the attribute already exist it's updated.
+// An empty value means a boolean attribute set to true
+//
+// case sensitive.
+//
+// Name and Value will be trimed. Quotes delimiters of the value will be removed if any.
+func (_attrs *Attributes) SetAttributes(_newattrs Attributes) {
+	for name, value := range _newattrs.attributes {
+		_, found := _attrs.attributes[name]
+		if !found {
+			_attrs.attributes[name] = value
+			if _attrs.ownerElement != nil {
+				_attrs.ownerElement.Call("setAttribute", name, value)
+			}
+		}
+	}
+}
+
 // Remove removes attributes in the list or does nothing for the one that does not exist.
 // Case sensitive.
-func (_attrs *Attributes) Remove(_name string) {
+func (_attrs *Attributes) RemoveAttribute(_name string) {
 	_name = strings.Trim(_name, " ")
 	delete(_attrs.attributes, _name)
 	if _attrs.ownerElement != nil {
@@ -118,9 +136,9 @@ func (_attrs *Attributes) Toggle(_name string) {
 	_name = strings.Trim(_name, " ")
 	_, found := _attrs.attributes[_name]
 	if found {
-		_attrs.Remove(_name)
+		_attrs.RemoveAttribute(_name)
 	} else {
-		_attrs.Set(_name, "")
+		_attrs.SetAttribute(_name, "")
 	}
 }
 
@@ -179,7 +197,7 @@ func (_attrs Attributes) TabIndex() int {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (_attrs *Attributes) SetTabIndex(_index int) {
-	_attrs.Set("tabIndex", strconv.Itoa(_index))
+	_attrs.SetAttribute("tabIndex", strconv.Itoa(_index))
 }
 
 // Controls whether and how text input is automatically capitalized as it is entered/edited by the user.
@@ -206,7 +224,7 @@ func (_attrs Attributes) Autocapitalize() AUTOCAPITALIZE {
 func (_attrs *Attributes) SetAutocapitalize(_autocap AUTOCAPITALIZE) {
 	switch _autocap {
 	case AUTOCAP_OFF, AUTOCAP_SENTENCES, AUTOCAP_WORDS, AUTOCAP_CHARS:
-		_attrs.Set("autocapitalize", string(_autocap))
+		_attrs.SetAttribute("autocapitalize", string(_autocap))
 	default:
 		log.Println("SetAutocapitalize failed: not valid value")
 	}
@@ -238,7 +256,7 @@ func (_attrs Attributes) ContentEditable() CONTENT_EDITABLE {
 func (_attrs *Attributes) SetContentEditable(_editable CONTENT_EDITABLE) {
 	switch _editable {
 	case CONTEDIT_FALSE, CONTEDIT_TRUE, CONTEDIT_INHERIT:
-		_attrs.Set("contentEditable", string(_editable))
+		_attrs.SetAttribute("contentEditable", string(_editable))
 	default:
 		log.Println("contentEditable fails: not a valid value")
 	}

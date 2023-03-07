@@ -35,15 +35,15 @@ func main() {
 
 	data1.Name = "Bob"
 	// HACK:
-	doc.ChildById("ex1a").RenderHtml(htmlTemplate, data1)
+	doc.ChildById("ex1a").RenderTemplate(htmlTemplate, data1)
 
 	data1.Name = "Alice"
-	doc.ChildById("ex1b").RenderHtml(htmlTemplate, data1)
+	doc.ChildById("ex1b").RenderTemplate(htmlTemplate, data1)
 
 	// To see what happend with a wrong html element ID,
 	// open the console on the browser side.
 	data1.Name = "Carol"
-	doc.ChildById("ex1c").RenderHtml(htmlTemplate, data1)
+	doc.ChildById("ex1c").RenderTemplate(htmlTemplate, data1)
 
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.
 	data1.Name = "John"

@@ -2,7 +2,6 @@ package ick
 
 import (
 	"fmt"
-	"reflect"
 	"syscall/js"
 
 	"github.com/sunraylab/icecake/internal/helper"
@@ -130,28 +129,26 @@ func (_elem *Element) SetId(_id string) *Element {
 // }
 
 // SetClasses adds the value, if does not already exists, of the class attribute of the specified element.
-// Does not remove existing classes
-func (_elem *Element) SetClasses(_list Classes) *Element {
-	c := _elem.Classes()
-	c.SetTokens(_list.tokens...)
-	_elem.Set("className", c.String())
-	return _elem
-}
+// Does not remove existing classes.
+// func (_elem *Element) SetClasses(_list Classes) *Element {
+// 	_elem.Set("className", _list.String())
+// 	return _elem
+// }
 
 // SetClasses set the value of the class attribute of the specified element.
 // Replace existed ones if any.
-func (_elem *Element) ResetClasses(_list Classes) *Element {
-	str := _list.String()
-	_elem.Set("className", str)
-	return _elem
-}
+// func (_elem *Element) ResetClasses(_list Classes) *Element {
+// 	str := _list.String()
+// 	_elem.Set("className", str)
+// 	return _elem
+// }
 
 // SetClasse set a single class to the class liist if the element, does nothing if the class already exists
-func (_elem *Element) SetClasse(_class string) *Element {
-	list := _elem.Classes()
-	list.SetTokens(_class)
-	return _elem
-}
+// func (_elem *Element) SetClasse(_class string) *Element {
+// 	list := _elem.Classes()
+// 	list.SetTokens(_class)
+// 	return _elem
+// }
 
 // Classes returns a live DOMTokenList collection of the class attributes of the element.
 // This can then be used to manipulate the class list.
@@ -191,18 +188,18 @@ func (_elem *Element) Attributes() *Attributes {
 		if jsvalue.Truthy() {
 			value = jsvalue.String()
 		}
-		attrs.Set(name, value)
+		attrs.SetAttribute(name, value)
 	}
 	return attrs
 }
 
-func (_elem *Element) SetAttributes(_attrs Attributes) {
-	anames := _attrs.Sort()
-	for _, name := range anames {
-		value := _attrs.Get(name)
-		_elem.SetAttribute(name, value)
-	}
-}
+// func (_elem *Element) SetAttributes(_attrs Attributes) {
+// 	anames := _attrs.Sort()
+// 	for _, name := range anames {
+// 		value := _attrs.Get(name)
+// 		_elem.SetAttribute(name, value)
+// 	}
+// }
 
 func (_elem *Element) SetAttribute(_Name string, _Value string) {
 	_elem.Call("setAttribute", _Name, _Value)
@@ -955,20 +952,20 @@ func (_elem *Element) RenderValue(format string, _value ...any) {
 	_elem.SetInnerText(text)
 }
 
-// RenderHtml set inner HTML with the htmlTemplate executed with the _data and unfolding components if any
+// RenderTemplate set inner HTML with the htmlTemplate executed with the _data and unfolding components if any
 // The element must be in the DOM to
-func (_elem *Element) RenderHtml(_unsafeHtmlTemplate string, _data any) (_err error) {
+func (_elem *Element) RenderTemplate(_unsafeHtmlTemplate string, _data any) (_err error) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 		errors.ConsoleWarnf("Unable to render Html on nil element or for an element not into the DOM")
 		return
 	}
 	name := _elem.TagName() + "/" + _elem.Id()
 	var html string
-	unfoldedCmps := make(map[string]HtmlListener, 0)
+	unfoldedCmps := make(map[string]Composer, 0)
 	html, _err = unfoldComponents(unfoldedCmps, name, _unsafeHtmlTemplate, _data, 0)
 	if _err == nil {
 		_elem.SetInnerHTML(html)
-		addComponentslisteners(unfoldedCmps)
+		showUnfoldedComponents(unfoldedCmps)
 	}
 	return _err
 }
@@ -984,7 +981,7 @@ func (_elem *Element) RenderChildrenValue(_name string, _format string, _value .
 
 	children := _elem.FilteredChildren(NT_ELEMENT, 99, func(_node *Node) bool {
 		// BUG:
-		namedvalue := CastElement(_node).Attributes().Get("data-ick-namedvalue")
+		namedvalue := CastElement(_node).Attributes().GetAttribute("data-ick-namedvalue")
 		return _name == namedvalue
 	})
 
@@ -993,58 +990,40 @@ func (_elem *Element) RenderChildrenValue(_name string, _format string, _value .
 	}
 }
 
-// InsertComponent
-func (_elem *Element) InsertNewComponent(_newcmp Composer, _appdata any) (_newcmpid string, _err error) {
+// RenderComponent
+func (_elem *Element) RenderComponent(_newcmp Composer, _appdata any) (_newcmpid string, _err error) {
 	if !_elem.IsDefined() {
-		return "", errors.ConsoleErrorf("InsertNewComponent: failed on undefined element")
-	}
-
-	// check if _newcmp is a registered component and get its tagname
-	t := LookupComponent(reflect.TypeOf(_newcmp))
-	if t == "" {
-		errors.ConsoleWarnf("InsertNewComponent: inserting a non registered component %q...", reflect.TypeOf(_newcmp).String())
+		return "", errors.ConsoleErrorf("RenderComponent: failed on undefined element")
 	}
 
 	// create the HTML component into the DOM
-	if newcmpelem, err := CreateComponentElement(_newcmp); err == nil {
-		_newcmpid = GetNextComponentId(t)
-		newcmpelem.SetId(_newcmpid)
-
-		// init classes and attributes
-		initc := _newcmp.GetInitClasses()
-		if initc != nil {
-			newcmpelem.SetClasses(*initc)
-		}
-		inita := _newcmp.GetInitAttributes()
-		if inita != nil {
-			newcmpelem.SetAttributes(*inita)
-		}
-
-		// TODO: add style
-
-		// name the component
-		name := newcmpelem.TagName() + "/" + _newcmpid
-
-		// unfold and render html for a composer
-		unfoldedCmps := make(map[string]HtmlListener, 0)
-		data := TemplateData{
-			Me:  _newcmp,
-			App: _appdata,
-		}
-		// TODO: handle unfolding errors
-		html, _ := unfoldComponents(unfoldedCmps, name, _newcmp.Template(), data, 0)
-		newcmpelem.SetInnerHTML(html)
-
-		// Insert the component element into the DOM
-		_elem.PrependNodes(&newcmpelem.Node) //elem.InsertAdjacentHTML(WI_INSIDEFIRST, html)
-
-		// addlisteners
-		addComponentslisteners(unfoldedCmps)
-		_newcmp.AddListeners()
-
-	} else {
-		return "", errors.ConsoleWarnf("InsertNewComponent:", err.Error())
+	_newcmpid, newcmpelem, err := App.CreateComponent(_newcmp)
+	if err != nil {
+		return "", errors.ConsoleErrorf("RenderComponent:", err.Error())
 	}
+
+	// name the component
+	name := newcmpelem.TagName() + "/" + _newcmpid
+
+	// unfold and render html for a composer
+	unfoldedCmps := make(map[string]Composer, 0)
+	data := TemplateData{
+		Id:  _newcmpid,
+		Me:  _newcmp,
+		App: _appdata,
+	}
+	// TODO: handle unfolding errors
+	html, _ := unfoldComponents(unfoldedCmps, name, _newcmp.Template(), data, 0)
+	newcmpelem.SetInnerHTML(html)
+
+	// Insert the component element into the DOM
+	_elem.PrependNodes(&newcmpelem.Node) //elem.InsertAdjacentHTML(WI_INSIDEFIRST, html)
+
+	// addlisteners
+	showUnfoldedComponents(unfoldedCmps)
+	_newcmp.AddListeners()
+
+	_newcmp.Show()
 
 	return _newcmpid, nil
 }

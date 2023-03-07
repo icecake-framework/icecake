@@ -92,6 +92,16 @@ func (_classes *Classes) Parse(_value string) *Classes {
 	return _classes
 }
 
+// SetClasses adds token in the list. If a token already exist it's not added to avoid duplicate.
+//
+// Case sensitive.
+func (_classes *Classes) SetClasses(_newclasses Classes) *Classes {
+	if _classes.setTokens(_newclasses.tokens...) && _classes.jslist != nil {
+		_classes.jslist.Set("value", _classes.String())
+	}
+	return _classes
+}
+
 // SetTokens adds token in the list. If a token already exist it's not added to avoid duplicate.
 //
 // Case sensitive.

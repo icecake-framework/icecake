@@ -20,9 +20,8 @@ Instantiate the Notify component and setup the Message property:
 
 ```Go
 notif := &ui.Notify{
-    Message: `This is a typical notification message <strong>including html</strong> links. 
-    Use the closing button on the right corner to remove this notification.<br/>
-    <a href="#">link1</a>&nbsp;|&nbsp;<a href="#">link2</a>`,
+    Message: `This is a typical notification message <strong>including html <a href="#">link</a>.</strong> 
+    Use the closing button on the right corner to remove this notification.`,
     }
 ```
 
@@ -33,20 +32,21 @@ notif.InitClasses = ick.ParseClasses("is-warning is-light")
 notif.InitAttributes, _ = ick.ParseAttributes("role='alert'")
 ```
 
-Call the `InsertNewComponent()` function to insert it into the DOM:
+Call the `RenderComponent()` function to insert it into the DOM:
 
 ```HTML
 <div id="notif_container" class="block"></div>
 ```
 
 ```Go
-webapp.ChildById("notif_container").InsertNewComponent(notif, nil)
+webapp.ChildById("notif_container").RenderComponent(notif, nil)
 ```
 
 <strong>Test it:</strong>
 
 <button class="button is-warning" id="btn1">Insert Notity Component</button>
 <button class="button is-danger" id="btn2">Auto Closing Notification</button>
+<button class="button is-success is-light" id="btn3">Toast Notification</button>
 
 <div id="notif_container" class="block"></div>
 
@@ -69,7 +69,7 @@ webapp.ChildById("ex3_container").RenderHtml(html, nil)
 
 <strong>Test it:</strong>
 
-<button class="button is-info" id="btn3">Embed into Template</button>
+<button class="button is-info" id="btn4">Embed into Template</button>
 
 <div id="ex3_container" class="block"></div>
 

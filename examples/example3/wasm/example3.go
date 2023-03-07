@@ -8,6 +8,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	_ "embed"
@@ -62,29 +63,48 @@ func OnClickBtn1(event *ick.MouseEvent, target *ick.Element) {
 
 	// instantiate the Notify component and init its data
 	notif := &ui.Notify{
-		Message: `This is a typical notification message <strong>including html</strong> links. Use the closing button on the right corner to remove this notification.<br/><a href="#">link1</a>&nbsp;|&nbsp;<a href="#">link2</a>`,
+		Message: `This is a typical notification message <strong>including html <a href="#">link</a>.</strong> Use the closing button on the right corner to remove this notification.`,
 	}
-	notif.InitClasses = ick.ParseClasses("is-warning is-light")
+	notif.MountClasses = ick.ParseClasses("is-warning is-light")
 
 	// Insert the component into the DOM
-	webapp.ChildById("notif_container").InsertNewComponent(notif, nil)
+	webapp.ChildById("notif_container").RenderComponent(notif, nil)
 }
 
 func OnClickBtn2(event *ick.MouseEvent, target *ick.Element) {
 
-	// instantiate the NotificationToast component and init its data
+	// instantiate the Notify component and init its data
 	notif := &ui.Notify{
-		Timeout: time.Second * 10,
-		Message: `This message will be automatically removed in <strong>10 seconds</strong>, unless you close it before. 😀`,
+		Timeout: time.Second * 7,
+		Message: `This message will be automatically removed in <strong><span id="{{.Id}}-timeleft"></span> seconds</strong>, unless you close it before. 😀`,
 	}
-	notif.InitClasses = ick.ParseClasses("is-danger is-light")
-	notif.InitAttributes, _ = ick.ParseAttributes("role='alert'")
+	notif.MountClasses = ick.ParseClasses("is-danger is-light")
+	notif.MountAttributes, _ = ick.ParseAttributes("role='alert'")
+	notif.UpdateUI = func(uicomponent any) {
+		uinotify := uicomponent.(*ui.Notify)
+		s := math.Round(uinotify.TimeLeft().Seconds())
+		idtl := uinotify.Id() + "-timeleft"
+		webapp.ChildById(idtl).RenderValue("%v", s)
+	}
 
 	// Insert the component into the DOM
-	webapp.ChildById("notif_container").InsertNewComponent(notif, nil)
+	webapp.ChildById("notif_container").RenderComponent(notif, nil)
 }
 
 func OnClickBtn3(event *ick.MouseEvent, target *ick.Element) {
+
+	// instantiate the Notify component and init its data
+	notif := &ui.Notify{
+		Timeout: time.Second * 3,
+		Message: `This is a toast notification`,
+	}
+	notif.MountClasses = ick.ParseClasses("is-success toast")
+
+	// Insert the component into the DOM
+	webapp.ChildById("toast_container").RenderComponent(notif, nil)
+}
+
+func OnClickBtn4(event *ick.MouseEvent, target *ick.Element) {
 
 	// define the HTML template
 	html := `<div class="box">
@@ -97,22 +117,5 @@ func OnClickBtn3(event *ick.MouseEvent, target *ick.Element) {
 	</box>`
 
 	// Insert the component into the DOM
-	webapp.ChildById("ex3_container").RenderHtml(html, nil)
-}
-
-func OnClickBtn4(event *ick.MouseEvent, target *ick.Element) {
-
-	//	<button class="button" id="btn4">Embedded into another component</button>
-
-	// instantiate the NotificationToast component and init its data
-	// toast := &NotificationToast{
-	// 	Message:    `Single`,
-	// 	ColorClass: "is-primary",
-	// }
-
-	// // Insert the component into the DOM
-	// singlenotifid, err := ick.GetElementById("notif_container").InsertNewComponent(toast)
-	// if err != nil {
-	// 	ick.ConsoleErrorf(err.Error())
-	// }
+	webapp.ChildById("ex3_container").RenderTemplate(html, nil)
 }
