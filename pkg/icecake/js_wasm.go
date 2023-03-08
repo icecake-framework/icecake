@@ -6,20 +6,40 @@ import (
 	"github.com/sunraylab/icecake/pkg/errors"
 )
 
-// Type represents the JavaScript type of a Value.
-type Type int
+// TYPE represents the JavaScript type of a Value.
+type TYPE int
 
 // Constants that enumerates the JavaScript types.
 const (
-	TypeUndefined Type = iota
-	TypeNull
-	TypeBoolean
-	TypeNumber
-	TypeString
-	TypeSymbol
-	TypeObject
-	TypeFunction
+	TYPE_UNDEFINED TYPE = TYPE(js.TypeUndefined)
+	TYPE_NULL      TYPE = TYPE(js.TypeNull)
+	TYPE_BOOLEAN   TYPE = TYPE(js.TypeBoolean)
+	TYPE_NUMBER    TYPE = TYPE(js.TypeNumber)
+	TYPE_STRING    TYPE = TYPE(js.TypeString)
+	TYPE_SYMBOL    TYPE = TYPE(js.TypeSymbol)
+	TYPE_OBJECT    TYPE = TYPE(js.TypeObject)
+	TYPE_FUNCTION  TYPE = TYPE(js.TypeFunction)
 )
+
+func (t TYPE) String() string {
+	switch t {
+	case TYPE_NULL:
+		return "Null"
+	case TYPE_BOOLEAN:
+		return "Boolean"
+	case TYPE_NUMBER:
+		return "Number"
+	case TYPE_STRING:
+		return "String"
+	case TYPE_SYMBOL:
+		return "Symbol"
+	case TYPE_OBJECT:
+		return "Object"
+	case TYPE_FUNCTION:
+		return "Function"
+	}
+	return "Undefined"
+}
 
 // JSValueProvider is implemented by types that are backed by a JavaScript value.
 type JSValueProvider interface {
@@ -32,8 +52,12 @@ type JSValue struct {
 	jsvalue js.Value
 }
 
-func (_v JSValue) Value() JSValue {
-	return _v
+// New uses JavaScript's "new" operator with value v as constructor and the given arguments.
+// It panics if v is not a JavaScript function.
+// The arguments get mapped to JavaScript values according to the ValueOf function.
+func (_v JSValue) New(args ...any) JSValue {
+	args = cleanArgs(args...)
+	return val(_v.jsvalue.New(args...))
 }
 
 func (_v *JSValue) Wrap(_jsvp JSValueProvider) {
@@ -43,40 +67,81 @@ func (_v *JSValue) Wrap(_jsvp JSValueProvider) {
 	_v.jsvalue = _jsvp.Value().jsvalue
 }
 
-func (_v JSValue) Type() Type {
-	return Type(_v.jsvalue.Type())
+// ValueOf returns x as a JavaScript value:
+//
+//	| Go                     | JavaScript             |
+//	| ---------------------- | ---------------------- |
+//	| js.Value               | [its value]            |
+//	| js.Func                | function               |
+//	| nil                    | null                   |
+//	| bool                   | boolean                |
+//	| integers and floats    | number                 |
+//	| string                 | string                 |
+//	| []interface{}          | new array              |
+//	| map[string]interface{} | new object             |
+//
+// Panics if x is not one of the expected types.
+func ValueOf(x any) (_jsv JSValue) {
+	_jsv.jsvalue = js.ValueOf(x)
+	return _jsv
 }
 
+// Value returns the value itself for JSValueProvider interface
+func (_v JSValue) Value() JSValue {
+	return _v
+}
+
+// Type returns the JavaScript type of the value v. It is similar to JavaScript's typeof operator,
+// except that it returns TypeNull instead of TypeObject for null.
+func (_v JSValue) Type() TYPE {
+	return TYPE(_v.jsvalue.Type())
+}
+
+// IsDefined returns true if js value is not null nor undefined
+func (_v JSValue) IsDefined() bool {
+	return _v.Type() != TYPE_NULL && _v.Type() != TYPE_UNDEFINED
+}
+
+// IsObject returns true if js value is of type Object
+func (_v JSValue) IsObject() bool {
+	return _v.Type() == TYPE_OBJECT
+}
+
+// Equal reports whether v and w are equal according to JavaScript's === operator.
+func (_v JSValue) Equal(w JSValue) bool {
+	return _v.jsvalue.Equal(w.jsvalue)
+}
+
+// Delete deletes the JavaScript property p of value v.
+// It panics if v is not a JavaScript object.
+func (_v JSValue) Delete(p string) {
+	_v.jsvalue.Delete(p)
+}
+
+// Call does a JavaScript call to the method m of value v with the given arguments.
+// It panics if v has no method m. Returns js.null if _v is undefined.
+// The arguments get mapped to JavaScript values according to the ValueOf function.
 func (_v JSValue) Call(m string, args ...any) JSValue {
 	if !_v.IsDefined() {
+		errors.ConsoleWarnf("unable to call %q: undefined js value\n", m)
 		return null()
 	}
 	args = cleanArgs(args...)
 	return val(_v.jsvalue.Call(m, args...))
 }
 
-func (_v JSValue) Delete(p string) {
-	_v.jsvalue.Delete(p)
-}
-
-func (_v JSValue) Equal(w JSValue) bool {
-	return _v.jsvalue.Equal(w.jsvalue)
-}
-
+// Get returns the JavaScript property p of value v.
+// It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
 func (_v JSValue) Get(_pname string) JSValue {
 	if !_v.IsDefined() {
+		errors.ConsoleWarnf("unable to get %q: undefined js value\n", _pname)
 		return null()
 	}
-	return val(_v.jsvalue.Get(_pname))
-}
-
-func (_v JSValue) GetObject(_pname string) JSValue {
-	get := _v.Get(_pname)
-	if get.Type() != TypeObject {
-		errors.ConsoleErrorf("unable to get js object for %q", _pname)
-		return null()
+	jsret := val(_v.jsvalue.Get(_pname))
+	if !jsret.IsDefined() {
+		errors.ConsoleWarnf("get %q returns an undefined js value\n", _pname)
 	}
-	return get
+	return jsret
 }
 
 // TODO: tryget
@@ -92,9 +157,11 @@ func TryGet(_v js.Value, p string) (result js.Value, err error) {
 	return _v.Get(p), nil
 }
 
+// Set sets the JavaScript property p of value v to ValueOf(x).
+// It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
 func (_v JSValue) Set(p string, x any) {
 	if !_v.IsDefined() {
-		errors.ConsoleLogf("unable to set a property to an undefined js value")
+		errors.ConsoleWarnf("unable to set: undefined js value\n")
 		return
 	}
 	if wrapper, ok := x.(JSValue); ok {
@@ -103,21 +170,40 @@ func (_v JSValue) Set(p string, x any) {
 	_v.jsvalue.Set(p, x)
 }
 
+// Index returns JavaScript index i of value v.
+// It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
 func (_v JSValue) Index(i int) JSValue {
+	if !_v.IsDefined() {
+		errors.ConsoleWarnf("unable to get Index: undefined js value\n")
+		return null()
+	}
 	return val(_v.jsvalue.Index(i))
 }
 
+// Length returns the JavaScript property "length" of v.
+// It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
+func (_v JSValue) Length() int {
+	if !_v.IsDefined() {
+		errors.ConsoleWarnf("unable to get Length: undefined js value\n")
+		return 0
+	}
+	return _v.jsvalue.Length()
+}
+
 func (_v JSValue) InstanceOf(t JSValue) bool {
+	if !_v.IsDefined() {
+		errors.ConsoleWarnf("unable to check InstanceOf: undefined js value\n")
+		return false
+	}
 	return _v.jsvalue.InstanceOf(t.jsvalue)
 }
 
 func (_v JSValue) Invoke(args ...any) JSValue {
+	if !_v.IsDefined() {
+		errors.ConsoleWarnf("unable to Invoke: undefined js value\n")
+		return null()
+	}
 	return val(_v.jsvalue.Invoke(args...))
-}
-
-func (_v JSValue) New(args ...any) JSValue {
-	args = cleanArgs(args...)
-	return val(_v.jsvalue.New(args...))
 }
 
 func (_v JSValue) Then(f func(JSValue)) {
@@ -138,6 +224,17 @@ func (_v JSValue) Then(f func(JSValue)) {
 	_v.jsvalue.Call("then", then)
 }
 
+// GetObject returns the value of _v ensuring it's of type Object,
+// otherwise returns null
+func (_v JSValue) GetObject(_pname string) JSValue {
+	get := _v.Get(_pname)
+	if get.Type() != TYPE_OBJECT {
+		errors.ConsoleErrorf("unable to get object %q: it's not an object", _pname)
+		return null()
+	}
+	return get
+}
+
 // Float returns the value v as a float64.
 // It panics if v is not a JavaScript number.
 func (_v JSValue) Float() float64 {
@@ -145,17 +242,14 @@ func (_v JSValue) Float() float64 {
 }
 
 func (_v JSValue) GetFloat(_pname string) float64 {
-	defer func() {
-		if x := recover(); x != nil {
-			errors.ConsoleErrorf("A unable to get js float for %q", _pname)
-		}
-	}()
 	get := _v.Get(_pname)
-	if get.Type() != TypeNumber {
-		errors.ConsoleErrorf("B unable to get js int for %q", _pname)
-		return 0
+	if get.Type() == TYPE_NUMBER {
+		return get.Float()
 	}
-	return get.Float()
+	if get.IsDefined() {
+		errors.ConsoleErrorf("unable to get %q as a float64, type is: %s", _pname, get.Type().String())
+	}
+	return 0.0
 }
 
 // Int returns the value v truncated to an int.
@@ -165,17 +259,14 @@ func (_v JSValue) Int() int {
 }
 
 func (_v JSValue) GetInt(_pname string) int {
-	defer func() {
-		if x := recover(); x != nil {
-			errors.ConsoleErrorf("A unable to get js int for %q", _pname)
-		}
-	}()
 	get := _v.Get(_pname)
-	if get.Type() != TypeNumber {
-		errors.ConsoleErrorf("B unable to get js int for %q", _pname)
-		return 0
+	if get.Type() == TYPE_NUMBER {
+		return get.Int()
 	}
-	return get.Int()
+	if get.IsDefined() {
+		errors.ConsoleErrorf("unable to get %q as an int, type is: %s", _pname, get.Type().String())
+	}
+	return 0
 }
 
 // Bool returns the value v as a bool.
@@ -185,17 +276,14 @@ func (_v JSValue) Bool() bool {
 }
 
 func (_v JSValue) GetBool(_pname string) bool {
-	defer func() {
-		if x := recover(); x != nil {
-			errors.ConsoleErrorf("A unable to get js bool for %q", _pname)
-		}
-	}()
 	get := _v.Get(_pname)
-	if get.Type() != TypeNumber {
-		errors.ConsoleErrorf("B unable to get js int bool %q", _pname)
-		return false
+	if get.Type() == TYPE_BOOLEAN {
+		return get.Truthy()
 	}
-	return get.Bool()
+	if get.IsDefined() {
+		errors.ConsoleErrorf("unable to get %q as a boolean, type is: %s", _pname, get.Type().String())
+	}
+	return false
 }
 
 // String returns the value v as a string.
@@ -208,11 +296,13 @@ func (_v JSValue) String() string {
 
 func (_v JSValue) GetString(_pname string) string {
 	get := _v.Get(_pname)
-	if get.Type() != TypeString {
-		errors.ConsoleErrorf("unable to get js string for %q", _pname)
-		return ""
+	if get.Type() == TYPE_STRING {
+		return get.String()
 	}
-	return get.String()
+	if get.IsDefined() {
+		errors.ConsoleErrorf("unable to get %q as a string, type is: %s", _pname, get.Type().String())
+	}
+	return ""
 }
 
 // Truthy returns the JavaScript "truthiness" of the value v. In JavaScript,
@@ -222,29 +312,13 @@ func (_v JSValue) Truthy() bool {
 	return _v.jsvalue.Truthy()
 }
 
-// IsObject returns true if js value is of type Object
-func (_v JSValue) IsObject() bool {
-	return _v.Type() == TypeObject
-}
-
-// IsDefined returns true if js value is not null nor undefined
-func (_v JSValue) IsDefined() bool {
-	return _v.Type() != TypeNull && _v.Type() != TypeUndefined
-}
-
-// Length returns the JavaScript property "length" of v.
-// It panics if v is not a JavaScript object.
-func (_v JSValue) Length() int {
-	return _v.jsvalue.Length()
-}
-
 func null() JSValue {
 	return val(js.Null())
 }
 
-func undefined() JSValue {
-	return val(js.Undefined())
-}
+// func undefined() JSValue {
+// 	return val(js.Undefined())
+// }
 
 type JSFunction struct {
 	JSValue

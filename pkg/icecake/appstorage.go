@@ -3,7 +3,6 @@ package ick
 import (
 	"fmt"
 	"strconv"
-	"syscall/js"
 
 	"github.com/sunraylab/icecake/internal/helper"
 )
@@ -58,7 +57,7 @@ func (_store *Storage) Get(key string) (_value string) {
 		return ""
 	}
 	val := _store.Call("getItem", key)
-	if val.Type() == TypeString {
+	if val.Type() == TYPE_STRING {
 		_value = val.String()
 	}
 	return _value
@@ -70,7 +69,7 @@ func (_store *Storage) GetBool(key string) (_value bool) {
 		return false
 	}
 	jsval := _store.Call("getItem", key)
-	if jsval.Type() == TypeString {
+	if jsval.Type() == TYPE_STRING {
 		val := helper.Normalize(jsval.String())
 		if val != "false" && val != "0" {
 			return true
@@ -103,8 +102,8 @@ func (_store *Storage) Set(key string, value string) error {
 	}
 	//_store.jsValue.Call("setItem", key, value)
 
-	rsp := js.Global().Call("ickStorageSetItem", _store.jsvalue, key, value)
-	if rsp.Type() == js.TypeString {
+	rsp := App.browser.Call("ickStorageSetItem", _store.jsvalue, key, value)
+	if rsp.Type() == TYPE_STRING {
 		return fmt.Errorf(rsp.String())
 	}
 	return nil

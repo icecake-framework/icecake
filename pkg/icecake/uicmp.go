@@ -16,7 +16,7 @@ type UIComponent struct {
 
 // CastUIComponent is casting a js.Value into UIComponent.
 func CastUIComponent(_jsv JSValueProvider) *UIComponent {
-	if _jsv.Value().Type() != TypeObject {
+	if _jsv.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting UIComponent failed")
 		return new(UIComponent)
 	}

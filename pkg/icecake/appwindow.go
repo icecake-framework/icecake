@@ -21,7 +21,7 @@ type Window struct {
 
 // CastWindow is casting a js.Value into Window.
 func CastWindow(_jsv JSValueProvider) Window {
-	if _jsv.Value().Type() != TypeObject {
+	if _jsv.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting Window failed")
 		return Window{}
 	}
@@ -35,7 +35,7 @@ func CastWindow(_jsv JSValueProvider) Window {
 func GetWindow() Window {
 	jsv := js.Global().Get("window")
 	if typ := jsv.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		errors.ConsolePanicf(nil, "Unable to get window")
+		errors.ConsoleStackf(nil, "Unable to get window")
 	}
 	win := new(Window)
 	win.jsvalue = jsv
@@ -108,14 +108,6 @@ func (_win Window) Closed() bool {
 func (_win Window) History() *History {
 	value := _win.Get("history")
 	return CastHistory(value)
-}
-
-// Top returns a reference to the topmost window in the window hierarchy.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Window/top
-func (_win Window) Top() Window {
-	value := _win.Get("top")
-	return CastWindow(value)
 }
 
 // UserAgent returns the user agent string for the current browser.
@@ -268,7 +260,7 @@ func makeWindow_Generic_Event(listener func(event *Event, target *Window)) js.Fu
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -279,7 +271,7 @@ func makeWindow_Generic_Event(listener func(event *Event, target *Window)) js.Fu
 
 func (_win Window) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Window)) {
 	jsevh := makeWindow_Generic_Event(listener)
-	_win.AddEventListener(&eventHandler{eventtype: string(evttype), jsHandler: jsevh})
+	_win.AddListener(&eventHandler{eventtype: string(evttype), jsHandler: jsevh})
 }
 
 /******************************************************************************
@@ -294,7 +286,7 @@ func makeWindow_BeforeUnload_Event(listener func(event *BeforeUnloadEvent, targe
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -305,7 +297,7 @@ func makeWindow_BeforeUnload_Event(listener func(event *BeforeUnloadEvent, targe
 
 func (_win Window) AddBeforeUnloadEvent(listener func(event *BeforeUnloadEvent, target *Window)) {
 	jsevh := makeWindow_BeforeUnload_Event(listener)
-	_win.AddEventListener(&eventHandler{eventtype: "beforeunload", jsHandler: jsevh})
+	_win.AddListener(&eventHandler{eventtype: "beforeunload", jsHandler: jsevh})
 }
 
 /****************************************************************************
@@ -320,7 +312,7 @@ func makeWindow_HashChange_Event(listener func(event *HashChangeEvent, target *W
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -333,7 +325,7 @@ func makeWindow_HashChange_Event(listener func(event *HashChangeEvent, target *W
 // This method is returning allocated javascript function that need to be released.
 func (_win Window) AddHashChangeEvent(listener func(event *HashChangeEvent, target *Window)) {
 	jsevh := makeWindow_HashChange_Event(listener)
-	_win.AddEventListener(&eventHandler{eventtype: "hashchange", jsHandler: jsevh})
+	_win.AddListener(&eventHandler{eventtype: "hashchange", jsHandler: jsevh})
 }
 
 /****************************************************************************
@@ -348,7 +340,7 @@ func makeWindow_PageTransition_Event(listener func(event *PageTransitionEvent, t
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -359,7 +351,7 @@ func makeWindow_PageTransition_Event(listener func(event *PageTransitionEvent, t
 
 func (_win Window) AddPageTransitionEvent(evttype PAGETRANSITION_EVENT, listener func(event *PageTransitionEvent, target *Window)) {
 	jsevh := makeWindow_PageTransition_Event(listener)
-	_win.AddEventListener(&eventHandler{eventtype: string(evttype), jsHandler: jsevh})
+	_win.AddListener(&eventHandler{eventtype: string(evttype), jsHandler: jsevh})
 }
 
 /****************************************************************************
@@ -374,7 +366,7 @@ func makeWindow_UI_Event(listener func(event *UIEvent, target *Window)) js.Func 
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsolePanicf(r, "Error occurs processing event %q on Window", evt.Type())
+				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -385,5 +377,5 @@ func makeWindow_UI_Event(listener func(event *UIEvent, target *Window)) js.Func 
 
 func (_win Window) AddResizeEvent(listener func(event *UIEvent, target *Window)) {
 	jsevh := makeWindow_UI_Event(listener)
-	_win.AddEventListener(&eventHandler{eventtype: "resize", jsHandler: jsevh})
+	_win.AddListener(&eventHandler{eventtype: "resize", jsHandler: jsevh})
 }

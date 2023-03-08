@@ -38,14 +38,22 @@ func ConsoleErrorf(msg string, a ...any) error {
 	return err
 }
 
-// ConsolePanicf prints the msg message and the panic recovery message if not nil, then the stacktrace.
-// If r is nil ConsolePanicf create a panic
-func ConsolePanicf(r any, msg string, a ...any) {
-	defer ConsoleLogf("stacktrace from panic:\n" + string(debug.Stack()))
-	err := ConsoleErrorf(msg, a...)
-	if r == nil {
-		panic(err.Error())
-	} else {
-		ConsoleErrorf("%+v\n", r)
+// ConsoleStackf prints the msg message and the panic recovery message if not nil, then the stacktrace.
+// If r is nil ConsoleStackf create a panic
+func ConsoleStackf(r any, msg string, a ...any) {
+	defer ConsoleLogf("> panic stacktrace:\n" + string(debug.Stack()))
+	str := fmt.Sprintf(msg, a...)
+	if str != "" {
+		ConsoleErrorf(str)
 	}
+	if r == nil {
+		panic(str)
+	} else {
+		ConsoleErrorf("%+v [recovered]\n", r)
+	}
+}
+
+func ConsoleStack(r any) {
+	ConsoleErrorf("%+v [recovered]\n", r)
+	ConsoleLogf("> panic stacktrace:\n" + string(debug.Stack()))
 }

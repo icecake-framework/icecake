@@ -115,7 +115,9 @@ func (_attrs *Attributes) RemoveAttribute(_name string) {
 
 // String returns the value of the list serialized as a string
 func (_attrs Attributes) String() (_str string) {
-	for name, value := range _attrs.attributes {
+	ats := _attrs.Sort()
+	for _, name := range ats {
+		value := _attrs.attributes[name]
 		_str += strings.Trim(name, " ")
 		if value != "" {
 			delim := "'"

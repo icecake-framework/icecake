@@ -29,7 +29,7 @@ type History struct {
 
 // CastHistory is casting a js.Value into History.
 func CastHistory(_jsvp JSValueProvider) *History {
-	if _jsvp.Value().Type() != TypeObject {
+	if _jsvp.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting History failed")
 		return nil
 	}

@@ -86,8 +86,8 @@ type Node struct {
 
 // CastNode is casting a js.Value into Node.
 func CastNode(_jsvp JSValueProvider) *Node {
-	if _jsvp.Value().Type() != TypeObject {
-		errors.ConsoleErrorf("casting Node failed")
+	if _jsvp.Value().Type() != TYPE_OBJECT {
+		errors.ConsoleErrorf("casting Node failed\n")
 		return new(Node)
 	}
 	cast := new(Node)
@@ -95,11 +95,11 @@ func CastNode(_jsvp JSValueProvider) *Node {
 	return cast
 }
 
-func MakeNodes(_jsvp JSValueProvider) []*Node {
+func CastNodes(_jsvp JSValueProvider) []*Node {
 	nodes := make([]*Node, 0)
-	if _jsvp.Value().Type() != TypeObject {
-		errors.ConsoleErrorf("casting Nodes failed")
-		return nil
+	if _jsvp.Value().Type() != TYPE_OBJECT {
+		errors.ConsoleErrorf("casting Nodes failed\n")
+		return nodes
 	}
 	len := _jsvp.Value().GetInt("length")
 	for i := 0; i < len; i++ {
@@ -121,8 +121,7 @@ func (_node *Node) IsDefined() bool {
 // IsSameNode tests whether two nodes are the same (in other words, whether they reference the same object).
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/isSameNode
 func (_node *Node) IsSameNode(_otherNode *Node) bool {
-	is := _node.Call("isSameNode", _otherNode.jsvalue)
-	return is.Bool()
+	return _node.Call("isSameNode", _otherNode.jsvalue).Truthy()
 }
 
 /****************************************************************************
@@ -169,33 +168,18 @@ func (_node *Node) BaseURI() string {
 	return _node.GetString("baseURI")
 }
 
-// IsDocConnected returns a boolean indicating whether the node is connected (directly or indirectly) to a Document object.
+// IsInDOM returns a boolean indicating whether the node is within a Document object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/isConnected
-func (_node *Node) IsConnected() bool {
+// func (_node Node) IsConnected() bool {
+func (_node Node) IsInDOM() bool {
 	return _node.GetBool("isConnected")
-}
-
-// IsInDOM check if this Node is in the DOM, may not added yet or already suppressed
-func (_node *Node) IsInDOM() (_is bool) {
-	if !_node.IsDefined() {
-		return false
-	}
-	body := GetDocument().Body()
-	if body.Truthy() {
-		is := body.Call("contains", _node.jsvalue)
-		_is = is.Bool()
-	}
-	return _is
 }
 
 // GetRootNode returns the context object's root, which optionally includes the shadow root if it is available.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode
-func (_node *Node) RootNode() *Node {
-	if !_node.IsDefined() {
-		return nil
-	}
+func (_node Node) RootNode() *Node {
 	root := _node.Call("getRootNode")
 	return CastNode(root)
 }
@@ -203,24 +187,15 @@ func (_node *Node) RootNode() *Node {
 // ParentNode returns the parent of the specified node in the DOM tree.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/parentNode
-func (_node *Node) ParentNode() *Node {
-	if !_node.IsDefined() {
-		return nil
-	}
+func (_node Node) ParentNode() *Node {
 	parent := _node.Get("parentNode")
 	return CastNode(parent)
 }
 
 // ParentElement returns the DOM node's parent Element, or null if the node either has no parent, or its parent isn't a DOM Element.
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/parentElement
-func (_node *Node) ParentElement() *Element {
-	if !_node.IsDefined() {
-		return nil
-	}
+func (_node Node) ParentElement() *Element {
 	parent := _node.Get("parentElement")
-	if !parent.IsObject() {
-		return nil
-	}
 	return CastElement(parent)
 }
 
@@ -228,8 +203,7 @@ func (_node *Node) ParentElement() *Element {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/hasChildNodes
 func (_node *Node) HasChildren() bool {
-	has := _node.Call("hasChildNodes")
-	return has.Bool()
+	return _node.Call("hasChildNodes").Truthy()
 }
 
 // ChildNodes returns a ~live~ static NodeList of child nodes of the given element where the first child node is assigned index 0.
@@ -237,36 +211,39 @@ func (_node *Node) HasChildren() bool {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes
 func (_node *Node) Children() []*Node {
-	if !_node.IsDefined() {
-		return make([]*Node, 0)
-	}
 	nodes := _node.Get("childNodes")
-	return MakeNodes(nodes)
+	return CastNodes(nodes)
 }
 
-// FilteredChildren make a slice of nodes, scaning existing nodes from root to the last sibling node.
-// Only nodes matching filter AND the optional match function are included.
-func (_root *Node) FilteredChildren(_filter NODE_TYPE, _deepmax int, match func(*Node) bool) []*Node {
+// FilteredChildren make a slice of nodes, scaning recursively children of every existing nodes.
+// Only nodes matching _filter AND the optional _match function are included.
+func (_root *Node) FilteredChildren(_filter NODE_TYPE, _match func(*Node) bool) []*Node {
 	if !_root.IsDefined() || !_root.HasChildren() {
 		return make([]*Node, 0)
 	}
+	return _root.filteredChildren(_filter, 999, _match)
+}
+
+func (_root *Node) filteredChildren(_filter NODE_TYPE, _deepmax int, _match func(*Node) bool) []*Node {
 	nodes := make([]*Node, 0)
 
 	for _, scan := range _root.Children() {
-		//DEBUG: fmt.Printf("%d:%d scanning child: %q %q", _deepmax, i, scan.NodeType().String(), scan.NodeName())
-
 		// check filtered node type
 		fn := _filter == NT_ALL || scan.NodeType() == _filter
 
 		// apply the filter to children if not too deep and the type node is selected
-		if fn && scan.HasChildren() && _deepmax > 0 {
-			sub := scan.FilteredChildren(_filter, _deepmax-1, match)
-			nodes = append(nodes, sub...)
+		if fn && scan.HasChildren() {
+			if _deepmax > 0 {
+				sub := scan.filteredChildren(_filter, _deepmax-1, _match)
+				nodes = append(nodes, sub...)
+			} else {
+				errors.ConsoleWarnf("FilteredChildren reached max level")
+			}
 		}
 
 		// apply matching function
-		if fn && match != nil {
-			fn = fn && match(scan)
+		if fn && _match != nil {
+			fn = fn && _match(scan)
 		}
 
 		if fn {
@@ -306,9 +283,6 @@ func (_node *Node) SiblingPrevious() *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nextSibling
 func (_node *Node) SiblingNext() *Node {
-	if !_node.IsDefined() {
-		return nil
-	}
 	sibling := _node.Get("nextSibling")
 	return CastNode(sibling)
 }
@@ -324,11 +298,7 @@ func (_node *Node) NodeValue() string {
 	if !_node.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	value := _node.Get("nodeValue")
-	if typ := value.Type(); typ != TypeString {
-		return ""
-	}
-	return value.String()
+	return _node.GetString("nodeValue")
 }
 
 // NodeValue is a string containing the value of the current node, if any.
@@ -338,17 +308,12 @@ func (_node *Node) NodeValue() string {
 // For attribute nodes, the value of the attribute is returned.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue
-func (_node *Node) SetNodeValue(value string) (_ret *Node) {
-	if !_node.IsDefined() {
-		return
-	}
-	var input interface{}
+func (_node *Node) SetNodeValue(value string) *Node {
 	if value != "" {
-		input = value
+		_node.Set("nodeValue", value)
 	} else {
-		input = nil
+		_node.Set("nodeValue", nil)
 	}
-	_node.Set("nodeValue", input)
 	return _node
 }
 
@@ -365,10 +330,7 @@ func (_node *Node) TextContent() string {
 // TextContent represents the text content of the node and its descendants.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent
-func (_node *Node) SetTextContent(value string) (_ret *Node) {
-	if !_node.IsDefined() {
-		return nil
-	}
+func (_node *Node) SetTextContent(value string) *Node {
 	if value != "" {
 		_node.Set("textContent", value)
 	} else {
@@ -388,52 +350,46 @@ func (_onenode *Node) ComparePosition(_other *Node) NODE_POSITION {
 	return NODE_POSITION(_returned.Int())
 }
 
-// InsertBefore inserts a newnode before a refnode.
-//
-// if refnode is nil, then newNode is inserted at the end of node's child nodes.
+// InsertBefore inserts a newnode before a refnode. if refnode is nil, then newNode is inserted at the end of node's child nodes.
 //
 // If the given node already exists in the document, insertBefore() moves it from its current position to the new position.
 // (That is, it will automatically be removed from its existing parent before appending it to the specified new parent.)
 //
+// Returns the _parent to enable chaining calls.
+//
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore
 func (_parentnode *Node) InsertBefore(newnode *Node, refnode *Node) *Node {
-	if !_parentnode.IsDefined() {
-		return nil
-	}
-	node := _parentnode.Call("insertBefore", newnode.jsvalue, refnode.jsvalue)
-	return CastNode(node)
+	_parentnode.Call("insertBefore", newnode.jsvalue, refnode.jsvalue)
+	return _parentnode
 }
 
 // AppenChild adds a node to the end of the list of children of a specified parent node.
 // If the given child is a reference to an existing node in the document, appendChild() moves it from its current position to the new position.
 //
+// Returns the _parent to enable chaining calls.
+//
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild
 func (_parentnode *Node) AppendChild(newnode *Node) *Node {
-	if !_parentnode.IsDefined() {
-		return nil
-	}
-	node := _parentnode.Call("appendChild", newnode.jsvalue)
-	return CastNode(node)
+	_parentnode.Call("appendChild", newnode.jsvalue)
+	return _parentnode
 }
 
 // ReplaceChild replaces a child node within the given (parent) node.
 //
+// Returns the _parent to enable chaining calls.
+//
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/replaceChild
 func (_parentnode *Node) ReplaceChild(_newchild *Node, _oldchild *Node) *Node {
-	if !_parentnode.IsDefined() {
-		return nil
-	}
-	node := _parentnode.Call("replaceChild", _newchild.jsvalue, _oldchild.jsvalue)
-	return CastNode(node)
+	_parentnode.Call("replaceChild", _newchild.jsvalue, _oldchild.jsvalue)
+	return _parentnode
 }
 
-// RemoveChild removes a child node from the DOM and returns the removed node.
+// RemoveChild removes a child node from the DOM
+//
+// Returns the _parent to enable chaining calls.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild
 func (_parentnode *Node) RemoveChild(_child *Node) *Node {
-	if !_parentnode.IsDefined() {
-		return nil
-	}
-	node := _parentnode.Call("removeChild", _child.jsvalue)
-	return CastNode(node)
+	_parentnode.Call("removeChild", _child.jsvalue)
+	return _parentnode
 }

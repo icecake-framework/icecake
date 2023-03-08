@@ -24,31 +24,9 @@ type EventTarget struct {
 	eventHandlers []*eventHandler // eventhandlers added with an listener to this eventtarget
 }
 
-// EventTarget implements JSWrapper interfaces.
-// JSValue returns the js.Value
-// func (_evttget EventTarget) JSValue() js.Value {
-// 	return _evttget.jsValue
-// }
-
-// func (_evttget EventTarget) Type() js.Type {
-// 	return _evttget.jsValue.Type()
-// }
-
-// func (_evttget *EventTarget) Wrap(_jsval JSWrapper) {
-// 	if _evttget == nil {
-// 		errors.ConsoleErrorf("unable to wrap a nil element, abort")
-// 		return
-// 	}
-// 	if _evttget.jsValue.Truthy() {
-// 		errors.ConsoleWarnf("wrapping an already wrapped element")
-// 		_evttget.RemoveListeners()
-// 	}
-// 	_evttget.jsValue = _jsval.JSValue()
-// }
-
 // CastEventTarget is casting a js.Value into EventTarget.
 func CastEventTarget(_jsv JSValue) *EventTarget {
-	if _jsv.Type() != TypeObject {
+	if _jsv.Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting EventTarget failed")
 		return nil
 	}
@@ -69,12 +47,12 @@ func CastEventTarget(_jsv JSValue) *EventTarget {
 * EventTarget's methods
 *******************************************************************************/
 
-// AddEventListener sets up a function that will be called whenever the specified event is delivered to the target.
+// AddListener sets up a function that will be called whenever the specified event is delivered to the target.
 //
 // Common targets are Element, or its children, Document, and Window, but the target may be any object that supports events (such as XMLHttpRequest).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
-func (_evttget *EventTarget) AddEventListener(evh *eventHandler) {
+func (_evttget *EventTarget) AddListener(evh *eventHandler) {
 	if _evttget.eventHandlers == nil {
 		_evttget.eventHandlers = make([]*eventHandler, 0, 1)
 	}

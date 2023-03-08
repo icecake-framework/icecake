@@ -46,7 +46,7 @@ type Document struct {
 
 // CastDocument is casting a js.Value into Document.
 func CastDocument(_jsv JSValueProvider) *Document {
-	if _jsv.Value().Type() != TypeObject {
+	if _jsv.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting Document failed")
 		return &Document{}
 	}
@@ -59,7 +59,7 @@ func CastDocument(_jsv JSValueProvider) *Document {
 func GetDocument() *Document {
 	jsdoc := val(js.Global().Get("document"))
 	if !jsdoc.IsObject() {
-		errors.ConsolePanicf(nil, "Unable to get document")
+		errors.ConsoleStackf(nil, "Unable to get document")
 	}
 	doc := new(Document)
 	doc.jsvalue = jsdoc.jsvalue
@@ -183,46 +183,6 @@ func (_doc *Document) Head() *HeadElement {
 	return CastHeadElement(elem)
 }
 
-// Images returns a collection of the images in the current HTML document.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/images
-func (_doc *Document) Images() []*Node {
-	nodes := _doc.Get("images")
-	return MakeNodes(nodes)
-}
-
-// Embeds returns a list of the embedded <embed> elements within the current document.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/embeds
-func (_doc *Document) Embeds() []*Node {
-	nodes := _doc.Get("embeds")
-	return MakeNodes(nodes)
-}
-
-// Plugins returns an HTMLCollection object containing one or more HTMLEmbedElements representing the <embed> elements in the current document.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/plugins
-func (_doc *Document) Plugins() []*Node {
-	nodes := _doc.Get("plugins")
-	return MakeNodes(nodes)
-}
-
-// Links returns a collection of all <area> elements and <a> elements in a document with a value for the href attribute.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/links
-func (_doc *Document) Links() []*Node {
-	nodes := _doc.Get("links")
-	return MakeNodes(nodes)
-}
-
-// Forms returns an HTMLCollection listing all the <form> elements contained in the document.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/forms
-func (_doc *Document) Forms() []*Node {
-	nodes := _doc.Get("forms")
-	return MakeNodes(nodes)
-}
-
 // DocumentElement returns the Element that is the root element of the document (for example, the <html> element for HTML documents).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/documentElement
@@ -299,72 +259,40 @@ func (_doc *Document) ChildrenCount() int {
 	return _doc.GetInt("childElementCount")
 }
 
-// Children returns a live HTMLCollection which contains all of the child elements of the document upon which it was called.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/children
-func (_doc *Document) Children() []*Node {
-	nodes := _doc.Get("children")
-	return MakeNodes(nodes)
-}
-
-// FirstElementChild returns the document's first child Element, or null if there are no child elements.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/firstElementChild
-func (_doc *Document) ChildFirst() *Element {
-	child := _doc.Get("firstElementChild")
-	if child.Truthy() && CastNode(child).NodeType() == NT_ELEMENT {
-		return CastElement(child)
-	}
-	errors.ConsoleWarnf("Document.ChildFirst failed\n")
-	return new(Element)
-}
-
-// LastElementChild eturns the document's last child Element, or null if there are no child elements.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/lastElementChild
-func (_doc *Document) ChildLast() *Element {
-	child := _doc.Get("lastElementChild")
-	if child.Truthy() && CastNode(child).NodeType() == NT_ELEMENT {
-		return CastElement(child)
-	}
-	errors.ConsoleWarnf("Document.ChildLast failed\n")
-	return new(Element)
-}
-
 // GetElementsByTagName returns an HTMLCollection of elements with the given tag name.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByTagName
-func (_doc *Document) ChildrenByTagName(qualifiedName string) []*Node {
-	nodes := _doc.Call("getElementsByTagName", qualifiedName)
-	if !nodes.IsDefined() {
+func (_doc *Document) ChildrenByTagName(qualifiedName string) []*Element {
+	elems := _doc.Call("getElementsByTagName", qualifiedName)
+	if !elems.IsDefined() {
 		errors.ConsoleWarnf("ChildrenByTagName failed: %q not found\n", qualifiedName)
-		return make([]*Node, 0)
+		return make([]*Element, 0)
 	}
-	return MakeNodes(nodes)
+	return CastElements(elems)
 }
 
 // GetElementsByClassName returns an array-like object of all child elements which have all of the given class name(s).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByClassName
-func (_doc *Document) ChildrenByClassName(classNames string) []*Node {
-	nodes := _doc.Call("getElementsByClassName", classNames)
-	if !nodes.IsDefined() {
+func (_doc *Document) ChildrenByClassName(classNames string) []*Element {
+	elems := _doc.Call("getElementsByClassName", classNames)
+	if !elems.IsDefined() {
 		errors.ConsoleWarnf("ChildrenByClassName failed: %q not found\n", classNames)
-		return make([]*Node, 0)
+		return make([]*Element, 0)
 	}
-	return MakeNodes(nodes)
+	return CastElements(elems)
 }
 
 // GetElementsByName returns a NodeList Collection of elements with a given name attribute in the document.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByName
-func (_doc *Document) ChildrenByName(elementName string) []*Node {
-	nodes := _doc.Call("getElementsByName", elementName)
-	if !nodes.IsDefined() {
+func (_doc *Document) ChildrenByName(elementName string) []*Element {
+	elems := _doc.Call("getElementsByName", elementName)
+	if !elems.IsDefined() {
 		errors.ConsoleWarnf("ChildrenByName failed: %q not found\n", elementName)
-		return make([]*Node, 0)
+		return make([]*Element, 0)
 	}
-	return MakeNodes(nodes)
+	return CastElements(elems)
 }
 
 // GetElementById returns an Element object representing the element whose id property matches the specified string.
@@ -397,13 +325,13 @@ func (_doc *Document) SelectorQueryFirst(selectors string) *Element {
 // querySelectorAll returns a static (not live) NodeList representing a list of the document's elements that match the specified group of selectors.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
-func (_doc *Document) SelectorQueryAll(selectors string) []*Node {
-	nodes := _doc.Call("querySelectorAll", selectors)
-	if !nodes.IsDefined() {
+func (_doc *Document) SelectorQueryAll(selectors string) []*Element {
+	elems := _doc.Call("querySelectorAll", selectors)
+	if !elems.IsDefined() {
 		errors.ConsoleWarnf("SelectorQueryAll failed: %q not found\n", selectors)
 		return nil
 	}
-	return MakeNodes(nodes)
+	return CastElements(elems)
 }
 
 // CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
@@ -521,7 +449,7 @@ func makeDoc_Generic_Event(listener func(event *Event, target *Document)) js.Fun
 		target := CastDocument(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsolePanicf(r, "Error occurs processing event %q on Document", evt.Type())
+				errors.ConsoleStackf(r, "Error occurs processing event %q on Document", evt.Type())
 			}
 		}()
 		listener(evt, target)

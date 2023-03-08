@@ -15,7 +15,7 @@ type HeadElement struct {
 
 // CastHeadElement is casting a js.Value into HTMLHeadElement.
 func CastHeadElement(_jsvp JSValueProvider) *HeadElement {
-	if _jsvp.Value().Type() != TypeObject {
+	if _jsvp.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting HeadElement failed")
 		return new(HeadElement)
 	}

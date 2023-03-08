@@ -84,7 +84,7 @@ type Event struct {
 
 // CastEvent is casting a js.Value into Event.
 func CastEvent(_jsv JSValueProvider) *Event {
-	if _jsv.Value().Type() != TypeObject {
+	if _jsv.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting Event failed")
 		return nil
 	}
@@ -138,7 +138,7 @@ type HashChangeEvent struct {
 
 // CastHashChangeEvent is casting a js.Value into HashChangeEvent.
 func CastHashChangeEvent(_jsv JSValueProvider) *HashChangeEvent {
-	if _jsv.Value().Type() != TypeObject {
+	if _jsv.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting HashChangeEvent failed")
 		return nil
 	}
@@ -184,7 +184,7 @@ type PageTransitionEvent struct {
 
 // CastPageTransitionEvent is casting a js.Value into PageTransitionEvent.
 func CastPageTransitionEvent(_jsv JSValueProvider) *PageTransitionEvent {
-	if _jsv.Value().Type() != TypeObject {
+	if _jsv.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting PageTransitionEvent failed")
 		return nil
 	}
@@ -211,7 +211,7 @@ type BeforeUnloadEvent struct {
 
 // CastBeforeUnloadEvent is casting a js.Value into BeforeUnloadEvent.
 func CastBeforeUnloadEvent(_jsv JSValueProvider) *BeforeUnloadEvent {
-	if _jsv.Value().Type() != TypeObject {
+	if _jsv.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting BeforeUnloadEvent failed")
 		return nil
 	}
@@ -243,7 +243,7 @@ type UIEvent struct {
 
 // CastUIEvent is casting a js.Value into UIEvent.
 func CastUIEvent(_jsv JSValueProvider) *UIEvent {
-	if _jsv.Value().Type() != TypeObject {
+	if _jsv.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting UIEvent failed")
 		return nil
 	}
@@ -291,7 +291,7 @@ type MouseEvent struct {
 
 // CastMouseEvent is casting a js.Value into MouseEvent.
 func CastMouseEvent(_jsv JSValueProvider) *MouseEvent {
-	if _jsv.Value().Type() != TypeObject {
+	if _jsv.Value().Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting MouseEvent failed")
 		return nil
 	}
@@ -418,8 +418,8 @@ type WheelEvent struct {
 
 // CastWheelEvent is casting a js.Value into WheelEvent.
 func CastWheelEvent(_jsv JSValue) *WheelEvent {
-	if _jsv.Type() != TypeObject {
-		errors.ConsoleErrorf("casting MouseEvent failed")
+	if _jsv.Type() != TYPE_OBJECT {
+		errors.ConsoleErrorf("casting WheelEvent failed")
 		return nil
 	}
 	ret := &WheelEvent{}
@@ -464,7 +464,7 @@ type FocusEvent struct {
 
 // NewFocusEventFromJS is casting a js.Value into FocusEvent.
 func CastFocusEvent(_jsv JSValue) *FocusEvent {
-	if _jsv.Type() != TypeObject {
+	if _jsv.Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting FocusEvent failed")
 		return nil
 	}
@@ -504,8 +504,8 @@ type PointerEvent struct {
 
 // CastPointerEvent is casting a js.Value into PointerEvent.
 func CastPointerEvent(_jsv JSValue) *PointerEvent {
-	if _jsv.Type() != TypeObject {
-		errors.ConsoleErrorf("casting FocusEvent failed")
+	if _jsv.Type() != TYPE_OBJECT {
+		errors.ConsoleErrorf("casting PointerEvent failed")
 		return nil
 	}
 	ret := new(PointerEvent)
@@ -582,7 +582,7 @@ type InputEvent struct {
 
 // CastInputEvent is casting a js.Value into InputEvent.
 func CastInputEvent(_jsv JSValue) *InputEvent {
-	if _jsv.Type() != TypeObject {
+	if _jsv.Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting InputEvent failed")
 		return nil
 	}
@@ -633,7 +633,7 @@ type KeyboardEvent struct {
 
 // CastKeyboardEvent is casting a js.Value into KeyboardEvent.
 func CastKeyboardEvent(_jsv JSValue) *KeyboardEvent {
-	if _jsv.Type() != TypeObject {
+	if _jsv.Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting KeyboardEvent failed")
 		return nil
 	}

@@ -27,7 +27,7 @@ type Button struct {
 
 // CastButton is casting a js.Value into HTMLButtonElement.
 func CastButton(_jsvp ick.JSValueProvider) *Button {
-	if _jsvp.Value().Type() != ick.TypeObject || _jsvp.Value().GetString("tagName") != "BUTTON" {
+	if _jsvp.Value().Type() != ick.TYPE_OBJECT || _jsvp.Value().GetString("tagName") != "BUTTON" {
 		errors.ConsoleErrorf("casting HTMLButton failed")
 		return &Button{}
 	}
@@ -164,10 +164,10 @@ func (_btn *Button) ValidationMessage() string {
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement/labels
-func (_btn *Button) Labels() []*ick.Node {
+func (_btn *Button) Labels() []*ick.Element {
 	if !_btn.IsDefined() {
-		return make([]*ick.Node, 0)
+		return make([]*ick.Element, 0)
 	}
-	nodes := _btn.Get("labels")
-	return ick.MakeNodes(nodes)
+	elems := _btn.Get("labels")
+	return ick.CastElements(elems)
 }

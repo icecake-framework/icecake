@@ -61,9 +61,9 @@ tasks:
 
   # task -t ./build/Taskfile.yaml build_ex1 
   test_wasm:
-    dir: '{{.USER_WORKING_DIR}}/internal/wasmtest'
+    dir: '{{.USER_WORKING_DIR}}/internal/testswasm'
     cmds:
-      - GOARCH=wasm GOOS=js go build -o ./test.wasm 
+      - GOARCH=wasm GOOS=js go build -o ./tests.wasm 
 
   # task -t ./build/Taskfile.yaml build_ex1 
   build_ex1:

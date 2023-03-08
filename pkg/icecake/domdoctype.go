@@ -19,7 +19,7 @@ type DocumentType struct {
 func CastDocumentType(_jsvp JSValueProvider) *DocumentType {
 	// TODO: test defer on error
 	jsv := _jsvp.Value()
-	if jsv.Type() != TypeObject {
+	if jsv.Type() != TYPE_OBJECT {
 		errors.ConsoleErrorf("casting DocumentType failed")
 		return &DocumentType{}
 	}
