@@ -19,6 +19,7 @@ func main() {
 			{"Test JSValue", TestJSValue},
 			{"Test Attributes", TestAttributes},
 			{"Test Node", TestNode},
+			{"Test Window", TestWindow},
 		}, nil, nil)
 
 	// let's go

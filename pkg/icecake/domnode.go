@@ -180,23 +180,20 @@ func (_node Node) IsInDOM() bool {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode
 func (_node Node) RootNode() *Node {
-	root := _node.Call("getRootNode")
-	return CastNode(root)
+	return CastNode(_node.Call("getRootNode"))
 }
 
 // ParentNode returns the parent of the specified node in the DOM tree.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/parentNode
 func (_node Node) ParentNode() *Node {
-	parent := _node.Get("parentNode")
-	return CastNode(parent)
+	return CastNode(_node.Get("parentNode"))
 }
 
 // ParentElement returns the DOM node's parent Element, or null if the node either has no parent, or its parent isn't a DOM Element.
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/parentElement
 func (_node Node) ParentElement() *Element {
-	parent := _node.Get("parentElement")
-	return CastElement(parent)
+	return CastElement(_node.Get("parentElement"))
 }
 
 // HasChildNodes returns a boolean value indicating whether the given Node has child nodes or not.
@@ -211,8 +208,7 @@ func (_node *Node) HasChildren() bool {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes
 func (_node *Node) Children() []*Node {
-	nodes := _node.Get("childNodes")
-	return CastNodes(nodes)
+	return CastNodes(_node.Get("childNodes"))
 }
 
 // FilteredChildren make a slice of nodes, scaning recursively children of every existing nodes.
@@ -257,8 +253,7 @@ func (_root *Node) filteredChildren(_filter NODE_TYPE, _deepmax int, _match func
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/firstChild
 func (_node *Node) ChildFirst() *Node {
-	child := _node.Get("firstChild")
-	return CastNode(child)
+	return CastNode(_node.Get("firstChild"))
 }
 
 // LastChild returns the last child of the node.
@@ -267,24 +262,21 @@ func (_node *Node) ChildFirst() *Node {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/lastChild
 func (_node *Node) ChildLast() *Node {
-	child := _node.Get("lastChild")
-	return CastNode(child)
+	return CastNode(_node.Get("lastChild"))
 }
 
 // PreviousSibling  returns the node immediately preceding the specified one in its parent's childNodes list, or null if the specified node is the first in that list.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/previousSibling
 func (_node *Node) SiblingPrevious() *Node {
-	sibling := _node.Get("previousSibling")
-	return CastNode(sibling)
+	return CastNode(_node.Get("previousSibling"))
 }
 
 // NextSibling returns the node immediately following the specified one in their parent's childNodes, or returns null if the specified node is the last child in the parent element.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/nextSibling
 func (_node *Node) SiblingNext() *Node {
-	sibling := _node.Get("nextSibling")
-	return CastNode(sibling)
+	return CastNode(_node.Get("nextSibling"))
 }
 
 // NodeValue is a string containing the value of the current node, if any.

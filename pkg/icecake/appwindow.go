@@ -48,7 +48,7 @@ func GetWindow() Window {
 
 // extract the URL object from the js Location
 func (_win Window) URL() *url.URL {
-	href := _win.Get("Location").Get("href").String()
+	href := _win.Get("location").GetString("href")
 	u, _ := url.Parse(href)
 	return u
 }
@@ -59,7 +59,7 @@ func (_win Window) URL() *url.URL {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Location/assign
 func (_win Window) Navigate(url url.URL) {
-	_win.Get("Location").Call("assign", url.String())
+	_win.Get("location").Call("assign", url.String())
 }
 
 // Load and Display the provided URL.
@@ -69,12 +69,12 @@ func (_win Window) Navigate(url url.URL) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Location/replace
 func (_win Window) Display(url url.URL) {
-	_win.Get("Location").Call("replace", url.String())
+	_win.Get("location").Call("replace", url.String())
 }
 
 // Reloads the current URL, like the Refresh button.
 func (_win Window) Reload() {
-	_win.Get("Location").Call("reload")
+	_win.Get("location").Call("reload")
 }
 
 // Loads a specified resource into a new or existing browsing context (that is, a tab, a window, or an iframe) under a specified name.
@@ -114,14 +114,14 @@ func (_win Window) History() *History {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent
 func (_win Window) UserAgent() string {
-	return _win.Get("navigator").Get("userAgent").String()
+	return _win.Get("navigator").GetString("userAgent")
 }
 
 // Language returns a string representing the preferred language of the user, usually the language of the browser UI.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
 func (_win Window) Language() string {
-	return _win.Get("navigator").Get("language").String()
+	return _win.Get("navigator").GetString("language")
 }
 
 // OnLine Returns the online status of the browser.
@@ -133,14 +133,14 @@ func (_win Window) Language() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine
 func (_win Window) OnLine() bool {
-	return _win.Get("navigator").Get("onLine").Bool()
+	return _win.Get("navigator").GetBool("onLine")
 }
 
 // CookieEnabled eturns a Boolean value that indicates whether cookies are enabled or not.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled
 func (_win Window) CookieEnabled() bool {
-	return _win.Get("navigator").Get("cookieEnabled").Bool()
+	return _win.Get("navigator").GetBool("cookieEnabled")
 }
 
 // InnerWidth returns the interior width of the window in pixels. This includes the width of the vertical scroll bar, if one is present.
