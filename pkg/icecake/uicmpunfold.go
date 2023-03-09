@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/sunraylab/icecake/pkg/errors"
 )
@@ -135,13 +137,36 @@ nextdelim:
 								// fmt.Printf("attribute %v: %q corresponds to a component's data\n", i, aname)
 
 								// feed data struct with the value
+								strav := attrs.GetAttribute(aname)
+
 								fieldvalue := newcmpreflect.Elem().FieldByName(aname)
-								switch fieldvalue.Kind() {
-								case reflect.String:
-									fieldvalue.SetString(attrs.GetAttribute(aname))
+								// DEBUG: fmt.Println("DEBUG:", fieldvalue.Type().String())
+								var erra error
+								switch fieldvalue.Type().String() {
+								case "time.Duration":
+									var d time.Duration
+									d, erra = time.ParseDuration(strav)
+									if erra == nil {
+										fieldvalue.SetInt(int64(d))
+									}
 								default:
-									// TODO: handle other data types
-									errors.ConsoleWarnf("unfoldComponents %q: unmanaged type for attribute %q", newcmpid, aname)
+									switch fieldvalue.Kind() {
+									case reflect.String:
+										fieldvalue.SetString(strav)
+									case reflect.Int64:
+										var i int
+										i, erra = strconv.Atoi(strav)
+										if erra == nil {
+											fieldvalue.SetInt(int64(i))
+										}
+									default:
+										// TODO: handle other data types
+										errors.ConsoleWarnf("unfoldComponents %q: unmanaged type %q for attribute %q", newcmpid, fieldvalue.Kind().String(), aname)
+									}
+								}
+
+								if erra != nil {
+									errors.ConsoleWarnf("unfoldComponents %q: value %q type error for attribute %q: %s", newcmpid, strav, aname, erra.Error())
 								}
 							}
 						}

@@ -169,7 +169,7 @@ func (_app *WebApp) CreateComponent(_composer Composer) (_id string, _newcmp *UI
 	}
 
 	// add css
-	fmt.Println(regentry.String(), first)
+	// DEBUG: fmt.Println(regentry.String(), first)
 
 	if first && regentry.css != "" {
 		style := _app.CreateElement("style")

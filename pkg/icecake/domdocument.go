@@ -301,6 +301,9 @@ func (_doc *Document) ChildrenByName(elementName string) []*Element {
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
 func (_doc *Document) ChildById(_elementId string) (_result *Element) {
 	_elementId = helper.Normalize(_elementId)
+	if _elementId == "" {
+		return new(Element)
+	}
 	elem := _doc.Call("getElementById", _elementId)
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
 		return CastElement(elem)

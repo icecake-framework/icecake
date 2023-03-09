@@ -8,7 +8,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"time"
 
 	_ "embed"
@@ -80,12 +79,14 @@ func OnClickBtn2(event *ick.MouseEvent, target *ick.Element) {
 	}
 	notif.MountClasses = ick.ParseClasses("is-danger is-light")
 	notif.MountAttributes, _ = ick.ParseAttributes("role='alert'")
-	notif.UpdateUI = func(uicomponent any) {
-		uinotify := uicomponent.(*ui.Notify)
-		s := math.Round(uinotify.TimeLeft().Seconds())
-		idtl := uinotify.Id() + "-timeleft"
-		webapp.ChildById(idtl).RenderValue("%v", s)
-	}
+	// notif.UpdateUI = func(uicomponent any) {
+	// 	uinotify := uicomponent.(*ui.Notify)
+	// 	s := math.Round(uinotify.TimeLeft().Seconds())
+	// 	idtl := uinotify.Id() + "-timeleft"
+	// 	webapp.ChildById(idtl).RenderValue("%v", s)
+	// }
+
+	//notif.Clo
 
 	// Insert the component into the DOM
 	webapp.ChildById("notif_container").RenderComponent(notif, nil)

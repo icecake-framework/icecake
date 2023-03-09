@@ -985,8 +985,7 @@ func (_elem *Element) RenderValue(format string, _value ...any) {
 // The element must be in the DOM to
 func (_elem *Element) RenderTemplate(_unsafeHtmlTemplate string, _data any) (_err error) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
-		errors.ConsoleWarnf("Unable to render Html on nil element or for an element not into the DOM")
-		return
+		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
 	}
 	name := _elem.TagName() + "/" + _elem.Id()
 	var html string

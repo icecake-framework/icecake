@@ -11,7 +11,7 @@ type UIComponent struct {
 
 	MountClasses    *Classes    // classes added to the component during the mounting stage
 	MountAttributes *Attributes // attributes addes to the component during the mounting stage
-	UpdateUI        func(any)   // Optional function called to update UI
+	//UpdateUI        func(any)   // Optional function called to update UI
 }
 
 // CastUIComponent is casting a js.Value into UIComponent.
@@ -26,7 +26,6 @@ func CastUIComponent(_jsv JSValueProvider) *UIComponent {
 }
 
 func (c *UIComponent) Show() {
-	fmt.Println("show")
 	c.Attributes().RemoveAttribute("hidden")
 
 	// Force a browser re-paint so the browser will realize the
@@ -36,23 +35,31 @@ func (c *UIComponent) Show() {
 }
 
 func (c *UIComponent) Hide() {
-	fmt.Println("hide")
 	c.Classes().RemoveTokens("show")
 	c.Attributes().SetAttribute("hidden", "")
 }
 
+func (c *UIComponent) UpdateUI() {
+	// DEBUG:
+	fmt.Printf("UIComponent.UpdateUI does nothing by default\n")
+}
+
 func (c *UIComponent) Container() (_tagname string, _classes string, _attrs string) {
-	fmt.Printf("Component.Container returns default <SPAN> value\n")
+	// DEBUG:
+	fmt.Printf("UIComponent.Container returns default <SPAN> value\n")
+
 	return "SPAN", "", ""
 }
 
 func (c *UIComponent) Template() (_html string) {
-	fmt.Printf("Component.Template returns default empty value\n")
+	// DEBUG:
+	fmt.Printf("UIComponent.Template returns default empty value\n")
+
 	return ""
 }
 
 func (c *UIComponent) AddListeners() {
-	fmt.Printf("Component.AddListeners is empty\n")
+	fmt.Printf("UIComponent.AddListeners is empty\n")
 }
 
 func (c *UIComponent) GetInitClasses() *Classes {
@@ -64,6 +71,10 @@ func (c *UIComponent) GetInitAttributes() *Attributes {
 }
 
 /*****************************************************************************/
+
+type UIUpdater interface {
+	UpdateUI()
+}
 
 type Composer interface {
 	Wrap(JSValueProvider)

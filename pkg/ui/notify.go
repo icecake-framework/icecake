@@ -13,10 +13,10 @@ import (
 ******************************************************************************/
 
 //go:embed "notify.css"
-var css string
+var notifycss string
 
 func init() {
-	ick.App.RegisterComponent("ick-notify", Notify{}, css)
+	ick.App.RegisterComponent("ick-notify", Notify{}, notifycss)
 }
 
 type Notify struct {
@@ -45,7 +45,7 @@ func (c *Notify) TimeLeft() time.Duration {
 }
 
 func (c *Notify) Container() (_tagname string, _classes string, _attrs string) {
-	return "div", "notification ick-notify", "hidden"
+	return "div", "ick-notify notification", "hidden"
 }
 
 func (c *Notify) Template() (_html string) {
@@ -62,29 +62,29 @@ func (c *Notify) AddListeners() {
 		c.Remove()
 	})
 
-	if c.Timeout != 0 {
-		if c.TickerStep == 0 {
-			c.TickerStep = 1 * time.Second
-		}
-		c.PopupTime = time.Now()
-		if c.UpdateUI != nil {
-			go func() {
-				c.ticker = time.NewTicker(c.TickerStep)
-				if c.IsInDOM() {
-					c.UpdateUI(c)
-				}
-				for _ = range c.ticker.C {
-					if c.IsInDOM() {
-						c.UpdateUI(c)
-					}
-				}
-			}()
-		}
-		c.timer = time.AfterFunc(c.Timeout, func() {
-			c.Stop()
-			c.Remove()
-		})
-	}
+	// if c.Timeout != 0 {
+	// 	if c.TickerStep == 0 {
+	// 		c.TickerStep = 1 * time.Second
+	// 	}
+	// 	c.PopupTime = time.Now()
+	// 	if c.UpdateUI != nil {
+	// 		go func() {
+	// 			c.ticker = time.NewTicker(c.TickerStep)
+	// 			if c.IsInDOM() {
+	// 				c.UpdateUI(c)
+	// 			}
+	// 			for _ = range c.ticker.C {
+	// 				if c.IsInDOM() {
+	// 					c.UpdateUI(c)
+	// 				}
+	// 			}
+	// 		}()
+	// 	}
+	// 	c.timer = time.AfterFunc(c.Timeout, func() {
+	// 		c.Stop()
+	// 		c.Remove()
+	// 	})
+	// }
 }
 
 func (c *Notify) Stop() {

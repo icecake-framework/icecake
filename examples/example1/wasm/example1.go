@@ -17,8 +17,8 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 )
 
-//go:embed hello1.md
-var mymarkdown string
+//go:embed readme.md
+var readme string
 
 // the main func is required by the wasm GO builder
 // outputs will appears in the console of the browser
@@ -42,7 +42,7 @@ func main() {
 
 	// To see what happend with a wrong html element ID,
 	// open the console on the browser side.
-	data1.Name = "Carol"
+	data1.Name = "Carole"
 	doc.ChildById("ex1c").RenderTemplate(htmlTemplate, data1)
 
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.
@@ -52,7 +52,7 @@ func main() {
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive
 	var data2 struct{ Brand string }
 	data2.Brand = "<span class='brand'>Icecake</span>"
-	markdown.RenderMarkdown(doc.ChildById("ex1e"), mymarkdown, data2,
+	markdown.RenderMarkdown(doc.ChildById("readme"), readme, data2,
 		goldmark.WithRendererOptions(
 			html.WithUnsafe(),
 		),

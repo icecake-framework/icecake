@@ -65,36 +65,16 @@ tasks:
     cmds:
       - GOARCH=wasm GOOS=js go build -o ./tests.wasm 
 
-  # task -t ./build/Taskfile.yaml build_ex1 
-  build_ex1:
+  # EXAMPLE=example3 task -t ./build/Taskfile.yaml build_example
+  build_example:
     dir: '{{.USER_WORKING_DIR}}/examples'
     sources: 
-      - "./example1/wasm/*.*"
-      - "./../pkg/**/*"
-    cmds:
-      - GOARCH=wasm GOOS=js go build -o ./website/example1.wasm ./example1/wasm/
-
-  # task -t ./build/Taskfile.yaml build_ex2 
-  build_ex2:
-    dir: '{{.USER_WORKING_DIR}}/examples'
-    sources: 
-      - "./example2/wasm/*.*"
+      - "./{{.EXAMPLE}}/wasm/*.*"
       - "./../pkg/**/*"
       - "./../assets/*"
     cmds:
       - cp -R ./../assets/icecake.js ./website
-      - GOARCH=wasm GOOS=js go build -o ./website/example2.wasm ./example2/wasm/
-
-  # task -t ./build/Taskfile.yaml build_ex3 
-  build_ex3:
-    dir: '{{.USER_WORKING_DIR}}/examples'
-    sources: 
-      - "./example3/wasm/*.*"
-      - "./../pkg/**/*"
-      - "./../assets/*"
-    cmds:
-      - cp -R ./../assets/icecake.js ./website
-      - GOARCH=wasm GOOS=js go build -o ./website/example3.wasm ./example3/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./website/{{.EXAMPLE}}.wasm ./{{.EXAMPLE}}/wasm/
 
   # task -t ./build/Taskfile.yaml dev_front --watch 
   dev_front:
