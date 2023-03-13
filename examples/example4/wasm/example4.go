@@ -36,13 +36,13 @@ func main() {
 		CanDelete: true,
 		Message:   "This second message use the BULMA <i>is-info</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message.",
 	}
-	msg2.MountClasses = ick.ParseClasses("is-info")
+	msg2.Classes().AddTokens("is-info")
 	webapp.ChildById("msg-container").RenderComponent(msg2, nil)
 
 	msg3 := &ui.Message{
 		Message: "<strong>3rd message:</strong>&nbsp;this third message don't have header",
 	}
-	msg3.MountClasses = ick.ParseClasses("is-warning")
+	msg3.Classes().AddTokens("is-warning")
 	webapp.ChildById("msg-container").RenderComponent(msg3, nil)
 
 	// let's go

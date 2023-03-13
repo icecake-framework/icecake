@@ -41,6 +41,9 @@ The Directory structure follows [go ecosystem recommendation](https://github.com
 ```bash
 icecake
 │   ├── readme.md
+│   ├── go.mod
+│   ├── go.sum
+│   ├── LICENCE
 │   └── .gitignore
 │
 ├── configs                         # congigurations files, loaded at server startup
@@ -51,11 +54,16 @@ icecake
 │   └── Taskfile.yaml               # building task configuration, ic. autobuild the front
 │
 ├── doc                             # overall doc
+│   ├── cheatsheet.ods              # overview of icecake structs and methods
 │   └── [*.*]                       
 │
 ├── cmd
 │   └── icecake                     # the icecake CLI command required to run the SPA server
 │       └── icecake.go          
+│
+├── internal
+│   ├── helper
+│   └── testwasm                    # wasm test environment
 │
 ├── pkg
 │   ├── spaserver                   # SPA server 
@@ -130,31 +138,21 @@ Your settings.json file should look something like this:
 }
 ```
 
-## Testing
+## Testing wasm code
 
-Useful read about [go data race detector](https://go.dev/doc/articles/race_detector#How_To_Use)
+Testing front with wasm and DOM components can not be executed with the standard `go test` command. To test wasm code into a browser well we need to run a dedicated html page which will execute the wasm test code.
 
-To be able to test wasm code on the browser, you need to install [wasmbrowsertest](https://github.com/agnivade/wasmbrowsertest):
+Wasm test code and environement is located into `internal/testwasm`.
 
-```bash
-$ go install github.com/agnivade/wasmbrowsertest@latest
-$ mv $(go env GOBIN)/wasmbrowsertest $(go env GOBIN)/go_js_wasm_exec
-```
+Run the task `task -t ./build/Taskfile.yaml test_wasm` to build all `test*.go` files. `tests.go` is the wasm entry point that will be executed when you load the dedicated HTML page `internal/testswasm/index.html`
 
-and if you're working on WSL you need to customize and create a command to enable lanching chrome from the command line:
-
-[see build/google-chrome/google-chrome.go](./build/google-chrome/google-chrome.go)
-
-```bash
-cd build
-go build -o ~/google-chrome ./google-chrome/google-chrome.go
-```
-
-Run the `unit_test` task to run both testing pkg and wasm:
+## Testing the back 
 
 ```bash
 $ task -t ./build/Taskfile.yaml unit_test
 ```
+
+_Useful read about [go data race detector](https://go.dev/doc/articles/race_detector#How_To_Use)_
 
 ## Licence
 

@@ -82,7 +82,7 @@ func updateUI() {
 
 func updateDarkMode(dark bool) {
 	if dark {
-		webapp.Body().Classes().SetTokens("dark")
+		webapp.Body().Classes().AddTokens("dark")
 	} else {
 		webapp.Body().Classes().RemoveTokens("dark")
 	}

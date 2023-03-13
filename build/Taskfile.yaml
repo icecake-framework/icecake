@@ -59,7 +59,7 @@ tasks:
       - cp -R ./web/static/** ./tmp/website/
       - find ./examples -type f | xargs -i cp {} ./tmp/website/
 
-  # task -t ./build/Taskfile.yaml build_ex1 
+  # task -t ./build/Taskfile.yaml test_wasm 
   test_wasm:
     dir: '{{.USER_WORKING_DIR}}/internal/testswasm'
     cmds:

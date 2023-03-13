@@ -25,11 +25,11 @@ type Delete struct {
 	clock.Clock
 }
 
-func (_del *Delete) Container() (_tagname string, _classes string, _attrs string) {
+func (_del *Delete) Container(_compid string) (_tagname string, _classes string, _attrs string) {
 	return "button", "ick-delete delete", "aria-label='delete'"
 }
 
-func (_del *Delete) AddListeners() {
+func (_del *Delete) Listeners() {
 	if _del.TargetID != "" {
 		_del.AddMouseEvent(ick.MOUSE_ONCLICK, func(*ick.MouseEvent, *ick.Element) {
 			_del.Remove()

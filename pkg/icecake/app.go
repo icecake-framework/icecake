@@ -119,14 +119,16 @@ func (_app *WebApp) LookupComponent(typ reflect.Type) *componentRegEntry {
 
 func (_app *WebApp) CreateComponent(_composer Composer) (_id string, _newcmp *UIComponent, _err error) {
 
-	// check if _composer matches with a registered component type
+	// check if _composer matches with a registered component type, and get a fresh component id
 	regentry := _app.LookupComponent(reflect.TypeOf(_composer))
 	if regentry == nil {
 		return "", nil, errors.ConsoleErrorf("CreateComponent failed: non registered component %q\n", reflect.TypeOf(_composer).String())
 	}
+	var first bool
+	_id, first = _app.NextComponentId(regentry.ickname)
 
 	// create the HTML element
-	tagname, strclasses, strattrs := _composer.Container()
+	tagname, strclasses, strattrs := _composer.Container(_id)
 	tagname = helper.Normalize(tagname)
 	elem := GetDocument().CreateElement(tagname)
 	if !elem.IsDefined() {
@@ -135,18 +137,15 @@ func (_app *WebApp) CreateComponent(_composer Composer) (_id string, _newcmp *UI
 	}
 
 	// set the container classes
-	strclasses = strings.Trim(strclasses, " ")
-	elem.Classes().Parse(strclasses)
+	_err = elem.Classes().ParseTokens(strclasses)
+	if _err != nil {
+		return "", nil, errors.ConsoleErrorf("CreateComponent %q failed: %s\n", regentry.ickname, _err)
+	}
 
 	// set the container attributes
-	var attrs *Attributes
-	strattrs = strings.Trim(strattrs, " ")
-	attrs, _err = ParseAttributes(strattrs)
+	_err = elem.Attributes().ParseAttributes(strattrs)
 	if _err != nil {
-		// TODO: handle attribute parsing errors
 		return "", nil, errors.ConsoleErrorf("CreateComponent %q failed: %s\n", regentry.ickname, _err)
-	} else if attrs.Count() > 0 {
-		elem.Attributes().SetAttributes(*attrs)
 	}
 
 	// wrap the composer with the newly created component
@@ -154,19 +153,11 @@ func (_app *WebApp) CreateComponent(_composer Composer) (_id string, _newcmp *UI
 	// TODO: remove wrapping and wotk with _newcomp
 	_composer.Wrap(elem)
 
-	var first bool
-	_id, first = _app.NextComponentId(regentry.ickname)
 	_newcmp.SetId(_id)
 
 	// init classes and attributes
-	initc := _composer.GetInitClasses()
-	if initc != nil {
-		_newcmp.Classes().SetClasses(*initc)
-	}
-	inita := _composer.GetInitAttributes()
-	if inita != nil {
-		_newcmp.Attributes().SetAttributes(*inita)
-	}
+	_newcmp.Classes().AddClasses(*_composer.Classes())
+	_newcmp.Attributes().SetAttributes(*_composer.Attributes())
 
 	// add css
 	// DEBUG: fmt.Println(regentry.String(), first)

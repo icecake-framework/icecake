@@ -11,60 +11,61 @@ import (
 // Classes represents a set of space-separated tokens.
 // Such a set is returned by Element.classList or HTMLLinkElement.relList, and many others.
 //
-// # Need to call ToDOM() to update the DOM with internal value avec any change
-//
 // https://developer.mozilla.org/en-US/docs/Web/API/Classes
 type Classes struct {
-	jslist *JSValue // the corresponding DOMTokenList. The DOM is only updated when jsList is not nil.
-	tokens []string // the internal slice of tokens
+	jslist *JSValue // the corresponding DOMTokenList. if nil methods work with the cache.
+	owner  *Element // the Element the classes belongs to.
+	cache  []string // the internal slice of tokens only used when the classes object does not belong to an element yet.
 }
 
 // NewClasses init a new Classes and casts a js.Value into DOMTokenList if not nil.
-func NewClasses(_jsvp JSValueProvider) *Classes {
-	cast := new(Classes)
-	cast.tokens = make([]string, 0)
-	if _jsvp != nil {
-		v := _jsvp.Value()
-		cast.jslist = &v
-		str := v.Get("value").String()
-		split := strings.Split(str, " ")
-		cast.SetTokens(split...)
-	}
-	return cast
-}
-
-// ParseClasses split _str into classes separated by spaces
-func ParseClasses(_str string) *Classes {
-	classes := NewClasses(nil)
-	classes.parseTokens(_str)
-	return classes
-}
+// func NewClasses(_jsvp JSValueProvider) *Classes {
+// 	cast := new(Classes)
+// 	cast.tokens = make([]string, 0)
+// 	if _jsvp != nil {
+// 		v := _jsvp.Value()
+// 		cast.jslist = &v
+// 		str := v.Get("value").String()
+// 		split := strings.Split(str, " ")
+// 		cast.SetTokens(split...)
+// 	}
+// 	return cast
+// }
 
 /****************************************************************************
 * TokenList's properties
 *****************************************************************************/
 
-// Length returns the number of tokens in the list.
-func (_classes Classes) Count() int {
-	return len(_classes.tokens)
-}
-
 // String returns the value of the list serialized as a string
 //
-// https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/value
+// https://developer.mozilla.org/en-US/docs/Web/API/element/classname
 func (_classes Classes) String() (_str string) {
-	for _, v := range _classes.tokens {
-		_str += v + " "
+	if _classes.owner != nil {
+		_str = _classes.owner.GetString("className")
+	} else if _classes.cache != nil {
+		for _, v := range _classes.cache {
+			_str += v + " "
+		}
+		_str = strings.TrimRight(_str, " ")
 	}
-	_str = strings.TrimRight(_str, " ")
 	return _str
+}
+
+// Length returns the number of tokens in the list.
+func (_classes Classes) Count() int {
+	if _classes.jslist != nil {
+		return _classes.jslist.GetInt("length")
+	}
+	return len(_classes.cache)
 }
 
 // Item returns an item in the list, determined by its position in the list, its index.
 // Returns an empty string if the index is out of range.
 func (_classes Classes) At(_index int) string {
-	if _index >= 0 && _index < len(_classes.tokens) {
-		return _classes.tokens[_index]
+	if _classes.jslist != nil {
+		return _classes.jslist.Call("item", _index).String()
+	} else if _classes.cache != nil && _index >= 0 && _index < len(_classes.cache) {
+		return _classes.cache[_index]
 	}
 	return ""
 }
@@ -73,41 +74,49 @@ func (_classes Classes) At(_index int) string {
 // Has is the alias of the webapi.Contains
 // token is helper.Normalized before check
 func (_classes Classes) Has(_token string) bool {
-	for _, v := range _classes.tokens {
-		if v == _token {
-			return true
-		}
+	if _classes.jslist != nil {
+		return _classes.jslist.Call("contains", _token).Bool()
+	} else {
+		return _classes.hasCache(_token)
 	}
 	return false
+}
+
+// SetClasses adds token in the list. If a token already exist it's not added to avoid duplicate.
+//
+// Case sensitive.
+func (_classes *Classes) AddClasses(_newclasses Classes) *Classes {
+	if _classes.jslist != nil {
+		str := _newclasses.String()
+		if str != "" {
+			_classes.jslist.Set("value", str)
+		}
+	} else {
+		_classes.addCache(_newclasses.cache...)
+	}
+	return _classes
 }
 
 // Parse clears and sets the list to the given value.
 // returns the chaining call value.
 //
 // warning: value is case sensitive
-func (_classes *Classes) Parse(_value string) *Classes {
-	if _classes.parseTokens(_value) && _classes.jslist != nil {
+func (_classes *Classes) ParseTokens(_value string) (_err error) {
+	_err = _classes.parseCache(_value)
+	if _classes.jslist != nil {
 		_classes.jslist.Set("value", _classes.String())
 	}
-	return _classes
-}
-
-// SetClasses adds token in the list. If a token already exist it's not added to avoid duplicate.
-//
-// Case sensitive.
-func (_classes *Classes) SetClasses(_newclasses Classes) *Classes {
-	if _classes.setTokens(_newclasses.tokens...) && _classes.jslist != nil {
-		_classes.jslist.Set("value", _classes.String())
-	}
-	return _classes
+	return _err
 }
 
 // SetTokens adds token in the list. If a token already exist it's not added to avoid duplicate.
 //
 // Case sensitive.
-func (_classes *Classes) SetTokens(_tokens ...string) *Classes {
-	if _classes.setTokens(_tokens...) && _classes.jslist != nil {
+func (_classes *Classes) AddTokens(_tokens ...string) *Classes {
+	if _classes.jslist != nil {
 		_classes.jslist.Set("value", _classes.String())
+	} else {
+		_classes.addCache(_tokens...)
 	}
 	return _classes
 }
@@ -115,76 +124,94 @@ func (_classes *Classes) SetTokens(_tokens ...string) *Classes {
 // Remove removes tokens in the list or does nothing for the one that does not exist.
 // Returns the tokenlist to enable chaining calls.
 func (_classes *Classes) RemoveTokens(_tokens ...string) *Classes {
-	if _classes.removeTokens(_tokens...) && _classes.jslist != nil {
+	if _classes.jslist != nil {
 		_classes.jslist.Set("value", _classes.String())
+	} else {
+		_classes.removeCache(_tokens...)
 	}
 	return _classes
 }
 
 // Toggle removes an existing token from the list or add it if it doesn't exist in the list.
-func (_classes *Classes) Toggle(_token string) bool {
-	updated := false
-	if _classes.Has(_token) {
-		updated = _classes.removeTokens(_token)
+// returns true is the token is in the list after the call.
+func (_classes *Classes) Toggle(_token string) (_isin bool) {
+	if _classes.jslist != nil {
+		return _classes.jslist.Call("toggle", _token).Bool()
 	} else {
-		updated = _classes.setTokens(_token)
+		if _classes.hasCache(_token) {
+			_classes.removeCache(_token)
+		} else {
+			_classes.addCache(_token)
+			_isin = true
+		}
 	}
-	if updated && _classes.jslist != nil {
-		_classes.jslist.Set("value", _classes.String())
-	}
-	return updated
+	return _isin
 }
 
-// Replace chain a Remove and a Add
-func (_classes *Classes) Replace(_token string, _withToken string) bool {
-	updated := _classes.removeTokens(_token)
-	updated = _classes.setTokens(_withToken) || updated
-	if updated && _classes.jslist != nil {
-		_classes.jslist.Set("value", _classes.String())
+// Replace chains a Remove and a Add
+func (_classes *Classes) Replace(_token string, _withToken string) {
+	if _classes.jslist != nil {
+		_classes.jslist.Call("replace", _token, _withToken)
+	} else {
+		_classes.removeCache(_token)
+		_classes.addCache(_withToken)
 	}
-	return updated
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+* PRIVATE
+*****************************************************************************/
+
+func (_classes Classes) hasCache(_token string) bool {
+	if _classes.cache != nil {
+		for _, v := range _classes.cache {
+			if v == _token {
+				return true
+			}
+		}
+	}
+	return false
+}
 
 // Set adds token in the list. If a token already exist it's not added to avoid duplicate.
 //
 // Case sensitive.
-func (_classes *Classes) setTokens(_tokens ...string) (_updated bool) {
-	_updated = false
+func (_classes *Classes) addCache(_tokens ...string) (_err bool) {
+	if _classes.cache == nil {
+		_classes.cache = make([]string, 0)
+	}
 	for _, t := range _tokens {
-		if !_classes.Has(t) {
-			_classes.tokens = append(_classes.tokens, t)
-			_updated = true
+		t = strings.Trim(t, " ")
+		if !_classes.hasCache(t) {
+			// TODO: check error
+			_classes.cache = append(_classes.cache, t)
 		}
 	}
-	return _updated
+	return _err
 }
 
 // Remove removes tokens in the list or does nothing for the one that does not exist.
 // Returns true if at least one token has been removed
 //
 // Case sensitive.
-func (_classes *Classes) removeTokens(_tokens ...string) (_updated bool) {
-	_updated = false
-	for i, t := range _classes.tokens {
-		for _, r := range _tokens {
-			if t == r {
-				_classes.tokens = append(_classes.tokens[:i], _classes.tokens[i+1:]...)
-				_updated = true
+func (_classes *Classes) removeCache(_tokens ...string) {
+	if _classes.cache != nil {
+		for i, t := range _classes.cache {
+			for _, r := range _tokens {
+				if t == r {
+					_classes.cache = append(_classes.cache[:i], _classes.cache[i+1:]...)
+				}
 			}
 		}
 	}
-	return _updated
 }
 
 // Parse clears and sets the list to the given value
 //
 // warning value is case sensitive
-func (_classes *Classes) parseTokens(_value string) (_changed bool) {
-	before := _classes.String()
+func (_classes *Classes) parseCache(_value string) (_err error) {
+	_classes.cache = nil
 	split := strings.Split(_value, " ")
-	_classes.setTokens(split...)
-	after := _classes.String()
-	return after != before
+	_classes.addCache(split...)
+	return nil
 }

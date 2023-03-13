@@ -31,6 +31,9 @@ const (
 // https://developer.mozilla.org/en-US/docs/Web/API/Element
 type Element struct {
 	Node
+
+	classes    Classes
+	attributes Attributes
 }
 
 // CastElement is casting a js.Value into Element.
@@ -125,6 +128,32 @@ func (_elem *Element) SetId(_id string) *Element {
 	return _elem
 }
 
+// Classes returns the class object related to _elem.
+// If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+func (_elem *Element) Classes() *Classes {
+	if _elem.IsDefined() {
+		jslist := _elem.Get("classList")
+		_elem.classes.owner = _elem
+		_elem.classes.jslist = &jslist
+	}
+	return &_elem.classes
+}
+
+// Classes returns the class object related to _elem.
+// If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+func (_elem *Element) Attributes() *Attributes {
+	if _elem.IsDefined() {
+		//jslist := _elem.Get("classList")
+		_elem.attributes.owner = _elem
+		//_elem.classes.jslist = &jslist
+	}
+	return &_elem.attributes
+}
+
 // ClassString returns classes in asingle string
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/className
@@ -165,49 +194,6 @@ func (_elem *Element) SetId(_id string) *Element {
 // 	return _elem
 // }
 
-// Classes returns a live DOMTokenList collection of the class attributes of the element.
-// This can then be used to manipulate the class list.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-func (_elem *Element) Classes() *Classes {
-	if !_elem.IsDefined() {
-		return NewClasses(nil)
-	}
-	value := _elem.Get("classList")
-	return NewClasses(value)
-}
-
-// Attributes returns a live collection of all attribute nodes registered to the specified node.
-// It is a NamedNodeMap, not an Array, so it has no Array methods and the Attr nodes' indexes may differ among browsers.
-// To be more specific, attributes is a key/value pair of strings that represents any information regarding that attribute.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes
-func (_elem *Element) Attributes() *Attributes {
-	if !_elem.IsDefined() {
-		return NewAttributes(nil)
-	}
-	attrs := NewAttributes(_elem)
-	namedNodeMap := _elem.Get("attributes")
-	if !namedNodeMap.IsDefined() {
-		errors.ConsoleLogf("No attributes found")
-		return attrs
-	}
-
-	var value string
-	data := namedNodeMap.Get("length")
-	len := data.Int()
-	for i := 0; i < len; i++ {
-		item := namedNodeMap.Call("item", uint(i))
-		name := item.Get("name").String()
-		jsvalue := item.Get("value")
-		if jsvalue.Truthy() {
-			value = jsvalue.String()
-		}
-		attrs.SetAttribute(name, value)
-	}
-	return attrs
-}
-
 // func (_elem *Element) SetAttributes(_attrs Attributes) {
 // 	anames := _attrs.Sort()
 // 	for _, name := range anames {
@@ -216,9 +202,9 @@ func (_elem *Element) Attributes() *Attributes {
 // 	}
 // }
 
-func (_elem *Element) SetAttribute(_Name string, _Value string) {
-	_elem.Call("setAttribute", _Name, _Value)
-}
+// func (_elem *Element) SetAttribute(_Name string, _Value string) {
+// 	_elem.Call("setAttribute", _Name, _Value)
+// }
 
 // InnerHTML gets or sets the HTML or XML markup contained within the element.
 //
@@ -1009,7 +995,7 @@ func (_elem *Element) RenderChildrenValue(_name string, _format string, _value .
 
 	children := _elem.FilteredChildren(NT_ELEMENT, func(_node *Node) bool {
 		// BUG:
-		namedvalue := CastElement(_node).Attributes().GetAttribute("data-ick-namedvalue")
+		namedvalue, _ := CastElement(_node).attributes.Attribute("data-ick-namedvalue")
 		return _name == namedvalue
 	})
 
@@ -1041,7 +1027,7 @@ func (_elem *Element) RenderComponent(_newcmp Composer, _appdata any) (_newcmpid
 		App: _appdata,
 	}
 	// TODO: handle unfolding errors
-	html, _ := unfoldComponents(unfoldedCmps, name, _newcmp.Template(), data, 0)
+	html, _ := unfoldComponents(unfoldedCmps, name, _newcmp.Body(), data, 0)
 	newcmpelem.SetInnerHTML(html)
 
 	// Insert the component element into the DOM
@@ -1049,9 +1035,12 @@ func (_elem *Element) RenderComponent(_newcmp Composer, _appdata any) (_newcmpid
 
 	// addlisteners
 	showUnfoldedComponents(unfoldedCmps)
-	_newcmp.AddListeners()
-
+	_newcmp.Listeners()
 	_newcmp.Show()
 
 	return _newcmpid, nil
 }
+
+/*****************************************************************************
+* PRIVATE
+*****************************************************************************/

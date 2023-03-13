@@ -75,7 +75,7 @@ nextdelim:
 
 			} else {
 
-				// we got a delim_close so we've a new ick element, extract its content
+				// we got a delim_close so we've a new ick-element, extract its content
 				inside := htmlstring[0:to]
 				tagname, leftinside, _ := strings.Cut(inside, " ")
 				htmlstring = htmlstring[to+len(delim_close):] // scrap it and keep what's left
@@ -89,6 +89,8 @@ nextdelim:
 
 				// does this tag refer to a registered component ?
 				if regentry, found := App.CmpRegistry["ick-"+tagname]; found {
+
+					// process and instantiate new component
 
 					// Instantiate the component
 					newcmpreflect := reflect.New(regentry.typ)
@@ -104,7 +106,7 @@ nextdelim:
 						// add the component to the add it to the unfolded stack
 						_unfoldedCmps[newcmpid] = newcmpreflect.Interface().(Composer) // newcmp
 
-						// process component's attributes
+						// process embeded component's attributes
 						var attrs *Attributes
 						attrs, _err = ParseAttributes(leftinside)
 						if _err != nil {
@@ -126,9 +128,9 @@ nextdelim:
 
 								// this attribute is not a field of the componenent
 								// keep it as is unless it is the class attribute, in this case, add the tokens
-								aval := attrs.GetAttribute(aname)
+								aval, _ := attrs.Attribute(aname)
 								if aname == "class" {
-									newcmpelem.Classes().SetClasses(*ParseClasses(aval))
+									newcmpelem.Classes().AddTokens(aval)
 								} else {
 									newcmpelem.SetAttribute(aname, aval)
 								}
@@ -137,7 +139,7 @@ nextdelim:
 								// fmt.Printf("attribute %v: %q corresponds to a component's data\n", i, aname)
 
 								// feed data struct with the value
-								strav := attrs.GetAttribute(aname)
+								strav, _ := attrs.Attribute(aname)
 
 								fieldvalue := newcmpreflect.Elem().FieldByName(aname)
 								// DEBUG: fmt.Println("DEBUG:", fieldvalue.Type().String())
@@ -178,7 +180,7 @@ nextdelim:
 							App: _data,
 						}
 						var htmlin string
-						htmlin, _err = unfoldComponents(_unfoldedCmps, newcmpid, newcmp.Template(), data, _deep+1)
+						htmlin, _err = unfoldComponents(_unfoldedCmps, newcmpid, newcmp.Body(), data, _deep+1)
 						newcmpelem.SetInnerHTML(htmlin)
 						htmlout := newcmpelem.OuterHTML()
 
@@ -202,7 +204,7 @@ func showUnfoldedComponents(_unfoldedCmps map[string]Composer) {
 	for id, ufc := range _unfoldedCmps {
 		e := GetDocument().ChildById(id)
 		ufc.Wrap(e)
-		ufc.AddListeners()
+		ufc.Listeners()
 		ufc.Show()
 	}
 }
