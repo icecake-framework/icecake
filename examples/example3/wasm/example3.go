@@ -15,8 +15,8 @@ import (
 
 	"github.com/sunraylab/icecake/pkg/clock"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
-	ick "github.com/sunraylab/icecake/pkg/icecake"
 	"github.com/sunraylab/icecake/pkg/ui"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/renderer/html"
@@ -25,7 +25,7 @@ import (
 //go:embed "readme.md"
 var readme string
 
-var webapp *ick.WebApp
+var webapp *wick.WebApp
 
 // the main func is required by the wasm GO builder
 // outputs will appears in the console of the browser
@@ -35,7 +35,7 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	// we must call the icecake webapp factory once
-	webapp = ick.NewWebApp()
+	webapp = wick.NewWebApp()
 
 	// render readme
 	markdown.RenderMarkdown(webapp.ChildById("readme"), readme, nil,
@@ -46,10 +46,10 @@ func main() {
 		))
 
 	// add global event handling
-	webapp.ChildById("btn1").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtn1)
-	webapp.ChildById("btn2").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtn2)
-	webapp.ChildById("btn3").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtn3)
-	webapp.ChildById("btn4").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtn4)
+	webapp.ChildById("btn1").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtn1)
+	webapp.ChildById("btn2").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtn2)
+	webapp.ChildById("btn3").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtn3)
+	webapp.ChildById("btn4").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtn4)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
@@ -60,7 +60,7 @@ func main() {
 * browser event handlers
 ******************************************************************************/
 
-func OnClickBtn1(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtn1(event *wick.MouseEvent, target *wick.Element) {
 
 	// instantiate the Notify component and init its data
 	notif := &ui.Notify{
@@ -72,7 +72,7 @@ func OnClickBtn1(event *ick.MouseEvent, target *ick.Element) {
 	webapp.ChildById("notif_container").RenderComponent(notif, nil)
 }
 
-func OnClickBtn2(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtn2(event *wick.MouseEvent, target *wick.Element) {
 
 	// instantiate the Notify component and init its data
 	notif := new(ui.Notify)
@@ -91,7 +91,7 @@ func OnClickBtn2(event *ick.MouseEvent, target *ick.Element) {
 	webapp.ChildById("notif_container").RenderComponent(notif, nil)
 }
 
-func OnClickBtn3(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtn3(event *wick.MouseEvent, target *wick.Element) {
 
 	// instantiate the Notify component and init its data
 	notif := &ui.Notify{
@@ -104,7 +104,7 @@ func OnClickBtn3(event *ick.MouseEvent, target *ick.Element) {
 	webapp.ChildById("toast_container").RenderComponent(notif, nil)
 }
 
-func OnClickBtn4(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtn4(event *wick.MouseEvent, target *wick.Element) {
 
 	// define the HTML template
 	html := `<div class="box">

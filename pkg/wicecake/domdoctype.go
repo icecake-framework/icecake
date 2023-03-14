@@ -1,4 +1,4 @@
-package ick
+package wick
 
 import (
 	"github.com/sunraylab/icecake/pkg/errors"

@@ -1,24 +1,23 @@
-package ick
+package wick
 
 import (
-	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/sunraylab/icecake/pkg/errors"
-	"github.com/sunraylab/icecake/pkg/htmlname"
+	ick "github.com/sunraylab/icecake/pkg/icecake"
 )
 
 /****************************************************************************
 * Attributes
 *****************************************************************************/
 
-// Attributes represents a set of element's attributes. The subset is static.
+// JSAttributes represents a set of element's attributes. The subset is static.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes
-type Attributes struct {
-	owner *Element          // the Element the attributes belongs to. The DOM is only updated when ownerElement is not nil.
-	cache map[string]string // the internal map of attributes only used when the attributes object does not belong to an element yet.
+type JSAttributes struct {
+	owner *Element // the Element the attributes belongs to. The DOM is only updated when ownerElement is not nil.
+	// cache map[string]string // the internal map of attributes only used when the attributes object does not belong to an element yet.
 }
 
 // func NewAttributes(_ownerElement *Element) *Attributes {
@@ -39,7 +38,7 @@ type Attributes struct {
 // String returns the value of the list serialized as a string
 //
 // https://developer.mozilla.org/fr/docs/Web/API/Element/attributes
-func (_attrs Attributes) String() (_str string) {
+func (_attrs JSAttributes) String() (_str string) {
 	if _attrs.owner != nil {
 		jsa := _attrs.owner.Get("attributes")
 		len := jsa.GetInt("length")
@@ -56,116 +55,90 @@ func (_attrs Attributes) String() (_str string) {
 			}
 			_str += " "
 		}
-	} else {
-		ats := _attrs.sortCache()
-		for _, name := range ats {
-			_str += strings.Trim(name, " ")
-			value := _attrs.cache[name]
-			if value != "" {
-				delim := "'"
-				if strings.ContainsRune(value, rune('\'')) {
-					delim = "\""
-				}
-				_str += `=` + delim + value + delim
-			}
-			_str += " "
-		}
 	}
 	return strings.TrimRight(_str, " ")
 }
 
-// Length returns the number of attributes in the list.
-// func (_attrs Attributes) Count() int {
-// 	return len(_attrs.cache)
-// }
-
 // GetAttribue returns the attribute with the given name in the list.
 // _name is case sensitive and must be trimed.
-func (_attrs Attributes) Attribute(_name string) (_val string, _found bool) {
+func (_attrs JSAttributes) Attribute(_name string) (_val string, _found bool) {
 	if _attrs.owner != nil {
 		_found = _attrs.owner.Call("hasAttribute", _name).Bool()
 		if _found {
 			_val = _attrs.owner.Call("getAttribute", _name).String()
 		}
-	} else if _attrs.cache != nil {
-		_val, _found = _attrs.cache[_name]
 	}
+	// else if _attrs.cache != nil {
+	// 	_val, _found = _attrs.cache[_name]
+	// }
 	return _val, _found
 }
 
 // SetAttribues adds attributes in the list. If the attribute already exist it's updated.
-func (_attrs *Attributes) SetAttributes(_newattrs Attributes) *Attributes {
-	if _newattrs.cache != nil {
-		if _attrs.owner != nil {
-			for n, v := range _newattrs.cache {
-				_attrs.owner.Call("setAttribute", n, v)
-			}
-		} else {
-			if _attrs.cache != nil {
-				_attrs.cache = make(map[string]string)
-			}
-			for n, v := range _newattrs.cache {
-				_attrs.setCache(n, v)
-			}
+func (_attrs *JSAttributes) SetAttributes(_newattrs ick.Attributes) *JSAttributes {
+	if _attrs.owner != nil {
+		for _, k := range _newattrs.Keys() {
+			v, _ := _newattrs.Attribute(k)
+			_attrs.owner.Call("setAttribute", k, v)
 		}
 	}
 	return _attrs
 }
 
-// ParseAttribute split _str into attributes separated by spaces
-// An attribute can have a value at the right of an "=" symbol.
-// the value can be delimited by quotes and in that case may contains whitespaces.
-// The string is processed until the ends or when a ">" symbol is encoutered out of a value.
-func (_attrs *Attributes) ParseAttributes(_str string) (_err error) {
-	pattrs := make(map[string]string)
-	var strnames string
-	left := _str
-	for i := 0; len(left) > 0; i++ {
-		// process all simple attributes until next "="
-		strnames, left, _ = strings.Cut(left, "=")
-		names := strings.Fields(strnames)
-		for _, n := range names {
-			if !htmlname.IsValid(n) {
-				return errors.ConsoleErrorf("attribute name %q is not valid\n", n)
-			}
-			pattrs[n] = ""
-		}
+// // ParseAttribute split _str into attributes separated by spaces
+// // An attribute can have a value at the right of an "=" symbol.
+// // the value can be delimited by quotes and in that case may contains whitespaces.
+// // The string is processed until the ends or when a ">" symbol is encoutered out of a value.
+// func (_attrs *JSAttributes) ParseAttributes(_str string) (_err error) {
+// 	pattrs := make(map[string]string)
+// 	var strnames string
+// 	left := _str
+// 	for i := 0; len(left) > 0; i++ {
+// 		// process all simple attributes until next "="
+// 		strnames, left, _ = strings.Cut(left, "=")
+// 		names := strings.Fields(strnames)
+// 		for _, n := range names {
+// 			if !htmlname.IsValid(n) {
+// 				return errors.ConsoleErrorf("attribute name %q is not valid\n", n)
+// 			}
+// 			pattrs[n] = ""
+// 		}
 
-		// remove blanks just after "="
-		left = strings.Trim(left, " ")
+// 		// remove blanks just after "="
+// 		left = strings.Trim(left, " ")
 
-		// stop if nothing else to proceed
-		if len(left) == 0 || len(names) == 0 || left[0] == '>' {
-			break
-		}
+// 		// stop if nothing else to proceed
+// 		if len(left) == 0 || len(names) == 0 || left[0] == '>' {
+// 			break
+// 		}
 
-		// extract attribute name with a value
-		name := names[len(names)-1]
+// 		// extract attribute name with a value
+// 		name := names[len(names)-1]
 
-		// extract value with quotes or no quotes
-		var value string
-		delim := left[0]
-		istart := 1
-		if delim != '"' && delim != '\'' {
-			delim = ' '
-			istart = 0
-		}
-		value, left, _ = strings.Cut(left[istart:], string(delim))
-		pattrs[name] = value
-	}
-	// now set it up
-	if _attrs.cache != nil && len(pattrs) > 0 {
-		_attrs.cache = make(map[string]string)
-	}
-	for name, value := range pattrs {
-		_attrs.SetAttribute(name, value)
-	}
-	return nil
-}
+// 		// extract value with quotes or no quotes
+// 		var value string
+// 		delim := left[0]
+// 		istart := 1
+// 		if delim != '"' && delim != '\'' {
+// 			delim = ' '
+// 			istart = 0
+// 		}
+// 		value, left, _ = strings.Cut(left[istart:], string(delim))
+// 		pattrs[name] = value
+// 	}
+// 	// now set it up
+// 	if _attrs.cache != nil && len(pattrs) > 0 {
+// 		_attrs.cache = make(map[string]string)
+// 	}
+// 	for name, value := range pattrs {
+// 		_attrs.SetAttribute(name, value)
+// 	}
+// 	return nil
+// }
 
 // IsTrue returns true if the attribute is set and its value is not false nor 0.
 // _name is case sensitive and must be trimed.
-func (_attrs Attributes) IsTrue(_name string) bool {
+func (_attrs JSAttributes) IsTrue(_name string) bool {
 	val, found := _attrs.Attribute(_name)
 	val = strings.ToLower(val)
 	if !found || val == "false" || val == "0" {
@@ -175,17 +148,17 @@ func (_attrs Attributes) IsTrue(_name string) bool {
 }
 
 // Hidden returns boolean attribute 'hidden'
-func (_attrs Attributes) Hidden() bool {
+func (_attrs JSAttributes) Hidden() bool {
 	return _attrs.IsTrue("hidden")
 }
 
 // Draggable returns boolean attribute 'draggable'
-func (_attrs Attributes) Draggable() bool {
+func (_attrs JSAttributes) Draggable() bool {
 	return _attrs.IsTrue("draggable")
 }
 
 // Spellcheck returns boolean attribute 'spellcheck'
-func (_attrs Attributes) Spellcheck() bool {
+func (_attrs JSAttributes) Spellcheck() bool {
 	return _attrs.IsTrue("spellcheck")
 }
 
@@ -200,7 +173,7 @@ func (_attrs Attributes) Spellcheck() bool {
 // They may even be negative, though each browser trims very large values.
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
-func (_attrs Attributes) TabIndex() int {
+func (_attrs JSAttributes) TabIndex() int {
 	stri, _ := _attrs.Attribute("tabIndex")
 	i, _ := strconv.Atoi(stri)
 	return i
@@ -217,7 +190,7 @@ func (_attrs Attributes) TabIndex() int {
 // They may even be negative, though each browser trims very large values.
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
-func (_attrs *Attributes) SetTabIndex(_index int) *Attributes {
+func (_attrs *JSAttributes) SetTabIndex(_index int) *JSAttributes {
 	_attrs.SetAttribute("tabIndex", strconv.Itoa(_index))
 	return _attrs
 }
@@ -233,7 +206,7 @@ const (
 )
 
 // Autocapitalize returning attribute 'autocapitalize' with
-func (_attrs Attributes) Autocapitalize() AUTOCAPITALIZE {
+func (_attrs JSAttributes) Autocapitalize() AUTOCAPITALIZE {
 	autocap, _ := _attrs.Attribute("autocapitalize")
 	switch autocap {
 	case string(AUTOCAP_OFF), string(AUTOCAP_SENTENCES), string(AUTOCAP_WORDS), string(AUTOCAP_CHARS):
@@ -243,7 +216,7 @@ func (_attrs Attributes) Autocapitalize() AUTOCAPITALIZE {
 }
 
 // SetAutocapitalize setting attribute 'autocapitalize' with
-func (_attrs *Attributes) SetAutocapitalize(_autocap AUTOCAPITALIZE) *Attributes {
+func (_attrs *JSAttributes) SetAutocapitalize(_autocap AUTOCAPITALIZE) *JSAttributes {
 	switch _autocap {
 	case AUTOCAP_OFF, AUTOCAP_SENTENCES, AUTOCAP_WORDS, AUTOCAP_CHARS:
 		_attrs.SetAttribute("autocapitalize", string(_autocap))
@@ -265,7 +238,7 @@ const (
 // ContentEditable returns a boolean value that is true if the contents of the element are editable; otherwise it returns false.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/isContentEditable
-func (_attrs Attributes) ContentEditable() CONTENT_EDITABLE {
+func (_attrs JSAttributes) ContentEditable() CONTENT_EDITABLE {
 	editable, _ := _attrs.Attribute("contentEditable")
 	switch editable {
 	case string(CONTEDIT_FALSE), string(CONTEDIT_TRUE), string(CONTEDIT_INHERIT):
@@ -276,7 +249,7 @@ func (_attrs Attributes) ContentEditable() CONTENT_EDITABLE {
 
 // SetContentEditable setting attribute 'contentEditable' with
 // type string (idl: DOMString).
-func (_attrs *Attributes) SetContentEditable(_editable CONTENT_EDITABLE) *Attributes {
+func (_attrs *JSAttributes) SetContentEditable(_editable CONTENT_EDITABLE) *JSAttributes {
 	switch _editable {
 	case CONTEDIT_FALSE, CONTEDIT_TRUE, CONTEDIT_INHERIT:
 		_attrs.SetAttribute("contentEditable", string(_editable))
@@ -290,46 +263,49 @@ func (_attrs *Attributes) SetContentEditable(_editable CONTENT_EDITABLE) *Attrib
 // An empty value means a boolean attribute set to true.
 //
 // Name and Value are case sensitive, they will be trimed. Quotes delimiters of the value will be removed if any.
-func (_attrs *Attributes) SetAttribute(_name string, _value string) *Attributes {
+func (_attrs *JSAttributes) SetAttribute(_name string, _value string) *JSAttributes {
 	_name = strings.Trim(_name, " ")
 	_value = strings.Trim(strings.Trim(strings.Trim(_value, " "), "\""), "'")
 	if _attrs.owner != nil {
 		_attrs.owner.Call("setAttribute", _name, _value)
-	} else {
-		if _attrs.cache != nil {
-			_attrs.cache = make(map[string]string)
-			_attrs.setCache(_name, _value)
-		}
 	}
+	// else {
+	// 	if _attrs.cache != nil {
+	// 		_attrs.cache = make(map[string]string)
+	// 		_attrs.setCache(_name, _value)
+	// 	}
+	// }
 	return _attrs
 }
 
 // RemoveAttribute removes attribute in the list or does nothing for the one that does not exist.
 // _name is case sensitive and must be trimed.
-func (_attrs *Attributes) RemoveAttribute(_name string) *Attributes {
+func (_attrs *JSAttributes) RemoveAttribute(_name string) *JSAttributes {
 	if _attrs.owner != nil {
 		_attrs.owner.Call("removeAttribute", _name)
-	} else if _attrs.cache != nil {
-		delete(_attrs.cache, _name)
 	}
+	// else if _attrs.cache != nil {
+	// 	delete(_attrs.cache, _name)
+	// }
 	return _attrs
 }
 
 // Toggle toggles a boolean attribute (removing it if it's present and adding it if it's not present).
 // _name is case sensitive and must be trimed.
 // returns true is the token is in the list after the call.
-func (_attrs *Attributes) Toggle(_name string) (_isin bool) {
+func (_attrs *JSAttributes) Toggle(_name string) (_isin bool) {
 	if _attrs.owner != nil {
 		return _attrs.owner.Call("toggleAttribute", _name).Bool()
-	} else {
-		_, found := _attrs.cache[_name]
-		if found {
-			delete(_attrs.cache, _name)
-		} else {
-			_attrs.setCache(_name, "")
-			_isin = true
-		}
 	}
+	// else {
+	// 	_, found := _attrs.cache[_name]
+	// 	if found {
+	// 		delete(_attrs.cache, _name)
+	// 	} else {
+	// 		_attrs.setCache(_name, "")
+	// 		_isin = true
+	// 	}
+	// }
 	return _isin
 }
 
@@ -344,37 +320,37 @@ func (_attrs *Attributes) Toggle(_name string) (_isin bool) {
 // 	return _name, _value
 // }
 
-func (_attrs Attributes) sortCache() []string {
-	s := make([]string, 0, len(_attrs.cache))
-	if _attrs.cache != nil {
-		for k := range _attrs.cache {
-			s = append(s, k)
-		}
-		sort.Strings(s)
-	}
-	return s
-}
+// func (_attrs JSAttributes) sortCache() []string {
+// 	s := make([]string, 0, len(_attrs.cache))
+// 	if _attrs.cache != nil {
+// 		for k := range _attrs.cache {
+// 			s = append(s, k)
+// 		}
+// 		sort.Strings(s)
+// 	}
+// 	return s
+// }
 
-// returns an subset of _attrs with only "data-*" attributes
-func (_attrs Attributes) Dataset() map[string]string {
-	dataset := make(map[string]string)
-	if _attrs.cache != nil {
-		for name, value := range _attrs.cache {
-			if len(name) > 5 && strings.HasPrefix(name, "data-") {
-				dataset[name] = value
-			}
-		}
-	}
-	return dataset
-}
+// // returns an subset of _attrs with only "data-*" attributes
+// func (_attrs JSAttributes) Dataset() map[string]string {
+// 	dataset := make(map[string]string)
+// 	if _attrs.cache != nil {
+// 		for name, value := range _attrs.cache {
+// 			if len(name) > 5 && strings.HasPrefix(name, "data-") {
+// 				dataset[name] = value
+// 			}
+// 		}
+// 	}
+// 	return dataset
+// }
 
 /*****************************************************************************
 * PRIVATE
 *****************************************************************************/
 
-func (_attrs *Attributes) setCache(_name string, _value string) {
-	_attrs.cache[_name] = _value
-	if _attrs.owner != nil {
-		_attrs.owner.Call("setAttribute", _name, _value)
-	}
-}
+// func (_attrs *JSAttributes) setCache(_name string, _value string) {
+// 	_attrs.cache[_name] = _value
+// 	if _attrs.owner != nil {
+// 		_attrs.owner.Call("setAttribute", _name, _value)
+// 	}
+// }

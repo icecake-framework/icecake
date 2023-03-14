@@ -5,20 +5,20 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	ick "github.com/sunraylab/icecake/pkg/icecake"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
 func TestJSValue(t *testing.T) {
 
 	var i int
-	jsi := ick.ValueOf(i)
+	jsi := wick.ValueOf(i)
 	assert.True(t, jsi.IsDefined())
-	assert.True(t, jsi.Type() == ick.TYPE_NUMBER)
+	assert.True(t, jsi.Type() == wick.TYPE_NUMBER)
 
 	var p *int
-	assert.Panics(t, func() { ick.ValueOf(p) })
+	assert.Panics(t, func() { wick.ValueOf(p) })
 
-	browser := ick.ValueOf(js.Global())
+	browser := wick.ValueOf(js.Global())
 	assert.NotPanics(t, func() { browser.Call("focus") })
 	assert.Panics(t, func() { browser.Call("abc1") })
 

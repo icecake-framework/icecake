@@ -23,13 +23,13 @@ func (_qname QualifiedName) Prefix() string {
 // LocalName returns the local part of the qualified name of a Name, that is the name of the attribute,
 // stripped from any namespace in front of it.
 // For example, if the qualified name is xml:lang, the returned local name is lang.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Attr/localName
 func (_qname QualifiedName) LocalName() string {
-	name := helper.Normalize(string(_qname))
+	name := string(_qname)
 	if strings.Contains(name, ":") {
 		s := strings.Split(name, ":")
 		name = s[1]
 	}
+	name = strings.Trim(name, " ")
+	name, _, _ = strings.Cut(name, " ")
 	return name
 }

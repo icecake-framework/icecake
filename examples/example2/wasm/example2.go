@@ -12,14 +12,14 @@ import (
 	_ "embed"
 
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
-	ick "github.com/sunraylab/icecake/pkg/icecake"
 	"github.com/sunraylab/icecake/pkg/ui"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
 //go:embed "readme.md"
 var readme string
 
-var webapp *ick.WebApp
+var webapp *wick.WebApp
 var gcount float64
 
 // the main func is required by the wasm GO builder
@@ -29,7 +29,7 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	webapp = ick.NewWebApp()
+	webapp = wick.NewWebApp()
 
 	// proceed with localstorage
 	gdark := webapp.Browser().LocalStorage().GetBool("darkmode")
@@ -41,9 +41,9 @@ func main() {
 	updateUI()
 
 	// add simple event hendling
-	ui.ButtonById("btn-ex2").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnEx2)
-	ui.ButtonById("btn-lightmode").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnLightMode)
-	ui.ButtonById("btn-darkmode").AddMouseEvent(ick.MOUSE_ONCLICK, OnClickBtnDarkMode)
+	ui.ButtonById("btn-ex2").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtnEx2)
+	ui.ButtonById("btn-lightmode").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtnLightMode)
+	ui.ButtonById("btn-darkmode").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtnDarkMode)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
@@ -54,16 +54,16 @@ func main() {
 * browser event handlers
 ******************************************************************************/
 
-func OnClickBtnEx2(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtnEx2(event *wick.MouseEvent, target *wick.Element) {
 	gcount += 0.5
 	updateUI()
 }
 
-func OnClickBtnLightMode(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtnLightMode(event *wick.MouseEvent, target *wick.Element) {
 	updateDarkMode(false)
 }
 
-func OnClickBtnDarkMode(event *ick.MouseEvent, target *ick.Element) {
+func OnClickBtnDarkMode(event *wick.MouseEvent, target *wick.Element) {
 	updateDarkMode(true)
 }
 

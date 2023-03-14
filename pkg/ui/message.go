@@ -2,6 +2,7 @@ package ui
 
 import (
 	ick "github.com/sunraylab/icecake/pkg/icecake"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
 /******************************************************************************
@@ -9,30 +10,34 @@ import (
 ******************************************************************************/
 
 func init() {
-	ick.App.RegisterComponent("ick-message", Message{}, "")
+	ick.TheCmpReg.RegisterComponent(Message{})
 }
 
 type Message struct {
-	ick.UIComponent // embedded Component, with default implementation of composer interfaces
+	wick.UIComponent // embedded Component, with default implementation of composer interfaces
 
 	Header    string // optional header to display on top of the message
 	CanDelete bool   // set to true to display the delete button and allow user to delete the message
 	Message   string // message to display within the notification
 }
 
-func (c *Message) Container(_compid string) (_tagname string, _classes string, _attrs string) {
-	return "div", "ick-message message", ""
+func (*Message) RegisterName() string {
+	return "ick-message"
 }
 
-func (c *Message) Body() (_html string) {
-	if c.Header != "" {
+func (*Message) Container(_compid string) (_tagname string, _contclasses string, _contattrs string, _contstyle string) {
+	return "div", "ick-message message", "", ""
+}
+
+func (_msg *Message) Body() (_html string) {
+	if _msg.Header != "" {
 		var delhtml string
-		if c.CanDelete {
+		if _msg.CanDelete {
 			//			delhtml = `<button class="delete" aria-label="delete"></button>`
 			delhtml = `<ick-delete TargetID='{{.Id}}'/>`
 		}
-		_html += `<div class="message-header"><p>` + c.Header + `</p>` + delhtml + `</div>`
+		_html += `<div class="message-header"><p>` + _msg.Header + `</p>` + delhtml + `</div>`
 	}
-	_html += `<div class="message-body">` + c.Message + `</div>`
+	_html += `<div class="message-body">` + _msg.Message + `</div>`
 	return _html
 }

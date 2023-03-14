@@ -5,10 +5,10 @@
 RenderComponent `C`
 
 1. create the HTML component
-    1. lookup registered component properties: ickname, typ, css
+    1. lookup for registered component properties: ickname, typ, css
     2. get a fresh component unique id
     3. extract `C.Container()` properties: tagname, classes, attributes
-    4. create the HTML element
+    4. **create the HTML element**
     5. set the container classes and attributes
     6. wrap the HTML element to the component
     7. set the id
@@ -21,7 +21,7 @@ RenderComponent `C`
     3. scan the generated html looking for an embedded and registered`ick-*` component
     4. for every component found
         - instantiate the component object
-        - create the HTML component
+        - **create the HTML component**
         - extract any embedded attributes
         - force setting component ID
         - for every embedded attribute
@@ -41,4 +41,42 @@ RenderComponent `C`
 ---
 
 ## WIP26
+
+RenderComponent `C`
+
+A. compose HTML
+B. mount DOM ELEMENT
+
+A. compose `C` HTML
+
+1. check the recursive depth
+2. Get a unique id
+3. open the HTML Element
+    1. extract `C.Container()` properties: tagname, classes, attributes, styles
+    2. add container's properties to existing component's properties
+    3. write to the buffer
+3. unfold the HTML body 
+    1. parse the template
+    2. Execute the template with the _data
+    3. scan the generated html looking for an embedded and registered`ick-*` component
+    4. for every component found
+        - instantiate the `C.SUB` component object
+        - extract any embedded attributes
+        - force setting component ID
+        - for every embedded attribute
+            if the attribute's name match with a _data object property name
+                - set attribute's value to the _data object property
+            otherwise
+                - set the attribute to the new component
+        - recursively compose `C.SUB` HTML
+4. close the HTML Element
+5. return the component HTML string
+
+B. Mount `C` DOM.Element
+
+1. create the HTML Element
+2. set inner `C` HTML
+3. create the global component Style Element
+4. set `C` style
+5. add `C` listeners
 

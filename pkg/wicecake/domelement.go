@@ -1,11 +1,13 @@
-package ick
+package wick
 
 import (
+	"bytes"
 	"fmt"
 	"syscall/js"
 
 	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/errors"
+	ick "github.com/sunraylab/icecake/pkg/icecake"
 )
 
 /****************************************************************************
@@ -32,8 +34,8 @@ const (
 type Element struct {
 	Node
 
-	classes    Classes
-	attributes Attributes
+	//classes    JSClasses
+	//attributes JSAttributes
 }
 
 // CastElement is casting a js.Value into Element.
@@ -132,26 +134,28 @@ func (_elem *Element) SetId(_id string) *Element {
 // If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-func (_elem *Element) Classes() *Classes {
+func (_elem *Element) Classes() *JSClasses {
+	jsclass := new(JSClasses)
 	if _elem.IsDefined() {
+		jsclass.owner = _elem
 		jslist := _elem.Get("classList")
-		_elem.classes.owner = _elem
-		_elem.classes.jslist = &jslist
+		jsclass.jslist = &jslist
 	}
-	return &_elem.classes
+	return jsclass
 }
 
 // Classes returns the class object related to _elem.
 // If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-func (_elem *Element) Attributes() *Attributes {
+func (_elem *Element) Attributes() *JSAttributes {
+	jsattr := new(JSAttributes)
 	if _elem.IsDefined() {
 		//jslist := _elem.Get("classList")
-		_elem.attributes.owner = _elem
+		jsattr.owner = _elem
 		//_elem.classes.jslist = &jslist
 	}
-	return &_elem.attributes
+	return jsattr
 }
 
 // ClassString returns classes in asingle string
@@ -562,7 +566,7 @@ func (_elem *Element) InsertNodesAfter(_nodes []*Node) *Element {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth
-func (_elem *Element) ScrollRect() (_rect Rect) {
+func (_elem *Element) ScrollRect() (_rect ick.Rect) {
 	if !_elem.IsDefined() {
 		return
 	}
@@ -579,9 +583,9 @@ func (_elem *Element) ScrollRect() (_rect Rect) {
 //
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft
-func (_elem *Element) ClientRect() (_rect Rect) {
+func (_elem *Element) ClientRect() (_rect ick.Rect) {
 	if !_elem.IsDefined() {
-		return Rect{}
+		return
 	}
 	_rect.X = _elem.GetFloat("clientLeft")
 	_rect.Y = _elem.GetFloat("clientTop")
@@ -593,18 +597,17 @@ func (_elem *Element) ClientRect() (_rect Rect) {
 // GetBoundingClientRect eturns a DOMRect object providing information about the size of an element and its position relative to the viewport.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-func (_elem *Element) BoundingClientRect() Rect {
+func (_elem *Element) BoundingClientRect() (_rect ick.Rect) {
 	if !_elem.IsDefined() {
-		return Rect{}
+		return
 	}
 	jsrect := _elem.Call("getBoundingClientRect")
 
-	rect := new(Rect)
-	rect.X = jsrect.GetFloat("x")
-	rect.Y = jsrect.GetFloat("y")
-	rect.Width = jsrect.GetFloat("width")
-	rect.Height = jsrect.GetFloat("height")
-	return *rect
+	_rect.X = jsrect.GetFloat("x")
+	_rect.Y = jsrect.GetFloat("y")
+	_rect.Width = jsrect.GetFloat("width")
+	_rect.Height = jsrect.GetFloat("height")
+	return _rect
 }
 
 // ScrollIntoView scrolls the element's ancestor containers such that the element on which scrollIntoView() is called is visible to the user.
@@ -967,23 +970,6 @@ func (_elem *Element) RenderValue(format string, _value ...any) {
 	_elem.SetInnerText(text)
 }
 
-// RenderTemplate set inner HTML with the htmlTemplate executed with the _data and unfolding components if any
-// The element must be in the DOM to
-func (_elem *Element) RenderTemplate(_unsafeHtmlTemplate string, _data any) (_err error) {
-	if !_elem.IsDefined() || !_elem.IsInDOM() {
-		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
-	}
-	name := _elem.TagName() + "/" + _elem.Id()
-	var html string
-	unfoldedCmps := make(map[string]Composer, 0)
-	html, _err = unfoldComponents(unfoldedCmps, name, _unsafeHtmlTemplate, _data, 0)
-	if _err == nil {
-		_elem.SetInnerHTML(html)
-		showUnfoldedComponents(unfoldedCmps)
-	}
-	return _err
-}
-
 // RenderNamedValue look recursively for any _elem children having the "data-ic-namedvalue" token matching _name
 // and render inner text with the _value
 func (_elem *Element) RenderChildrenValue(_name string, _format string, _value ...any) {
@@ -995,7 +981,7 @@ func (_elem *Element) RenderChildrenValue(_name string, _format string, _value .
 
 	children := _elem.FilteredChildren(NT_ELEMENT, func(_node *Node) bool {
 		// BUG:
-		namedvalue, _ := CastElement(_node).attributes.Attribute("data-ick-namedvalue")
+		namedvalue, _ := CastElement(_node).Attributes().Attribute("data-ick-namedvalue")
 		return _name == namedvalue
 	})
 
@@ -1004,43 +990,66 @@ func (_elem *Element) RenderChildrenValue(_name string, _format string, _value .
 	}
 }
 
+// RenderTemplate set inner HTML with the htmlTemplate executed with the _data and unfolding components if any
+// The element must be in the DOM to
+func (_elem *Element) RenderTemplate(_unsafeHtmlTemplate string, _data any) (_err error) {
+	if !_elem.IsDefined() || !_elem.IsInDOM() {
+		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
+	}
+
+	out := new(bytes.Buffer)
+	cmp := new(ick.Text)
+	_err = ick.ComposeHtml(out, cmp, _data)
+	if _err == nil {
+		_elem.SetInnerHTML(out.String())
+
+		// TODO: showUnfoldedComponents(unfoldedCmps)
+	}
+	return _err
+}
+
 // RenderComponent
-func (_elem *Element) RenderComponent(_newcmp Composer, _appdata any) (_newcmpid string, _err error) {
+func (_elem *Element) RenderComponent(_newcmp UIComposer, _appdata any) (_newcmpid string, _err error) {
 	if !_elem.IsDefined() {
 		return "", errors.ConsoleErrorf("RenderComponent: failed on undefined element")
 	}
 
+	out := new(bytes.Buffer)
+	_err = ick.ComposeHtml(out, _newcmp, _appdata)
+	if _err == nil {
+		_elem.SetInnerHTML(out.String())
+		// TODO: loop over embedded component
+		_newcmp.AddListeners()
+
+	}
+
 	// create the HTML component into the DOM
-	_newcmpid, newcmpelem, err := App.CreateComponent(_newcmp)
-	if err != nil {
-		return "", errors.ConsoleErrorf("RenderComponent:", err.Error())
-	}
+	// _newcmpid, newcmpelem, err := App.CreateComponent(_newcmp)
+	// if err != nil {
+	// 	return "", errors.ConsoleErrorf("RenderComponent:", err.Error())
+	// }
 
-	// name the component
-	name := newcmpelem.TagName() + "/" + _newcmpid
+	// // name the component
+	// name := newcmpelem.TagName() + "/" + _newcmpid
 
-	// unfold and render html for a composer
-	unfoldedCmps := make(map[string]Composer, 0)
-	data := TemplateData{
-		Id:  _newcmpid,
-		Me:  _newcmp,
-		App: _appdata,
-	}
-	// TODO: handle unfolding errors
-	html, _ := unfoldComponents(unfoldedCmps, name, _newcmp.Body(), data, 0)
-	newcmpelem.SetInnerHTML(html)
+	// // unfold and render html for a composer
+	// unfoldedCmps := make(map[string]UIComposer, 0)
+	// data := TemplateData{
+	// 	Id:  _newcmpid,
+	// 	Me:  _newcmp,
+	// 	App: _appdata,
+	// }
+	// // TODO: handle unfolding errors
+	// html, _ := unfoldComponents(unfoldedCmps, name, _newcmp.Body(), data, 0)
+	// newcmpelem.SetInnerHTML(html)
 
 	// Insert the component element into the DOM
-	_elem.PrependNodes(&newcmpelem.Node) //elem.InsertAdjacentHTML(WI_INSIDEFIRST, html)
+	//	_elem.PrependNodes(&newcmpelem.Node) //elem.InsertAdjacentHTML(WI_INSIDEFIRST, html)
 
 	// addlisteners
-	showUnfoldedComponents(unfoldedCmps)
-	_newcmp.Listeners()
-	_newcmp.Show()
+	// showUnfoldedComponents(unfoldedCmps)
+	// _newcmp.Listeners()
+	//	_newcmp.Show()
 
 	return _newcmpid, nil
 }
-
-/*****************************************************************************
-* PRIVATE
-*****************************************************************************/

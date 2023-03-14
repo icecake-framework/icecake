@@ -12,7 +12,7 @@ import (
 	_ "embed"
 
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
-	ick "github.com/sunraylab/icecake/pkg/icecake"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/renderer/html"
 )
@@ -27,7 +27,7 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	doc := ick.GetDocument()
+	doc := wick.GetDocument()
 
 	// 1. demonstrate the use of the go HTML templating package to build page content directly on the front-end.
 	var data1 struct{ Name string }

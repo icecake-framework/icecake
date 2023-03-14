@@ -11,8 +11,15 @@
         "key": "",
         "passphrase": ""
     },
-    "go.toolsEnvVars": {
-        "GOOS": "js",
-        "GOARCH": "wasm",
+    "gopls": {
+        "build.buildFlags": [
+            "-tags=js,wasm"
+        ]
     },
+    "go.coverOnSingleTestFile": true,
+    "go.coverOnSingleTest": true,
+    // "go.toolsEnvVars": {
+    //     "GOOS": "js",
+    //     "GOARCH": "wasm",
+    // },
 }

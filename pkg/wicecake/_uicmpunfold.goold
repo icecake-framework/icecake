@@ -1,4 +1,4 @@
-package ick
+package wick
 
 import (
 	"bytes"
@@ -27,7 +27,7 @@ type TemplateData struct {
 //  3. execute this template with {{}} langage and component's data and global data
 //
 // NOTICE: to avoid infinite recursivity, the rendering fails at a the 10th depth
-func unfoldComponents(_unfoldedCmps map[string]Composer, name string, _unsafeHtmlTemplate string, _data any, _deep int) (_rendered string, _err error) {
+func unfoldComponents(_unfoldedCmps map[string]UIComposer, name string, _unsafeHtmlTemplate string, _data any, _deep int) (_rendered string, _err error) {
 	if _deep >= 10 {
 		return "", errors.ConsoleErrorf("unfoldComponents stopped at level %d. Recursive rendering too deep", _deep)
 	}
@@ -94,7 +94,7 @@ nextdelim:
 
 					// Instantiate the component
 					newcmpreflect := reflect.New(regentry.typ)
-					newcmp := newcmpreflect.Interface().(Composer)
+					newcmp := newcmpreflect.Interface().(UIComposer)
 					//newcmpid := fmt.Sprintf("ick-%s-%d-%d", tagname, _deep, n)
 
 					var newcmpelem *UIComponent
@@ -104,10 +104,10 @@ nextdelim:
 						errors.ConsoleLogf("unfoldComponents instantiating %s of type %s\n", newcmpid, newcmpreflect.Type())
 
 						// add the component to the add it to the unfolded stack
-						_unfoldedCmps[newcmpid] = newcmpreflect.Interface().(Composer) // newcmp
+						_unfoldedCmps[newcmpid] = newcmpreflect.Interface().(UIComposer) // newcmp
 
 						// process embeded component's attributes
-						var attrs *Attributes
+						var attrs *JSAttributes
 						attrs, _err = ParseAttributes(leftinside)
 						if _err != nil {
 							continue nextdelim
@@ -200,7 +200,7 @@ nextdelim:
 }
 
 // showUnfoldedComponents call addlisteners for every unfolded Components
-func showUnfoldedComponents(_unfoldedCmps map[string]Composer) {
+func showUnfoldedComponents(_unfoldedCmps map[string]UIComposer) {
 	for id, ufc := range _unfoldedCmps {
 		e := GetDocument().ChildById(id)
 		ufc.Wrap(e)

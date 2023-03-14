@@ -4,6 +4,7 @@ import (
 	"github.com/sunraylab/icecake/pkg/clock"
 	"github.com/sunraylab/icecake/pkg/errors"
 	ick "github.com/sunraylab/icecake/pkg/icecake"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
 /******************************************************************************
@@ -11,11 +12,11 @@ import (
 ******************************************************************************/
 
 func init() {
-	ick.App.RegisterComponent("ick-delete", Delete{}, "")
+	ick.TheCmpReg.RegisterComponent(Delete{})
 }
 
 type Delete struct {
-	ick.UIComponent
+	wick.UIComponent
 
 	// the element id to remove from the DOM
 	TargetID string
@@ -25,13 +26,17 @@ type Delete struct {
 	clock.Clock
 }
 
+func (_del *Delete) RegisterName() string {
+	return "ick-delete"
+}
+
 func (_del *Delete) Container(_compid string) (_tagname string, _classes string, _attrs string) {
 	return "button", "ick-delete delete", "aria-label='delete'"
 }
 
 func (_del *Delete) Listeners() {
 	if _del.TargetID != "" {
-		_del.AddMouseEvent(ick.MOUSE_ONCLICK, func(*ick.MouseEvent, *ick.Element) {
+		_del.AddMouseEvent(wick.MOUSE_ONCLICK, func(*wick.MouseEvent, *wick.Element) {
 			_del.Remove()
 		})
 		_del.Clock.Start(_del.Remove)
@@ -46,5 +51,5 @@ func (_del *Delete) Listeners() {
 func (_del *Delete) Remove() {
 	_del.Stop()
 	_del.UIComponent.Remove()
-	ick.App.ChildById(_del.TargetID).Remove()
+	wick.App.ChildById(_del.TargetID).Remove()
 }

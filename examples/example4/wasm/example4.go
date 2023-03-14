@@ -9,11 +9,11 @@ package main
 import (
 	"fmt"
 
-	ick "github.com/sunraylab/icecake/pkg/icecake"
 	"github.com/sunraylab/icecake/pkg/ui"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
-var webapp *ick.WebApp
+var webapp *wick.WebApp
 
 // the main func is required by the wasm GO builder
 // outputs will appears in the console of the browser
@@ -23,7 +23,7 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	// we must call the icecake webapp factory once
-	webapp = ick.NewWebApp()
+	webapp = wick.NewWebApp()
 
 	msg1 := &ui.Message{
 		Header:  "1st message: <strong>Hello World</strong>",

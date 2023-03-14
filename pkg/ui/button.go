@@ -3,7 +3,7 @@ package ui
 import (
 	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/errors"
-	ick "github.com/sunraylab/icecake/pkg/icecake"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
 // A string indicating the behavior of the button
@@ -22,12 +22,12 @@ const (
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Button
 type Button struct {
-	ick.Element
+	wick.Element
 }
 
 // CastButton is casting a js.Value into HTMLButtonElement.
-func CastButton(_jsvp ick.JSValueProvider) *Button {
-	if _jsvp.Value().Type() != ick.TYPE_OBJECT || _jsvp.Value().GetString("tagName") != "BUTTON" {
+func CastButton(_jsvp wick.JSValueProvider) *Button {
+	if _jsvp.Value().Type() != wick.TYPE_OBJECT || _jsvp.Value().GetString("tagName") != "BUTTON" {
 		errors.ConsoleErrorf("casting HTMLButton failed")
 		return &Button{}
 	}
@@ -40,7 +40,7 @@ func CastButton(_jsvp ick.JSValueProvider) *Button {
 // otherwhise returns an undefined Button.
 func ButtonById(_id string) *Button {
 	_id = helper.Normalize(_id)
-	jse := ick.GetDocument().ChildById(_id)
+	jse := wick.GetDocument().ChildById(_id)
 	if jse.IsObject() && jse.GetString("tagName") == "BUTTON" {
 		btn := new(Button)
 		btn.JSValue = jse.JSValue
@@ -95,7 +95,7 @@ func (_btn *Button) SetDisabled(value bool) *Button {
 // Name of the object when submitted with a form. If specified, it must not be the empty string.
 func (_btn *Button) Name() string {
 	if !_btn.IsDefined() {
-		return ick.UNDEFINED_NODE
+		return wick.UNDEFINED_NODE
 	}
 	return _btn.GetString("name")
 }
@@ -111,7 +111,7 @@ func (_btn *Button) SetName(name string) {
 // Value A string representing the current form control value of the button.
 func (_btn *Button) Value() string {
 	if !_btn.IsDefined() {
-		return ick.UNDEFINED_NODE
+		return wick.UNDEFINED_NODE
 	}
 	return _btn.GetString("value")
 }
@@ -158,16 +158,16 @@ func (_btn *Button) WillValidate() bool {
 // candidate for constraint validation (willValidate is false), or it satisfies its constraints.
 func (_btn *Button) ValidationMessage() string {
 	if !_btn.IsDefined() {
-		return ick.UNDEFINED_NODE
+		return wick.UNDEFINED_NODE
 	}
 	return _btn.GetString("validationMessage")
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement/labels
-func (_btn *Button) Labels() []*ick.Element {
+func (_btn *Button) Labels() []*wick.Element {
 	if !_btn.IsDefined() {
-		return make([]*ick.Element, 0)
+		return make([]*wick.Element, 0)
 	}
 	elems := _btn.Get("labels")
-	return ick.CastElements(elems)
+	return wick.CastElements(elems)
 }

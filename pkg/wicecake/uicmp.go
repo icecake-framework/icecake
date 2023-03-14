@@ -1,29 +1,26 @@
-package ick
+package wick
 
 import (
 	"fmt"
 
 	"github.com/sunraylab/icecake/pkg/errors"
+	ick "github.com/sunraylab/icecake/pkg/icecake"
 )
 
-type Composer interface {
+type UIComposer interface {
+	ick.HtmlComposer
+
 	Wrap(JSValueProvider)
-
-	Classes() *Classes
-	Attributes() *Attributes
-
-	Container(_compid string) (_tagname string, _classes string, _attrs string)
-	Body() (_html string)
-	Listeners()
-
-	Show()
-	Hide()
+	AddListeners()
+	UpdateUI()
 }
 
 /*****************************************************************************/
 
 type UIComponent struct {
 	Element
+
+	ick.HtmlComponent
 
 	//MountClasses    *Classes    // classes added to the component during the mounting stage
 	//MountAttributes *Attributes // attributes addes to the component during the mounting stage
@@ -60,21 +57,7 @@ func (c *UIComponent) UpdateUI() {
 	fmt.Printf("UIComponent.UpdateUI does nothing by default\n")
 }
 
-func (c *UIComponent) Container(_compid string) (_tagname string, _classes string, _attrs string) {
-	// DEBUG:
-	fmt.Printf("UIComponent default <SPAN> Container for %q\n", _compid)
-
-	return "SPAN", "", ""
-}
-
-func (c *UIComponent) Body() (_html string) {
-	// DEBUG:
-	fmt.Printf("UIComponent.Body returns default empty value\n")
-
-	return ""
-}
-
-func (c *UIComponent) Listeners() {
+func (c *UIComponent) AddListeners() {
 	// DEBUG:
 	fmt.Printf("UIComponent.Listeners is empty\n")
 }

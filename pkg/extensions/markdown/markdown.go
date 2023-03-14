@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	"github.com/sunraylab/icecake/pkg/errors"
-	ick "github.com/sunraylab/icecake/pkg/icecake"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 	"github.com/yuin/goldmark"
 )
 
@@ -12,7 +12,7 @@ import (
 // then use it as an HTML template to render it with data and components.
 //
 // Returns an error if the markdown processor fails.
-func RenderMarkdown(_elem *ick.Element, _mdtxt string, _data any, _options ...goldmark.Option) error {
+func RenderMarkdown(_elem *wick.Element, _mdtxt string, _data any, _options ...goldmark.Option) error {
 	if !_elem.IsDefined() {
 		return nil
 	}

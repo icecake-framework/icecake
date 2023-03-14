@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	ick "github.com/sunraylab/icecake/pkg/icecake"
+	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
 func TestWindow(t *testing.T) {
 
-	win := ick.GetWindow()
+	win := wick.GetWindow()
 
 	fmt.Println("URL:", win.URL().String())
 
