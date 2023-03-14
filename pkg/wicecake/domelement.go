@@ -999,7 +999,7 @@ func (_elem *Element) RenderTemplate(_unsafeHtmlTemplate string, _data any) (_er
 
 	out := new(bytes.Buffer)
 	cmp := new(ick.Text)
-	_err = ick.ComposeHtml(out, cmp, _data)
+	_err = ick.ComposeHtmlE(out, cmp, _data)
 	if _err == nil {
 		_elem.SetInnerHTML(out.String())
 
@@ -1015,7 +1015,7 @@ func (_elem *Element) RenderComponent(_newcmp UIComposer, _appdata any) (_newcmp
 	}
 
 	out := new(bytes.Buffer)
-	_err = ick.ComposeHtml(out, _newcmp, _appdata)
+	_err = ick.ComposeHtmlE(out, _newcmp, _appdata)
 	if _err == nil {
 		_elem.SetInnerHTML(out.String())
 		// TODO: loop over embedded component
