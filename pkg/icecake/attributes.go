@@ -109,6 +109,11 @@ func (_attrs Attributes) String() (_str string) {
 	return strings.TrimRight(_str, " ")
 }
 
+// Clear removes all attribute
+func (_attrs *Attributes) Clear() {
+	_attrs.amap = nil
+}
+
 // GetAttribue returns the attribute with the given name in the list.
 // _name is case sensitive and must be trimed.
 func (_attrs Attributes) Attribute(_name string) (_val string, _found bool) {

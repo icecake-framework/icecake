@@ -11,6 +11,9 @@ import (
 	"strings"
 	"text/template"
 	"time"
+	"unicode/utf8"
+
+	"github.com/sunraylab/icecake/pkg/htmlname"
 )
 
 type ID string
@@ -131,9 +134,10 @@ func composeHtmlE(_output io.Writer, _id string, _icmp HtmlComposer, _data any, 
 	tagname := openHtmlE(_output, _icmp, _id)
 
 	body := new(bytes.Buffer)
+	// body := new(strings.Builder)
 	_err = executeBodyTemplate(body, _icmp, _id, _data)
 	if _err != nil {
-		_err = unfoldBody(_output, body, _data, _deep)
+		_err = unfoldBody(_output, body.Bytes(), _data, _deep)
 	}
 	closeHtmlE(_output, tagname)
 	return _err
@@ -199,10 +203,232 @@ func executeBodyTemplate(_output io.Writer, _icmp HtmlComposer, _id string, _dat
 	return _err
 }
 
-// unfoldBody lookup for component tags in the body htmlstring, and compose each of them recursively.
-func unfoldBody(_output io.Writer, _body io.Reader, _data any, _deep int) (_err error) {
+const (
+	processing_NONE int = iota
+	processing_TXT
+	processing_ICKTAG
+	processing_ANAME
+	processing_AVALUE
+)
 
-	// 3. lookup for ick components
+type stepway struct {
+	processing int
+	fieldat    int
+	fieldto    int
+}
+
+func (_st *stepway) startfield(i int) {
+	_st.fieldat = i
+	_st.fieldto = _st.fieldat
+}
+func (_st *stepway) opentxt(i int) {
+	_st.processing = processing_TXT
+	_st.startfield(i)
+}
+func (_st *stepway) openick(_pi *int) {
+	_st.processing = processing_ICKTAG
+	_st.fieldat = *_pi + 1
+	_st.fieldto = _st.fieldat + 4
+	*_pi += 5 - 1
+}
+func (_st *stepway) closeick(_pi *int) {
+	_st.processing = processing_NONE
+	_st.startfield(*_pi + 2)
+	*_pi += 2 - 1
+}
+func (_st *stepway) extendfield(i int) {
+	_st.fieldto = i
+}
+func (_st *stepway) openaname(i int) {
+	_st.processing = processing_ANAME
+	_st.startfield(0)
+}
+func (_st *stepway) openavalue(i int) {
+	_st.processing = processing_AVALUE
+	_st.startfield(0)
+}
+
+// func (_st stepway) emptyfield(_pi *int) bool {
+// 	return _st.fieldat == _st.fieldto
+// }
+
+func unfoldBody(_output io.Writer, _body []byte, _data any, _deep int) (_err error) {
+	// const (
+	// 	delim_open  = "<ick-"
+	// 	delim_close = "/>"
+	// )
+	field := func(s stepway) []byte {
+		return _body[s.fieldat : s.fieldto+1]
+	}
+
+	walk := stepway{processing: processing_NONE}
+	var ickname, aname, avalue string
+	var quote byte
+	var attrs Attributes
+
+	ilast := len(_body) - 1
+	for i := 0; i <= ilast && _err == nil; i++ {
+		b := _body[i]
+
+		// _</>*
+
+		var fdelim_open, fdelim_close bool
+		if i+1 <= ilast {
+			fdelim_close = string(_body[i:i+2]) == "/>"
+			if i+5 <= ilast {
+				fdelim_open = string(_body[i:i+5]) == "<ick-"
+			}
+		}
+
+		switch walk.processing {
+		case processing_NONE:
+			switch {
+			case fdelim_open:
+				walk.openick(&i)
+			default:
+				walk.opentxt(i)
+			}
+
+		case processing_TXT:
+			switch {
+			case i == ilast:
+				// flush processed field and exit
+				walk.fieldto = ilast
+				_output.Write(field(walk))
+			case fdelim_open:
+				_output.Write(field(walk))
+				walk.openick(&i)
+			default:
+				walk.extendfield(i)
+			}
+
+		case processing_ICKTAG:
+			if b == ' ' || fdelim_close { // record component tagname
+				ickname = string(field(walk))
+				if ickname == "ick-/" || ickname == "ick- " {
+					_err = errors.New("ick tag found without name")
+					break
+				}
+				ickname = strings.ToLower(ickname)
+				aname = ""
+				avalue = ""
+				attrs.Clear()
+			}
+			switch {
+			case b == ' ':
+				walk.openaname(i)
+			case fdelim_close: // single tagname component
+				walk.closeick(&i)
+
+				log.Println("composing embedded component:", ickname)
+				fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
+
+			default: // build component ick-tagname
+				r, size := utf8.DecodeRune(_body[i : ilast+1])
+				if size != 0 && htmlname.IsValidRune(r, true) {
+					i += size - 1
+					walk.extendfield(i)
+				} else {
+					_err = fmt.Errorf("invalid character found in ick-tagname: %q", string(_body[walk.fieldat:i+1]))
+				}
+			}
+
+		case processing_ANAME:
+			// trim left spaces
+			if b == ' ' && walk.fieldat == 0 {
+				break
+			}
+			// get and save aname
+			if (b == ' ' || b == '=' || fdelim_close) && walk.fieldat > 0 {
+				aname = string(field(walk))
+				attrs.SetAttribute(aname, "")
+			}
+			switch {
+			case b == ' ': // let's continue for another name
+				aname = ""
+				walk.openaname(i)
+			case b == '=': // let's continue for a value
+				if aname == "" {
+					_err = fmt.Errorf("= symbol found without attribute name: %q", ickname)
+					break
+				}
+				walk.openavalue(i)
+			case fdelim_close: // time to compose the component
+				walk.closeick(&i)
+
+				log.Println("composing embedded component:", ickname)
+				fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
+
+			default: // build attribute name
+				r, size := utf8.DecodeRune(_body[i : ilast+1])
+				if size != 0 && htmlname.IsValidRune(r, false) {
+					if walk.fieldat == 0 {
+						walk.startfield(i)
+					}
+					i += size - 1
+					walk.extendfield(i)
+				} else {
+					_err = fmt.Errorf("invalid character found in attribute name: %q", string(_body[walk.fieldat:i+1]))
+				}
+			}
+
+		case processing_AVALUE:
+			// don't know yet if a quoted or unquoted value
+			if quote == 0 {
+				// trim left spaces
+				if b == ' ' && quote == 0 {
+					break
+				}
+				// start a quoted value ?
+				if b == '"' || b == '\'' {
+					quote = b
+					walk.startfield(i + 1)
+					break
+				}
+				// empty value
+				if fdelim_close {
+					_err = fmt.Errorf("attribute with empty value: %q", string(_body[walk.fieldat:i+1]))
+				}
+				// start unquoted value
+				quote = 1
+				walk.startfield(i)
+				break
+			}
+
+			switch {
+			// end of unquoted value
+			case quote == 1 && (b == ' ' || fdelim_close):
+				avalue = string(field(walk))
+				attrs.SetAttribute(aname, avalue)
+
+				if fdelim_close { // time to compose the component
+					walk.closeick(&i)
+
+					log.Println("composing embedded component:", ickname)
+					fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
+
+				} else {
+					walk.openaname(i)
+				}
+			// end of quoted value
+			case quote != 1 && b == quote:
+				avalue = string(field(walk))
+				attrs.SetAttribute(aname, avalue)
+				//i += 1
+				walk.openaname(i + 1)
+
+			default:
+				walk.extendfield(i)
+			}
+		}
+	}
+
+	return _err
+}
+
+// unfoldBody lookup for component tags in the body htmlstring, and compose each of them recursively.
+func unfoldBody2(_output io.Writer, _body io.Reader, _data any, _deep int) (_err error) {
+
 	const (
 		delim_open  = "<ick-"
 		delim_close = "/>"

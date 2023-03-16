@@ -7,29 +7,15 @@ import (
 	"unicode/utf8"
 )
 
+type charset struct {
+	from rune
+	to   rune
+}
+
 var (
 	charset0 []charset
 	charsetN []charset
 )
-
-func new() {
-	strcsA := `[a-z]|[A-Z]|_|:`
-	csA := mustCompileCharset(strcsA)
-
-	strcsB := `[\xC0-\xD6]|[\xD8-\xF6]|[\x00F8-\x02FF]|[\x0370-\x037D]|[\x037F-\x1FFF]|[\x200C-\x200D]|[\x2070-\x218F]|[\x2C00-\x2FEF]|[\x3001-\xD7FF]|[\xF900-\xFDCF]|[\xFDF0-\xFFFD]|[\x10000-\xEFFFF]`
-	csB := mustCompileCharset(strcsB)
-
-	strcsC := `-|[0-9]|.`
-	csC := mustCompileCharset(strcsC)
-
-	strcsD := `\xB7|[\x0300-\x036F]|[\x203F-\x2040]`
-	csD := mustCompileCharset(strcsD)
-
-	charset0 = append(csA, csB...)
-	charsetN = append(csA, csC...)
-	charsetN = append(charsetN, csB...)
-	charsetN = append(charsetN, csD...)
-}
 
 // IsValid returns true or false if the s match allowed HTML Name pattern. https://stackoverflow.com/questions/925994/what-characters-are-allowed-in-an-html-attribute-name.
 // usefull to check attribute or token name.
@@ -46,24 +32,60 @@ func IsValid(s string) (_ret bool) {
 		new()
 	}
 
-	charsets := &charset0
-nextchar:
-	for _, c := range s {
+	for i, c := range s {
 		r := rune(c)
-		for _, cset := range *charsets {
-			if r >= cset.from && r <= cset.to {
-				charsets = &charsetN
-				continue nextchar
-			}
+		if (i == 0 && !isValidRune(&charset0, r)) || (i > 0 && !isValidRune(&charsetN, r)) {
+			return false
 		}
-		return false
 	}
 	return true
 }
 
-type charset struct {
-	from rune
-	to   rune
+func IsValidRune(r rune, first bool) bool {
+	if r == '\u0000' {
+		return false
+	}
+	if charset0 == nil {
+		new()
+	}
+	if first {
+		return isValidRune(&charset0, r)
+	} else {
+		return isValidRune(&charsetN, r)
+	}
+}
+
+/******************************************************************************
+ * PRIVATE
+ */
+
+func isValidRune(cs *[]charset, r rune) (_ret bool) {
+	for _, cset := range *cs {
+		if r >= cset.from && r <= cset.to {
+			return true
+		}
+	}
+	return false
+}
+
+func new() {
+	strcsA := `[a-z]|[A-Z]|_|:`
+	csA := mustCompileCharset(strcsA)
+
+	strcsB := `[\xC0-\xD6]|[\xD8-\xF6]|[\x00F8-\x02FF]|[\x0370-\x037D]|[\x037F-\x1FFF]|[\x200C-\x200D]|[\x2070-\x218F]|[\x2C00-\x2FEF]|[\x3001-\xD7FF]|[\xF900-\xFDCF]|[\xFDF0-\xFFFD]|[\x10000-\xEFFFF]`
+	csB := mustCompileCharset(strcsB)
+
+	strcsC := `-|[0-9]|.`
+	csC := mustCompileCharset(strcsC)
+
+	strcsD := `\xB7|[\x0300-\x036F]|[\x203F-\x2040]`
+	csD := mustCompileCharset(strcsD)
+
+	charset0 = append(csA, csB...)
+
+	charsetN = append(csA, csC...)
+	charsetN = append(charsetN, csB...)
+	charsetN = append(charsetN, csD...)
 }
 
 func mustCompileCharset(_strcharsets string) (_ret []charset) {
