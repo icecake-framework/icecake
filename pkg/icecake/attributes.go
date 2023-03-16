@@ -19,31 +19,33 @@ type Attributes struct {
 	amap map[string]string // the internal map of attributes
 }
 
-// ParseAttribute split _str into attributes separated by spaces
+// ParseAttribute split _str into attributes separated by spaces.
 // An attribute can have a value at the right of an "=" symbol.
-// the value can be delimited by quotes and in that case may contains whitespaces.
-// The string is processed until the ends or when a ">" symbol is encoutered out of a value.
+// The value can be delimited by quotes ( " or ' ) and in that case may contains whitespaces.
+// The string is processed until the end and an error occurs if invalid char is met.
 func ParseAttributes(_alist string) (_pattrs *Attributes, _err error) {
+
 	_pattrs = new(Attributes)
 	_pattrs.amap = make(map[string]string)
 	var strnames string
-	left := _alist
-	for i := 0; len(left) > 0; i++ {
+	unparsed := _alist
+	for i := 0; len(unparsed) > 0; i++ {
+
 		// process all simple attributes until next "="
-		strnames, left, _ = strings.Cut(left, "=")
+		strnames, unparsed, _ = strings.Cut(unparsed, "=")
 		names := strings.Fields(strnames)
 		for _, n := range names {
 			if !htmlname.IsValid(n) {
-				return nil, fmt.Errorf("attribute name %q is not valid\n", n)
+				return nil, fmt.Errorf("attribute name %q is not valid", n)
 			}
 			_pattrs.amap[n] = ""
 		}
 
 		// remove blanks just after "="
-		left = strings.Trim(left, " ")
+		unparsed = strings.TrimLeft(unparsed, " ")
 
 		// stop if nothing else to proceed
-		if len(left) == 0 || len(names) == 0 || left[0] == '>' {
+		if len(unparsed) == 0 || len(names) == 0 {
 			break
 		}
 
@@ -52,13 +54,13 @@ func ParseAttributes(_alist string) (_pattrs *Attributes, _err error) {
 
 		// extract value with quotes or no quotes
 		var value string
-		delim := left[0]
+		delim := unparsed[0]
 		istart := 1
 		if delim != '"' && delim != '\'' {
 			delim = ' '
 			istart = 0
 		}
-		value, left, _ = strings.Cut(left[istart:], string(delim))
+		value, unparsed, _ = strings.Cut(unparsed[istart:], string(delim))
 		_pattrs.amap[name] = value
 	}
 	return _pattrs, nil
@@ -261,7 +263,7 @@ func (_attrs *Attributes) SetContentEditable(_editable CONTENT_EDITABLE) *Attrib
 // Name and Value are case sensitive, they will be trimed. Quotes delimiters of the value will be removed if any.
 func (_attrs *Attributes) SetAttribute(_name string, _value string) *Attributes {
 	_name = strings.Trim(_name, " ")
-	_value = strings.Trim(strings.Trim(strings.Trim(_value, " "), "\""), "'")
+	_value = strings.Trim(_value, " \"'")
 	if _attrs.amap == nil {
 		_attrs.amap = make(map[string]string)
 	}

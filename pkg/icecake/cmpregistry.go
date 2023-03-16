@@ -11,7 +11,7 @@ import (
 )
 
 type componentRegEntry struct {
-	ickname string
+	ickname string // unique ick-name of the component
 	typ     reflect.Type
 	css     string
 	count   int
@@ -22,7 +22,7 @@ func (_cr componentRegEntry) String() string {
 }
 
 func (_cr componentRegEntry) IsFirst() bool {
-	return _cr.count == 1
+	return _cr.count == 0
 }
 
 type ComponentRegistry struct {
@@ -101,21 +101,6 @@ func (_reg *ComponentRegistry) LookupComponent(_ickname string) *componentRegEnt
 	return nil
 }
 
-// func (_reg *ComponentRegistry) NextComponentId(_ickname string) (_id string, _first bool) {
-// 	_reg.count++
-
-// 	entry := _reg.entries[_ickname]
-// 	if entry != nil {
-// 		cidx := entry.count + 1
-// 		entry.count++
-// 		_first = cidx == 1
-
-// 		_id = _ickname + "-" + strconv.Itoa(cidx)
-// 	}
-
-// 	return _id, _first
-// }
-
 func (_reg *ComponentRegistry) GetUniqueId(_composer HtmlComposer) (_id string) {
 	// check if _composer matches with a registered component type
 	regentry := _reg.LookupComponentType(reflect.TypeOf(_composer))
@@ -127,10 +112,9 @@ func (_reg *ComponentRegistry) GetUniqueId(_composer HtmlComposer) (_id string) 
 	var name string
 
 	// TODO: safe thread
-	_reg.count++
 	if regentry != nil {
 		name = regentry.ickname
-		idx = regentry.count + 1
+		idx = regentry.count
 		regentry.count++
 	} else {
 		name = reflect.TypeOf(_composer).String()
@@ -140,64 +124,9 @@ func (_reg *ComponentRegistry) GetUniqueId(_composer HtmlComposer) (_id string) 
 		}
 		name = strings.ToLower(name)
 		idx = _reg.count
+		_reg.count++
 	}
 
 	_id = name + "-" + strconv.Itoa(idx)
 	return _id
 }
-
-/*****************************************************************************/
-
-// func (_reg *ComponentRegistry) CreateComponent(_composer UIComposer) (_id string, _newcmp *UIComponent, _err error) {
-
-// 	// check if _composer matches with a registered component type, and get a fresh component id
-// 	regentry := _app.LookupComponent(reflect.TypeOf(_composer))
-// 	if regentry == nil {
-// 		return "", nil, errors.ConsoleErrorf("CreateComponent failed: non registered component %q\n", reflect.TypeOf(_composer).String())
-// 	}
-// 	var first bool
-// 	_id, first = _app.NextComponentId(regentry.ickname)
-
-// 	// create the HTML element
-// 	tagname, strclasses, strattrs := _composer.Container(_id)
-// 	tagname = helper.Normalize(tagname)
-// 	elem := GetDocument().CreateElement(tagname)
-// 	if !elem.IsDefined() {
-// 		// TODO: check HTMLUnknownElement returns
-// 		return "", nil, errors.ConsoleErrorf("CreateComponent %q failed: invalid tagname %q\n", regentry.ickname, tagname)
-// 	}
-
-// 	// set the container classes
-// 	_err = elem.Classes().ParseTokens(strclasses)
-// 	if _err != nil {
-// 		return "", nil, errors.ConsoleErrorf("CreateComponent %q failed: %s\n", regentry.ickname, _err)
-// 	}
-
-// 	// set the container attributes
-// 	_err = elem.Attributes().ParseAttributes(strattrs)
-// 	if _err != nil {
-// 		return "", nil, errors.ConsoleErrorf("CreateComponent %q failed: %s\n", regentry.ickname, _err)
-// 	}
-
-// 	// wrap the composer with the newly created component
-// 	_newcmp = CastUIComponent(elem)
-// 	// TODO: remove wrapping and wotk with _newcomp
-// 	_composer.Wrap(elem)
-
-// 	_newcmp.SetId(_id)
-
-// 	// init classes and attributes
-// 	_newcmp.Classes().AddClasses(*_composer.Classes())
-// 	_newcmp.Attributes().SetAttributes(*_composer.Attributes())
-
-// 	// add css
-// 	// DEBUG: fmt.Println(regentry.String(), first)
-
-// 	if first && regentry.css != "" {
-// 		style := _app.CreateElement("style")
-// 		style.SetInnerHTML(regentry.css)
-// 		_app.Head().AppendChild(&style.Node)
-// 	}
-
-// 	return _id, _newcmp, _err
-// }

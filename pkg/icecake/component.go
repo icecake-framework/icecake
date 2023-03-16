@@ -2,6 +2,7 @@ package ick
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -65,9 +66,9 @@ func (_cmp *HtmlComponent) Body() (_html string) {
 	return ""
 }
 
-// Classes provides a reference to HtmlComponent classes. By default this is the internal HtmlComponent classes.
+// SetupClasses provides a reference to HtmlComponent classes. By default this is the internal HtmlComponent classes.
 // This reference can be used to setup custom classes for a new component.
-// These classes will overwrite the container classes.
+// These classes will overwrite the default container classes of the component.
 func (_cmp *HtmlComponent) SetupClasses() *Classes {
 	return &_cmp.setupclasses
 }
@@ -114,80 +115,92 @@ func ComposeHtmlE(_wr io.Writer, _icmp HtmlComposer, _rootdata any) error {
 }
 
 // composeHtml may be called recursively and if protected against infinite call with _deep
-func composeHtmlE(_wr io.Writer, _id string, _icmp HtmlComposer, _data any, _deep int) error {
+func composeHtmlE(_output io.Writer, _id string, _icmp HtmlComposer, _data any, _deep int) (_err error) {
 	if _deep >= 10 {
-		err := fmt.Errorf("composeHtmlE stopped at level %d. Too many recursive calls", _deep)
-		log.Println(err.Error())
-		return err
+		_err = fmt.Errorf("composeHtmlE stopped at level %d. Too many recursive calls", _deep)
+		log.Println(_err.Error())
+		return _err
 	}
 
 	// DEBUG:
 	log.Printf("composing Html Element at level %d: id=%s, type:%s\n", _deep, _id, reflect.TypeOf(_icmp).String())
 
-	tagname := openHtmlE(_wr, _icmp, _id)
-	err := unfoldBody(_wr, _icmp, _id, _data, _deep)
-	closeHtmlE(_wr, tagname)
-	return err
+	// add the component to the unfolded stack
+	_icmp.Embed(_id, _icmp)
+
+	tagname := openHtmlE(_output, _icmp, _id)
+
+	body := new(bytes.Buffer)
+	_err = executeBodyTemplate(body, _icmp, _id, _data)
+	if _err != nil {
+		_err = unfoldBody(_output, body, _data, _deep)
+	}
+	closeHtmlE(_output, tagname)
+	return _err
 }
 
-func openHtmlE(_wr io.Writer, _icmp HtmlComposer, _id string) (_tagname string) {
+func openHtmlE(_output io.Writer, _icmp HtmlComposer, _id string) (_tagname string) {
 
-	tagname, strclasses, strattrs, strstyle := _icmp.Container(_id)
+	tagname, sdftc, sdfta, sdfts := _icmp.Container(_id)
 
 	tagname = strings.ToUpper(strings.Trim(tagname, " "))
-	fmt.Fprintf(_wr, "<%s", tagname)
+	fmt.Fprintf(_output, "<%s", tagname)
 
-	attrs, _ := ParseAttributes(strattrs)
-	_icmp.SetupAttributes().SetAttributes(*attrs, false)
+	// classes, attributes and styles are all attributes
+	attre := new(Attributes)
 
-	classes, _ := ParseClasses(strclasses)
-	_icmp.SetupClasses().AddClasses(*classes)
-	strclasses = _icmp.SetupClasses().String()
-	if strclasses != "" {
-		_icmp.SetupAttributes().SetAttribute("class", strclasses)
+	// update setupattributes with default container ones, do not overwrite
+	dfta, _ := ParseAttributes(sdfta)
+	attre.SetAttributes(*_icmp.SetupAttributes(), false)
+	attre.SetAttributes(*dfta, false)
+
+	// merge setup classes with default container ones and class defined as an attribute if any
+	ac, _ := attre.Attribute("class")
+	c, _ := ParseClasses(sdftc + " " + ac)
+	c.AddClasses(*_icmp.SetupClasses())
+	if c.Count() > 0 {
+		attre.SetAttribute("class", c.String())
 	}
 
-	custs := *_icmp.SetupStyle()
-	*_icmp.SetupStyle() = Style(strstyle) + custs
-	strstyle = string(*_icmp.SetupStyle())
-	if strstyle != "" {
-		_icmp.SetupAttributes().SetAttribute("style", strstyle)
+	// merge setup style with default container ones and style defined as an attribute if any
+	as, _ := attre.Attribute("style")
+	s := *_icmp.SetupStyle()
+	if as != "" {
+		s += Style(as)
+	}
+	if sdfts != "" {
+		s += Style(sdfts)
+	}
+	if s != "" {
+		attre.SetAttribute("style", string(s))
 	}
 
-	_icmp.SetupAttributes().SetAttribute("id", _id)
-
-	strattrs = _icmp.SetupAttributes().String()
-	if strattrs != "" {
-		fmt.Fprint(_wr, ` `, strattrs)
+	// set the attribute if not forced by an embedded id attribute
+	if _, f := attre.Attribute("id"); !f {
+		attre.SetAttribute("id", _id)
 	}
 
-	fmt.Fprint(_wr, ">")
+	fmt.Fprintf(_output, " %s>", attre.String())
 	return tagname
 }
 
-func closeHtmlE(_wr io.Writer, _tagname string) {
-	fmt.Fprintf(_wr, "</%s>", _tagname)
+func closeHtmlE(_output io.Writer, _tagname string) {
+	fmt.Fprintf(_output, "</%s>", _tagname)
+}
+
+// executeBodyTemplate parses _icmp.body template according to the go html templating standards,
+// and execute this template with {{}} syntax and _data.
+func executeBodyTemplate(_output io.Writer, _icmp HtmlComposer, _id string, _data any) (_err error) {
+	t := template.Must(template.New("").Parse(_icmp.Body()))
+	_err = t.Execute(_output, _data)
+	if _err != nil {
+		_output.Write([]byte("<!-- composing html template error -->"))
+	}
+	return _err
 }
 
 // unfoldBody lookup for component tags in the body htmlstring, and compose each of them recursively.
-//
-// unfoldBody parses body template, according to go html templating standards, and
-// execute this template with {{}} langage and component's data.
-func unfoldBody(_wr io.Writer, _icmp HtmlComposer, _id string, _data any, _deep int) (_err error) {
-
-	// 1. parse body template
-	tmpCmp := template.Must(template.New("").Parse(_icmp.Body()))
-
-	// 2. execute the template with _data
-	bufCmp := new(bytes.Buffer)
-	errt := tmpCmp.Execute(bufCmp, _data)
-	if errt != nil {
-		err := fmt.Errorf("unfolding %q stopped on error: %s", _id, errt.Error())
-		log.Println(err.Error())
-		_wr.Write([]byte("<!-- composing template error -->"))
-		return err
-	}
-	htmlstring := bufCmp.String()
+func unfoldBody(_output io.Writer, _body io.Reader, _data any, _deep int) (_err error) {
 
 	// 3. lookup for ick components
 	const (
@@ -195,23 +208,22 @@ func unfoldBody(_wr io.Writer, _icmp HtmlComposer, _id string, _data any, _deep 
 		delim_close = "/>"
 	)
 
-	//n := 0
-	//out := &bytes.Buffer{}
-nextdelim:
+	htmlstring := ""
+
+nextdelimo:
 	for {
 		// find next delim_open
 		if from := strings.Index(htmlstring, delim_open); from == -1 || _err != nil {
 			// no more delim_open = feed the output with what's left in htmlstring and return
-			_wr.Write([]byte(htmlstring))
+			_output.Write([]byte(htmlstring))
 			if _err != nil {
 				log.Println(_err.Error())
-				_wr.Write([]byte("<!-- unfolding error -->"))
+				_output.Write([]byte("<!-- unfolding error -->"))
 			}
 			return _err
 		} else {
-			// we found a new delim_open
-			// so it's time to feed the output with data preceding this delim
-			_wr.Write([]byte(htmlstring[:from]))
+			// we found a new delim_open, so feed the output with data preceding this delim
+			_output.Write([]byte(htmlstring[:from]))
 
 			// scrap this data and keep what's left
 			htmlstring = htmlstring[from+len(delim_open):]
@@ -219,81 +231,54 @@ nextdelim:
 			// look now for it's corresponding delim_close
 			if to := strings.Index(htmlstring, delim_close); to == -1 {
 				// not corresponding delim_close then stop and return a rendering error
-				_err = fmt.Errorf("unfolding %q stopped: closing delimiter '/>' not found", _id)
-				continue nextdelim
+				_err = errors.New("closing delimiter '/>' not found")
+				continue nextdelimo
 			} else {
 
 				// we got a delim_close so we've a new ick-element, extract its content
 				inside := htmlstring[0:to]
-				tagname, leftinside, _ := strings.Cut(inside, " ")
+				ickname, leftinside, _ := strings.Cut(inside, " ")
 				htmlstring = htmlstring[to+len(delim_close):] // scrap it and keep what's left
 
-				if tagname == "" { // <ick-/> !
-					continue nextdelim
+				if ickname == "" { // <ick-/> !
+					continue nextdelimo
 				}
 
-				// DEBUG:
-				//fmt.Println("embedded ick component:'", tagname, "' leftinside:", leftinside)
-
 				// does this tag refer to a registered component ?
-				if regentry := TheCmpReg.LookupComponent("ick-" + tagname); regentry != nil {
+				if regentry := TheCmpReg.LookupComponent("ick-" + ickname); regentry != nil {
 
-					// process and instantiate new component
-
-					// Instantiate the component
+					// Instantiate the component and get a new id
 					newcmpreflect := reflect.New(regentry.typ)
 					newcmp := newcmpreflect.Interface().(HtmlComposer)
-					//newcmpid := fmt.Sprintf("ick-%s-%d-%d", tagname, _deep, n)
-
 					newcmpid := TheCmpReg.GetUniqueId(newcmp)
 
-					//					var newcmpelem *UIComponent
-					//					var newcmpid string
-					//					if newcmpid, newcmpelem, _err = App.CreateComponent(newcmp); _err == nil {
+					// DEBUG:
+					log.Printf("instantiating %q(%s)\n", newcmpid, newcmpreflect.Type())
 
-					log.Printf("unfolding %q: instantiating %q(%s)\n", _id, newcmpid, newcmpreflect.Type())
-
-					// add the component to the add it to the unfolded stack
-					_icmp.Embed(newcmpid, newcmpreflect.Interface())
+					// // add the component to the add it to the unfolded stack
+					// _icmp.Embed(newcmpid, newcmpreflect.Interface())
 
 					// process embeded component's attributes
 					var attrs *Attributes
 					attrs, _err = ParseAttributes(leftinside)
 					if _err != nil {
-						continue nextdelim
+						continue nextdelimo
 					}
 
-					// set the id, overwrite the one in the template if any
-					//attrs.SetAttribute("id", newcmpid)
-
 					anames := attrs.Keys()
-					// DEBUG:
-					//fmt.Println(anames, " => ", attrs)
-
 					for _, aname := range anames {
 						_, found := newcmpreflect.Elem().Type().FieldByName(aname)
 						if !found {
-							// DEBUG:
-							// fmt.Printf("attribute %v: %q is kept asis\n", i, aname)
-
 							// this attribute is not a field of the componenent
 							// keep it as is unless it is the class attribute, in this case, add the tokens
 							aval, _ := attrs.Attribute(aname)
-							// if aname == "class" {
-							// 	newcmp.Classes().AddTokens(aval)
-							// } else {
 							newcmp.SetupAttributes().SetAttribute(aname, aval)
-							// }
 						} else {
-							// DEBUG:
-							// fmt.Printf("attribute %v: %q corresponds to a component's data\n", i, aname)
-
 							// feed data struct with the value
 							strav, _ := attrs.Attribute(aname)
 							field := newcmpreflect.Elem().FieldByName(aname)
 							if _err = updateCProperty(field, strav); _err != nil {
-								//log.Printf("unfolding %q body, attribute %q: %s", _id, aname, _err.Error())
-								continue nextdelim
+								continue nextdelimo
 							}
 						}
 					}
@@ -304,21 +289,12 @@ nextdelim:
 						Me:   newcmp,
 						Root: _data,
 					}
-					composeHtmlE(_wr, newcmpid, newcmp, data, _deep+1)
-
-					// var htmlin string
-					// htmlin, _err = unfoldComponents(_unfoldedCmps, newcmpid, newcmp.Body(), data, _deep+1)
-					// newcmpelem.SetInnerHTML(htmlin)
-					// htmlout := newcmpelem.OuterHTML()
-
-					// let's go deeper
-					//_wr.Write(htmlout)
-					//					}
+					composeHtmlE(_output, newcmpid, newcmp, data, _deep+1)
 
 				} else {
 					// the tag is not a registered component
-					htmlmsg := fmt.Sprintf("<!-- unable to unfold unregistered 'ick-%s' component -->", tagname)
-					_wr.Write([]byte(htmlmsg))
+					htmlmsg := fmt.Sprintf("<!-- unable to unfold unregistered 'ick-%s' component -->", ickname)
+					_output.Write([]byte(htmlmsg))
 					log.Println(htmlmsg)
 				}
 			}
