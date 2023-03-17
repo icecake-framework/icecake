@@ -17,10 +17,7 @@ func TestRegister(t *testing.T) {
 	assert.ErrorContains(t, err, "must be an HtmlComposer")
 
 	err = TheCmpReg.RegisterComponent(Text{})
-	assert.NoError(t, err)
-
-	err = TheCmpReg.RegisterComponent(Text{})
-	assert.ErrorContains(t, err, "already registered")
+	assert.NoError(t, err) // only log "already registered"
 
 	e := TheCmpReg.LookupComponent("ick-text")
 	assert.NotNil(t, e)

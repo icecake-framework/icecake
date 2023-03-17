@@ -10,13 +10,72 @@ import (
 	"github.com/sunraylab/icecake/pkg/htmlname"
 )
 
+type StringQuotes string
+
+// UnQuotes returns a trimed value keeping white space inside quotes if any
+// If _value do not have quotes, the returned value is truncated at the first white space found.
+func ParseStringQuotes(_str string) (_unquote StringQuotes) { //, _quote byte, _has bool) {
+
+	trimspaces := strings.Trim(_str, " ")
+
+	trimq1 := strings.Trim(trimspaces, "'")
+	if len(trimq1) == len(trimspaces)-2 {
+		_unquote = StringQuotes(trimq1)
+		return
+	}
+
+	trimq2 := strings.Trim(trimspaces, "\"")
+	if len(trimq2) == len(trimspaces)-2 {
+		_unquote = StringQuotes(trimq2)
+		return
+	}
+
+	s, _, _ := strings.Cut(trimspaces, " ")
+	return StringQuotes(s)
+}
+
+func (_vq StringQuotes) StringUnquoted() string {
+	return _vq.string(false)
+}
+
+func (_vq StringQuotes) StringQuoted() string {
+	return _vq.string(true)
+}
+
+func (_vq StringQuotes) string(_quoted bool) string {
+	if _vq == "" {
+		return ""
+	}
+
+	boolv := strings.ToLower(string(_vq))
+	if boolv == "true" || boolv == "false" {
+		return boolv
+	}
+
+	num := strings.Trim(string(_vq), " ")
+	_, err := strconv.ParseFloat(num, 64)
+	if err == nil {
+		return num
+	}
+
+	var delim string
+	if _quoted || strings.ContainsRune(string(_vq), rune(' ')) {
+		if strings.ContainsRune(string(_vq), rune('\'')) {
+			delim = "\""
+		} else {
+			delim = "'"
+		}
+	}
+	return delim + string(_vq) + delim
+}
+
 /****************************************************************************
 * Attributes
 *****************************************************************************/
 
 // Attributes represents a set of element's attributes
 type Attributes struct {
-	amap map[string]string // the internal map of attributes
+	amap map[string]StringQuotes // the internal map of attributes
 }
 
 // ParseAttribute split _str into attributes separated by spaces.
@@ -26,7 +85,7 @@ type Attributes struct {
 func ParseAttributes(_alist string) (_pattrs *Attributes, _err error) {
 
 	_pattrs = new(Attributes)
-	_pattrs.amap = make(map[string]string)
+	_pattrs.amap = make(map[string]StringQuotes)
 	var strnames string
 	unparsed := _alist
 	for i := 0; len(unparsed) > 0; i++ {
@@ -61,7 +120,7 @@ func ParseAttributes(_alist string) (_pattrs *Attributes, _err error) {
 			istart = 0
 		}
 		value, unparsed, _ = strings.Cut(unparsed[istart:], string(delim))
-		_pattrs.amap[name] = value
+		_pattrs.amap[name] = StringQuotes(value)
 	}
 	return _pattrs, nil
 }
@@ -83,26 +142,21 @@ func (_attrs Attributes) Keys() []string {
 }
 
 // String returns the value of the list serialized as a string
-func (_attrs Attributes) String() (_str string) {
+func (_attrs Attributes) StringQuoted() (_str string) {
+	return _attrs.string(true)
+}
+
+func (_attrs Attributes) StringUnquoted() (_str string) {
+	return _attrs.string(false)
+}
+
+func (_attrs Attributes) string(_quoted bool) (_str string) {
 	k := _attrs.Keys()
 	for _, name := range k {
-		_str += strings.Trim(name, " ")
+		_str += name
 		value := _attrs.amap[name]
-		if value != "" {
-			delim := ""
-			lvalue := strings.ToLower(value)
-			if lvalue == "true" || lvalue == "false" {
-				value = lvalue
-			} else {
-				_, err := strconv.ParseFloat(value, 64)
-				if err != nil {
-					delim = "'"
-					if strings.ContainsRune(value, rune('\'')) {
-						delim = "\""
-					}
-				}
-			}
-			_str += `=` + delim + value + delim
+		if len(value) > 0 {
+			_str += "=" + value.string(_quoted)
 		}
 		_str += " "
 	}
@@ -116,7 +170,7 @@ func (_attrs *Attributes) Clear() {
 
 // GetAttribue returns the attribute with the given name in the list.
 // _name is case sensitive and must be trimed.
-func (_attrs Attributes) Attribute(_name string) (_val string, _found bool) {
+func (_attrs Attributes) Attribute(_name string) (_val StringQuotes, _found bool) {
 	if _attrs.amap != nil {
 		_val, _found = _attrs.amap[_name]
 	}
@@ -127,7 +181,7 @@ func (_attrs Attributes) Attribute(_name string) (_val string, _found bool) {
 func (_attrs *Attributes) SetAttributes(_newattrs Attributes, _overwrite bool) *Attributes {
 	if _newattrs.amap != nil {
 		if _attrs.amap == nil {
-			_attrs.amap = make(map[string]string)
+			_attrs.amap = make(map[string]StringQuotes)
 		}
 		for n, v := range _newattrs.amap {
 			_, found := _attrs.amap[n]
@@ -143,8 +197,8 @@ func (_attrs *Attributes) SetAttributes(_newattrs Attributes, _overwrite bool) *
 // _name is case sensitive and must be trimed.
 func (_attrs Attributes) IsTrue(_name string) bool {
 	val, found := _attrs.Attribute(_name)
-	val = strings.ToLower(val)
-	if !found || val == "false" || val == "0" {
+	v := strings.ToLower(string(val))
+	if !found || v == "false" || v == "0" {
 		return false
 	}
 	return true
@@ -178,7 +232,7 @@ func (_attrs Attributes) Spellcheck() bool {
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (_attrs Attributes) TabIndex() int {
 	stri, _ := _attrs.Attribute("tabIndex")
-	i, _ := strconv.Atoi(stri)
+	i, _ := strconv.Atoi(string(stri))
 	return i
 }
 
@@ -194,7 +248,7 @@ func (_attrs Attributes) TabIndex() int {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (_attrs *Attributes) SetTabIndex(_index int) *Attributes {
-	_attrs.SetAttribute("tabIndex", strconv.Itoa(_index))
+	_attrs.SetAttribute("tabIndex", StringQuotes(strconv.Itoa(_index)))
 	return _attrs
 }
 
@@ -212,7 +266,7 @@ const (
 func (_attrs Attributes) Autocapitalize() AUTOCAPITALIZE {
 	autocap, _ := _attrs.Attribute("autocapitalize")
 	switch autocap {
-	case string(AUTOCAP_OFF), string(AUTOCAP_SENTENCES), string(AUTOCAP_WORDS), string(AUTOCAP_CHARS):
+	case StringQuotes(AUTOCAP_OFF), StringQuotes(AUTOCAP_SENTENCES), StringQuotes(AUTOCAP_WORDS), StringQuotes(AUTOCAP_CHARS):
 		return AUTOCAPITALIZE(autocap)
 	}
 	return "not valid"
@@ -222,7 +276,7 @@ func (_attrs Attributes) Autocapitalize() AUTOCAPITALIZE {
 func (_attrs *Attributes) SetAutocapitalize(_autocap AUTOCAPITALIZE) *Attributes {
 	switch _autocap {
 	case AUTOCAP_OFF, AUTOCAP_SENTENCES, AUTOCAP_WORDS, AUTOCAP_CHARS:
-		_attrs.SetAttribute("autocapitalize", string(_autocap))
+		_attrs.SetAttribute("autocapitalize", StringQuotes(_autocap))
 	default:
 		log.Printf("SetAutocapitalize failed: not a valid value %q\n", _autocap)
 	}
@@ -244,7 +298,7 @@ const (
 func (_attrs Attributes) ContentEditable() CONTENT_EDITABLE {
 	editable, _ := _attrs.Attribute("contentEditable")
 	switch editable {
-	case string(CONTEDIT_FALSE), string(CONTEDIT_TRUE), string(CONTEDIT_INHERIT):
+	case StringQuotes(CONTEDIT_FALSE), StringQuotes(CONTEDIT_TRUE), StringQuotes(CONTEDIT_INHERIT):
 		return CONTENT_EDITABLE(editable)
 	}
 	return "not valid"
@@ -255,7 +309,7 @@ func (_attrs Attributes) ContentEditable() CONTENT_EDITABLE {
 func (_attrs *Attributes) SetContentEditable(_editable CONTENT_EDITABLE) *Attributes {
 	switch _editable {
 	case CONTEDIT_FALSE, CONTEDIT_TRUE, CONTEDIT_INHERIT:
-		_attrs.SetAttribute("contentEditable", string(_editable))
+		_attrs.SetAttribute("contentEditable", StringQuotes(_editable))
 	default:
 		log.Printf("contentEditable fails: not a valid value %q\n", _editable)
 	}
@@ -266,14 +320,21 @@ func (_attrs *Attributes) SetContentEditable(_editable CONTENT_EDITABLE) *Attrib
 // An empty value means a boolean attribute set to true.
 //
 // Name and Value are case sensitive, they will be trimed. Quotes delimiters of the value will be removed if any.
-func (_attrs *Attributes) SetAttribute(_name string, _value string) *Attributes {
-	_name = strings.Trim(_name, " ")
-	_value = strings.Trim(_value, " \"'")
+func (_attrs *Attributes) SetAttribute(_name string, _sq StringQuotes) *Attributes {
 	if _attrs.amap == nil {
-		_attrs.amap = make(map[string]string)
+		_attrs.amap = make(map[string]StringQuotes)
 	}
-	_attrs.amap[_name] = _value
+	_name = strings.Trim(_name, " ")
+	_attrs.amap[_name] = _sq
 	return _attrs
+}
+
+// ParseAttribute parse the _value and set it up in the map. If the attribute already exist it's updated.
+// An empty value means a boolean attribute set to true.
+//
+// Name and Value are case sensitive, they will be trimed. Quotes delimiters of the value will be removed if any.
+func (_attrs *Attributes) ParseAttribute(_name string, _value string) *Attributes {
+	return _attrs.SetAttribute(_name, ParseStringQuotes(_value))
 }
 
 // RemoveAttribute removes attribute in the list or does nothing for the one that does not exist.
@@ -302,7 +363,7 @@ func (_attrs *Attributes) Toggle(_name string) (_isin bool) {
 // returns an subset of _attrs with only "data-*" attributes
 func (_attrs Attributes) Data() *Attributes {
 	dataset := new(Attributes)
-	dataset.amap = make(map[string]string)
+	dataset.amap = make(map[string]StringQuotes)
 	if _attrs.amap != nil {
 		for name, value := range _attrs.amap {
 			if len(name) > 5 && strings.HasPrefix(name, "data-") {

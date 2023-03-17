@@ -134,9 +134,8 @@ func composeHtmlE(_output io.Writer, _id string, _icmp HtmlComposer, _data any, 
 	tagname := openHtmlE(_output, _icmp, _id)
 
 	body := new(bytes.Buffer)
-	// body := new(strings.Builder)
 	_err = executeBodyTemplate(body, _icmp, _id, _data)
-	if _err != nil {
+	if _err == nil {
 		_err = unfoldBody(_output, body.Bytes(), _data, _deep)
 	}
 	closeHtmlE(_output, tagname)
@@ -160,10 +159,10 @@ func openHtmlE(_output io.Writer, _icmp HtmlComposer, _id string) (_tagname stri
 
 	// merge setup classes with default container ones and class defined as an attribute if any
 	ac, _ := attre.Attribute("class")
-	c, _ := ParseClasses(sdftc + " " + ac)
+	c, _ := ParseClasses(sdftc + " " + string(ac))
 	c.AddClasses(*_icmp.SetupClasses())
 	if c.Count() > 0 {
-		attre.SetAttribute("class", c.String())
+		attre.SetAttribute("class", StringQuotes(c.String()))
 	}
 
 	// merge setup style with default container ones and style defined as an attribute if any
@@ -176,15 +175,15 @@ func openHtmlE(_output io.Writer, _icmp HtmlComposer, _id string) (_tagname stri
 		s += Style(sdfts)
 	}
 	if s != "" {
-		attre.SetAttribute("style", string(s))
+		attre.SetAttribute("style", StringQuotes(s))
 	}
 
 	// set the attribute if not forced by an embedded id attribute
 	if _, f := attre.Attribute("id"); !f {
-		attre.SetAttribute("id", _id)
+		attre.SetAttribute("id", StringQuotes(_id))
 	}
 
-	fmt.Fprintf(_output, " %s>", attre.String())
+	fmt.Fprintf(_output, " %s>", attre.StringQuoted())
 	return tagname
 }
 
@@ -212,14 +211,17 @@ const (
 )
 
 type stepway struct {
-	processing int
-	fieldat    int
-	fieldto    int
+	processing int // processing operation
+	fieldat    int // starting position of the current processing field
+	fieldto    int // ending position of the current processing field
 }
 
 func (_st *stepway) startfield(i int) {
 	_st.fieldat = i
 	_st.fieldto = _st.fieldat
+}
+func (_st *stepway) extendfield(i int) {
+	_st.fieldto = i
 }
 func (_st *stepway) opentxt(i int) {
 	_st.processing = processing_TXT
@@ -227,17 +229,14 @@ func (_st *stepway) opentxt(i int) {
 }
 func (_st *stepway) openick(_pi *int) {
 	_st.processing = processing_ICKTAG
-	_st.fieldat = *_pi + 1
-	_st.fieldto = _st.fieldat + 4
+	_st.startfield(*_pi + 1)
+	_st.extendfield(*_pi + 4)
 	*_pi += 5 - 1
 }
 func (_st *stepway) closeick(_pi *int) {
 	_st.processing = processing_NONE
 	_st.startfield(*_pi + 2)
 	*_pi += 2 - 1
-}
-func (_st *stepway) extendfield(i int) {
-	_st.fieldto = i
 }
 func (_st *stepway) openaname(i int) {
 	_st.processing = processing_ANAME
@@ -248,65 +247,53 @@ func (_st *stepway) openavalue(i int) {
 	_st.startfield(0)
 }
 
-// func (_st stepway) emptyfield(_pi *int) bool {
-// 	return _st.fieldat == _st.fieldto
-// }
-
+// unfoldBody lookups for ick-component tags in the _body htmlstring and unfold each of them recursively into _output.
+// ick-component tags should be in the form <ick-{tagname} [bollattribute] [attribute=[']value[']]/> otherwise
+// an error is generated and the unfolding process stops immediatly.
 func unfoldBody(_output io.Writer, _body []byte, _data any, _deep int) (_err error) {
-	// const (
-	// 	delim_open  = "<ick-"
-	// 	delim_close = "/>"
-	// )
+
 	field := func(s stepway) []byte {
 		return _body[s.fieldat : s.fieldto+1]
 	}
 
 	walk := stepway{processing: processing_NONE}
 	var ickname, aname, avalue string
-	var quote byte
+	var bquote byte
 	var attrs Attributes
 
 	ilast := len(_body) - 1
 	for i := 0; i <= ilast && _err == nil; i++ {
 		b := _body[i]
+		bclose_delim := string(_body[i:mini(i+2, ilast+1)]) == "/>"
+		bopen_delim := string(_body[i:mini(i+5, ilast+1)]) == "<ick-"
 
-		// _</>*
-
-		var fdelim_open, fdelim_close bool
-		if i+1 <= ilast {
-			fdelim_close = string(_body[i:i+2]) == "/>"
-			if i+5 <= ilast {
-				fdelim_open = string(_body[i:i+5]) == "<ick-"
-			}
-		}
-
+		// decide what to do according to walk.processing and b value _</>*
 		switch walk.processing {
 		case processing_NONE:
 			switch {
-			case fdelim_open:
+			case bopen_delim: // start processing an ick-tage
 				walk.openick(&i)
-			default:
+			default: // start processing a text field
 				walk.opentxt(i)
 			}
 
 		case processing_TXT:
 			switch {
-			case i == ilast:
-				// flush processed field and exit
-				walk.fieldto = ilast
+			case i == ilast: // flush processed text field and exit
+				walk.extendfield(ilast)
 				_output.Write(field(walk))
-			case fdelim_open:
+			case bopen_delim: // flush processed text field and start processing an ick-tage
 				_output.Write(field(walk))
 				walk.openick(&i)
-			default:
+			default: // extend the text field
 				walk.extendfield(i)
 			}
 
 		case processing_ICKTAG:
-			if b == ' ' || fdelim_close { // record component tagname
+			if b == ' ' || bclose_delim { // record component tagname
 				ickname = string(field(walk))
-				if ickname == "ick-/" || ickname == "ick- " {
-					_err = errors.New("ick tag found without name")
+				if ickname == "ick-" {
+					_err = errors.New("'<ick-' tag found without name")
 					break
 				}
 				ickname = strings.ToLower(ickname)
@@ -315,17 +302,18 @@ func unfoldBody(_output io.Writer, _body []byte, _data any, _deep int) (_err err
 				attrs.Clear()
 			}
 			switch {
-			case b == ' ':
+			case b == ' ': // look for another aname
 				walk.openaname(i)
-			case fdelim_close: // single tagname component
+			case bclose_delim: // process a single ick-component
 				walk.closeick(&i)
 
 				log.Println("composing embedded component:", ickname)
-				fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
+				// fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
+				_err = unfoldick(_output, ickname, attrs, _data, _deep)
 
 			default: // build component ick-tagname
-				r, size := utf8.DecodeRune(_body[i : ilast+1])
-				if size != 0 && htmlname.IsValidRune(r, true) {
+				r, size := utf8.DecodeRune(_body[i:mini(ilast+1, i+4)])
+				if size != 0 && htmlname.IsValidRune(r, false) {
 					i += size - 1
 					walk.extendfield(i)
 				} else {
@@ -334,34 +322,35 @@ func unfoldBody(_output io.Writer, _body []byte, _data any, _deep int) (_err err
 			}
 
 		case processing_ANAME:
-			// trim left spaces
-			if b == ' ' && walk.fieldat == 0 {
+			switch {
+			case b == ' ' && walk.fieldat == 0: // trim left spaces
 				break
-			}
-			// get and save aname
-			if (b == ' ' || b == '=' || fdelim_close) && walk.fieldat > 0 {
+			case (b == ' ' || b == '=' || bclose_delim) && walk.fieldat > 0: // get and save aname
 				aname = string(field(walk))
 				attrs.SetAttribute(aname, "")
 			}
+
 			switch {
-			case b == ' ': // let's continue for another name
+			case b == ' ': // look for another aname
 				aname = ""
 				walk.openaname(i)
-			case b == '=': // let's continue for a value
+			case b == '=': // look for a value
 				if aname == "" {
 					_err = fmt.Errorf("= symbol found without attribute name: %q", ickname)
 					break
 				}
 				walk.openavalue(i)
-			case fdelim_close: // time to compose the component
+				bquote = 0
+			case bclose_delim: // process an ick-component
 				walk.closeick(&i)
 
 				log.Println("composing embedded component:", ickname)
-				fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
+				// fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
+				unfoldick(_output, ickname, attrs, _data, _deep)
 
 			default: // build attribute name
-				r, size := utf8.DecodeRune(_body[i : ilast+1])
-				if size != 0 && htmlname.IsValidRune(r, false) {
+				r, size := utf8.DecodeRune(_body[i:mini(ilast+1, i+4)])
+				if size > 0 && htmlname.IsValidRune(r, walk.fieldat == 0) {
 					if walk.fieldat == 0 {
 						walk.startfield(i)
 					}
@@ -373,163 +362,98 @@ func unfoldBody(_output io.Writer, _body []byte, _data any, _deep int) (_err err
 			}
 
 		case processing_AVALUE:
-			// don't know yet if a quoted or unquoted value
-			if quote == 0 {
-				// trim left spaces
-				if b == ' ' && quote == 0 {
-					break
-				}
-				// start a quoted value ?
-				if b == '"' || b == '\'' {
-					quote = b
+			if bquote == 0 { // don't know yet if a quoted or unquoted value
+				switch {
+				case b == ' ': // trim left spaces
+				case b == '"' || b == '\'': // start a quoted value ?
+					bquote = b
 					walk.startfield(i + 1)
-					break
-				}
-				// empty value
-				if fdelim_close {
+				case bclose_delim: // empty value
 					_err = fmt.Errorf("attribute with empty value: %q", string(_body[walk.fieldat:i+1]))
+				default: // start unquoted value
+					bquote = 1
+					walk.startfield(i)
 				}
-				// start unquoted value
-				quote = 1
-				walk.startfield(i)
 				break
 			}
 
 			switch {
-			// end of unquoted value
-			case quote == 1 && (b == ' ' || fdelim_close):
+			case bquote == 1 && (b == ' ' || bclose_delim): // process unquoted value
 				avalue = string(field(walk))
-				attrs.SetAttribute(aname, avalue)
-
-				if fdelim_close { // time to compose the component
+				attrs.ParseAttribute(aname, avalue)
+				switch {
+				case bclose_delim: // process an ick-component
 					walk.closeick(&i)
 
 					log.Println("composing embedded component:", ickname)
-					fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
+					//fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
+					unfoldick(_output, ickname, attrs, _data, _deep)
 
-				} else {
+				default: // look for another aname
 					walk.openaname(i)
 				}
-			// end of quoted value
-			case quote != 1 && b == quote:
+			case bquote != 1 && b == bquote: // process a quoted value
 				avalue = string(field(walk))
-				attrs.SetAttribute(aname, avalue)
-				//i += 1
+				attrs.SetAttribute(aname, StringQuotes(avalue))
 				walk.openaname(i + 1)
-
-			default:
+			default: // extend field value
 				walk.extendfield(i)
 			}
 		}
 	}
-
 	return _err
 }
 
-// unfoldBody lookup for component tags in the body htmlstring, and compose each of them recursively.
-func unfoldBody2(_output io.Writer, _body io.Reader, _data any, _deep int) (_err error) {
+func unfoldick(_output io.Writer, _ickname string, _attrs Attributes, _data any, _deep int) (_err error) {
+	// does this tag refer to a registered component ?
+	if regentry := TheCmpReg.LookupComponent(_ickname); regentry != nil {
 
-	const (
-		delim_open  = "<ick-"
-		delim_close = "/>"
-	)
+		// Instantiate the component and get a new id
+		newcmpreflect := reflect.New(regentry.typ)
+		newcmp := newcmpreflect.Interface().(HtmlComposer)
+		newcmpid := TheCmpReg.GetUniqueId(newcmp)
 
-	htmlstring := ""
+		// DEBUG:
+		log.Printf("instantiating %q(%s)\n", newcmpid, newcmpreflect.Type())
 
-nextdelimo:
-	for {
-		// find next delim_open
-		if from := strings.Index(htmlstring, delim_open); from == -1 || _err != nil {
-			// no more delim_open = feed the output with what's left in htmlstring and return
-			_output.Write([]byte(htmlstring))
-			if _err != nil {
-				log.Println(_err.Error())
-				_output.Write([]byte("<!-- unfolding error -->"))
-			}
-			return _err
-		} else {
-			// we found a new delim_open, so feed the output with data preceding this delim
-			_output.Write([]byte(htmlstring[:from]))
-
-			// scrap this data and keep what's left
-			htmlstring = htmlstring[from+len(delim_open):]
-
-			// look now for it's corresponding delim_close
-			if to := strings.Index(htmlstring, delim_close); to == -1 {
-				// not corresponding delim_close then stop and return a rendering error
-				_err = errors.New("closing delimiter '/>' not found")
-				continue nextdelimo
+		anames := _attrs.Keys()
+		for _, aname := range anames {
+			_, found := newcmpreflect.Elem().Type().FieldByName(aname)
+			if !found {
+				// this attribute is not a field of the componenent
+				// keep it as is unless it is the class attribute, in this case, add the tokens
+				aval, _ := _attrs.Attribute(aname)
+				newcmp.SetupAttributes().SetAttribute(aname, aval)
 			} else {
-
-				// we got a delim_close so we've a new ick-element, extract its content
-				inside := htmlstring[0:to]
-				ickname, leftinside, _ := strings.Cut(inside, " ")
-				htmlstring = htmlstring[to+len(delim_close):] // scrap it and keep what's left
-
-				if ickname == "" { // <ick-/> !
-					continue nextdelimo
-				}
-
-				// does this tag refer to a registered component ?
-				if regentry := TheCmpReg.LookupComponent("ick-" + ickname); regentry != nil {
-
-					// Instantiate the component and get a new id
-					newcmpreflect := reflect.New(regentry.typ)
-					newcmp := newcmpreflect.Interface().(HtmlComposer)
-					newcmpid := TheCmpReg.GetUniqueId(newcmp)
-
-					// DEBUG:
-					log.Printf("instantiating %q(%s)\n", newcmpid, newcmpreflect.Type())
-
-					// // add the component to the add it to the unfolded stack
-					// _icmp.Embed(newcmpid, newcmpreflect.Interface())
-
-					// process embeded component's attributes
-					var attrs *Attributes
-					attrs, _err = ParseAttributes(leftinside)
-					if _err != nil {
-						continue nextdelimo
-					}
-
-					anames := attrs.Keys()
-					for _, aname := range anames {
-						_, found := newcmpreflect.Elem().Type().FieldByName(aname)
-						if !found {
-							// this attribute is not a field of the componenent
-							// keep it as is unless it is the class attribute, in this case, add the tokens
-							aval, _ := attrs.Attribute(aname)
-							newcmp.SetupAttributes().SetAttribute(aname, aval)
-						} else {
-							// feed data struct with the value
-							strav, _ := attrs.Attribute(aname)
-							field := newcmpreflect.Elem().FieldByName(aname)
-							if _err = updateCProperty(field, strav); _err != nil {
-								continue nextdelimo
-							}
-						}
-					}
-
-					// recursively unfold the component template
-					data := TemplateData{
-						Id:   newcmpid,
-						Me:   newcmp,
-						Root: _data,
-					}
-					composeHtmlE(_output, newcmpid, newcmp, data, _deep+1)
-
-				} else {
-					// the tag is not a registered component
-					htmlmsg := fmt.Sprintf("<!-- unable to unfold unregistered 'ick-%s' component -->", ickname)
-					_output.Write([]byte(htmlmsg))
-					log.Println(htmlmsg)
+				// feed data struct with the value
+				strav, _ := _attrs.Attribute(aname)
+				field := newcmpreflect.Elem().FieldByName(aname)
+				if _err = updateCProperty(field, string(strav)); _err != nil {
+					return _err
 				}
 			}
 		}
+
+		// recursively unfold the component template
+		data := TemplateData{
+			Id:   newcmpid,
+			Me:   newcmp,
+			Root: _data,
+		}
+		_err = composeHtmlE(_output, newcmpid, newcmp, data, _deep+1)
+
+	} else {
+		// the tag is not a registered component
+		// unable to instantiate it
+		htmlmsg := fmt.Sprintf("<!-- unable to unfold unregistered %s component -->", _ickname)
+		_output.Write([]byte(htmlmsg))
+		log.Println(htmlmsg)
+		_err = errors.New(htmlmsg)
 	}
+	return _err
 }
 
 func updateCProperty(_cprop reflect.Value, _value string) (_erra error) {
-
 	switch _cprop.Type().String() {
 	case "time.Duration":
 		var d time.Duration

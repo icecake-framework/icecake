@@ -32,39 +32,38 @@ type ComponentRegistry struct {
 
 var TheCmpReg ComponentRegistry
 
-func (_reg *ComponentRegistry) RegisterComponent(_cmp any) error {
+func (_reg *ComponentRegistry) RegisterComponent(_cmp any) (_err error) {
 
 	typ := reflect.TypeOf(_cmp)
 	if typ.Kind() == reflect.Pointer {
-		err := fmt.Errorf("register component %q failed: must register a component not a pointer to a component", typ.String())
-		log.Println(err.Error())
-		return err
+		_err = fmt.Errorf("register component %q failed: must register a component not a pointer to a component", typ.String())
+		log.Println(_err.Error())
+		return _err
 	}
 
 	cmp, ok := reflect.New(typ).Interface().(HtmlComposer)
 	if !ok {
-		err := fmt.Errorf("register component %q failed: must be an HtmlComposer", typ.String())
-		log.Println(err.Error())
-		return err
+		_err = fmt.Errorf("register component %q failed: must be an HtmlComposer", typ.String())
+		log.Println(_err.Error())
+		return _err
 	}
 
 	ickname := helper.Normalize(cmp.RegisterName())
 	if !strings.HasPrefix(ickname, "ick-") {
-		err := fmt.Errorf("register component %q failed: name must start by 'ick-'", typ.String())
-		log.Println(err.Error())
-		return err
+		_err = fmt.Errorf("register component %q failed: name must start by 'ick-'", typ.String())
+		log.Println(_err.Error())
+		return _err
 	}
 	name := strings.TrimPrefix(ickname, "ick-")
 	if len(name) == 0 {
-		err := fmt.Errorf("registering component %q failed: name missing", typ.String())
-		log.Println(err.Error())
-		return err
+		_err = fmt.Errorf("registering component %q failed: name missing", typ.String())
+		log.Println(_err.Error())
+		return _err
 	}
 
 	if _, found := _reg.entries[ickname]; found {
-		err := fmt.Errorf("registering component %q failed: already registered", ickname)
-		log.Println(err.Error())
-		return err
+		log.Printf("registering component %q warning: already registered", ickname)
+		return nil
 	}
 
 	entry := componentRegEntry{
