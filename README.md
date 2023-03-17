@@ -1,5 +1,7 @@
 # Icecake Go Wasm Framework
 
+:warning: This code is an Alpha version with work in progress.
+
 Icecake is a framework designed to build Web Assembly SPA 100% in GO.
 
 Icecake is an experimental project aiming to implement web assembly technologies in go :
@@ -20,13 +22,15 @@ Sources of inspiration:
 
 ## Backlog
 
-### Front side
+This repo is an Alpha version with many work in progress.
 
-- [ ] pages and routes
+Current works focus on:
+- unfolding html containing ick-components tags, including custom attributes
+- instantiating ick-components, embedded or not  
+- rendering any html containing ick-component on the front side, with event handling
 
-### Back side
+In parrallel we're doing many refactoring to make code more coder friendly.
 
-- [ ] "hello world" wasm served by a SPA server, with dev environment setup.
 
 ## Tech
 
