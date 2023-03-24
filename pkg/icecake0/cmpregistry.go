@@ -1,4 +1,4 @@
-package ick
+package ick0
 
 import (
 	"fmt"
@@ -91,9 +91,9 @@ func (_reg *ComponentRegistry) LookupComponentType(typ reflect.Type) *componentR
 	return nil
 }
 
-func (_reg *ComponentRegistry) LookupComponent(_ickname string) *componentRegEntry {
+func (_reg *ComponentRegistry) LookupComponent(_cmpname string) *componentRegEntry {
 	for k, v := range _reg.entries {
-		if k == _ickname {
+		if k == _cmpname {
 			return v
 		}
 	}

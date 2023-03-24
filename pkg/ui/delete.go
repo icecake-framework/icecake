@@ -3,7 +3,7 @@ package ui
 import (
 	"github.com/sunraylab/icecake/pkg/clock"
 	"github.com/sunraylab/icecake/pkg/errors"
-	ick "github.com/sunraylab/icecake/pkg/icecake"
+	ick "github.com/sunraylab/icecake/pkg/icecake2"
 	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 

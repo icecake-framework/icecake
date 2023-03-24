@@ -1,4 +1,4 @@
-package ick
+package ick0
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 
 type StringQuotes string
 
-// UnQuotes returns a trimed value keeping white space inside quotes if any
+// ParseStringQuotes returns a trimed value keeping white space inside quotes if any
 // If _value do not have quotes, the returned value is truncated at the first white space found.
 func ParseStringQuotes(_str string) (_unquote StringQuotes) { //, _quote byte, _has bool) {
 

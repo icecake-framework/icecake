@@ -1,6 +1,6 @@
 package wick
 
-import ick "github.com/sunraylab/icecake/pkg/icecake"
+import ick "github.com/sunraylab/icecake/pkg/icecake0"
 
 /****************************************************************************
 * TokenList

@@ -1,4 +1,4 @@
-package ick
+package ick0
 
 import (
 	"bytes"
@@ -227,6 +227,7 @@ func (_st *stepway) opentxt(i int) {
 	_st.processing = processing_TXT
 	_st.startfield(i)
 }
+
 func (_st *stepway) openick(_pi *int) {
 	_st.processing = processing_ICKTAG
 	_st.startfield(*_pi + 1)
@@ -238,6 +239,7 @@ func (_st *stepway) closeick(_pi *int) {
 	_st.startfield(*_pi + 2)
 	*_pi += 2 - 1
 }
+
 func (_st *stepway) openaname(i int) {
 	_st.processing = processing_ANAME
 	_st.startfield(0)
