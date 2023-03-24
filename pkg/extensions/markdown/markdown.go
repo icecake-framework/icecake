@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	"github.com/sunraylab/icecake/pkg/errors"
-	ick "github.com/sunraylab/icecake/pkg/icecake2"
+	"github.com/sunraylab/icecake/pkg/ick"
 	"github.com/sunraylab/icecake/pkg/ui"
 	wick "github.com/sunraylab/icecake/pkg/wicecake"
 	"github.com/yuin/goldmark"
@@ -27,6 +27,6 @@ func RenderMarkdown(_elem *wick.Element, _mdtxt string, _data *ick.DataState, _o
 	}
 
 	// HACK:
-	ui.RenderSnippetBody(_elem, ick.HTML(buf.String()), _data)
+	ui.RenderHtml(_elem, ick.HTML(buf.String()), _data)
 	return nil
 }

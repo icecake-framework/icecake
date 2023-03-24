@@ -6,7 +6,7 @@ import (
 
 	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/errors"
-	ick "github.com/sunraylab/icecake/pkg/icecake2"
+	"github.com/sunraylab/icecake/pkg/ick"
 )
 
 /****************************************************************************

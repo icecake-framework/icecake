@@ -1,7 +1,7 @@
 package ui
 
 import (
-	ick "github.com/sunraylab/icecake/pkg/icecake2"
+	"github.com/sunraylab/icecake/pkg/ick"
 )
 
 /******************************************************************************
@@ -26,7 +26,7 @@ func (_msg Message) Template(*ick.DataState) (_t ick.SnippetTemplate) {
 	if _msg.Header != "" {
 		var delhtml ick.HTML
 		if _msg.CanDelete {
-			delhtml = `<ick-delete TargetID='` + _msg.HtmlSnippet.Id() + `'/>`
+			delhtml = `<ick-delete TargetID='` + ick.HTML(_msg.Id()) + `'/>`
 		}
 		_t.Body = `<div class="message-header"><p>` + _msg.Header + `</p>` + delhtml + `</div>`
 	}

@@ -3,7 +3,7 @@ package ui
 import (
 	_ "embed"
 
-	ick "github.com/sunraylab/icecake/pkg/icecake2"
+	"github.com/sunraylab/icecake/pkg/ick"
 )
 
 /******************************************************************************

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/sunraylab/icecake/pkg/errors"
-	ick "github.com/sunraylab/icecake/pkg/icecake2"
+	"github.com/sunraylab/icecake/pkg/ick"
 	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
@@ -24,7 +24,7 @@ type Composer interface {
 
 type Snippet struct {
 	ick.HtmlSnippet
-	wick.Element
+	DOM wick.Element
 
 	//MountClasses    *Classes    // classes added to the component during the mounting stage
 	//MountAttributes *Attributes // attributes addes to the component during the mounting stage
@@ -41,15 +41,15 @@ func (c *Snippet) AddListeners() {
 	fmt.Printf("UIComponent.Listeners is empty\n")
 }
 
-// RenderTemplate set inner HTML with the htmlTemplate executed with the _data and unfolding components if any
+// RenderHtml unfolding components if any
 // The element must be in the DOM to
-func RenderSnippetBody(_elem *wick.Element, _body ick.HTML, _data *ick.DataState) (_err error) {
+func RenderHtml(_elem *wick.Element, _body ick.HTML, _data *ick.DataState) (_err error) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
 	}
 
 	out := new(bytes.Buffer)
-	_err = ick.RenderHtmlSnippetBody(out, _body, _data)
+	_err = ick.RenderHtmlBody(out, _body, _data)
 	if _err == nil {
 		_elem.SetInnerHTML(out.String())
 		// TODO: loop over embedded component to add listeners

@@ -15,7 +15,7 @@ import (
 
 	"github.com/sunraylab/icecake/pkg/clock"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
-	ick "github.com/sunraylab/icecake/pkg/icecake2"
+	"github.com/sunraylab/icecake/pkg/ick"
 	"github.com/sunraylab/icecake/pkg/ui"
 	wick "github.com/sunraylab/icecake/pkg/wicecake"
 	"github.com/yuin/goldmark"
@@ -67,7 +67,7 @@ func OnClickBtn1(event *wick.MouseEvent, target *wick.Element) {
 	notif := &ui.Notify{
 		Message: `This is a typical notification message <strong>including html <a href="#">link</a>.</strong> Use the closing button on the right corner to remove this notification.`,
 	}
-	notif.Classes().AddTokens("is-warning", "is-light")
+	notif.SetClasses("is-warning is-light")
 
 	// Insert the component into the DOM
 	ui.RenderSnippet(webapp.ChildById("notif_container"), notif, nil)
@@ -78,12 +78,12 @@ func OnClickBtn2(event *wick.MouseEvent, target *wick.Element) {
 	// instantiate the Notify component and init its data
 	idtimeleft := ick.GetUniqueId("timeleft")
 	notif := new(ui.Notify)
-	notif.Message = `This message will be automatically removed in <strong><span id="` + idtimeleft + `"></span> seconds</strong>, unless you close it before. 😀`
+	notif.Message = `This message will be automatically removed in <strong><span id="` + ick.HTML(idtimeleft) + `"></span> seconds</strong>, unless you close it before. 😀`
 	notif.Timeout = time.Second * 7
 	notif.SetClasses("is-danger is-light").SetAttribute("role", "alert", true)
 	notif.Tic = func(clk *clock.Clock) {
 		s := math.Round(notif.Delete.TimeLeft().Seconds())
-		webapp.ChildById(string(idtimeleft)).RenderValue("%v", s)
+		webapp.ChildById(idtimeleft).RenderValue("%v", s)
 	}
 
 	// Insert the component into the DOM
@@ -97,7 +97,7 @@ func OnClickBtn3(event *wick.MouseEvent, target *wick.Element) {
 		Message: `This is a toast notification`,
 	}
 	notif.Delete.Clock.Timeout = time.Second * 3
-	notif.Classes().AddTokens("is-success", "toast")
+	notif.SetClasses("is-success toast")
 
 	// Insert the component into the DOM
 	ui.RenderSnippet(webapp.ChildById("toast_container"), notif, nil)
@@ -116,5 +116,5 @@ func OnClickBtn4(event *wick.MouseEvent, target *wick.Element) {
 	</box>`
 
 	// Insert the component into the DOM
-	ui.RenderSnippetBody(webapp.ChildById("ex3_container"), ick.HTML(html), nil)
+	ui.RenderHtml(webapp.ChildById("ex3_container"), ick.HTML(html), nil)
 }
