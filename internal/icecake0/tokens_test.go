@@ -1,4 +1,4 @@
-package helper
+package ick0
 
 import "testing"
 

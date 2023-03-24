@@ -14,7 +14,9 @@ import (
 //
 // It is common to embed a HtmlSnippet into a struct to define an html component.
 type HtmlSnippet struct {
-	attrs map[string]HTML // map of all attributes whatever the type
+	TagName HTML
+	Body    HTML
+	attrs   map[string]HTML // map of all attributes whatever the type
 }
 
 func (s *HtmlSnippet) Id() HTML {
@@ -187,8 +189,10 @@ func (s *HtmlSnippet) SetFalse(key string) *HtmlSnippet {
 // 	return ""
 // }
 
-func (s HtmlSnippet) Template(*DataState) SnippetTemplate {
-	return SnippetTemplate{}
+func (s HtmlSnippet) Template(*DataState) (_t SnippetTemplate) {
+	_t.TagName = s.TagName
+	_t.Body = s.Body
+	return
 }
 
 // Attributes returns the formated list of attributes used to generate the container element.

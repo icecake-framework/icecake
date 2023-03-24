@@ -3,8 +3,7 @@ package ui
 import (
 	_ "embed"
 
-	ick "github.com/sunraylab/icecake/pkg/icecake"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	ick "github.com/sunraylab/icecake/pkg/icecake2"
 )
 
 /******************************************************************************
@@ -15,35 +14,22 @@ import (
 var notifycss string
 
 func init() {
-	ick.TheCmpReg.RegisterComponent(Notify{})
+	ick.RegisterComposer("ick-notify", Notify{})
 }
 
 type Notify struct {
-	wick.UIComponent // embedded Component, with default implementation of composer interfaces
+	Snippet
 
 	// the message to display within the notification
-	Message string
+	Message ick.HTML
 
-	Delete // the delete sub-component
+	Delete // TODO use en embedded the delete sub-component
+
 }
 
-func (*Notify) RegisterName() string {
-	return "ick-notify"
-}
-
-func (*Notify) RegisterCSS() string {
-	return notifycss
-}
-
-func (c *Notify) Container(_compid string) (_tagname string, _contclasses string, _contattrs string, _contstyle string) {
-	c.Delete.TargetID = _compid
-	return "div", "ick-notify notification", "", ""
-}
-
-func (c *Notify) Body() (_html string) {
-
-	//_, del, _ := ick.App.CreateComponent(&c.Delete)
-
-	return "{{.Me.Delete}}" + c.Message
-	//return `<button class="delete"></button>` + c.Message
+func (_snippet Notify) Template(*ick.DataState) (_t ick.SnippetTemplate) {
+	_t.TagName = "div"
+	_t.Attributes = `class="notification"`
+	_t.Body = `<ick-delete/>` + _snippet.Message
+	return
 }

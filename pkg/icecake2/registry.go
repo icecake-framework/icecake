@@ -26,11 +26,11 @@ type registry struct {
 	entries map[string]RegistryEntry
 }
 
-func Register(ickname string, _component any) (_err error) {
+func RegisterComposer(ickname string, _composer any) (_err error) {
 	reg := &TheRegistry
 	reg.init()
 
-	typ := reflect.TypeOf(_component)
+	typ := reflect.TypeOf(_composer)
 	if typ.Kind() == reflect.Pointer {
 		_err = fmt.Errorf("register component %q failed: must register a component not a pointer to a component", typ.String())
 		log.Println(_err.Error())
@@ -70,6 +70,13 @@ func Register(ickname string, _component any) (_err error) {
 	reg.entries[ickname] = entry
 	log.Printf("component %q registered\n", ickname)
 	return nil
+}
+
+func RegisterSnippet(ickname string, tagname HTML, body HTML) (_err error) {
+	s := new(HtmlSnippet)
+	s.TagName = tagname
+	s.Body = body
+	return RegisterComposer(ickname, *s)
 }
 
 func GetRegistryEntry(name string) RegistryEntry {

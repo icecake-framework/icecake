@@ -31,7 +31,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// The same but when registered
 	out.Reset()
-	Register("ick-testsnippet0", testsnippet0{})
+	RegisterComposer("ick-testsnippet0", testsnippet0{})
 	RenderHtmlSnippet(out, s0, nil)
 	require.Equal(t, `<SPAN id="helloworld0" tabIndex=1 class="test ick-testsnippet0" style="color=red;"></SPAN>`, out.String())
 
@@ -44,7 +44,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// snippet with a tagname and default attributes
 	out.Reset()
-	Register("ick-testsnippet2", testsnippet2{})
+	RegisterComposer("ick-testsnippet2", testsnippet2{})
 	s2 := new(testsnippet2)
 	RenderHtmlSnippet(out, s2, nil)
 	require.Equal(t, `<DIV id="ick-testsnippet2-1" tabIndex=2 class="ts2a ts2b ick-testsnippet2" style="display=test;" a2></DIV>`, out.String())
@@ -217,9 +217,9 @@ func TestUnfoldBody(t *testing.T) {
 
 	// restet the component registrey for tests
 	TheRegistry = registry{}
-	Register("ick-test-snippet0", testsnippet0{})
-	Register("ick-test-snippet1", testsnippet1{})
-	Register("ick-test-snippet2", testsnippet2{})
+	RegisterComposer("ick-test-snippet0", testsnippet0{})
+	RegisterComposer("ick-test-snippet1", testsnippet1{})
+	RegisterComposer("ick-test-snippet2", testsnippet2{})
 
 	output := new(bytes.Buffer)
 	for i, tst := range tstset {
@@ -302,10 +302,10 @@ func TestComposeEmbedded(t *testing.T) {
 
 	// restet the component registrey for tests
 	TheRegistry = registry{}
-	Register("ick-test-snippet0", testsnippet0{})
-	Register("ick-test-snippet1", testsnippet1{})
-	Register("ick-test-snippet2", testsnippet2{})
-	Register("ick-test-infinite", testsnippetinfinite{})
+	RegisterComposer("ick-test-snippet0", testsnippet0{})
+	RegisterComposer("ick-test-snippet1", testsnippet1{})
+	RegisterComposer("ick-test-snippet2", testsnippet2{})
+	RegisterComposer("ick-test-infinite", testsnippetinfinite{})
 
 	// running tests
 	cmp := new(testsnippet1)

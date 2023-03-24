@@ -12,6 +12,8 @@ import (
 	_ "embed"
 
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
+	ick "github.com/sunraylab/icecake/pkg/icecake2"
+	"github.com/sunraylab/icecake/pkg/ui"
 	wick "github.com/sunraylab/icecake/pkg/wicecake"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/renderer/html"
@@ -30,29 +32,20 @@ func main() {
 	doc := wick.GetDocument()
 
 	// 1. demonstrate the use of the go HTML templating package to build page content directly on the front-end.
-	var data1 struct{ Name string }
-	htmlTemplate := `Hello <strong>{{.Name}}</strong>!`
-
-	data1.Name = "Bob"
-	// HACK:
-	doc.ChildById("ex1a").RenderTemplate(htmlTemplate, data1)
-
-	data1.Name = "Alice"
-	doc.ChildById("ex1b").RenderTemplate(htmlTemplate, data1)
+	htmlTemplate := `Hello <strong>%s</strong>!`
+	ui.RenderSnippetBody(doc.ChildById("ex1a"), ick.HTML(fmt.Sprintf(htmlTemplate, "Bob")), nil)
+	ui.RenderSnippetBody(doc.ChildById("ex1b"), ick.HTML(fmt.Sprintf(htmlTemplate, "Alice")), nil)
 
 	// To see what happend with a wrong html element ID,
 	// open the console on the browser side.
-	data1.Name = "Carole"
-	doc.ChildById("ex1c").RenderTemplate(htmlTemplate, data1)
+	ui.RenderSnippetBody(doc.ChildById("ex1c"), ick.HTML(fmt.Sprintf(htmlTemplate, "Carole")), nil)
 
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.
-	data1.Name = "John"
-	markdown.RenderMarkdown(doc.ChildById("ex1d"), "### Markdown\nHello **{{.Name}}**", data1)
+	markdown.RenderMarkdown(doc.ChildById("ex1d"), "### Markdown\nHello **John**", nil)
 
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive
-	var data2 struct{ Brand string }
-	data2.Brand = "<span class='brand'>Icecake</span>"
-	markdown.RenderMarkdown(doc.ChildById("readme"), readme, data2,
+	ick.RegisterSnippet("ick-icecake-brand", "", "<span class='brand'>Icecake</span>")
+	markdown.RenderMarkdown(doc.ChildById("readme"), readme, nil,
 		goldmark.WithRendererOptions(
 			html.WithUnsafe(),
 		),

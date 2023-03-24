@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/sunraylab/icecake/pkg/errors"
-	ick "github.com/sunraylab/icecake/pkg/icecake0"
 )
 
 /****************************************************************************
@@ -75,15 +74,15 @@ func (_attrs JSAttributes) Attribute(_name string) (_val string, _found bool) {
 }
 
 // SetAttribues adds attributes in the list. If the attribute already exist it's updated.
-func (_attrs *JSAttributes) SetAttributes(_newattrs ick.Attributes) *JSAttributes {
-	if _attrs.owner != nil {
-		for _, k := range _newattrs.Keys() {
-			v, _ := _newattrs.Attribute(k)
-			_attrs.owner.Call("setAttribute", k, v)
-		}
-	}
-	return _attrs
-}
+// func (_attrs *JSAttributes) SetAttributes(_newattrs ick.Attributes) *JSAttributes {
+// 	if _attrs.owner != nil {
+// 		for _, k := range _newattrs.Keys() {
+// 			v, _ := _newattrs.Attribute(k)
+// 			_attrs.owner.Call("setAttribute", k, v)
+// 		}
+// 	}
+// 	return _attrs
+// }
 
 // // ParseAttribute split _str into attributes separated by spaces
 // // An attribute can have a value at the right of an "=" symbol.

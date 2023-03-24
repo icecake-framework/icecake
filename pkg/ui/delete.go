@@ -12,11 +12,11 @@ import (
 ******************************************************************************/
 
 func init() {
-	ick.TheCmpReg.RegisterComponent(Delete{})
+	ick.RegisterComposer("ick-delete", Delete{})
 }
 
 type Delete struct {
-	wick.UIComponent
+	Snippet
 
 	// the element id to remove from the DOM
 	TargetID string
@@ -26,12 +26,10 @@ type Delete struct {
 	clock.Clock
 }
 
-func (_del *Delete) RegisterName() string {
-	return "ick-delete"
-}
-
-func (_del *Delete) Container(_compid string) (_tagname string, _classes string, _attrs string) {
-	return "button", "ick-delete delete", "aria-label='delete'"
+func (_del *Delete) Template(_data *ick.DataState) (_t ick.SnippetTemplate) {
+	_t.TagName = "Button"
+	_t.Attributes = `class="delete" aria-label='delete'`
+	return
 }
 
 func (_del *Delete) Listeners() {
@@ -50,6 +48,6 @@ func (_del *Delete) Listeners() {
 // and removes also the TargetID from the DOM
 func (_del *Delete) Remove() {
 	_del.Stop()
-	_del.UIComponent.Remove()
+	_del.Snippet.Remove()
 	wick.App.ChildById(_del.TargetID).Remove()
 }

@@ -68,11 +68,14 @@ func RenderHtmlSnippet(_out io.Writer, _cmp any, _data *DataState) error {
 	if !ok {
 		return fmt.Errorf("RenderHtmlSnippet failed: _cmp must implement HtmlComposer interface")
 	}
-	// name := helper.Normalize(composer.InlineName())
-	// if len(name) == 0 {
-	// 	return fmt.Errorf("RenderHtmlSnippet failed: empty component InlineName")
-	// }
 	return renderHtmlSnippet(_out, composer, _data, 0)
+}
+
+func RenderHtmlSnippetBody(_out io.Writer, _body HTML, _data *DataState) (_err error) {
+	if len(_body) > 0 {
+		_err = unfoldBody(_out, []byte(_body), _data, 0)
+	}
+	return _err
 }
 
 // render may be called recursively 10 times max.
@@ -116,8 +119,6 @@ func renderHtmlSnippet(_out io.Writer, _cmp any, _data *DataState, _deep int) (_
 	}
 
 	if len(t.Body) > 0 {
-		//_data.Me = _cmp
-		//_data.Id = string(id)
 		_err = unfoldBody(_out, []byte(t.Body), _data, _deep)
 	}
 
@@ -125,7 +126,6 @@ func renderHtmlSnippet(_out io.Writer, _cmp any, _data *DataState, _deep int) (_
 		fmt.Fprintf(_out, "</%s>", tagname)
 	}
 	return _err
-
 }
 
 const (

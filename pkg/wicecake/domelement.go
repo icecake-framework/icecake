@@ -1,13 +1,12 @@
 package wick
 
 import (
-	"bytes"
 	"fmt"
 	"syscall/js"
 
 	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/errors"
-	ick "github.com/sunraylab/icecake/pkg/icecake0"
+	ick "github.com/sunraylab/icecake/pkg/icecake2"
 )
 
 /****************************************************************************
@@ -63,20 +62,6 @@ func CastElements(_jsvp JSValueProvider) []*Element {
 	}
 	return elems
 }
-
-// GetICElementById returns an Element corresponding to the _id if it exists into the DOM,
-// otherwhise returns an undefined Element.
-// The _id must be normalized before call
-// func GetElementById(_id string) *Element {
-// 	jse := App().jsValue.Call("getElementById", _id)
-// 	if jse.Truthy() && CastNode(jse).NodeType() == NT_ELEMENT {
-// 		elem := new(Element)
-// 		elem.Wrap(jse)
-// 		return elem
-// 	}
-// 	ConsoleWarnf("GetElementById failed: %q not found, or not a <Element>", _id)
-// 	return new(Element)
-// }
 
 // IsDefined returns true if the Element is not nil AND it's type is not TypeNull and not TypeUndefined
 func (_elem *Element) IsDefined() bool {
@@ -157,58 +142,6 @@ func (_elem *Element) Attributes() *JSAttributes {
 	}
 	return jsattr
 }
-
-// ClassString returns classes in asingle string
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/className
-// func (_elem *Element) ClassString() string {
-// 	if !_elem.IsDefined() {
-// 		return UNDEFINED_NODE
-// 	}
-// 	return _elem.GetString("className")
-// }
-
-// SetClassName gets and sets the value of the class attribute of the specified element.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/className
-// func (_elem *Element) SetClasses(_name string) *Element {
-// 	_elem.Set("className", _name)
-// 	return _elem
-// }
-
-// SetClasses adds the value, if does not already exists, of the class attribute of the specified element.
-// Does not remove existing classes.
-// func (_elem *Element) SetClasses(_list Classes) *Element {
-// 	_elem.Set("className", _list.String())
-// 	return _elem
-// }
-
-// SetClasses set the value of the class attribute of the specified element.
-// Replace existed ones if any.
-// func (_elem *Element) ResetClasses(_list Classes) *Element {
-// 	str := _list.String()
-// 	_elem.Set("className", str)
-// 	return _elem
-// }
-
-// SetClasse set a single class to the class liist if the element, does nothing if the class already exists
-// func (_elem *Element) SetClasse(_class string) *Element {
-// 	list := _elem.Classes()
-// 	list.SetTokens(_class)
-// 	return _elem
-// }
-
-// func (_elem *Element) SetAttributes(_attrs Attributes) {
-// 	anames := _attrs.Sort()
-// 	for _, name := range anames {
-// 		value := _attrs.Get(name)
-// 		_elem.SetAttribute(name, value)
-// 	}
-// }
-
-// func (_elem *Element) SetAttribute(_Name string, _Value string) {
-// 	_elem.Call("setAttribute", _Name, _Value)
-// }
 
 // InnerHTML gets or sets the HTML or XML markup contained within the element.
 //
@@ -988,68 +921,4 @@ func (_elem *Element) RenderChildrenValue(_name string, _format string, _value .
 	for _, node := range children {
 		CastElement(node).RenderValue(text)
 	}
-}
-
-// RenderTemplate set inner HTML with the htmlTemplate executed with the _data and unfolding components if any
-// The element must be in the DOM to
-func (_elem *Element) RenderTemplate(_unsafeHtmlTemplate string, _data any) (_err error) {
-	if !_elem.IsDefined() || !_elem.IsInDOM() {
-		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
-	}
-
-	out := new(bytes.Buffer)
-	cmp := new(ick.Text)
-	_err = ick.ComposeHtmlE(out, cmp, _data)
-	if _err == nil {
-		_elem.SetInnerHTML(out.String())
-
-		// TODO: showUnfoldedComponents(unfoldedCmps)
-	}
-	return _err
-}
-
-// RenderComponent
-func (_elem *Element) RenderComponent(_newcmp UIComposer, _appdata any) (_newcmpid string, _err error) {
-	if !_elem.IsDefined() {
-		return "", errors.ConsoleErrorf("RenderComponent: failed on undefined element")
-	}
-
-	out := new(bytes.Buffer)
-	_err = ick.ComposeHtmlE(out, _newcmp, _appdata)
-	if _err == nil {
-		_elem.SetInnerHTML(out.String())
-		// TODO: loop over embedded component
-		_newcmp.AddListeners()
-
-	}
-
-	// create the HTML component into the DOM
-	// _newcmpid, newcmpelem, err := App.CreateComponent(_newcmp)
-	// if err != nil {
-	// 	return "", errors.ConsoleErrorf("RenderComponent:", err.Error())
-	// }
-
-	// // name the component
-	// name := newcmpelem.TagName() + "/" + _newcmpid
-
-	// // unfold and render html for a composer
-	// unfoldedCmps := make(map[string]UIComposer, 0)
-	// data := TemplateData{
-	// 	Id:  _newcmpid,
-	// 	Me:  _newcmp,
-	// 	App: _appdata,
-	// }
-	// // TODO: handle unfolding errors
-	// html, _ := unfoldComponents(unfoldedCmps, name, _newcmp.Body(), data, 0)
-	// newcmpelem.SetInnerHTML(html)
-
-	// Insert the component element into the DOM
-	//	_elem.PrependNodes(&newcmpelem.Node) //elem.InsertAdjacentHTML(WI_INSIDEFIRST, html)
-
-	// addlisteners
-	// showUnfoldedComponents(unfoldedCmps)
-	// _newcmp.Listeners()
-	//	_newcmp.Show()
-
-	return _newcmpid, nil
 }

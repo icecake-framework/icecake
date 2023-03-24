@@ -1,7 +1,5 @@
 package wick
 
-import ick "github.com/sunraylab/icecake/pkg/icecake0"
-
 /****************************************************************************
 * TokenList
 *****************************************************************************/
@@ -68,18 +66,18 @@ func (_classes JSClasses) Has(_token string) bool {
 // SetClasses adds token in the list. If a token already exist it's not added to avoid duplicate.
 //
 // Case sensitive.
-func (_classes *JSClasses) AddClasses(_newclasses ick.Classes) *JSClasses {
-	if _classes.jslist != nil {
-		str := _newclasses.String()
-		if str != "" {
-			_classes.jslist.Set("value", str)
-		}
-	}
-	// else {
-	// 	_classes.cache.AddClasses(_newclasses.cache...)
-	// }
-	return _classes
-}
+// func (_classes *JSClasses) AddClasses(_newclasses ick.Classes) *JSClasses {
+// 	if _classes.jslist != nil {
+// 		str := _newclasses.String()
+// 		if str != "" {
+// 			_classes.jslist.Set("value", str)
+// 		}
+// 	}
+// 	// else {
+// 	// 	_classes.cache.AddClasses(_newclasses.cache...)
+// 	// }
+// 	return _classes
+// }
 
 // SetTokens adds token in the list. If a token already exist it's not added to avoid duplicate.
 //

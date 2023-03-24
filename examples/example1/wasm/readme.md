@@ -1,12 +1,12 @@
 ### Readme
 
-{{.Brand}} can be used to build Single-Page Application (SPA) in Go in different ways:
+<ick-icecake-brand/> can be used to build Single-Page Application (SPA) in Go in different ways:
 
 1. Building and Enhancing a static HTML website
 1. Building and Embedding Web Components on a stateless website
 1. Building a full SPA with state and API calls
 
-Example1 illustrate how to use {{.Brand}} for Building and Enhancing a static HTML website: 
+Example1 illustrate how to use <ick-icecake-brand/> for Building and Enhancing a static HTML website: 
 
 1. demonstrate the use of the go HTML templating package to build page content directly on the front-end. 
 1. demonstrate how to generate HTML content from a markdown source, directly on the front-side.

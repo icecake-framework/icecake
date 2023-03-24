@@ -11,16 +11,16 @@ func TestRegister(t *testing.T) {
 	TheRegistry = registry{}
 
 	c1 := new(HtmlSnippet)
-	err := Register("snippet", c1)
+	err := RegisterComposer("snippet", c1)
 	assert.ErrorContains(t, err, "not a pointer")
 
-	err = Register("snippet", 0)
+	err = RegisterComposer("snippet", 0)
 	assert.ErrorContains(t, err, "must be an HtmlComposer")
 
-	err = Register("ick-test-snippet1", testsnippet1{})
+	err = RegisterComposer("ick-test-snippet1", testsnippet1{})
 	assert.NoError(t, err)
 
-	err = Register("ick-test-snippet1", testsnippet1{})
+	err = RegisterComposer("ick-test-snippet1", testsnippet1{})
 	assert.NoError(t, err) // only log "already registered"
 
 	e := GetRegistryEntry("ick-test-snippet1")
