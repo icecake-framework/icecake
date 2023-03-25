@@ -1,7 +1,7 @@
 package wick
 
 import (
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 )
 
 // The DocumentType interface represents a Node containing a doctype.
@@ -20,7 +20,7 @@ func CastDocumentType(_jsvp JSValueProvider) *DocumentType {
 	// TODO: test defer on error
 	jsv := _jsvp.Value()
 	if jsv.Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting DocumentType failed")
+		console.Errorf("casting DocumentType failed")
 		return &DocumentType{}
 	}
 	ret := new(DocumentType)

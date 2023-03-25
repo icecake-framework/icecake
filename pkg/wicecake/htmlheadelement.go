@@ -1,7 +1,7 @@
 package wick
 
 import (
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 )
 
 /****************************************************************************
@@ -16,7 +16,7 @@ type HeadElement struct {
 // CastHeadElement is casting a js.Value into HTMLHeadElement.
 func CastHeadElement(_jsvp JSValueProvider) *HeadElement {
 	if _jsvp.Value().Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting HeadElement failed")
+		console.Errorf("casting HeadElement failed")
 		return new(HeadElement)
 	}
 	cast := new(HeadElement)

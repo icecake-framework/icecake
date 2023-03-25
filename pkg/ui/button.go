@@ -2,7 +2,7 @@ package ui
 
 import (
 	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
@@ -28,7 +28,7 @@ type Button struct {
 // CastButton is casting a js.Value into HTMLButtonElement.
 func CastButton(_jsvp wick.JSValueProvider) *Button {
 	if _jsvp.Value().Type() != wick.TYPE_OBJECT || _jsvp.Value().GetString("tagName") != "BUTTON" {
-		errors.ConsoleErrorf("casting HTMLButton failed")
+		console.Errorf("casting HTMLButton failed")
 		return &Button{}
 	}
 	cast := new(Button)
@@ -47,7 +47,7 @@ func ButtonById(_id string) *Button {
 		return btn
 	}
 
-	errors.ConsoleWarnf("GetElementById failed: %q not found, or not a <Element>", _id)
+	console.Warnf("GetElementById failed: %q not found, or not a <Element>", _id)
 	return new(Button)
 }
 

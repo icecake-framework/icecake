@@ -14,7 +14,7 @@ import (
 var notifycss string
 
 func init() {
-	ick.RegisterComposer("ick-notify", Notify{})
+	ick.RegisterComposer("ick-notify", &Notify{})
 }
 
 type Notify struct {

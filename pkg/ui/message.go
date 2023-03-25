@@ -9,7 +9,7 @@ import (
 ******************************************************************************/
 
 func init() {
-	ick.RegisterComposer("ick-message", Message{})
+	ick.RegisterComposer("ick-message", &Message{})
 }
 
 type Message struct {

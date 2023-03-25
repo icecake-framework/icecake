@@ -3,7 +3,7 @@ package markdown
 import (
 	"bytes"
 
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/ick"
 	"github.com/sunraylab/icecake/pkg/ui"
 	wick "github.com/sunraylab/icecake/pkg/wicecake"
@@ -22,7 +22,7 @@ func RenderMarkdown(_elem *wick.Element, _mdtxt string, _data *ick.DataState, _o
 	var buf bytes.Buffer
 	err := md.Convert([]byte(_mdtxt), &buf)
 	if err != nil {
-		errors.ConsoleWarnf("RenderMarkdown has error: %s", err.Error())
+		console.Warnf("RenderMarkdown has error: %s", err.Error())
 		return err
 	}
 

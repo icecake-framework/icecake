@@ -5,7 +5,7 @@ import (
 	"syscall/js"
 
 	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 )
 
 /******************************************************************************
@@ -47,7 +47,7 @@ type Document struct {
 // CastDocument is casting a js.Value into Document.
 func CastDocument(_jsv JSValueProvider) *Document {
 	if _jsv.Value().Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting Document failed")
+		console.Errorf("casting Document failed")
 		return &Document{}
 	}
 	doc := new(Document)
@@ -59,7 +59,7 @@ func CastDocument(_jsv JSValueProvider) *Document {
 func GetDocument() *Document {
 	jsdoc := val(js.Global().Get("document"))
 	if !jsdoc.IsObject() {
-		errors.ConsoleStackf(nil, "Unable to get document")
+		console.Stackf(nil, "Unable to get document")
 	}
 	doc := new(Document)
 	doc.jsvalue = jsdoc.jsvalue
@@ -265,7 +265,7 @@ func (_doc *Document) ChildrenCount() int {
 func (_doc *Document) ChildrenByTagName(qualifiedName string) []*Element {
 	elems := _doc.Call("getElementsByTagName", qualifiedName)
 	if !elems.IsDefined() {
-		errors.ConsoleWarnf("ChildrenByTagName failed: %q not found\n", qualifiedName)
+		console.Warnf("ChildrenByTagName failed: %q not found\n", qualifiedName)
 		return make([]*Element, 0)
 	}
 	return CastElements(elems)
@@ -277,7 +277,7 @@ func (_doc *Document) ChildrenByTagName(qualifiedName string) []*Element {
 func (_doc *Document) ChildrenByClassName(classNames string) []*Element {
 	elems := _doc.Call("getElementsByClassName", classNames)
 	if !elems.IsDefined() {
-		errors.ConsoleWarnf("ChildrenByClassName failed: %q not found\n", classNames)
+		console.Warnf("ChildrenByClassName failed: %q not found\n", classNames)
 		return make([]*Element, 0)
 	}
 	return CastElements(elems)
@@ -289,7 +289,7 @@ func (_doc *Document) ChildrenByClassName(classNames string) []*Element {
 func (_doc *Document) ChildrenByName(elementName string) []*Element {
 	elems := _doc.Call("getElementsByName", elementName)
 	if !elems.IsDefined() {
-		errors.ConsoleWarnf("ChildrenByName failed: %q not found\n", elementName)
+		console.Warnf("ChildrenByName failed: %q not found\n", elementName)
 		return make([]*Element, 0)
 	}
 	return CastElements(elems)
@@ -308,7 +308,7 @@ func (_doc *Document) ChildById(_elementId string) (_result *Element) {
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
 		return CastElement(elem)
 	}
-	errors.ConsoleWarnf("ChildById failed: %q not found, or not an <Element>\n", _elementId)
+	console.Warnf("ChildById failed: %q not found, or not an <Element>\n", _elementId)
 	return new(Element)
 }
 
@@ -321,7 +321,7 @@ func (_doc *Document) SelectorQueryFirst(selectors string) *Element {
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
 		return CastElement(elem)
 	}
-	errors.ConsoleWarnf("querySelector failed: %q not found, or not a <Element>\n", selectors)
+	console.Warnf("querySelector failed: %q not found, or not a <Element>\n", selectors)
 	return new(Element)
 }
 
@@ -331,7 +331,7 @@ func (_doc *Document) SelectorQueryFirst(selectors string) *Element {
 func (_doc *Document) SelectorQueryAll(selectors string) []*Element {
 	elems := _doc.Call("querySelectorAll", selectors)
 	if !elems.IsDefined() {
-		errors.ConsoleWarnf("SelectorQueryAll failed: %q not found\n", selectors)
+		console.Warnf("SelectorQueryAll failed: %q not found\n", selectors)
 		return nil
 	}
 	return CastElements(elems)
@@ -452,7 +452,7 @@ func makeDoc_Generic_Event(listener func(event *Event, target *Document)) js.Fun
 		target := CastDocument(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on Document", evt.Type())
+				console.Stackf(r, "Error occurs processing event %q on Document", evt.Type())
 			}
 		}()
 		listener(evt, target)

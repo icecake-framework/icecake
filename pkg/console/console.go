@@ -1,4 +1,4 @@
-package errors
+package console
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ const (
 
 var Show SHOW_LEVEL
 
-func ConsoleLogf(msg string, a ...any) error {
+func Logf(msg string, a ...any) error {
 	err := fmt.Errorf(msg, a...)
 	if Show == 0 {
 		fmt.Println(err.Error())
@@ -24,7 +24,7 @@ func ConsoleLogf(msg string, a ...any) error {
 	return err
 }
 
-func ConsoleWarnf(msg string, a ...any) error {
+func Warnf(msg string, a ...any) error {
 	err := fmt.Errorf(msg, a...)
 	if Show <= SHOW_WARNERR {
 		js.Global().Call("ickWarn", err.Error())
@@ -32,28 +32,28 @@ func ConsoleWarnf(msg string, a ...any) error {
 	return err
 }
 
-func ConsoleErrorf(msg string, a ...any) error {
+func Errorf(msg string, a ...any) error {
 	err := fmt.Errorf(msg, a...)
 	js.Global().Call("ickError", err.Error())
 	return err
 }
 
-// ConsoleStackf prints the msg message and the panic recovery message if not nil, then the stacktrace.
-// If r is nil ConsoleStackf create a panic
-func ConsoleStackf(r any, msg string, a ...any) {
-	defer ConsoleLogf("> panic stacktrace:\n" + string(debug.Stack()))
+// Stackf prints the msg message and the panic recovery message if not nil, then the stacktrace.
+// If r is nil Stackf create a panic
+func Stackf(r any, msg string, a ...any) {
+	defer Logf("> panic stacktrace:\n" + string(debug.Stack()))
 	str := fmt.Sprintf(msg, a...)
 	if str != "" {
-		ConsoleErrorf(str)
+		Errorf(str)
 	}
 	if r == nil {
 		panic(str)
 	} else {
-		ConsoleErrorf("%+v [recovered]\n", r)
+		Errorf("%+v [recovered]\n", r)
 	}
 }
 
 func ConsoleStack(r any) {
-	ConsoleErrorf("%+v [recovered]\n", r)
-	ConsoleLogf("> panic stacktrace:\n" + string(debug.Stack()))
+	Errorf("%+v [recovered]\n", r)
+	Logf("> panic stacktrace:\n" + string(debug.Stack()))
 }

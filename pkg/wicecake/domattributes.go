@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 )
 
 /****************************************************************************
@@ -98,7 +98,7 @@ func (_attrs JSAttributes) Attribute(_name string) (_val string, _found bool) {
 // 		names := strings.Fields(strnames)
 // 		for _, n := range names {
 // 			if !htmlname.IsValid(n) {
-// 				return errors.ConsoleErrorf("attribute name %q is not valid\n", n)
+// 				return console.ConsoleErrorf("attribute name %q is not valid\n", n)
 // 			}
 // 			pattrs[n] = ""
 // 		}
@@ -220,7 +220,7 @@ func (_attrs *JSAttributes) SetAutocapitalize(_autocap AUTOCAPITALIZE) *JSAttrib
 	case AUTOCAP_OFF, AUTOCAP_SENTENCES, AUTOCAP_WORDS, AUTOCAP_CHARS:
 		_attrs.SetAttribute("autocapitalize", string(_autocap))
 	default:
-		errors.ConsoleWarnf("SetAutocapitalize failed: not valid value %q\n", _autocap)
+		console.Warnf("SetAutocapitalize failed: not valid value %q\n", _autocap)
 	}
 	return _attrs
 }
@@ -253,7 +253,7 @@ func (_attrs *JSAttributes) SetContentEditable(_editable CONTENT_EDITABLE) *JSAt
 	case CONTEDIT_FALSE, CONTEDIT_TRUE, CONTEDIT_INHERIT:
 		_attrs.SetAttribute("contentEditable", string(_editable))
 	default:
-		errors.ConsoleWarnf("contentEditable fails: not a valid value %q\n", _editable)
+		console.Warnf("contentEditable fails: not a valid value %q\n", _editable)
 	}
 	return _attrs
 }

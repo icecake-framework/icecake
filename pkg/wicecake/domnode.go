@@ -3,7 +3,7 @@ package wick
 import (
 	"fmt"
 
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 )
 
 const (
@@ -87,7 +87,7 @@ type Node struct {
 // CastNode is casting a js.Value into Node.
 func CastNode(_jsvp JSValueProvider) *Node {
 	if _jsvp.Value().Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting Node failed\n")
+		console.Errorf("casting Node failed\n")
 		return new(Node)
 	}
 	cast := new(Node)
@@ -98,7 +98,7 @@ func CastNode(_jsvp JSValueProvider) *Node {
 func CastNodes(_jsvp JSValueProvider) []*Node {
 	nodes := make([]*Node, 0)
 	if _jsvp.Value().Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting Nodes failed\n")
+		console.Errorf("casting Nodes failed\n")
 		return nodes
 	}
 	len := _jsvp.Value().GetInt("length")
@@ -233,7 +233,7 @@ func (_root *Node) filteredChildren(_filter NODE_TYPE, _deepmax int, _match func
 				sub := scan.filteredChildren(_filter, _deepmax-1, _match)
 				nodes = append(nodes, sub...)
 			} else {
-				errors.ConsoleWarnf("FilteredChildren reached max level")
+				console.Warnf("FilteredChildren reached max level")
 			}
 		}
 

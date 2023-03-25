@@ -329,33 +329,26 @@ func unfoldBody(_output io.Writer, _body []byte, _data *DataState, _deep int) (_
 }
 
 func unfoldick(_output io.Writer, _ickname string, _attrs map[string]string, _data *DataState, _deep int) (_err error) {
+
 	// does this tag refer to a registered component ?
 	regentry := GetRegistryEntry(_ickname)
-	// if regentry.typ != nil {
 	if regentry.cmp != nil {
 
-		// Instantiate the component and get a new id
-		// newcmpreflect := reflect.New(regentry.typ)
-		// reflect.Copy(newcmpreflect, regentry.typ)
-		// newcmp := newcmpreflect.Interface().(HtmlComposer)
+		// clone the registered component
+		newref := reflect.New(reflect.TypeOf(regentry.cmp).Elem())
+		newref.Elem().Set(reflect.ValueOf(regentry.cmp).Elem())
+		newcmp := newref.Interface().(HtmlComposer)
 
-		newcmp0 := regentry.cmp //.(HtmlComposer)
-		newcmpreflect := reflect.ValueOf(newcmp0)
-		log.Println(reflect.TypeOf(regentry.cmp).String())
-		newcmp := reflect.TypeOf(regentry.cmp).(HtmlComposer)
-
-		// DEBUG:
-		//log.Printf("instantiating %q(%s)\n", newcmpid, newcmpreflect.Type())
-
+		//
 		for aname, avalue := range _attrs {
-			_, found := newcmpreflect.Elem().Type().FieldByName(aname)
+			_, found := newref.Elem().Type().FieldByName(aname)
 			if !found {
 				// this attribute is not a field of the componenent
 				// keep it as is unless it is the class attribute, in this case, add the tokens
 				newcmp.SetAttribute(aname, HTML(avalue), false)
 			} else {
 				// feed data struct with the value
-				field := newcmpreflect.Elem().FieldByName(aname)
+				field := newref.Elem().FieldByName(aname)
 				if _err = updateProperty(field, avalue); _err != nil {
 					return _err
 				}
@@ -363,7 +356,6 @@ func unfoldick(_output io.Writer, _ickname string, _attrs map[string]string, _da
 		}
 
 		// recursively unfold the component template
-		//_data.Me = newcmpreflect.Interface()
 		_err = renderHtmlSnippet(_output, newcmp, _data, _deep+1)
 
 	} else {

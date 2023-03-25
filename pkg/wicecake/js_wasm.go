@@ -3,7 +3,7 @@ package wick
 import (
 	"syscall/js"
 
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 )
 
 // TYPE represents the JavaScript type of a Value.
@@ -62,7 +62,7 @@ func (_v JSValue) New(args ...any) JSValue {
 
 func (_v *JSValue) Wrap(_jsvp JSValueProvider) {
 	if _v.jsvalue.Truthy() {
-		errors.ConsoleWarnf("wrapping an already wrapped element")
+		console.Warnf("wrapping an already wrapped element")
 	}
 	_v.jsvalue = _jsvp.Value().jsvalue
 }
@@ -123,7 +123,7 @@ func (_v JSValue) Delete(p string) {
 // The arguments get mapped to JavaScript values according to the ValueOf function.
 func (_v JSValue) Call(m string, args ...any) JSValue {
 	if !_v.IsDefined() {
-		errors.ConsoleWarnf("unable to call %q: undefined js value\n", m)
+		console.Warnf("unable to call %q: undefined js value\n", m)
 		return null()
 	}
 	args = cleanArgs(args...)
@@ -134,12 +134,12 @@ func (_v JSValue) Call(m string, args ...any) JSValue {
 // It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
 func (_v JSValue) Get(_pname string) JSValue {
 	if !_v.IsDefined() {
-		errors.ConsoleWarnf("unable to get %q: undefined js value\n", _pname)
+		console.Warnf("unable to get %q: undefined js value\n", _pname)
 		return null()
 	}
 	jsret := val(_v.jsvalue.Get(_pname))
 	if !jsret.IsDefined() {
-		errors.ConsoleWarnf("get %q returns an undefined js value\n", _pname)
+		console.Warnf("get %q returns an undefined js value\n", _pname)
 	}
 	return jsret
 }
@@ -150,7 +150,7 @@ func TryGet(_v js.Value, p string) (result js.Value, err error) {
 		if x := recover(); x != nil {
 			var ok bool
 			if err, ok = x.(error); !ok {
-				err = errors.ConsoleErrorf("%v", x)
+				err = console.Errorf("%v", x)
 			}
 		}
 	}()
@@ -161,7 +161,7 @@ func TryGet(_v js.Value, p string) (result js.Value, err error) {
 // It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
 func (_v JSValue) Set(p string, x any) {
 	if !_v.IsDefined() {
-		errors.ConsoleWarnf("unable to set: undefined js value\n")
+		console.Warnf("unable to set: undefined js value\n")
 		return
 	}
 	if wrapper, ok := x.(JSValue); ok {
@@ -174,7 +174,7 @@ func (_v JSValue) Set(p string, x any) {
 // It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
 func (_v JSValue) Index(i int) JSValue {
 	if !_v.IsDefined() {
-		errors.ConsoleWarnf("unable to get Index: undefined js value\n")
+		console.Warnf("unable to get Index: undefined js value\n")
 		return null()
 	}
 	return val(_v.jsvalue.Index(i))
@@ -184,7 +184,7 @@ func (_v JSValue) Index(i int) JSValue {
 // It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
 func (_v JSValue) Length() int {
 	if !_v.IsDefined() {
-		errors.ConsoleWarnf("unable to get Length: undefined js value\n")
+		console.Warnf("unable to get Length: undefined js value\n")
 		return 0
 	}
 	return _v.jsvalue.Length()
@@ -192,7 +192,7 @@ func (_v JSValue) Length() int {
 
 func (_v JSValue) InstanceOf(t JSValue) bool {
 	if !_v.IsDefined() {
-		errors.ConsoleWarnf("unable to check InstanceOf: undefined js value\n")
+		console.Warnf("unable to check InstanceOf: undefined js value\n")
 		return false
 	}
 	return _v.jsvalue.InstanceOf(t.jsvalue)
@@ -200,7 +200,7 @@ func (_v JSValue) InstanceOf(t JSValue) bool {
 
 func (_v JSValue) Invoke(args ...any) JSValue {
 	if !_v.IsDefined() {
-		errors.ConsoleWarnf("unable to Invoke: undefined js value\n")
+		console.Warnf("unable to Invoke: undefined js value\n")
 		return null()
 	}
 	return val(_v.jsvalue.Invoke(args...))
@@ -229,7 +229,7 @@ func (_v JSValue) Then(f func(JSValue)) {
 func (_v JSValue) GetObject(_pname string) JSValue {
 	get := _v.Get(_pname)
 	if get.Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("unable to get object %q: it's not an object", _pname)
+		console.Errorf("unable to get object %q: it's not an object", _pname)
 		return null()
 	}
 	return get
@@ -247,7 +247,7 @@ func (_v JSValue) GetFloat(_pname string) float64 {
 		return get.Float()
 	}
 	if get.IsDefined() {
-		errors.ConsoleErrorf("unable to get %q as a float64, type is: %s", _pname, get.Type().String())
+		console.Errorf("unable to get %q as a float64, type is: %s", _pname, get.Type().String())
 	}
 	return 0.0
 }
@@ -264,7 +264,7 @@ func (_v JSValue) GetInt(_pname string) int {
 		return get.Int()
 	}
 	if get.IsDefined() {
-		errors.ConsoleErrorf("unable to get %q as an int, type is: %s", _pname, get.Type().String())
+		console.Errorf("unable to get %q as an int, type is: %s", _pname, get.Type().String())
 	}
 	return 0
 }
@@ -281,7 +281,7 @@ func (_v JSValue) GetBool(_pname string) bool {
 		return get.Truthy()
 	}
 	if get.IsDefined() {
-		errors.ConsoleErrorf("unable to get %q as a boolean, type is: %s", _pname, get.Type().String())
+		console.Errorf("unable to get %q as a boolean, type is: %s", _pname, get.Type().String())
 	}
 	return false
 }
@@ -300,7 +300,7 @@ func (_v JSValue) GetString(_pname string) string {
 		return get.String()
 	}
 	if get.IsDefined() {
-		errors.ConsoleErrorf("unable to get %q as a string, type is: %s", _pname, get.Type().String())
+		console.Errorf("unable to get %q as a string, type is: %s", _pname, get.Type().String())
 	}
 	return ""
 }

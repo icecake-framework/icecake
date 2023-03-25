@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/ick"
 	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
@@ -62,7 +62,7 @@ func RenderHtml(_elem *wick.Element, _body ick.HTML, _data *ick.DataState) (_err
 // RenderComponent
 func RenderSnippet(_elem *wick.Element, _cmp any, _data *ick.DataState) (_err error) {
 	if !_elem.IsDefined() {
-		return errors.ConsoleErrorf("RenderComponent: failed on undefined element")
+		return console.Errorf("RenderComponent: failed on undefined element")
 	}
 
 	out := new(bytes.Buffer)

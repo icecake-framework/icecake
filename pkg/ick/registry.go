@@ -32,13 +32,14 @@ func RegisterComposer(ickname string, _composer any) (_err error) {
 	reg.init()
 
 	typ := reflect.TypeOf(_composer)
-	if typ.Kind() == reflect.Pointer {
-		_err = fmt.Errorf("register component %q failed: must register a component not a pointer to a component", typ.String())
+	if typ.Kind() != reflect.Pointer {
+		_err = fmt.Errorf("register component %q failed: must register a pointer to a component not a component", typ.String())
 		log.Println(_err.Error())
 		return _err
 	}
 
-	_, ok := reflect.New(typ).Interface().(HtmlComposer)
+	// _, ok := reflect.New(typ).Interface().(HtmlComposer)
+	_, ok := _composer.(HtmlComposer)
 	if !ok {
 		_err = fmt.Errorf("register component %q failed: must be an HtmlComposer", typ.String())
 		log.Println(_err.Error())
@@ -78,7 +79,7 @@ func RegisterSnippet(ickname string, tagname HTML, body HTML) (_err error) {
 	s := new(HtmlSnippet)
 	s.TagName = tagname
 	s.Body = body
-	return RegisterComposer(ickname, *s)
+	return RegisterComposer(ickname, s)
 }
 
 func GetRegistryEntry(name string) RegistryEntry {
@@ -94,16 +95,13 @@ func GetRegistryEntry(name string) RegistryEntry {
 	return regentry
 }
 
+// _cmp must be a pointer
 func LookupRegistryEntry(_cmp any) *RegistryEntry {
 	TheRegistry.init()
 	typ := reflect.TypeOf(_cmp)
-	if typ.Kind() == reflect.Pointer {
-		typ = typ.Elem()
-	}
 	for _, v := range TheRegistry.entries {
 		tv := reflect.TypeOf(v.cmp)
 		if tv == typ {
-			// if v.typ == typ {
 			return &v
 		}
 	}

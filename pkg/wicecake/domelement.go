@@ -5,7 +5,7 @@ import (
 	"syscall/js"
 
 	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/ick"
 )
 
@@ -40,7 +40,7 @@ type Element struct {
 // CastElement is casting a js.Value into Element.
 func CastElement(_jsv JSValueProvider) *Element {
 	if _jsv.Value().Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting Element failed")
+		console.Errorf("casting Element failed")
 		return new(Element)
 	}
 	cast := new(Element)
@@ -51,7 +51,7 @@ func CastElement(_jsv JSValueProvider) *Element {
 func CastElements(_jsvp JSValueProvider) []*Element {
 	elems := make([]*Element, 0)
 	if _jsvp.Value().Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting Elements failed\n")
+		console.Errorf("casting Elements failed\n")
 		return elems
 	}
 	len := _jsvp.Value().GetInt("length")
@@ -638,7 +638,7 @@ func makelistenerElement_Event(listener func(event *Event, target *Element)) js.
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -651,7 +651,7 @@ func makelistenerElement_Event(listener func(event *Event, target *Element)) js.
 // This method is returning allocated javascript function that need to be released.
 func (_elem *Element) AddFullscreenEvent(evttype FULLSCREEN_EVENT, listener func(event *Event, target *Element)) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
-		errors.ConsoleWarnf("AddFullscreenEvent not listening on nil Element")
+		console.Warnf("AddFullscreenEvent not listening on nil Element")
 		return
 	}
 	evh := makelistenerElement_Event(listener)
@@ -671,7 +671,7 @@ func makehandler_Element_Event(listener func(event *Event, target *Element)) js.
 		target := CastElement(val(value.Get("target")))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -684,7 +684,7 @@ func makehandler_Element_Event(listener func(event *Event, target *Element)) js.
 // Returns the function to call to remove and release the listener
 func (_htmle *Element) AddGenericEvent(evttype GENERIC_EVENT, listener func(event *Event, target *Element)) {
 	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		errors.ConsoleWarnf("AddGenericEvent failed: nil Element or not in DOM")
+		console.Warnf("AddGenericEvent failed: nil Element or not in DOM")
 		return
 	}
 	jsevh := makehandler_Element_Event(listener)
@@ -699,7 +699,7 @@ func makehandler_Element_MouseEvent(listener func(event *MouseEvent, target *Ele
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -712,7 +712,7 @@ func makehandler_Element_MouseEvent(listener func(event *MouseEvent, target *Ele
 // Returns the function to call to remove and release the listener
 func (_htmle *Element) AddMouseEvent(evttype MOUSE_EVENT, listener func(event *MouseEvent, target *Element)) {
 	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		errors.ConsoleWarnf("AddMouseEvent failed: nil Element or not in DOM")
+		console.Warnf("AddMouseEvent failed: nil Element or not in DOM")
 		return
 	}
 	evh := makehandler_Element_MouseEvent(listener)
@@ -727,7 +727,7 @@ func makelistenerElement_FocusEvent(listener func(event *FocusEvent, target *Ele
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -740,7 +740,7 @@ func makelistenerElement_FocusEvent(listener func(event *FocusEvent, target *Ele
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *Element) AddFocusEvent(evttype FOCUS_EVENT, listener func(event *FocusEvent, target *Element)) {
 	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		errors.ConsoleWarnf("AddFocusEvent failed: nil Element or not in DOM")
+		console.Warnf("AddFocusEvent failed: nil Element or not in DOM")
 		return
 	}
 	evh := makelistenerElement_FocusEvent(listener)
@@ -756,7 +756,7 @@ func makelistenerElement_PointerEvent(listener func(event *PointerEvent, target 
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -769,7 +769,7 @@ func makelistenerElement_PointerEvent(listener func(event *PointerEvent, target 
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *Element) AddPointerEvent(evttype POINTER_EVENT, listener func(event *PointerEvent, target *Element)) {
 	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		errors.ConsoleWarnf("AddPointerEvent failed: nil Element or not in DOM")
+		console.Warnf("AddPointerEvent failed: nil Element or not in DOM")
 		return
 	}
 	evh := makelistenerElement_PointerEvent(listener)
@@ -784,7 +784,7 @@ func makelistenerElement_InputEvent(listener func(event *InputEvent, target *Ele
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -797,7 +797,7 @@ func makelistenerElement_InputEvent(listener func(event *InputEvent, target *Ele
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *Element) AddInputEvent(evttype INPUT_EVENT, listener func(event *InputEvent, target *Element)) {
 	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		errors.ConsoleWarnf("AddInputEvent failed: nil Element or not in DOM")
+		console.Warnf("AddInputEvent failed: nil Element or not in DOM")
 		return
 	}
 	evh := makelistenerElement_InputEvent(listener)
@@ -812,7 +812,7 @@ func makelistenerElement_KeyboardEvent(listener func(event *KeyboardEvent, targe
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -825,7 +825,7 @@ func makelistenerElement_KeyboardEvent(listener func(event *KeyboardEvent, targe
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *Element) AddKeyboard(evttype KEYBOARD_EVENT, listener func(event *KeyboardEvent, target *Element)) {
 	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		errors.ConsoleWarnf("AddKeyboard failed: nil Element or not in DOM")
+		console.Warnf("AddKeyboard failed: nil Element or not in DOM")
 		return
 	}
 	evh := makelistenerElement_KeyboardEvent(listener)
@@ -840,7 +840,7 @@ func makelistenerElement_UIEvent(listener func(event *UIEvent, target *Element))
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -853,7 +853,7 @@ func makelistenerElement_UIEvent(listener func(event *UIEvent, target *Element))
 // This method is returning allocated javascript function that need to be released.
 func (_htmle *Element) AddResizeEvent(listener func(event *UIEvent, target *Element)) {
 	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		errors.ConsoleWarnf("AddResizeEvent failed: nil Element or not in DOM")
+		console.Warnf("AddResizeEvent failed: nil Element or not in DOM")
 		return
 	}
 	evh := makelistenerElement_UIEvent(listener)
@@ -868,7 +868,7 @@ func makeHTMLElement_WheelEvent(listener func(event *WheelEvent, target *Element
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
 			}
 		}()
 		listener(evt, target)
@@ -882,7 +882,7 @@ func makeHTMLElement_WheelEvent(listener func(event *WheelEvent, target *Element
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
 func (_htmle *Element) AddWheelEvent(listener func(event *WheelEvent, target *Element)) {
 	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		errors.ConsoleWarnf("AddWheelEvent failed: nil Element or not in DOM")
+		console.Warnf("AddWheelEvent failed: nil Element or not in DOM")
 		return
 	}
 	evh := makeHTMLElement_WheelEvent(listener)

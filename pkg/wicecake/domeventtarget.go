@@ -3,7 +3,7 @@ package wick
 import (
 	"syscall/js"
 
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 )
 
 type eventHandler struct {
@@ -27,7 +27,7 @@ type EventTarget struct {
 // CastEventTarget is casting a js.Value into EventTarget.
 func CastEventTarget(_jsv JSValue) *EventTarget {
 	if _jsv.Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting EventTarget failed")
+		console.Errorf("casting EventTarget failed")
 		return nil
 	}
 	evttget := new(EventTarget)

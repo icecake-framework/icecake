@@ -5,7 +5,7 @@ import (
 	"strings"
 	"syscall/js"
 
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 )
 
 /******************************************************************************
@@ -22,7 +22,7 @@ type Window struct {
 // CastWindow is casting a js.Value into Window.
 func CastWindow(_jsv JSValueProvider) Window {
 	if _jsv.Value().Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting Window failed")
+		console.Errorf("casting Window failed")
 		return Window{}
 	}
 	win := new(Window)
@@ -35,7 +35,7 @@ func CastWindow(_jsv JSValueProvider) Window {
 func GetWindow() Window {
 	jsv := js.Global().Get("window")
 	if typ := jsv.Type(); typ == js.TypeNull || typ == js.TypeUndefined {
-		errors.ConsoleStackf(nil, "Unable to get window")
+		console.Stackf(nil, "Unable to get window")
 	}
 	win := new(Window)
 	win.jsvalue = jsv
@@ -260,7 +260,7 @@ func makeWindow_Generic_Event(listener func(event *Event, target *Window)) js.Fu
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
+				console.Stackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -286,7 +286,7 @@ func makeWindow_BeforeUnload_Event(listener func(event *BeforeUnloadEvent, targe
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
+				console.Stackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -312,7 +312,7 @@ func makeWindow_HashChange_Event(listener func(event *HashChangeEvent, target *W
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
+				console.Stackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -340,7 +340,7 @@ func makeWindow_PageTransition_Event(listener func(event *PageTransitionEvent, t
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
+				console.Stackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)
@@ -366,7 +366,7 @@ func makeWindow_UI_Event(listener func(event *UIEvent, target *Window)) js.Func 
 		target := CastWindow(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				errors.ConsoleStackf(r, "Error occurs processing event %q on Window", evt.Type())
+				console.Stackf(r, "Error occurs processing event %q on Window", evt.Type())
 			}
 		}()
 		listener(evt, &target)

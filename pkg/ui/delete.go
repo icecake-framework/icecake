@@ -2,7 +2,7 @@ package ui
 
 import (
 	"github.com/sunraylab/icecake/pkg/clock"
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/ick"
 	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
@@ -12,7 +12,7 @@ import (
 ******************************************************************************/
 
 func init() {
-	ick.RegisterComposer("ick-delete", Delete{})
+	ick.RegisterComposer("ick-delete", &Delete{})
 }
 
 type Delete struct {
@@ -40,7 +40,7 @@ func (_del *Delete) Listeners() {
 		_del.Clock.Start(_del.Remove)
 
 	} else {
-		errors.ConsoleWarnf("missing TargetID for the ic-delete component")
+		console.Warnf("missing TargetID for the ic-delete component")
 	}
 }
 

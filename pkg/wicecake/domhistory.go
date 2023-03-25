@@ -3,7 +3,7 @@ package wick
 import (
 	"net/url"
 
-	"github.com/sunraylab/icecake/pkg/errors"
+	"github.com/sunraylab/icecake/pkg/console"
 )
 
 /******************************************************************************
@@ -30,7 +30,7 @@ type History struct {
 // CastHistory is casting a js.Value into History.
 func CastHistory(_jsvp JSValueProvider) *History {
 	if _jsvp.Value().Type() != TYPE_OBJECT {
-		errors.ConsoleErrorf("casting History failed")
+		console.Errorf("casting History failed")
 		return nil
 	}
 	cast := new(History)
