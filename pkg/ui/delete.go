@@ -3,8 +3,9 @@ package ui
 import (
 	"github.com/sunraylab/icecake/pkg/clock"
 	"github.com/sunraylab/icecake/pkg/console"
+	"github.com/sunraylab/icecake/pkg/dom"
+	"github.com/sunraylab/icecake/pkg/event"
 	"github.com/sunraylab/icecake/pkg/ick"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
 /******************************************************************************
@@ -34,7 +35,7 @@ func (_del *Delete) Template(_data *ick.DataState) (_t ick.SnippetTemplate) {
 
 func (_del *Delete) Listeners() {
 	if _del.TargetID != "" {
-		_del.DOM.AddMouseEvent(wick.MOUSE_ONCLICK, func(*wick.MouseEvent, *wick.Element) {
+		_del.DOM.AddMouseEvent(event.MOUSE_ONCLICK, func(*event.MouseEvent, *dom.Element) {
 			_del.Remove()
 		})
 		_del.Clock.Start(_del.Remove)
@@ -49,5 +50,5 @@ func (_del *Delete) Listeners() {
 func (_del *Delete) Remove() {
 	_del.Stop()
 	_del.DOM.Remove()
-	wick.App.ChildById(_del.TargetID).Remove()
+	dom.Id(_del.TargetID).Remove()
 }

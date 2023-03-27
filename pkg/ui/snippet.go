@@ -5,8 +5,9 @@ import (
 	"fmt"
 
 	"github.com/sunraylab/icecake/pkg/console"
+	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/ick"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	"github.com/sunraylab/icecake/pkg/js"
 )
 
 type Listener interface {
@@ -16,7 +17,7 @@ type Listener interface {
 type Composer interface {
 	ick.HtmlComposer
 	Listener
-	Wrap(wick.JSValueProvider)
+	Wrap(js.JSValueProvider)
 	UpdateUI()
 }
 
@@ -24,7 +25,7 @@ type Composer interface {
 
 type Snippet struct {
 	ick.HtmlSnippet
-	DOM wick.Element
+	DOM dom.Element
 
 	//MountClasses    *Classes    // classes added to the component during the mounting stage
 	//MountAttributes *Attributes // attributes addes to the component during the mounting stage
@@ -43,7 +44,7 @@ func (c *Snippet) AddListeners() {
 
 // RenderHtml unfolding components if any
 // The element must be in the DOM to
-func RenderHtml(_elem *wick.Element, _body ick.HTML, _data *ick.DataState) (_err error) {
+func RenderHtml(_elem *dom.Element, _body ick.HTMLstring, _data *ick.DataState) (_err error) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
 	}
@@ -60,7 +61,7 @@ func RenderHtml(_elem *wick.Element, _body ick.HTML, _data *ick.DataState) (_err
 }
 
 // RenderComponent
-func RenderSnippet(_elem *wick.Element, _cmp any, _data *ick.DataState) (_err error) {
+func RenderSnippet(_elem *dom.Element, _cmp any, _data *ick.DataState) (_err error) {
 	if !_elem.IsDefined() {
 		return console.Errorf("RenderComponent: failed on undefined element")
 	}

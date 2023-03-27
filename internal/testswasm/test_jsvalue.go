@@ -1,24 +1,23 @@
 package main
 
 import (
-	"syscall/js"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	"github.com/sunraylab/icecake/pkg/js"
 )
 
 func TestJSValue(t *testing.T) {
 
 	var i int
-	jsi := wick.ValueOf(i)
+	jsi := js.ValueOf(i)
 	assert.True(t, jsi.IsDefined())
-	assert.True(t, jsi.Type() == wick.TYPE_NUMBER)
+	assert.True(t, jsi.Type() == js.TYPE_NUMBER)
 
 	var p *int
-	assert.Panics(t, func() { wick.ValueOf(p) })
+	assert.Panics(t, func() { js.ValueOf(p) })
 
-	browser := wick.ValueOf(js.Global())
+	browser := js.ValueOf(js.Global())
 	assert.NotPanics(t, func() { browser.Call("focus") })
 	assert.Panics(t, func() { browser.Call("abc1") })
 

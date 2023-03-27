@@ -15,25 +15,25 @@ import (
 	"github.com/sunraylab/icecake/pkg/htmlname"
 )
 
-// HTML encapsulates a known safe HTML document fragment.
-// It should not be used for HTML from a third-party, or HTML with
+// HTMLstring encapsulates a known safe HTMLstring document fragment.
+// It should not be used for HTMLstring from a third-party, or HTMLstring with
 // unclosed tags or comments.
 //
 // Use of this type presents a security risk:
 // the encapsulated content should come from a trusted source,
 // as it will be included verbatim in the output.
-type HTML string
+type HTMLstring string
 
 type SnippetTemplate struct {
 	// The tagname used to render the html container element of this composer.
 	// If tagname returns an empety string, the rendering does not generates the container element,
 	// in such case snippet's attributes are ignored.
-	TagName HTML
+	TagName HTMLstring
 
 	Attributes string
 
 	// Body returns the html template used to generate the content inside the container html element.
-	Body HTML
+	Body HTMLstring
 }
 
 type HtmlComposer interface {
@@ -50,10 +50,10 @@ type HtmlComposer interface {
 	Template(_data *DataState) SnippetTemplate
 
 	// Set Attribute save a single key/value attribute. The value must be unquoted.
-	SetAttribute(key string, value HTML, overwrite bool)
+	SetAttribute(key string, value HTMLstring, overwrite bool)
 
 	// Attributes returns the formated list of attributes used to generate the container element,
-	Attributes() HTML
+	Attributes() HTMLstring
 }
 
 type DataState struct {
@@ -71,7 +71,7 @@ func RenderHtmlSnippet(_out io.Writer, _cmp any, _data *DataState) error {
 	return renderHtmlSnippet(_out, composer, _data, 0)
 }
 
-func RenderHtmlBody(_out io.Writer, _body HTML, _data *DataState) (_err error) {
+func RenderHtmlBody(_out io.Writer, _body HTMLstring, _data *DataState) (_err error) {
 	if len(_body) > 0 {
 		_err = unfoldBody(_out, []byte(_body), _data, 0)
 	}
@@ -102,7 +102,7 @@ func renderHtmlSnippet(_out io.Writer, _cmp any, _data *DataState, _deep int) (_
 	}
 	if tagname != "" && id == "" {
 		id = GetUniqueId(ickname)
-		composer.SetAttribute("id", HTML(id), false)
+		composer.SetAttribute("id", HTMLstring(id), false)
 	}
 
 	// DEBUG:
@@ -114,7 +114,7 @@ func renderHtmlSnippet(_out io.Writer, _cmp any, _data *DataState, _deep int) (_
 	if tagname != "" {
 		// must merge template attributes with already loaded component attributes
 		parseAttributes(t.Attributes, composer, false)
-		composer.SetAttribute("class", HTML(ickname), false)
+		composer.SetAttribute("class", HTMLstring(ickname), false)
 		fmt.Fprintf(_out, "<%s %s>", tagname, composer.Attributes())
 	}
 
@@ -345,7 +345,7 @@ func unfoldick(_output io.Writer, _ickname string, _attrs map[string]string, _da
 			if !found {
 				// this attribute is not a field of the componenent
 				// keep it as is unless it is the class attribute, in this case, add the tokens
-				newcmp.SetAttribute(aname, HTML(avalue), false)
+				newcmp.SetAttribute(aname, HTMLstring(avalue), false)
 			} else {
 				// feed data struct with the value
 				field := newref.Elem().FieldByName(aname)
@@ -463,7 +463,7 @@ func parseAttributes(_alist string, _cmp HtmlComposer, _overwrite bool) (_err er
 			istart = 0
 		}
 		value, unparsed, _ = strings.Cut(unparsed[istart:], string(delim))
-		_cmp.SetAttribute(name, HTML(value), _overwrite)
+		_cmp.SetAttribute(name, HTMLstring(value), _overwrite)
 		//		_pattrs.amap[name] = StringQuotes(value)
 	}
 	return nil

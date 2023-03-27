@@ -75,7 +75,7 @@ func RegisterComposer(ickname string, _composer any) (_err error) {
 	return nil
 }
 
-func RegisterSnippet(ickname string, tagname HTML, body HTML) (_err error) {
+func RegisterSnippet(ickname string, tagname HTMLstring, body HTMLstring) (_err error) {
 	s := new(HtmlSnippet)
 	s.TagName = tagname
 	s.Body = body

@@ -11,15 +11,17 @@ import (
 
 	_ "embed"
 
+	"github.com/sunraylab/icecake/pkg/browser"
+	"github.com/sunraylab/icecake/pkg/dom"
+	"github.com/sunraylab/icecake/pkg/event"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
 	"github.com/sunraylab/icecake/pkg/ui"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
 
 //go:embed "readme.md"
 var readme string
 
-var webapp *wick.WebApp
+// var webapp *dom.WebApp
 var gcount float64
 
 // the main func is required by the wasm GO builder
@@ -29,21 +31,21 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	webapp = wick.NewWebApp()
+	// webapp = dom.NewWebApp()
 
 	// proceed with localstorage
-	gdark := webapp.Browser().LocalStorage().GetBool("darkmode")
+	gdark := browser.Win().LocalStorage().GetBool("darkmode")
 	updateDarkMode(gdark)
 
-	markdown.RenderMarkdown(webapp.ChildById("readme"), readme, nil)
+	markdown.RenderMarkdown(dom.Id("readme"), readme, nil)
 
 	// init UI with a first update
 	updateUI()
 
 	// add simple event hendling
-	ui.ButtonById("btn-ex2").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtnEx2)
-	ui.ButtonById("btn-lightmode").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtnLightMode)
-	ui.ButtonById("btn-darkmode").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtnDarkMode)
+	ui.ButtonById("btn-ex2").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtnEx2)
+	ui.ButtonById("btn-lightmode").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtnLightMode)
+	ui.ButtonById("btn-darkmode").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtnDarkMode)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
@@ -54,16 +56,16 @@ func main() {
 * browser event handlers
 ******************************************************************************/
 
-func OnClickBtnEx2(event *wick.MouseEvent, target *wick.Element) {
+func OnClickBtnEx2(event *event.MouseEvent, target *dom.Element) {
 	gcount += 0.5
 	updateUI()
 }
 
-func OnClickBtnLightMode(event *wick.MouseEvent, target *wick.Element) {
+func OnClickBtnLightMode(event *event.MouseEvent, target *dom.Element) {
 	updateDarkMode(false)
 }
 
-func OnClickBtnDarkMode(event *wick.MouseEvent, target *wick.Element) {
+func OnClickBtnDarkMode(event *event.MouseEvent, target *dom.Element) {
 	updateDarkMode(true)
 }
 
@@ -74,20 +76,20 @@ func OnClickBtnDarkMode(event *wick.MouseEvent, target *wick.Element) {
 func updateUI() {
 
 	// 1st solution: render a value for any `data-ic-namedvalue="count1"` inside "sectionbody"
-	webapp.ChildById("sectionbody").RenderChildrenValue("count1", "%v", gcount)
+	dom.Id("sectionbody").RenderChildrenValue("count1", "%v", gcount)
 
 	// 2nd solution: render a value inside an elem selected by it's id
-	webapp.ChildById("count1").RenderValue("%.1f", gcount)
+	dom.Id("count1").RenderValue("%.1f", gcount)
 }
 
 func updateDarkMode(dark bool) {
 	if dark {
-		webapp.Body().Classes().AddTokens("dark")
+		dom.Doc().Body().Classes().AddTokens("dark")
 	} else {
-		webapp.Body().Classes().RemoveTokens("dark")
+		dom.Doc().Body().Classes().RemoveTokens("dark")
 	}
 	ui.ButtonById("btn-lightmode").SetDisabled(!dark)
 	ui.ButtonById("btn-darkmode").SetDisabled(dark)
 
-	webapp.Browser().LocalStorage().Set("darkmode", fmt.Sprintf("%v", dark))
+	browser.Win().LocalStorage().Set("darkmode", fmt.Sprintf("%v", dark))
 }

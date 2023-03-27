@@ -8,10 +8,10 @@ func (testsnippet0) Template(*DataState) (_t SnippetTemplate) { _t.TagName = "sp
 
 type testsnippet1 struct {
 	HtmlSnippet
-	HTML
+	Html HTMLstring
 }
 
-func (tst testsnippet1) Template(*DataState) (_t SnippetTemplate) { _t.Body = tst.HTML; return }
+func (tst testsnippet1) Template(*DataState) (_t SnippetTemplate) { _t.Body = tst.Html; return }
 
 type testsnippet2 struct{ testsnippet1 }
 
@@ -25,7 +25,7 @@ type testsnippet3 struct{ HtmlSnippet }
 
 func (testsnippet3) Template(_data *DataState) (_t SnippetTemplate) {
 	strapp, _ := _data.App.(string)
-	_t.Body = HTML(fmt.Sprintf("data.app=%s", strapp))
+	_t.Body = HTMLstring(fmt.Sprintf("data.app=%s", strapp))
 	return
 }
 

@@ -4,9 +4,9 @@ import (
 	"bytes"
 
 	"github.com/sunraylab/icecake/pkg/console"
+	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/ick"
 	"github.com/sunraylab/icecake/pkg/ui"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
 	"github.com/yuin/goldmark"
 )
 
@@ -14,7 +14,7 @@ import (
 // then use it as an HTML template to render it with data and components.
 //
 // Returns an error if the markdown processor fails.
-func RenderMarkdown(_elem *wick.Element, _mdtxt string, _data *ick.DataState, _options ...goldmark.Option) error {
+func RenderMarkdown(_elem *dom.Element, _mdtxt string, _data *ick.DataState, _options ...goldmark.Option) error {
 	if !_elem.IsDefined() {
 		return nil
 	}
@@ -27,6 +27,6 @@ func RenderMarkdown(_elem *wick.Element, _mdtxt string, _data *ick.DataState, _o
 	}
 
 	// HACK:
-	ui.RenderHtml(_elem, ick.HTML(buf.String()), _data)
+	ui.RenderHtml(_elem, ick.HTMLstring(buf.String()), _data)
 	return nil
 }

@@ -1,6 +1,8 @@
 package ick
 
 import (
+	"bytes"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,9 +16,9 @@ import (
 //
 // It is common to embed a HtmlSnippet into a struct to define an html component.
 type HtmlSnippet struct {
-	TagName HTML            // optional TagName
-	Body    HTML            // optional Body
-	attrs   map[string]HTML // map of all attributes of any type
+	TagName HTMLstring            // optional TagName
+	Body    HTMLstring            // optional Body
+	attrs   map[string]HTMLstring // map of all attributes of any type
 }
 
 // Id is an htmlComposer Interface
@@ -27,7 +29,7 @@ func (s *HtmlSnippet) Id() string {
 }
 
 // SetId sets or overwrites the id attribute of the html snippet
-func (s *HtmlSnippet) SetId(_id HTML) *HtmlSnippet {
+func (s *HtmlSnippet) SetId(_id HTMLstring) *HtmlSnippet {
 	s.makemap()
 	s.attrs["01id"] = _id
 	return s
@@ -36,7 +38,7 @@ func (s *HtmlSnippet) SetId(_id HTML) *HtmlSnippet {
 // NewClasses replace any existing classes with c to the class attribute
 // c is parsed simply
 // TODO: check valididty of _c
-func (s *HtmlSnippet) ResetClasses(clist HTML) *HtmlSnippet {
+func (s *HtmlSnippet) ResetClasses(clist HTMLstring) *HtmlSnippet {
 	s.makemap()
 	n := ""
 	f := strings.Fields(string(clist))
@@ -50,14 +52,14 @@ func (s *HtmlSnippet) ResetClasses(clist HTML) *HtmlSnippet {
 	if n == "" {
 		delete(s.attrs, "03class")
 	} else {
-		s.attrs["03class"] = HTML(n)
+		s.attrs["03class"] = HTMLstring(n)
 	}
 	return s
 }
 
 // AddClasses add c classes to the class attribute
 // any duplicate
-func (s *HtmlSnippet) SetClasses(list HTML) *HtmlSnippet {
+func (s *HtmlSnippet) SetClasses(list HTMLstring) *HtmlSnippet {
 	s.makemap()
 	last := s.attrs["03class"]
 	new := string(last)
@@ -78,7 +80,7 @@ nexta:
 	}
 	new = strings.TrimLeft(new, " ")
 	if new != "" {
-		s.attrs["03class"] = HTML(new)
+		s.attrs["03class"] = HTMLstring(new)
 	}
 	return s
 }
@@ -96,11 +98,11 @@ func (s *HtmlSnippet) RemoveClass(c string) *HtmlSnippet {
 		}
 	}
 	new = strings.TrimRight(new, " ")
-	s.attrs["03class"] = HTML(new)
+	s.attrs["03class"] = HTMLstring(new)
 	return s
 }
 
-func (s *HtmlSnippet) SetStyle(style HTML) *HtmlSnippet {
+func (s *HtmlSnippet) SetStyle(style HTMLstring) *HtmlSnippet {
 	// TODO: check style validity
 	s.makemap()
 	s.attrs["04style"] = style
@@ -109,11 +111,11 @@ func (s *HtmlSnippet) SetStyle(style HTML) *HtmlSnippet {
 
 func (s *HtmlSnippet) SetTabIndex(idx uint) *HtmlSnippet {
 	s.makemap()
-	s.attrs["02tabIndex"] = HTML(strconv.Itoa(int(idx)))
+	s.attrs["02tabIndex"] = HTMLstring(strconv.Itoa(int(idx)))
 	return s
 }
 
-func (s *HtmlSnippet) SetAttribute(key string, value HTML, overwrite bool) {
+func (s *HtmlSnippet) SetAttribute(key string, value HTMLstring, overwrite bool) {
 	s.makemap()
 	key = strings.Trim(key, " ")
 	switch strings.ToLower(key) {
@@ -180,16 +182,6 @@ func (s *HtmlSnippet) SetFalse(key string) *HtmlSnippet {
 	return s
 }
 
-// TagName implements the default HtmlComposer interface, a composer without container.
-// func (s HtmlSnippet) TagName() HTML {
-// 	return ""
-// }
-
-// Body implements the default HtmlComposer interface, an empty string.
-// func (s HtmlSnippet) Body() HTML {
-// 	return ""
-// }
-
 // Template is an interface implementation of HtmlComposer
 func (s HtmlSnippet) Template(*DataState) (_t SnippetTemplate) {
 	_t.TagName = s.TagName
@@ -200,7 +192,7 @@ func (s HtmlSnippet) Template(*DataState) (_t SnippetTemplate) {
 // Attributes returns the formated list of attributes used to generate the container element.
 // always sorted the same way : 1.id 2.tabindex 3.class 4.style 5. other-alpha
 // Attributes is an interface implementation of HtmlComposer
-func (s HtmlSnippet) Attributes() HTML {
+func (s HtmlSnippet) Attributes() HTMLstring {
 	s.makemap()
 	if len(s.attrs) == 0 {
 		return ""
@@ -223,7 +215,16 @@ func (s HtmlSnippet) Attributes() HTML {
 		html += " "
 	}
 	html = strings.TrimRight(html, " ")
-	return HTML(html)
+	return HTMLstring(html)
+}
+
+func HTML(c HtmlComposer) HTMLstring {
+	out := new(bytes.Buffer)
+	err := RenderHtmlSnippet(out, c, nil)
+	if err != nil {
+		log.Printf("error rendering html snippet: %s\n", err.Error())
+	}
+	return HTMLstring(out.String())
 }
 
 /******************************************************************************
@@ -232,7 +233,7 @@ func (s HtmlSnippet) Attributes() HTML {
 
 func (s *HtmlSnippet) makemap() {
 	if s.attrs == nil {
-		s.attrs = make(map[string]HTML)
+		s.attrs = make(map[string]HTMLstring)
 	}
 }
 

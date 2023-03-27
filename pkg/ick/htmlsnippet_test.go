@@ -38,7 +38,7 @@ func TestComposeBasics(t *testing.T) {
 	// unregistered snippet with a simple body and no tagname
 	out.Reset()
 	s1 := new(testsnippet1)
-	s1.HTML = `Hello World`
+	s1.Html = `Hello World`
 	RenderHtmlSnippet(out, s1, nil)
 	require.Equal(t, "Hello World", out.String())
 
@@ -333,7 +333,7 @@ func TestComposeEmbedded(t *testing.T) {
 	out := new(bytes.Buffer)
 	for i, tst := range tstset {
 		out.Reset()
-		cmp.HTML = HTML(tst.in)
+		cmp.Html = HTMLstring(tst.in)
 		err := RenderHtmlSnippet(out, cmp, nil)
 		if tst.err {
 			if err == nil {
@@ -356,4 +356,25 @@ func TestComposeEmbedded(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestHTML(t *testing.T) {
+	TheRegistry = registry{}
+	out := new(bytes.Buffer)
+
+	s := &HtmlSnippet{TagName: "span"}
+	err := RenderHtmlSnippet(out, s, nil)
+	require.NoError(t, err)
+	require.Equal(t, `<SPAN id="ick-1"></SPAN>`, out.String())
+
+	html := HTML(s)
+	require.Equal(t, `<SPAN id="ick-1"></SPAN>`, string(html))
+
+	s2 := &HtmlSnippet{TagName: "span", Body: "hello"}
+	html = HTML(s2)
+	require.Equal(t, `<SPAN id="ick-2">hello</SPAN>`, string(html))
+
+	s3 := &testsnippet2{}
+	html = HTML(s3)
+	require.Equal(t, `<DIV id="ick-3" tabIndex=2 class="ts2a ts2b" style="display=test;" a2></DIV>`, string(html))
 }

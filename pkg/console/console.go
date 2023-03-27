@@ -38,22 +38,25 @@ func Errorf(msg string, a ...any) error {
 	return err
 }
 
-// Stackf prints the msg message and the panic recovery message if not nil, then the stacktrace.
-// If r is nil Stackf create a panic
+// Stackf prints the msg message, the r recovery message and the stacktrace.
 func Stackf(r any, msg string, a ...any) {
 	defer Logf("> panic stacktrace:\n" + string(debug.Stack()))
 	str := fmt.Sprintf(msg, a...)
 	if str != "" {
 		Errorf(str)
 	}
-	if r == nil {
-		panic(str)
-	} else {
-		Errorf("%+v [recovered]\n", r)
-	}
+	Errorf("%+v [recovered]\n", r)
 }
 
-func ConsoleStack(r any) {
-	Errorf("%+v [recovered]\n", r)
-	Logf("> panic stacktrace:\n" + string(debug.Stack()))
+// Panicf prints the msg message and the panic recovery message if not nil, then the stacktrace.
+// If r is nil Stackf create a panic
+func Panicf(msg string, a ...any) {
+	defer Logf("> panic stacktrace:\n" + string(debug.Stack()))
+	str := fmt.Sprintf(msg, a...)
+	panic(str)
 }
+
+// func ConsoleStack(r any) {
+// 	Errorf("%+v [recovered]\n", r)
+// 	Logf("> panic stacktrace:\n" + string(debug.Stack()))
+// }
