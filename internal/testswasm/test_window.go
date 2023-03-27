@@ -11,16 +11,8 @@ import (
 func TestWindow(t *testing.T) {
 
 	win := browser.Win()
-
 	fmt.Println("URL:", win.URL().String())
-
 	assert.False(t, win.Closed())
-	assert.True(t, win.OnLine())
-
-	fmt.Println("cookie:", win.CookieEnabled())
-	fmt.Println("history len:", win.History().Count())
-	fmt.Println("User Agent :", win.UserAgent())
-	fmt.Println("language   :", win.Language())
 
 	w, h := win.InnerSize()
 	assert.Greater(t, w, 0)
@@ -33,4 +25,11 @@ func TestWindow(t *testing.T) {
 
 	x, y := win.ScrollPos()
 	fmt.Println("scroll pos :", x, y)
+
+	assert.True(t, browser.OnLine())
+
+	fmt.Println("cookie:", browser.CookieEnabled())
+	fmt.Println("history len:", browser.SessionHistory().Count())
+	fmt.Println("User Agent :", browser.UserAgent())
+	fmt.Println("language   :", browser.Language())
 }

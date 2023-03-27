@@ -6,7 +6,6 @@ import (
 	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/ick"
-	"github.com/sunraylab/icecake/pkg/ui"
 	"github.com/yuin/goldmark"
 )
 
@@ -27,6 +26,6 @@ func RenderMarkdown(_elem *dom.Element, _mdtxt string, _data *ick.DataState, _op
 	}
 
 	// HACK:
-	ui.RenderHtml(_elem, ick.HTMLstring(buf.String()), _data)
+	_elem.RenderHtml(dom.INSERT_BODY, ick.HTMLstring(buf.String()), _data)
 	return nil
 }

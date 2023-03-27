@@ -1,9 +1,9 @@
 package dom
 
 import (
+	"bytes"
 	"fmt"
 
-	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/event"
 	"github.com/sunraylab/icecake/pkg/ick"
@@ -14,14 +14,23 @@ import (
 * enum used by Element
 *****************************************************************************/
 
-type WHERE_INSERT string
+type INSERT_WHERE int
 
 const (
-	WI_BEFOREBEGIN WHERE_INSERT = "beforebegin" // Before the Element itself.
-	WI_INSIDEFIRST WHERE_INSERT = "afterbegin"  // Just inside the element, before its first child.
-	WI_INSIDELAST  WHERE_INSERT = "beforeend"   // Just inside the element, after its last child.
-	WI_AFTEREND    WHERE_INSERT = "afterend"    // After the element itself.
+	INSERT_BEFORE_ME   INSERT_WHERE = iota // Before the Element itself.
+	INSERT_FIRST_CHILD                     // Just inside the element, before its first child.
+	INSERT_LAST_CHILD                      // Just inside the element, after its last child.
+	INSERT_AFTER_ME                        // After the element itself.
+	INSERT_OUTER                           // like outerhtml
+	INSERT_BODY                            // like inner html
 )
+
+// const (
+// 	WI_BEFOREBEGIN WHERE_INSERT = "beforebegin" // Before the Element itself.
+// 	WI_INSIDEFIRST WHERE_INSERT = "afterbegin"  // Just inside the element, before its first child.
+// 	WI_INSIDELAST  WHERE_INSERT = "beforeend"   // Just inside the element, after its last child.
+// 	WI_AFTEREND    WHERE_INSERT = "afterend"    // After the element itself.
+// )
 
 /****************************************************************************
 * Element
@@ -153,22 +162,6 @@ func (_elem *Element) InnerHTML() string {
 	return _elem.GetString("innerHTML")
 }
 
-// InnerHTML ets or sets the HTML or XML markup contained within the element.
-//
-// To insert the HTML into the document rather than replace the contents of an element, use the method insertAdjacentHTML().
-//
-// When writing to innerHTML, it will overwrite the content of the source element.
-// That means the HTML has to be loaded and re-parsed. This is not very efficient especially when using inside loops.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
-func (_elem *Element) SetInnerHTML(_unsafeHtml string) *Element {
-	if !_elem.IsDefined() {
-		return _elem
-	}
-	_elem.Set("innerHTML", _unsafeHtml)
-	return _elem
-}
-
 // OuterHTML gets the serialized HTML fragment describing the element including its descendants.
 // It can also be set to replace the element with nodes parsed from the given string.
 //
@@ -181,21 +174,6 @@ func (_elem *Element) OuterHTML() string {
 		return UNDEFINED_NODE
 	}
 	return _elem.GetString("outerHTML")
-}
-
-// OuterHTML gets the serialized HTML fragment describing the element including its descendants.
-// It can also be set to replace the element with nodes parsed from the given string.
-//
-// To only obtain the HTML representation of the contents of an element,
-// or to replace the contents of an element, use the innerHTML property instead.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
-func (_elem *Element) SetOuterHTML(_unsafeHtml string) *Element {
-	if !_elem.IsDefined() {
-		return _elem
-	}
-	_elem.Set("outerHTML", _unsafeHtml)
-	return _elem
 }
 
 // ChildElementCount returns the number of child elements of this element.
@@ -220,28 +198,6 @@ func (_elem *Element) Children() []*Element {
 	return CastElements(elems)
 }
 
-// FirstElementChild  returns an element's first child Element, or null if there are no child elements.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/firstElementChild
-func (_elem *Element) ChildFirst() *Element {
-	if !_elem.IsDefined() {
-		return new(Element)
-	}
-	child := _elem.Get("firstElementChild")
-	return CastElement(child)
-}
-
-// LastElementChild returns an element's last child Element, or null if there are no child elements.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/lastElementChild
-func (_elem *Element) ChildLast() *Element {
-	if !_elem.IsDefined() {
-		return new(Element)
-	}
-	child := _elem.Get("lastElementChild")
-	return CastElement(child)
-}
-
 // GetElementsByTagName returns a live HTMLCollection of elements with the given tag name.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByTagName
@@ -262,6 +218,81 @@ func (_elem *Element) ChildrenByClassName(_classNames string) []*Element {
 	}
 	elems := _elem.Call("getElementsByClassName", _classNames)
 	return CastElements(elems)
+}
+
+// ChildrenMatching make a slice of Element, scaning recursively every children of this Element.
+// Only nodes having data attribites matching _data like "data-myvalue"
+func (_root *Element) ChildrenByData(_data string, _value string) []*Element {
+	if !_root.IsDefined() || !_root.HasChildren() {
+		return make([]*Element, 0)
+	}
+	return _root.childrenMatching(999, func(e *Element) bool {
+		v, found := e.Attributes().Attribute(_data)
+		if found {
+			if v != _value {
+				found = false
+			}
+		}
+		return found
+	})
+}
+
+// ChildrenMatching make a slice of Element, scaning recursively every children of this Element.
+// Only nodes matching the optional _match function are included.
+func (_root *Element) ChildrenMatching(_match func(*Element) bool) []*Element {
+	if !_root.IsDefined() || !_root.HasChildren() {
+		return make([]*Element, 0)
+	}
+	return _root.childrenMatching(999, _match)
+}
+
+func (_root *Element) childrenMatching(_deepmax int, _match func(*Element) bool) []*Element {
+	nodes := make([]*Element, 0)
+
+	for _, scan := range _root.Children() {
+		// apply the filter to children if not too deep and the type node is selected
+		if scan.HasChildren() {
+			if _deepmax > 0 {
+				sub := scan.childrenMatching(_deepmax-1, _match)
+				nodes = append(nodes, sub...)
+			} else {
+				console.Warnf("ChildrenMatching reached max level")
+			}
+		}
+
+		// apply matching function
+		match := false
+		if _match != nil {
+			match = _match(scan)
+		}
+
+		if match {
+			nodes = append(nodes, scan)
+		}
+	}
+	return nodes
+}
+
+// FirstElementChild  returns an element's first child Element, or null if there are no child elements.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/firstElementChild
+func (_elem *Element) ChildFirst() *Element {
+	if !_elem.IsDefined() {
+		return new(Element)
+	}
+	child := _elem.Get("firstElementChild")
+	return CastElement(child)
+}
+
+// LastElementChild returns an element's last child Element, or null if there are no child elements.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/lastElementChild
+func (_elem *Element) ChildLast() *Element {
+	if !_elem.IsDefined() {
+		return new(Element)
+	}
+	child := _elem.Get("lastElementChild")
+	return CastElement(child)
 }
 
 // PreviousElementSibling returns the Element immediately prior to the specified one in its parent's children list,
@@ -331,77 +362,194 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 	return CastElements(elems)
 }
 
+// 	WI_BEFOREBEGIN WHERE_INSERT = "beforebegin" // Before the Element itself.
+// 	WI_INSIDEFIRST WHERE_INSERT = "afterbegin"  // Just inside the element, before its first child.
+// 	WI_INSIDELAST  WHERE_INSERT = "beforeend"   // Just inside the element, after its last child.
+// 	WI_AFTEREND    WHERE_INSERT = "afterend"    // After the element itself.
+
+func (_me *Element) InsertHTML(_where INSERT_WHERE, _unsafeHtml ick.HTMLstring) *Element {
+	if !_me.IsDefined() {
+		return _me
+	}
+	switch _where {
+	case INSERT_BEFORE_ME:
+		_me.Call("insertAdjacentHTML", "beforebegin", _unsafeHtml)
+	case INSERT_FIRST_CHILD:
+		_me.Call("insertAdjacentHTML", "afterbegin", _unsafeHtml)
+	case INSERT_LAST_CHILD:
+		_me.Call("insertAdjacentHTML", "beforeend", _unsafeHtml)
+	case INSERT_AFTER_ME:
+		_me.Call("insertAdjacentHTML", "afterend", _unsafeHtml)
+	case INSERT_OUTER:
+		_me.Set("outerHTML", _unsafeHtml)
+	case INSERT_BODY:
+		_me.Set("innerHTML", _unsafeHtml)
+	}
+	return _me
+}
+
+// InsertText insert the formated _value as a simple text (not an HTML string) at the _where position.
+// The format string follow the fmt rules: https://pkg.go.dev/fmt#hdr-Printing
+func (_me *Element) InsertText(_where INSERT_WHERE, _format string, _value ...any) *Element {
+	if !_me.IsDefined() {
+		return _me
+	}
+	text := fmt.Sprintf(_format, _value...)
+	switch _where {
+	case INSERT_BEFORE_ME:
+		_me.Call("insertAdjacentText", "beforebegin", text)
+	case INSERT_FIRST_CHILD:
+		_me.Call("prepend", text)
+	case INSERT_LAST_CHILD:
+		_me.Call("append", text)
+	case INSERT_AFTER_ME:
+		_me.Call("insertAdjacentText", "afterend", text)
+	case INSERT_OUTER:
+		_me.Set("outerHTML", text)
+	case INSERT_BODY:
+		_me.Set("innerText", text)
+	}
+	return _me
+}
+
+func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element {
+	if !_me.IsDefined() {
+		return _me
+	}
+	switch _where {
+	case INSERT_BEFORE_ME:
+		_me.Call("insertAdjacentElement", "beforebegin", _elem.Value())
+	case INSERT_FIRST_CHILD:
+		_me.Call("prepend", _elem.Value())
+	case INSERT_LAST_CHILD:
+		_me.Call("append", _elem.Value())
+	case INSERT_AFTER_ME:
+		_me.Call("insertAdjacentElement", "afterend", _elem.Value())
+	case INSERT_OUTER:
+		_me.Set("replaceWith", _elem.Value())
+	case INSERT_BODY:
+		_me.Set("innerHTML", "")
+		_me.Call("append", _elem.Value())
+	}
+	return _me
+}
+
+// InnerHTML ets or sets the HTML or XML markup contained within the element.
+//
+// To insert the HTML into the document rather than replace the contents of an element, use the method insertAdjacentHTML().
+//
+// When writing to innerHTML, it will overwrite the content of the source element.
+// That means the HTML has to be loaded and re-parsed. This is not very efficient especially when using inside loops.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
+// func (_elem *Element) SetInnerHTML(_unsafeHtml string) *Element {
+// 	if !_elem.IsDefined() {
+// 		return _elem
+// 	}
+// 	_elem.Set("innerHTML", _unsafeHtml)
+// 	return _elem
+// }
+
+// OuterHTML gets the serialized HTML fragment describing the element including its descendants.
+// It can also be set to replace the element with nodes parsed from the given string.
+//
+// To only obtain the HTML representation of the contents of an element,
+// or to replace the contents of an element, use the innerHTML property instead.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
+// func (_elem *Element) SetOuterHTML(_unsafeHtml string) *Element {
+// 	if !_elem.IsDefined() {
+// 		return _elem
+// 	}
+// 	_elem.Set("outerHTML", _unsafeHtml)
+// 	return _elem
+// }
+
+// InnerText represents the rendered text content of a node and its descendants.
+//
+// InnerText gets pure text, removing any html or css, while TextContent keeps the representation.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerText
+// func (_htmle *Element) SetInnerText(value string) *Element {
+// 	if !_htmle.IsDefined() {
+// 		return &Element{}
+// 	}
+// 	input := value
+// 	_htmle.Set("innerText", input)
+// 	return _htmle
+// }
+
 // InsertAdjacentElement inserts a given element node at a given position relative to the element it is invoked upon.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentElement
-func (_elem *Element) InsertAdjacentElement(_where WHERE_INSERT, _element *Element) *Element {
-	if !_elem.IsDefined() {
-		return new(Element)
-	}
-	_elem.Call("insertAdjacentElement", string(_where), _element.JSValue)
-	return _elem
-}
+// func (_elem *Element) InsertAdjacentElement(_where WHERE_INSERT, _element *Element) *Element {
+// 	if !_elem.IsDefined() {
+// 		return new(Element)
+// 	}
+// 	_elem.Call("insertAdjacentElement", string(_where), _element.JSValue)
+// 	return _elem
+// }
 
 // InsertAdjacentText given a relative position and a string, inserts a new text node at the given position relative to the element it is called from.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentText
-func (_elem *Element) InsertAdjacentText(_where WHERE_INSERT, _text string) *Element {
-	if !_elem.IsDefined() {
-		return &Element{}
-	}
-	_elem.Call("insertAdjacentText", string(_where), _text)
-	return _elem
-}
+// func (_elem *Element) InsertAdjacentText(_where WHERE_INSERT, _text string) *Element {
+// 	if !_elem.IsDefined() {
+// 		return &Element{}
+// 	}
+// 	_elem.Call("insertAdjacentText", string(_where), _text)
+// 	return _elem
+// }
 
 // InsertAdjacentHTML parses the specified text as HTML or XML and inserts the resulting nodes into the DOM tree at a specified position.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML
-func (_elem *Element) InsertAdjacentHTML(_where WHERE_INSERT, _text string) *Element {
-	if !_elem.IsDefined() {
-		return &Element{}
-	}
-	_elem.Call("insertAdjacentHTML", string(_where), _text)
-	return _elem
-}
+// func (_elem *Element) InsertAdjacentHTML(_where WHERE_INSERT, _text string) *Element {
+// 	if !_elem.IsDefined() {
+// 		return &Element{}
+// 	}
+// 	_elem.Call("insertAdjacentHTML", string(_where), _text)
+// 	return _elem
+// }
 
 // Prepend inserts a set of Node objects or string objects before the first child of the Element.
 // String objects are inserted as equivalent Text nodes.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
-func (_elem *Element) PrependNodes(_nodes ...*Node) *Element {
-	if !_elem.IsDefined() {
-		return &Element{}
-	}
-	var args []interface{} = make([]interface{}, len(_nodes))
-	var end int
-	for _, n := range _nodes {
-		if n != nil {
-			jsn := n.JSValue
-			args[end] = jsn
-			end++
-		}
-	}
-	_elem.Call("prepend", args[0:end]...)
-	return _elem
-}
+// func (_elem *Element) PrependNodes(_nodes ...*Node) *Element {
+// 	if !_elem.IsDefined() {
+// 		return &Element{}
+// 	}
+// 	var args []interface{} = make([]interface{}, len(_nodes))
+// 	var end int
+// 	for _, n := range _nodes {
+// 		if n != nil {
+// 			jsn := n.JSValue
+// 			args[end] = jsn
+// 			end++
+// 		}
+// 	}
+// 	_elem.Call("prepend", args[0:end]...)
+// 	return _elem
+// }
 
 // Prepend inserts a set of Node objects or string objects before the first child of the Element.
 // String objects are inserted as equivalent Text nodes.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
-func (_elem *Element) PrependStrings(_strs []string) *Element {
-	if !_elem.IsDefined() {
-		return &Element{}
-	}
-	var args []interface{} = make([]interface{}, len(_strs))
-	var end int
-	for _, n := range _strs {
-		args[end] = n
-		end++
-	}
-	_elem.Call("prepend", args[0:end]...)
-	return _elem
-}
+// func (_elem *Element) PrependStrings(_strs []string) *Element {
+// 	if !_elem.IsDefined() {
+// 		return &Element{}
+// 	}
+// 	var args []interface{} = make([]interface{}, len(_strs))
+// 	var end int
+// 	for _, n := range _strs {
+// 		args[end] = n
+// 		end++
+// 	}
+// 	_elem.Call("prepend", args[0:end]...)
+// 	return _elem
+// }
 
 // Append inserts a set of Node objects or string objects after the last child of the Element.
 // String objects are inserted as equivalent Text nodes.
@@ -415,22 +563,22 @@ func (_elem *Element) PrependStrings(_strs []string) *Element {
 // Can append several nodes and strings, whereas Node.appendChild() can only append one node.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/append
-func (_elem *Element) AppendNodes(_nodes []*Node) *Element {
-	if !_elem.IsDefined() {
-		return &Element{}
-	}
-	var args []interface{} = make([]interface{}, len(_nodes))
-	var end int
-	for _, n := range _nodes {
-		if n != nil {
-			jsn := n.JSValue
-			args[end] = jsn
-			end++
-		}
-	}
-	_elem.Call("append", args[0:end]...)
-	return _elem
-}
+// func (_elem *Element) AppendNodes(_nodes []*Node) *Element {
+// 	if !_elem.IsDefined() {
+// 		return &Element{}
+// 	}
+// 	var args []interface{} = make([]interface{}, len(_nodes))
+// 	var end int
+// 	for _, n := range _nodes {
+// 		if n != nil {
+// 			jsn := n.JSValue
+// 			args[end] = jsn
+// 			end++
+// 		}
+// 	}
+// 	_elem.Call("append", args[0:end]...)
+// 	return _elem
+// }
 
 // Append inserts a set of Node objects or string objects after the last child of the Element.
 // String objects are inserted as equivalent Text nodes.
@@ -444,53 +592,53 @@ func (_elem *Element) AppendNodes(_nodes []*Node) *Element {
 // Can append several nodes and strings, whereas Node.appendChild() can only append one node.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/append
-func (_elem *Element) AppendStrings(_strs ...string) *Element {
-	if !_elem.IsDefined() {
-		return &Element{}
-	}
-	var args []interface{} = make([]interface{}, len(_strs))
-	var end int
-	for _, n := range _strs {
-		args[end] = n
-		end++
-	}
-	_elem.Call("append", args[0:end]...)
-	return _elem
-}
+// func (_elem *Element) AppendStrings(_strs ...string) *Element {
+// 	if !_elem.IsDefined() {
+// 		return &Element{}
+// 	}
+// 	var args []interface{} = make([]interface{}, len(_strs))
+// 	var end int
+// 	for _, n := range _strs {
+// 		args[end] = n
+// 		end++
+// 	}
+// 	_elem.Call("append", args[0:end]...)
+// 	return _elem
+// }
 
-func (_elem *Element) InsertNodesBefore(_nodes []*Node) *Element {
-	if !_elem.IsDefined() {
-		return &Element{}
-	}
-	var _args []interface{} = make([]interface{}, len(_nodes))
-	var _end int
-	for _, n := range _nodes {
-		if n != nil {
-			jsn := n.JSValue
-			_args[_end] = jsn
-			_end++
-		}
-	}
-	_elem.Call("before", _args[0:_end]...)
-	return _elem
-}
+// func (_elem *Element) InsertNodesBefore(_nodes []*Node) *Element {
+// 	if !_elem.IsDefined() {
+// 		return &Element{}
+// 	}
+// 	var _args []interface{} = make([]interface{}, len(_nodes))
+// 	var _end int
+// 	for _, n := range _nodes {
+// 		if n != nil {
+// 			jsn := n.JSValue
+// 			_args[_end] = jsn
+// 			_end++
+// 		}
+// 	}
+// 	_elem.Call("before", _args[0:_end]...)
+// 	return _elem
+// }
 
-func (_elem *Element) InsertNodesAfter(_nodes []*Node) *Element {
-	if !_elem.IsDefined() {
-		return &Element{}
-	}
-	var _args []interface{} = make([]interface{}, len(_nodes))
-	var _end int
-	for _, n := range _nodes {
-		if n != nil {
-			jsn := n.JSValue
-			_args[_end] = jsn
-			_end++
-		}
-	}
-	_elem.Call("after", _args[0:_end]...)
-	return _elem
-}
+// func (_elem *Element) InsertNodesAfter(_nodes []*Node) *Element {
+// 	if !_elem.IsDefined() {
+// 		return &Element{}
+// 	}
+// 	var _args []interface{} = make([]interface{}, len(_nodes))
+// 	var _end int
+// 	for _, n := range _nodes {
+// 		if n != nil {
+// 			jsn := n.JSValue
+// 			_args[_end] = jsn
+// 			_end++
+// 		}
+// 	}
+// 	_elem.Call("after", _args[0:_end]...)
+// 	return _elem
+// }
 
 // ScrollTop gets or sets the number of pixels that an element's content is scrolled vertically.
 //
@@ -583,20 +731,6 @@ func (_htmle *Element) InnerText() string {
 		return UNDEFINED_NODE
 	}
 	return _htmle.GetString("innerText")
-}
-
-// InnerText represents the rendered text content of a node and its descendants.
-//
-// InnerText gets pure text, removing any html or css, while TextContent keeps the representation.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerText
-func (_htmle *Element) SetInnerText(value string) *Element {
-	if !_htmle.IsDefined() {
-		return &Element{}
-	}
-	input := value
-	_htmle.Set("innerText", input)
-	return _htmle
 }
 
 // Focus sets focus on the specified element, if it can be focused. The focused element is the element that will receive keyboard and similar events by default.
@@ -889,32 +1023,58 @@ func (_htmle *Element) AddWheelEvent(_listener func(*event.WheelEvent, *Element)
 * Extra rendering
 *****************************************************************************/
 
-// SetInnerValue set the innext text of the element with a formated value.
-// The format string follow the fmt rules: https://pkg.go.dev/fmt#hdr-Printing
-func (_elem *Element) RenderValue(format string, _value ...any) {
-	if !_elem.IsDefined() {
-		return
+// // RenderNamedValue look recursively for any _elem children having the "data-ick-namedvalue" token matching _name
+// // and render inner text with the _value
+// func (_elem *Element) RenderChildrenValue(_name string, _format string, _value ...any) {
+// 	if !_elem.IsDefined() {
+// 		return
+// 	}
+// 	_name = helper.Normalize(_name)
+// 	text := fmt.Sprintf(_format, _value...)
+
+// 	children := _elem.FilteredChildren(NT_ELEMENT, func(_node *Node) bool {
+// 		// BUG:
+// 		namedvalue, _ := CastElement(_node).Attributes().Attribute("data-ick-namedvalue")
+// 		return _name == namedvalue
+// 	})
+
+// 	for _, node := range children {
+// 		CastElement(node).RenderValue(text)
+// 	}
+// }
+
+// RenderHtml unfolding components if any
+// The element must be in the DOM to
+func (_elem *Element) RenderHtml(_where INSERT_WHERE, _body ick.HTMLstring, _data *ick.DataState) (_err error) {
+	if !_elem.IsDefined() || !_elem.IsInDOM() {
+		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
 	}
-	text := fmt.Sprintf(format, _value...)
-	_elem.SetInnerText(text)
+
+	out := new(bytes.Buffer)
+	_err = ick.RenderHtmlBody(out, _body, _data)
+	if _err == nil {
+		_elem.InsertHTML(_where, ick.HTMLstring(out.String()))
+		// TODO: loop over embedded component to add listeners
+
+		// TODO: showUnfoldedComponents(unfoldedCmps)
+	}
+	return _err
 }
 
-// RenderNamedValue look recursively for any _elem children having the "data-ic-namedvalue" token matching _name
-// and render inner text with the _value
-func (_elem *Element) RenderChildrenValue(_name string, _format string, _value ...any) {
+// RenderComponent
+func (_elem *Element) RenderSnippet(_where INSERT_WHERE, _cmp any, _data *ick.DataState) (_err error) {
 	if !_elem.IsDefined() {
-		return
+		return console.Errorf("RenderComponent: failed on undefined element")
 	}
-	_name = helper.Normalize(_name)
-	text := fmt.Sprintf(_format, _value...)
 
-	children := _elem.FilteredChildren(NT_ELEMENT, func(_node *Node) bool {
-		// BUG:
-		namedvalue, _ := CastElement(_node).Attributes().Attribute("data-ick-namedvalue")
-		return _name == namedvalue
-	})
-
-	for _, node := range children {
-		CastElement(node).RenderValue(text)
+	out := new(bytes.Buffer)
+	_err = ick.RenderHtmlSnippet(out, _cmp, _data)
+	if _err == nil {
+		_elem.InsertHTML(_where, ick.HTMLstring(out.String()))
+		// TODO: loop over embedded component
+		// if l, ok := _cmp.(Listener); ok {
+		// 	l.AddListeners()
+		// }
 	}
+	return nil
 }

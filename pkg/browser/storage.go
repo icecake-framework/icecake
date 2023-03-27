@@ -18,13 +18,37 @@ type Storage struct {
 }
 
 // CastStorage is casting a js.Value into Storage.
-func CastStorage(_jsv js.JSValueProvider) *Storage {
+func castStorage(_jsv js.JSValueProvider) *Storage {
 	if !_jsv.Value().IsObject() {
 		return nil
 	}
 	ret := new(Storage)
 	ret.JSValue = _jsv.Value()
 	return ret
+}
+
+// accesses a session Storage object for the current origin.
+//
+// sessionStorage is similar to localStorage; the difference is that while data in localStorage doesn't expire,
+// data in sessionStorage is cleared when the page session ends.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
+func SessionStorage() *Storage {
+	// TODO: tryget
+	rsp := Win().Call("ickSessionStorage")
+	return castStorage(rsp)
+}
+
+// allows you to access a Storage object for the Document's origin; the stored data is saved across browser sessions.
+//
+// returns nil if access is denied to the localstorage
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+func LocalStorage() *Storage {
+	// TODO: tryget
+	//value := _win.jsValue.Get("localStorage")
+	jsv := Win().Call("ickLocalStorage")
+	return castStorage(jsv)
 }
 
 // Length returns the number of data items stored in a given Storage object.

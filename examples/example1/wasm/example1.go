@@ -14,7 +14,6 @@ import (
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
 	"github.com/sunraylab/icecake/pkg/ick"
-	"github.com/sunraylab/icecake/pkg/ui"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/renderer/html"
 )
@@ -31,12 +30,12 @@ func main() {
 
 	// 1. demonstrate the use of the go HTML templating package to build page content directly on the front-end.
 	htmlTemplate := `Hello <strong>%s</strong>!`
-	ui.RenderHtml(dom.Id("ex1a"), ick.HTMLstring(fmt.Sprintf(htmlTemplate, "Bob")), nil)
-	ui.RenderHtml(dom.Id("ex1b"), ick.HTMLstring(fmt.Sprintf(htmlTemplate, "Alice")), nil)
+	dom.Id("ex1a").RenderHtml(dom.INSERT_BODY, ick.HTMLstring(fmt.Sprintf(htmlTemplate, "Bob")), nil)
+	dom.Id("ex1b").RenderHtml(dom.INSERT_BODY, ick.HTMLstring(fmt.Sprintf(htmlTemplate, "Alice")), nil)
 
 	// To see what happend with a wrong html element ID,
 	// open the console on the browser side.
-	ui.RenderHtml(dom.Id("ex1c"), ick.HTMLstring(fmt.Sprintf(htmlTemplate, "Carole")), nil)
+	dom.Id("ex1c").RenderHtml(dom.INSERT_BODY, ick.HTMLstring(fmt.Sprintf(htmlTemplate, "Carole")), nil)
 
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.
 	markdown.RenderMarkdown(dom.Id("ex1d"), "### Markdown\nHello **John**", nil)

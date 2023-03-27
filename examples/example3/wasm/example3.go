@@ -71,7 +71,7 @@ func OnClickBtn1(event *event.MouseEvent, target *dom.Element) {
 	notif.SetClasses("is-warning is-light")
 
 	// Insert the component into the DOM
-	ui.RenderSnippet(dom.Id("notif_container"), notif, nil)
+	dom.Id("notif_container").RenderSnippet(dom.INSERT_LAST_CHILD, notif, nil)
 }
 
 func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
@@ -84,11 +84,11 @@ func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 	notif.SetClasses("is-danger is-light").SetAttribute("role", "alert", true)
 	notif.Tic = func(clk *clock.Clock) {
 		s := math.Round(notif.Delete.TimeLeft().Seconds())
-		dom.Id(idtimeleft).RenderValue("%v", s)
+		dom.Id(idtimeleft).InsertText(dom.INSERT_BODY, "%v", s)
 	}
 
 	// Insert the component into the DOM
-	ui.RenderSnippet(dom.Id("notif_container"), notif, nil)
+	dom.Id("notif_container").RenderSnippet(dom.INSERT_LAST_CHILD, notif, nil)
 }
 
 func OnClickBtn3(event *event.MouseEvent, target *dom.Element) {
@@ -101,7 +101,7 @@ func OnClickBtn3(event *event.MouseEvent, target *dom.Element) {
 	notif.SetClasses("is-success toast")
 
 	// Insert the component into the DOM
-	ui.RenderSnippet(dom.Id("toast_container"), notif, nil)
+	dom.Id("toast_container").RenderSnippet(dom.INSERT_LAST_CHILD, notif, nil)
 }
 
 func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
@@ -117,5 +117,5 @@ func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
 	</box>`
 
 	// Insert the component into the DOM
-	ui.RenderHtml(dom.Id("ex3_container"), ick.HTMLstring(html), nil)
+	dom.Id("ex3_container").RenderHtml(dom.INSERT_LAST_CHILD, ick.HTMLstring(html), nil)
 }

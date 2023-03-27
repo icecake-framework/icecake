@@ -13,7 +13,7 @@ func TestNode(t *testing.T) {
 
 		assert.False(t, new(dom.Element).IsInDOM()) // console warning --> unable to get "isConnected": undefined js value
 
-		div := dom.Doc().CreateElement("DIV").SetId("tstisindom")
+		div := dom.CreateElement("DIV").SetId("tstisindom")
 		assert.False(t, div.IsInDOM())
 
 		dom.Doc().ChildById("test-container").AppendChild(&div.Node)

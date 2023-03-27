@@ -34,7 +34,7 @@ func main() {
 	// webapp = dom.NewWebApp()
 
 	// proceed with localstorage
-	gdark := browser.Win().LocalStorage().GetBool("darkmode")
+	gdark := browser.LocalStorage().GetBool("darkmode")
 	updateDarkMode(gdark)
 
 	markdown.RenderMarkdown(dom.Id("readme"), readme, nil)
@@ -76,10 +76,13 @@ func OnClickBtnDarkMode(event *event.MouseEvent, target *dom.Element) {
 func updateUI() {
 
 	// 1st solution: render a value for any `data-ic-namedvalue="count1"` inside "sectionbody"
-	dom.Id("sectionbody").RenderChildrenValue("count1", "%v", gcount)
+	children := dom.Id("sectionbody").ChildrenByData("data-ick-namedvalue", "count1")
+	for _, e := range children {
+		e.InsertText(dom.INSERT_BODY, "%v", gcount)
+	}
 
 	// 2nd solution: render a value inside an elem selected by it's id
-	dom.Id("count1").RenderValue("%.1f", gcount)
+	dom.Id("count1").InsertText(dom.INSERT_BODY, "%.1f", gcount)
 }
 
 func updateDarkMode(dark bool) {
@@ -91,5 +94,5 @@ func updateDarkMode(dark bool) {
 	ui.ButtonById("btn-lightmode").SetDisabled(!dark)
 	ui.ButtonById("btn-darkmode").SetDisabled(dark)
 
-	browser.Win().LocalStorage().Set("darkmode", fmt.Sprintf("%v", dark))
+	browser.LocalStorage().Set("darkmode", fmt.Sprintf("%v", dark))
 }

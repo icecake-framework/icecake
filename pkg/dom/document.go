@@ -54,6 +54,14 @@ func Id(_elementId string) (_result *Element) {
 	return Doc().ChildById(_elementId)
 }
 
+// CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
+func CreateElement(tagName string) *Element {
+	elem := Doc().Call("createElement", tagName)
+	return CastElement(elem)
+}
+
 // Document represents any web page loaded in the browser and serves as an entry point into the web page's content, which is the DOM tree.
 //
 // The Document describes the common properties and methods for any kind of document.
@@ -187,9 +195,9 @@ func (_doc *Document) SetBody(value *Element) *Document {
 // Head  returns the <head> element of the current document.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/head
-func (_doc Document) Head() *HeadElement {
+func (_doc Document) Head() *Element {
 	elem := _doc.Get("head")
-	return CastHeadElement(elem)
+	return CastElement(elem)
 }
 
 // DocumentElement returns the Element that is the root element of the document (for example, the <html> element for HTML documents).
@@ -344,14 +352,6 @@ func (_doc Document) SelectorQueryAll(selectors string) []*Element {
 		return nil
 	}
 	return CastElements(elems)
-}
-
-// CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
-func (_doc Document) CreateElement(tagName string) *Element {
-	elem := _doc.Call("createElement", tagName)
-	return CastElement(elem)
 }
 
 // CreateAttribute  creates a new attribute node, and returns it. The object created is a node implementing the Attr interface.

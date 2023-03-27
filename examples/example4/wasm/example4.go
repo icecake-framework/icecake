@@ -37,7 +37,7 @@ func main() {
 		Message:   "This second message use the BULMA <i>is-info</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message.",
 	}
 	msg2.SetClasses("is-info")
-	ui.RenderSnippet(dom.Id("msg-container"), msg2, nil)
+	dom.Id("msg-container").RenderSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 
 	// msg3 := &ui.Message{
 	// 	Message: "<strong>3rd message:</strong>&nbsp;this third message don't have header",

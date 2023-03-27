@@ -29,7 +29,7 @@ type History struct {
 }
 
 // CastHistory is casting a js.Value into History.
-func CastHistory(_jsvp js.JSValueProvider) *History {
+func castHistory(_jsvp js.JSValueProvider) *History {
 	if _jsvp.Value().Type() != js.TYPE_OBJECT {
 		console.Errorf("casting History failed")
 		return nil
@@ -37,6 +37,15 @@ func CastHistory(_jsvp js.JSValueProvider) *History {
 	cast := new(History)
 	cast.JSValue = _jsvp.Value()
 	return cast
+}
+
+// History returning attribute 'history' with
+// type htmlmisc.History (idl: History).
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Window/history
+func SessionHistory() *History {
+	value := Win().Get("history")
+	return castHistory(value)
 }
 
 // Length eturns an integer representing the number of elements in the session history, including the currently loaded page.

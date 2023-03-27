@@ -25,6 +25,39 @@ func Win() Window {
 	return windows
 }
 
+// UserAgent returns the user agent string for the current browser.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent
+func UserAgent() string {
+	return Win().Get("navigator").GetString("userAgent")
+}
+
+// Language returns a string representing the preferred language of the user, usually the language of the browser UI.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
+func Language() string {
+	return Win().Get("navigator").GetString("language")
+}
+
+// OnLine Returns the online status of the browser.
+//
+// The property returns a boolean value, with true meaning online and false meaning offline.
+// The property sends updates whenever the browser's ability to connect to the network changes.
+// The update occurs when the user follows links or when a script requests a remote page. *
+// For example, the property should return false when users click links soon after they lose internet connection.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine
+func OnLine() bool {
+	return Win().Get("navigator").GetBool("onLine")
+}
+
+// CookieEnabled eturns a Boolean value that indicates whether cookies are enabled or not.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled
+func CookieEnabled() bool {
+	return Win().Get("navigator").GetBool("cookieEnabled")
+}
+
 /******************************************************************************
 * Window
 ******************************************************************************/
@@ -107,48 +140,6 @@ func (_win Window) Closed() bool {
 	return _win.GetBool("closed")
 }
 
-// History returning attribute 'history' with
-// type htmlmisc.History (idl: History).
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Window/history
-func (_win Window) History() *History {
-	value := _win.Get("history")
-	return CastHistory(value)
-}
-
-// UserAgent returns the user agent string for the current browser.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent
-func (_win Window) UserAgent() string {
-	return _win.Get("navigator").GetString("userAgent")
-}
-
-// Language returns a string representing the preferred language of the user, usually the language of the browser UI.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
-func (_win Window) Language() string {
-	return _win.Get("navigator").GetString("language")
-}
-
-// OnLine Returns the online status of the browser.
-//
-// The property returns a boolean value, with true meaning online and false meaning offline.
-// The property sends updates whenever the browser's ability to connect to the network changes.
-// The update occurs when the user follows links or when a script requests a remote page. *
-// For example, the property should return false when users click links soon after they lose internet connection.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine
-func (_win Window) OnLine() bool {
-	return _win.Get("navigator").GetBool("onLine")
-}
-
-// CookieEnabled eturns a Boolean value that indicates whether cookies are enabled or not.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled
-func (_win Window) CookieEnabled() bool {
-	return _win.Get("navigator").GetBool("cookieEnabled")
-}
-
 // InnerWidth returns the interior width of the window in pixels. This includes the width of the vertical scroll bar, if one is present.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth
@@ -180,30 +171,6 @@ func (_win Window) ScrollPos() (_x float64, _y float64) {
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
 func (_win Window) DevicePixelRatio() float64 {
 	return _win.GetFloat("devicePixelRatio")
-}
-
-// accesses a session Storage object for the current origin.
-//
-// sessionStorage is similar to localStorage; the difference is that while data in localStorage doesn't expire,
-// data in sessionStorage is cleared when the page session ends.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
-func (_win Window) SessionStorage() *Storage {
-	// TODO: tryget
-	rsp := _win.Call("ickSessionStorage")
-	return CastStorage(rsp)
-}
-
-// allows you to access a Storage object for the Document's origin; the stored data is saved across browser sessions.
-//
-// returns nil if access is denied to the localstorage
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
-func (_win Window) LocalStorage() *Storage {
-	// TODO: tryget
-	//value := _win.jsValue.Get("localStorage")
-	jsv := _win.Call("ickLocalStorage")
-	return CastStorage(jsv)
 }
 
 // instructs the browser to display a dialog with an optional message, and to wait until the user dismisses the dialog.

@@ -214,16 +214,16 @@ func (_node *Node) Children() []*Node {
 	return CastNodes(_node.Get("childNodes"))
 }
 
-// FilteredChildren make a slice of nodes, scaning recursively children of every existing nodes.
+// ChildrenMatching make a slice of nodes, scaning recursively every children of this Node.
 // Only nodes matching _filter AND the optional _match function are included.
-func (_root *Node) FilteredChildren(_filter NODE_TYPE, _match func(*Node) bool) []*Node {
+func (_root *Node) ChildrenMatching(_filter NODE_TYPE, _match func(*Node) bool) []*Node {
 	if !_root.IsDefined() || !_root.HasChildren() {
 		return make([]*Node, 0)
 	}
-	return _root.filteredChildren(_filter, 999, _match)
+	return _root.childrenMatching(_filter, 999, _match)
 }
 
-func (_root *Node) filteredChildren(_filter NODE_TYPE, _deepmax int, _match func(*Node) bool) []*Node {
+func (_root *Node) childrenMatching(_filter NODE_TYPE, _deepmax int, _match func(*Node) bool) []*Node {
 	nodes := make([]*Node, 0)
 
 	for _, scan := range _root.Children() {
@@ -233,10 +233,10 @@ func (_root *Node) filteredChildren(_filter NODE_TYPE, _deepmax int, _match func
 		// apply the filter to children if not too deep and the type node is selected
 		if fn && scan.HasChildren() {
 			if _deepmax > 0 {
-				sub := scan.filteredChildren(_filter, _deepmax-1, _match)
+				sub := scan.childrenMatching(_filter, _deepmax-1, _match)
 				nodes = append(nodes, sub...)
 			} else {
-				console.Warnf("FilteredChildren reached max level")
+				console.Warnf("ChildrenMatching reached max level")
 			}
 		}
 
