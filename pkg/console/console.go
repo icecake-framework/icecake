@@ -16,6 +16,9 @@ const (
 
 var Show SHOW_LEVEL
 
+// Logf prints a formated log (in white) to the console.
+// Logf does nothing if SHOW_LEVEL is not equal to SHOW_ALL.
+// Logf returns an error built with the formated message.
 func Logf(msg string, a ...any) error {
 	err := fmt.Errorf(msg, a...)
 	if Show == 0 {
@@ -24,6 +27,9 @@ func Logf(msg string, a ...any) error {
 	return err
 }
 
+// Warnf prints a formated warning (in yellow) to the console.
+// Warnf does nothing if SHOW_LEVEL equal SHOW_ERRONLY
+// Warnf returns an error built with the formated message.
 func Warnf(msg string, a ...any) error {
 	err := fmt.Errorf(msg, a...)
 	if Show <= SHOW_WARNERR {
@@ -32,31 +38,22 @@ func Warnf(msg string, a ...any) error {
 	return err
 }
 
+// Errorf prints a formated error (in red) to the console.
+// Errorf returns an error built with the formated message.
 func Errorf(msg string, a ...any) error {
 	err := fmt.Errorf(msg, a...)
 	js.Global().Call("ickError", err.Error())
 	return err
 }
 
-// Stackf prints the msg message, the r recovery message and the stacktrace.
-func Stackf(r any, msg string, a ...any) {
-	defer Logf("> panic stacktrace:\n" + string(debug.Stack()))
-	str := fmt.Sprintf(msg, a...)
-	if str != "" {
-		Errorf(str)
-	}
-	Errorf("%+v [recovered]\n", r)
+// Stackf prints the stack trace to the console
+func Stackf() {
+	Logf("> stack trace:\n" + string(debug.Stack()))
 }
 
-// Panicf prints the msg message and the panic recovery message if not nil, then the stacktrace.
+// Panicf is equivalent to Errorf followed by a panic
 // If r is nil Stackf create a panic
 func Panicf(msg string, a ...any) {
-	defer Logf("> panic stacktrace:\n" + string(debug.Stack()))
-	str := fmt.Sprintf(msg, a...)
-	panic(str)
+	e := Errorf(msg, a...)
+	panic(e.Error())
 }
-
-// func ConsoleStack(r any) {
-// 	Errorf("%+v [recovered]\n", r)
-// 	Logf("> panic stacktrace:\n" + string(debug.Stack()))
-// }

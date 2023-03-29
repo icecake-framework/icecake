@@ -3,6 +3,8 @@ package dom
 import (
 	"fmt"
 
+	syscalljs "syscall/js"
+
 	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/event"
 	"github.com/sunraylab/icecake/pkg/js"
@@ -90,7 +92,7 @@ type Node struct {
 // CastNode is casting a js.Value into Node.
 func CastNode(_jsvp js.JSValueProvider) *Node {
 	if _jsvp.Value().Type() != js.TYPE_OBJECT {
-		console.Errorf("casting Node failed\n")
+		console.Errorf("casting Node failed")
 		return new(Node)
 	}
 	cast := new(Node)
@@ -101,7 +103,7 @@ func CastNode(_jsvp js.JSValueProvider) *Node {
 func CastNodes(_jsvp js.JSValueProvider) []*Node {
 	nodes := make([]*Node, 0)
 	if _jsvp.Value().Type() != js.TYPE_OBJECT {
-		console.Errorf("casting Nodes failed\n")
+		console.Errorf("casting Nodes failed")
 		return nodes
 	}
 	len := _jsvp.Value().GetInt("length")
@@ -393,7 +395,7 @@ func (_parentnode *Node) RemoveChild(_child *Node) *Node {
 * Node event handling
 ******************************************************************************/
 
-func (_node *Node) addListener(_evttyp string, _evjsh js.JSFunction) {
+func (_node *Node) addListener(_evttyp string, _evjsh syscalljs.Func) {
 	if _node.evth == nil {
 		_node.evth = make([]*event.Handler, 0, 1)
 	}

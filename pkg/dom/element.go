@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 
+	syscalljs "syscall/js"
+
 	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/event"
 	"github.com/sunraylab/icecake/pkg/ick"
@@ -58,7 +60,7 @@ func CastElement(_jsv js.JSValueProvider) *Element {
 func CastElements(_jsvp js.JSValueProvider) []*Element {
 	elems := make([]*Element, 0)
 	if _jsvp.Value().Type() != js.TYPE_OBJECT {
-		console.Errorf("casting Elements failed\n")
+		console.Errorf("casting Elements failed")
 		return elems
 	}
 	len := _jsvp.Value().GetInt("length")
@@ -373,17 +375,17 @@ func (_me *Element) InsertHTML(_where INSERT_WHERE, _unsafeHtml ick.HTMLstring) 
 	}
 	switch _where {
 	case INSERT_BEFORE_ME:
-		_me.Call("insertAdjacentHTML", "beforebegin", _unsafeHtml)
+		_me.Call("insertAdjacentHTML", "beforebegin", string(_unsafeHtml))
 	case INSERT_FIRST_CHILD:
-		_me.Call("insertAdjacentHTML", "afterbegin", _unsafeHtml)
+		_me.Call("insertAdjacentHTML", "afterbegin", string(_unsafeHtml))
 	case INSERT_LAST_CHILD:
-		_me.Call("insertAdjacentHTML", "beforeend", _unsafeHtml)
+		_me.Call("insertAdjacentHTML", "beforeend", string(_unsafeHtml))
 	case INSERT_AFTER_ME:
-		_me.Call("insertAdjacentHTML", "afterend", _unsafeHtml)
+		_me.Call("insertAdjacentHTML", "afterend", string(_unsafeHtml))
 	case INSERT_OUTER:
-		_me.Set("outerHTML", _unsafeHtml)
+		_me.Set("outerHTML", string(_unsafeHtml))
 	case INSERT_BODY:
-		_me.Set("innerHTML", _unsafeHtml)
+		_me.Set("innerHTML", string(_unsafeHtml))
 	}
 	return _me
 }
@@ -520,7 +522,7 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element 
 // 	if !_elem.IsDefined() {
 // 		return &Element{}
 // 	}
-// 	var args []interface{} = make([]interface{}, len(_nodes))
+// 	var args []any = make([]any, len(_nodes))
 // 	var end int
 // 	for _, n := range _nodes {
 // 		if n != nil {
@@ -541,7 +543,7 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element 
 // 	if !_elem.IsDefined() {
 // 		return &Element{}
 // 	}
-// 	var args []interface{} = make([]interface{}, len(_strs))
+// 	var args []any = make([]any, len(_strs))
 // 	var end int
 // 	for _, n := range _strs {
 // 		args[end] = n
@@ -567,7 +569,7 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element 
 // 	if !_elem.IsDefined() {
 // 		return &Element{}
 // 	}
-// 	var args []interface{} = make([]interface{}, len(_nodes))
+// 	var args []any = make([]any, len(_nodes))
 // 	var end int
 // 	for _, n := range _nodes {
 // 		if n != nil {
@@ -596,7 +598,7 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element 
 // 	if !_elem.IsDefined() {
 // 		return &Element{}
 // 	}
-// 	var args []interface{} = make([]interface{}, len(_strs))
+// 	var args []any = make([]any, len(_strs))
 // 	var end int
 // 	for _, n := range _strs {
 // 		args[end] = n
@@ -610,7 +612,7 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element 
 // 	if !_elem.IsDefined() {
 // 		return &Element{}
 // 	}
-// 	var _args []interface{} = make([]interface{}, len(_nodes))
+// 	var _args []any = make([]any, len(_nodes))
 // 	var _end int
 // 	for _, n := range _nodes {
 // 		if n != nil {
@@ -627,7 +629,7 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element 
 // 	if !_elem.IsDefined() {
 // 		return &Element{}
 // 	}
-// 	var _args []interface{} = make([]interface{}, len(_nodes))
+// 	var _args []any = make([]any, len(_nodes))
 // 	var _end int
 // 	for _, n := range _nodes {
 // 		if n != nil {
@@ -763,18 +765,19 @@ func (_htmle *Element) Blur() *Element {
 *****************************************************************************/
 
 // event attribute: Event
-func makelistenerElement_Event(_listener func(*event.Event, *Element)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makelistenerElement_Event(_listener func(*event.Event, *Element)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
+				console.Stackf()
 			}
 		}()
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -795,18 +798,19 @@ func (_elem *Element) AddFullscreenEvent(_evttyp event.FULLSCREEN_EVENT, _listen
 *****************************************************************************/
 
 // event attribute: Event
-func makehandler_Element_Event(_listener func(*event.Event, *Element)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makehandler_Element_Event(_listener func(*event.Event, *Element)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
+				console.Stackf()
 			}
 		}()
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -823,18 +827,19 @@ func (_htmle *Element) AddGenericEvent(_evttyp event.GENERIC_EVENT, _listener fu
 }
 
 // event attribute: MouseEvent
-func makehandler_Element_MouseEvent(listener func(*event.MouseEvent, *Element)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makehandler_Element_MouseEvent(listener func(*event.MouseEvent, *Element)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastMouseEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
+				console.Stackf()
 			}
 		}()
 		listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -851,18 +856,19 @@ func (_htmle *Element) AddMouseEvent(_evttyp event.MOUSE_EVENT, listener func(*e
 }
 
 // event attribute: FocusEvent
-func makelistenerElement_FocusEvent(_listener func(*event.FocusEvent, *Element)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makelistenerElement_FocusEvent(_listener func(*event.FocusEvent, *Element)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastFocusEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
+				console.Stackf()
 			}
 		}()
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -879,18 +885,19 @@ func (_htmle *Element) AddFocusEvent(_evttyp event.FOCUS_EVENT, listener func(*e
 }
 
 // event attribute: PointerEvent
-func makelistenerElement_PointerEvent(_listener func(*event.PointerEvent, *Element)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makelistenerElement_PointerEvent(_listener func(*event.PointerEvent, *Element)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastPointerEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
+				console.Stackf()
 			}
 		}()
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -907,18 +914,19 @@ func (_htmle *Element) AddPointerEvent(_evttyp event.POINTER_EVENT, _listener fu
 }
 
 // event attribute: InputEvent
-func makelistenerElement_InputEvent(_listener func(*event.InputEvent, *Element)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makelistenerElement_InputEvent(_listener func(*event.InputEvent, *Element)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastInputEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
+				console.Stackf()
 			}
 		}()
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -935,18 +943,19 @@ func (_htmle *Element) AddInputEvent(_evttyp event.INPUT_EVENT, listener func(*e
 }
 
 // event attribute: KeyboardEvent
-func makelistenerElement_KeyboardEvent(_listener func(*event.KeyboardEvent, *Element)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makelistenerElement_KeyboardEvent(_listener func(*event.KeyboardEvent, *Element)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastKeyboardEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
+				console.Stackf()
 			}
 		}()
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -963,18 +972,19 @@ func (_htmle *Element) AddKeyboard(_evttyp event.KEYBOARD_EVENT, listener func(*
 }
 
 // event attribute: UIEvent
-func makelistenerElement_UIEvent(_listener func(*event.UIEvent, *Element)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makelistenerElement_UIEvent(_listener func(*event.UIEvent, *Element)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastUIEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
+				console.Stackf()
 			}
 		}()
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -991,18 +1001,19 @@ func (_htmle *Element) AddResizeEvent(_listener func(*event.UIEvent, *Element)) 
 }
 
 // event attribute: WheelEvent
-func makeHTMLElement_WheelEvent(_listener func(*event.WheelEvent, *Element)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makeHTMLElement_WheelEvent(_listener func(*event.WheelEvent, *Element)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastWheelEvent(value)
 		target := CastElement(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on %q id=%q", evt.Type(), target.TagName(), target.Id())
+				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
+				console.Stackf()
 			}
 		}()
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }

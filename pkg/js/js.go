@@ -87,7 +87,20 @@ func (_v *JSValue) Wrap(_jsvp JSValueProvider) {
 //
 // Panics if x is not one of the expected types.
 func ValueOf(x any) (_jsv JSValue) {
-	_jsv.jsvalue = js.ValueOf(x)
+	defer func() {
+		if r := recover(); r != nil {
+			console.Panicf("JS%s", r)
+		}
+	}()
+
+	switch x := x.(type) {
+	case JSValue:
+		_jsv.jsvalue = js.ValueOf(x.jsvalue)
+	// case JSFunc:
+	// 	_jsv.jsvalue = js.ValueOf(x.Value)
+	default:
+		_jsv.jsvalue = js.ValueOf(x)
+	}
 	return _jsv
 }
 
@@ -132,7 +145,14 @@ func (_v JSValue) Call(m string, args ...any) JSValue {
 		return null()
 	}
 	args = cleanArgs(args...)
-	return val(_v.jsvalue.Call(m, args...))
+	defer func() {
+		if r := recover(); r != nil {
+			console.Panicf("JSValue: %s", r)
+		}
+	}()
+	// DEBUG: console.Warnf("F:%s P:%+v", m, args)
+	res := _v.jsvalue.Call(m, args...)
+	return val(res)
 }
 
 // Get returns the JavaScript property p of value v.
@@ -166,12 +186,17 @@ func TryGet(_v js.Value, p string) (result js.Value, err error) {
 // It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
 func (_v JSValue) Set(p string, x any) {
 	if !_v.IsDefined() {
-		console.Warnf("unable to set: undefined js value\n")
+		console.Warnf("unable to set a js property to an undefined js value\n")
 		return
 	}
 	if wrapper, ok := x.(JSValue); ok {
 		x = wrapper.jsvalue
 	}
+	defer func() {
+		if r := recover(); r != nil {
+			console.Panicf("JSSet: %s", r)
+		}
+	}()
 	_v.jsvalue.Set(p, x)
 }
 
@@ -225,7 +250,7 @@ func (_v JSValue) Then(f func(JSValue)) {
 		return nil
 	})
 
-	release = then.Release
+	release = js.Func(then).Release
 	_v.jsvalue.Call("then", then)
 }
 
@@ -234,7 +259,7 @@ func (_v JSValue) Then(f func(JSValue)) {
 func (_v JSValue) GetObject(_pname string) JSValue {
 	get := _v.Get(_pname)
 	if get.Type() != TYPE_OBJECT {
-		console.Errorf("unable to get object %q: it's not an object", _pname)
+		console.Errorf("JSValue:GetObject failed: %q type is %s", _pname, get.Type().String())
 		return null()
 	}
 	return get
@@ -252,7 +277,7 @@ func (_v JSValue) GetFloat(_pname string) float64 {
 		return get.Float()
 	}
 	if get.IsDefined() {
-		console.Errorf("unable to get %q as a float64, type is: %s", _pname, get.Type().String())
+		console.Errorf("JSValue:GetFloat failed: %q type is %s", _pname, get.Type().String())
 	}
 	return 0.0
 }
@@ -269,7 +294,7 @@ func (_v JSValue) GetInt(_pname string) int {
 		return get.Int()
 	}
 	if get.IsDefined() {
-		console.Errorf("unable to get %q as an int, type is: %s", _pname, get.Type().String())
+		console.Errorf("JSValue:GetInt failed: %q type is %s", _pname, get.Type().String())
 	}
 	return 0
 }
@@ -286,7 +311,7 @@ func (_v JSValue) GetBool(_pname string) bool {
 		return get.Truthy()
 	}
 	if get.IsDefined() {
-		console.Errorf("unable to get %q as a boolean, type is: %s", _pname, get.Type().String())
+		console.Errorf("JSValue:GetBool failed: %q type is %s", _pname, get.Type().String())
 	}
 	return false
 }
@@ -305,7 +330,7 @@ func (_v JSValue) GetString(_pname string) string {
 		return get.String()
 	}
 	if get.IsDefined() {
-		console.Errorf("unable to get %q as a string, type is: %s", _pname, get.Type().String())
+		console.Errorf("JSValue:GetString failed: %q type is %s", _pname, get.Type().String())
 	}
 	return ""
 }
@@ -321,18 +346,28 @@ func null() JSValue {
 	return val(js.Null())
 }
 
-// func undefined() JSValue {
-// 	return val(js.Undefined())
+/******************************************************************************
+* JSFunction
+******************************************************************************/
+
+// type JSFunction struct {
+// 	//JSValue
+// 	fn js.Func
 // }
 
-type JSFunction struct {
-	JSValue
-	fn js.Func
-}
+// type JSFunc struct {
+// 	js.Func
+// }
 
-func (f JSFunction) Release() {
-	f.fn.Release()
-}
+// Func is a wrapped Go function to be called by JavaScript.
+// type Func struct {
+// 	js.Value // the JavaScript function that invokes the Go function
+// 	id    uint32
+// }
+
+// func (f JSFunc) Release() {
+// 	f.Release()
+// }
 
 // FuncOf returns a wrapped function.
 //
@@ -350,7 +385,7 @@ func (f JSFunction) Release() {
 //
 // Func.Release must be called to free up resources when the function will not
 // be used any more.
-func FuncOf(fn func(this JSValue, args []JSValue) any) JSFunction {
+func FuncOf(fn func(this JSValue, args []JSValue) any) js.Func {
 	f := js.FuncOf(func(this js.Value, args []js.Value) any {
 		wargs := make([]JSValue, len(args))
 		for i, a := range args {
@@ -360,10 +395,11 @@ func FuncOf(fn func(this JSValue, args []JSValue) any) JSFunction {
 		return fn(val(this), wargs)
 	})
 
-	return JSFunction{
-		JSValue: JSValue{jsvalue: f.Value},
-		fn:      f,
-	}
+	// return JSFunction{
+	// 	JSValue: JSValue{jsvalue: f.Value},
+	// 	fn:      f,
+	// }
+	return f
 }
 
 func val(_v js.Value) JSValue {
@@ -392,6 +428,9 @@ func cleanArg(_v any) any {
 			s[i] = cleanArgs(val)
 		}
 
+	// case JSFunc:
+	// 	return v.Value
+
 	case JSValue:
 		return v.jsvalue
 	}
@@ -401,6 +440,6 @@ func cleanArg(_v any) any {
 }
 
 // Undefined returns the JavaScript value "undefined".
-func Undefined() JSValue {
-	return JSValue{js.Undefined()}
-}
+// func Undefined() JSValue {
+// 	return JSValue{js.Undefined()}
+// }

@@ -3,6 +3,8 @@ package dom
 import (
 	"net/url"
 
+	syscalljs "syscall/js"
+
 	"github.com/sunraylab/icecake/internal/helper"
 	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/event"
@@ -44,7 +46,8 @@ func Doc() Document {
 	}
 	jsdoc := js.Global().Get("document")
 	if !jsdoc.IsObject() {
-		console.Stackf(nil, "Unable to get document")
+		console.Stackf()
+		console.Panicf("Unable to get document")
 	}
 	document.JSValue = jsdoc
 	return document
@@ -323,6 +326,7 @@ func (_doc Document) ChildById(_elementId string) (_result *Element) {
 	}
 	elem := _doc.Call("getElementById", _elementId)
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
+		//console.Warnf("ChildById success: %q \n", _elementId)
 		return CastElement(elem)
 	}
 	console.Warnf("ChildById failed: %q not found, or not an <Element>\n", _elementId)
@@ -454,18 +458,19 @@ func (_doc *Document) AppendStrings(strs []string) {
 * Document's  GENRIC_EVENT
 ******************************************************************************/
 
-func makeDoc_Generic_Event(_listener func(*event.Event, *Document)) js.JSFunction {
+func makeDoc_Generic_Event(_listener func(*event.Event, *Document)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) interface{} {
 		value := args[0]
 		evt := event.CastEvent(value)
 		target := CastDocument(value.Get("target"))
 		defer func() {
 			if r := recover(); r != nil {
-				console.Stackf(r, "Error occurs processing event %q on Document", evt.Type())
+				console.Errorf("Error processing event %q on document: %s", evt.Type(), r)
+				console.Stackf()
 			}
 		}()
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -479,13 +484,13 @@ func (_doc *Document) AddGenericEvent(_evttyp event.GENERIC_EVENT, _listener fun
 * Document's  MOUSE_EVENT
 ******************************************************************************/
 
-func makeDoc_Mouse_Event(_listener func(*event.MouseEvent, *Document)) js.JSFunction {
+func makeDoc_Mouse_Event(_listener func(*event.MouseEvent, *Document)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) interface{} {
 		value := args[0]
 		evt := event.CastMouseEvent(value)
 		target := CastDocument(value.Get("target"))
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -499,13 +504,13 @@ func (_doc *Document) AddMouseEvent(_evttyp event.MOUSE_EVENT, _listener func(*e
 * Document's  FOCUS_EVENT
 ******************************************************************************/
 
-func makeDoc_Focus_Event(_listener func(*event.FocusEvent, *Document)) js.JSFunction {
+func makeDoc_Focus_Event(_listener func(*event.FocusEvent, *Document)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) interface{} {
 		value := args[0]
 		evt := event.CastFocusEvent(value)
 		target := CastDocument(value.Get("target"))
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -519,13 +524,13 @@ func (_doc *Document) AddFocusEvent(_evttyp event.FOCUS_EVENT, _listener func(*e
 * Document's  POINTER_EVENT
 ******************************************************************************/
 
-func makeDoc_Pointer_Event(_listener func(*event.PointerEvent, *Document)) js.JSFunction {
+func makeDoc_Pointer_Event(_listener func(*event.PointerEvent, *Document)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) interface{} {
 		value := args[0]
 		evt := event.CastPointerEvent(value)
 		target := CastDocument(value.Get("target"))
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -539,13 +544,13 @@ func (_doc *Document) AddPointerEvent(_evttyp event.POINTER_EVENT, _listener fun
 * Document's  INPUT_EVENT
 ******************************************************************************/
 
-func makeDoc_Input_Event(_listener func(*event.InputEvent, *Document)) js.JSFunction {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+func makeDoc_Input_Event(_listener func(*event.InputEvent, *Document)) syscalljs.Func {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastInputEvent(value)
 		target := CastDocument(value.Get("target"))
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -559,13 +564,13 @@ func (_doc *Document) AddInputEvent(_evttyp event.INPUT_EVENT, _listener func(*e
 * Document's  KEYBOARD_EVENT
 ******************************************************************************/
 
-func makeDoc_Keyboard_Event(_listener func(*event.KeyboardEvent, *Document)) js.JSFunction {
+func makeDoc_Keyboard_Event(_listener func(*event.KeyboardEvent, *Document)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) interface{} {
 		value := args[0]
 		evt := event.CastKeyboardEvent(value)
 		target := CastDocument(value.Get("target"))
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -580,13 +585,13 @@ func (_doc *Document) AddKeyboardEvent(_evttyp event.KEYBOARD_EVENT, _listener f
 ******************************************************************************/
 
 // event attribute: UIEvent
-func makeDoc_UIEvent(_listener func(*event.UIEvent, *Document)) js.JSFunction {
+func makeDoc_UIEvent(_listener func(*event.UIEvent, *Document)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) interface{} {
 		value := args[0]
 		evt := event.CastUIEvent(value)
 		target := CastDocument(value.Get("target"))
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }
@@ -602,13 +607,13 @@ func (_doc *Document) AddEventResize(_listener func(*event.UIEvent, *Document)) 
 * Document's  WHEEL_EVENT
 ******************************************************************************/
 
-func makeDoc_Wheel_Event(_listener func(*event.WheelEvent, *Document)) js.JSFunction {
+func makeDoc_Wheel_Event(_listener func(*event.WheelEvent, *Document)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) interface{} {
 		value := args[0]
 		evt := event.CastWheelEvent(value)
 		target := CastDocument(value.Get("target"))
 		_listener(evt, target)
-		return js.Undefined()
+		return nil
 	}
 	return js.FuncOf(fn)
 }

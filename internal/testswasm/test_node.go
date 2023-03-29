@@ -11,7 +11,8 @@ func TestNode(t *testing.T) {
 
 	t.Run("IsInDOM", func(t *testing.T) {
 
-		assert.False(t, new(dom.Element).IsInDOM()) // console warning --> unable to get "isConnected": undefined js value
+		// console warning --> unable to get "isConnected": undefined js value
+		assert.False(t, new(dom.Element).IsInDOM())
 
 		div := dom.CreateElement("DIV").SetId("tstisindom")
 		assert.False(t, div.IsInDOM())
@@ -22,13 +23,12 @@ func TestNode(t *testing.T) {
 
 	t.Run("Children", func(t *testing.T) {
 
+		// console warning --> unable to call "hasChildNodes": undefined js value
 		assert.False(t, new(dom.Node).HasChildren())
 
 		dive := dom.Doc().ChildById("tstisindom")
 		assert.False(t, dive.HasChildren())
 		assert.True(t, dom.Doc().ChildById("test-container").HasChildren())
-
-		// has := _node.Call("hasChildNodes")
 	})
 
 }

@@ -1,5 +1,4 @@
 
-
 function ickError(msg) { console.error(msg) }
 
 function ickWarn(msg) { console.warn(msg) }

@@ -3,6 +3,8 @@ package event
 import (
 	"net/url"
 
+	syscalljs "syscall/js"
+
 	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/js"
 )
@@ -78,11 +80,11 @@ const (
 
 type Handler struct {
 	eventtype string // 'onclick'...
-	jsHandler js.JSFunction
+	jsHandler syscalljs.Func
 	release   func()
 }
 
-func NewEventHandler(_eventtype string, _jsHandler js.JSFunction, _release func()) *Handler {
+func NewEventHandler(_eventtype string, _jsHandler syscalljs.Func, _release func()) *Handler {
 	evt := &Handler{eventtype: _eventtype, jsHandler: _jsHandler, release: _release}
 	return evt
 }
