@@ -8,6 +8,8 @@ import (
 	"github.com/sunraylab/icecake/pkg/js"
 )
 
+var wait chan struct{}
+
 func TestJSValue(t *testing.T) {
 
 	// ValueOf
@@ -56,11 +58,13 @@ func TestJSValue(t *testing.T) {
 	browser.Call("test2", ff)
 
 	// event
+	wait = make(chan struct{})
 	browser.Call("addEventListener", "resize", js.FuncOf(onResize))
-
+	<-wait
 }
 
 func onResize(this js.JSValue, args []js.JSValue) any {
-
+	fmt.Println("resized")
+	close(wait)
 	return nil
 }

@@ -17,11 +17,12 @@ import (
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/event"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
-	"github.com/sunraylab/icecake/pkg/ick"
+	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/sunraylab/icecake/pkg/registry"
 	"github.com/sunraylab/icecake/pkg/ui"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
-	"github.com/yuin/goldmark/renderer/html"
+	mdhtml "github.com/yuin/goldmark/renderer/html"
 )
 
 //go:embed "readme.md"
@@ -42,7 +43,7 @@ func main() {
 	// render readme
 	markdown.RenderMarkdown(dom.Id("readme"), readme, nil,
 		goldmark.WithRendererOptions(
-			html.WithUnsafe()),
+			mdhtml.WithUnsafe()),
 		goldmark.WithExtensions(
 			highlighting.Highlighting,
 		))
@@ -77,9 +78,9 @@ func OnClickBtn1(event *event.MouseEvent, target *dom.Element) {
 func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
-	idtimeleft := ick.GetUniqueId("timeleft")
+	idtimeleft := registry.GetUniqueId("timeleft")
 	notif := new(ui.Notify)
-	notif.Message = `This message will be automatically removed in <strong><span id="` + ick.HTMLstring(idtimeleft) + `"></span> seconds</strong>, unless you close it before. 😀`
+	notif.Message = `This message will be automatically removed in <strong><span id="` + html.HTMLstring(idtimeleft) + `"></span> seconds</strong>, unless you close it before. 😀`
 	notif.Timeout = time.Second * 7
 	notif.SetClasses("is-danger is-light").SetAttribute("role", "alert", true)
 	notif.Tic = func(clk *clock.Clock) {
@@ -107,7 +108,7 @@ func OnClickBtn3(event *event.MouseEvent, target *dom.Element) {
 func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
 
 	// define the HTML template
-	html := `<div class="box">
+	h := `<div class="box">
 	<p class="pb-2">This is an html template object embedding the &lt;ick-notify&gt; element.</p>
 	<div class="block">
 		<ick-notify Message="This message comes from the Notify Component <strong>embedded into an html template</strong>."
@@ -117,5 +118,5 @@ func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
 	</box>`
 
 	// Insert the component into the DOM
-	dom.Id("ex3_container").RenderHtml(dom.INSERT_LAST_CHILD, ick.HTMLstring(html), nil)
+	dom.Id("ex3_container").RenderHtml(dom.INSERT_LAST_CHILD, html.HTMLstring(h), nil)
 }

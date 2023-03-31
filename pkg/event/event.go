@@ -74,8 +74,12 @@ const (
 	FULLSCREEN_ONERROR  FULLSCREEN_EVENT = "fullscreenerror"
 )
 
+type Listener interface {
+	AddListeners()
+}
+
 /******************************************************************************
-* EventTarget
+* event Handler
 *******************************************************************************/
 
 type Handler struct {
@@ -95,24 +99,28 @@ func (h Handler) Release() {
 	}
 }
 
+/******************************************************************************
+* EventTarget
+*******************************************************************************/
+
 // EventTarget is the root of many objetcs: nodes, window...
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
-type EventTarget struct {
-	js.JSValue               // embedded js.Value
-	eventHandlers []*Handler // eventhandlers added with an listener to this eventtarget
-}
+// type EventTarget struct {
+// 	js.JSValue               // embedded js.Value
+// 	eventHandlers []*Handler // eventhandlers added with an listener to this eventtarget
+// }
 
-// CastEventTarget is casting a js.Value into EventTarget.
-func CastEventTarget(_jsv js.JSValueProvider) *EventTarget {
-	if _jsv.Value().Type() != js.TYPE_OBJECT {
-		console.Errorf("casting EventTarget failed")
-		return nil
-	}
-	evttget := new(EventTarget)
-	evttget.JSValue = _jsv.Value()
-	return evttget
-}
+// // CastEventTarget is casting a js.Value into EventTarget.
+// func CastEventTarget(_jsv js.JSValueProvider) *EventTarget {
+// 	if _jsv.Value().Type() != js.TYPE_OBJECT {
+// 		console.Errorf("casting EventTarget failed")
+// 		return nil
+// 	}
+// 	evttget := new(EventTarget)
+// 	evttget.JSValue = _jsv.Value()
+// 	return evttget
+// }
 
 /******************************************************************************
 * Event
@@ -154,18 +162,18 @@ func (_evt *Event) Type() string {
 // Target: a reference to the object onto which the event was dispatched.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Event/target
-func (_evt *Event) Target() *EventTarget {
+func (_evt *Event) Target() js.JSValue {
 	target := _evt.Get("target")
-	return CastEventTarget(target)
+	return target
 }
 
 // CurrentTarget always refers to the element to which the event handler has been attached,
 // as opposed to Event.target, which identifies the element on which the event occurred and which may be its descendant.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Event/currentTarget
-func (_evt *Event) CurrentTarget() *EventTarget {
+func (_evt *Event) CurrentTarget() js.JSValue {
 	target := _evt.Get("currentTarget")
-	return CastEventTarget(target)
+	return target //CastEventTarget(target)
 }
 
 /*********************************************************************************
@@ -374,9 +382,9 @@ func (_this *MouseEvent) Buttons() int {
 }
 
 // RelatedTarget returning attribute 'relatedTarget' with
-func (_this *MouseEvent) RelatedTarget() *EventTarget {
+func (_this *MouseEvent) RelatedTarget() js.JSValue {
 	value := _this.Get("relatedTarget")
-	return CastEventTarget(value)
+	return value // CastEventTarget(value)
 }
 
 // ScreenX returning attribute 'screenX' with
@@ -517,9 +525,9 @@ func CastFocusEvent(_jsv js.JSValueProvider) *FocusEvent {
 }
 
 // RelatedTarget returning attribute 'relatedTarget'
-func (_evt *FocusEvent) RelatedTarget() *EventTarget {
+func (_evt *FocusEvent) RelatedTarget() js.JSValue {
 	value := _evt.Get("relatedTarget")
-	return CastEventTarget(value)
+	return value // CastEventTarget(value)
 }
 
 /**********************************************************************************

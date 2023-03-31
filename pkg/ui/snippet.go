@@ -1,28 +1,25 @@
 package ui
 
 import (
-	"fmt"
+	"bytes"
 
+	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/dom"
-	"github.com/sunraylab/icecake/pkg/ick"
+	"github.com/sunraylab/icecake/pkg/event"
+	"github.com/sunraylab/icecake/pkg/html"
 	"github.com/sunraylab/icecake/pkg/js"
 )
 
-type Listener interface {
-	AddListeners()
-}
-
 type Composer interface {
-	ick.HtmlComposer
-	Listener
-	Wrap(js.JSValueProvider)
-	UpdateUI()
+	html.HtmlComposer
+	js.JSValueWrapper
+	event.Listener
 }
 
 /*****************************************************************************/
 
 type Snippet struct {
-	ick.HtmlSnippet
+	html.HtmlSnippet
 	DOM dom.Element
 
 	//MountClasses    *Classes    // classes added to the component during the mounting stage
@@ -30,48 +27,32 @@ type Snippet struct {
 	//UpdateUI        func(any)   // Optional function called to update UI
 }
 
-// func (c *Snippet) UpdateUI() {
-// 	// DEBUG:
-// 	fmt.Printf("UIComponent.UpdateUI does nothing by default\n")
-// }
-
-func (c *Snippet) AddListeners() {
-	// DEBUG:
-	fmt.Printf("UIComponent.Listeners is empty\n")
+// AddListeners, by default, call AddListeners for every embedded components into HtmlSnippet
+func (_s *Snippet) AddListeners() {
+	embedded := _s.Embedded()
+	if embedded != nil {
+		for _, e := range embedded {
+			if l, ok := e.(event.Listener); ok {
+				l.AddListeners()
+			}
+		}
+	} else {
+		// DEBUG:
+		console.Warnf("Snippet.AddListeners for %q is empty", _s.Id())
+	}
 }
 
-// // RenderHtml unfolding components if any
-// // The element must be in the DOM to
-// func RenderHtml(_elem *dom.Element, _body ick.HTMLstring, _data *ick.DataState) (_err error) {
-// 	if !_elem.IsDefined() || !_elem.IsInDOM() {
-// 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
-// 	}
+func (_s *Snippet) Wrap(_jsvp js.JSValueProvider) {
+	_s.DOM.Wrap(_jsvp)
+}
 
-// 	out := new(bytes.Buffer)
-// 	_err = ick.RenderHtmlBody(out, _body, _data)
-// 	if _err == nil {
-// 		_elem.SetInnerHTML(out.String())
-// 		// TODO: loop over embedded component to add listeners
-
-// 		// TODO: showUnfoldedComponents(unfoldedCmps)
-// 	}
-// 	return _err
-// }
-
-// // RenderComponent
-// func RenderSnippet(_elem *dom.Element, _cmp any, _data *ick.DataState) (_err error) {
-// 	if !_elem.IsDefined() {
-// 		return console.Errorf("RenderComponent: failed on undefined element")
-// 	}
-
-// 	out := new(bytes.Buffer)
-// 	_err = ick.RenderHtmlSnippet(out, _cmp, _data)
-// 	if _err == nil {
-// 		_elem.SetInnerHTML(out.String())
-// 		// TODO: loop over embedded component
-// 		if l, ok := _cmp.(Listener); ok {
-// 			l.AddListeners()
-// 		}
-// 	}
-// 	return nil
-// }
+func (_s *Snippet) HTML(_snippet Composer) (_html html.HTMLstring) {
+	// render the html element and body, unfolding sub components
+	out := new(bytes.Buffer)
+	id, err := html.WriteHtmlSnippet(out, _snippet, nil)
+	if err == nil {
+		_s.Embed(id, _snippet)
+		_html = html.HTMLstring(out.String())
+	}
+	return _html
+}

@@ -104,12 +104,25 @@ func (_doc Document) CharacterSet() string {
 	return _doc.Get("characterSet").String()
 }
 
-// Doctype Returns the Document Type Declaration (DTD) associated with current document.
+// Doctype Name, The type of the document. It is always "html" for HTML documents, but will vary for XML documents.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/doctype
-func (_doc Document) Doctype() *DocumentType {
-	value := _doc.Get("doctype")
-	return CastDocumentType(value)
+func (_doc Document) DocTypeName() string {
+	return _doc.Get("doctype").GetString("name")
+}
+
+// A string with an identifier of the type of document. Always empty ("") for HTML, it will be, for example, "-//W3C//DTD SVG 1.1//EN" for SVG documents.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Document/doctype
+func (_doc Document) DocTypePublicId() string {
+	return _doc.Get("doctype").GetString("name")
+}
+
+// A string containing the URL to the associated DTD. Always empty ("") for HTML, it will be, for example, "http://www.w3.org/2000/svg" for SVG documents.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Document/doctype
+func (_doc Document) DocTypeSystemId() string {
+	return _doc.Get("doctype").GetString("name")
 }
 
 // ContentType returns the MIME type that the document is being rendered as.
@@ -397,7 +410,7 @@ func (_doc Document) ChildrenAtPoint(x float64, y float64) (_result []*Element) 
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/prepend
 func (_doc *Document) PrependNodes(nodes []*Node) {
-	var _args []interface{} = make([]interface{}, len(nodes))
+	var _args []any = make([]any, len(nodes))
 	var _end int
 	for _, n := range nodes {
 		if n != nil {
@@ -414,7 +427,7 @@ func (_doc *Document) PrependNodes(nodes []*Node) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/prepend
 func (_doc *Document) PrepenStrings(strs []string) {
-	var _args []interface{} = make([]interface{}, len(strs))
+	var _args []any = make([]any, len(strs))
 	var _end int
 	for _, n := range strs {
 		_args[_end] = n
@@ -428,7 +441,7 @@ func (_doc *Document) PrepenStrings(strs []string) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/append
 func (_doc *Document) AppendNodes(nodes []*Node) {
-	var _args []interface{} = make([]interface{}, len(nodes))
+	var _args []any = make([]any, len(nodes))
 	var _end int
 	for _, n := range nodes {
 		if n != nil {
@@ -445,7 +458,7 @@ func (_doc *Document) AppendNodes(nodes []*Node) {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/append
 func (_doc *Document) AppendStrings(strs []string) {
-	var _args []interface{} = make([]interface{}, len(strs))
+	var _args []any = make([]any, len(strs))
 	var _end int
 	for _, n := range strs {
 		_args[_end] = n
@@ -459,7 +472,7 @@ func (_doc *Document) AppendStrings(strs []string) {
 ******************************************************************************/
 
 func makeDoc_Generic_Event(_listener func(*event.Event, *Document)) syscalljs.Func {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastEvent(value)
 		target := CastDocument(value.Get("target"))
@@ -485,13 +498,15 @@ func (_doc *Document) AddGenericEvent(_evttyp event.GENERIC_EVENT, _listener fun
 ******************************************************************************/
 
 func makeDoc_Mouse_Event(_listener func(*event.MouseEvent, *Document)) syscalljs.Func {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastMouseEvent(value)
 		target := CastDocument(value.Get("target"))
 		_listener(evt, target)
 		return nil
 	}
+
 	return js.FuncOf(fn)
 }
 
@@ -505,7 +520,7 @@ func (_doc *Document) AddMouseEvent(_evttyp event.MOUSE_EVENT, _listener func(*e
 ******************************************************************************/
 
 func makeDoc_Focus_Event(_listener func(*event.FocusEvent, *Document)) syscalljs.Func {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastFocusEvent(value)
 		target := CastDocument(value.Get("target"))
@@ -525,7 +540,7 @@ func (_doc *Document) AddFocusEvent(_evttyp event.FOCUS_EVENT, _listener func(*e
 ******************************************************************************/
 
 func makeDoc_Pointer_Event(_listener func(*event.PointerEvent, *Document)) syscalljs.Func {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastPointerEvent(value)
 		target := CastDocument(value.Get("target"))
@@ -565,7 +580,7 @@ func (_doc *Document) AddInputEvent(_evttyp event.INPUT_EVENT, _listener func(*e
 ******************************************************************************/
 
 func makeDoc_Keyboard_Event(_listener func(*event.KeyboardEvent, *Document)) syscalljs.Func {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastKeyboardEvent(value)
 		target := CastDocument(value.Get("target"))
@@ -586,7 +601,7 @@ func (_doc *Document) AddKeyboardEvent(_evttyp event.KEYBOARD_EVENT, _listener f
 
 // event attribute: UIEvent
 func makeDoc_UIEvent(_listener func(*event.UIEvent, *Document)) syscalljs.Func {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastUIEvent(value)
 		target := CastDocument(value.Get("target"))
@@ -608,7 +623,7 @@ func (_doc *Document) AddEventResize(_listener func(*event.UIEvent, *Document)) 
 ******************************************************************************/
 
 func makeDoc_Wheel_Event(_listener func(*event.WheelEvent, *Document)) syscalljs.Func {
-	fn := func(this js.JSValue, args []js.JSValue) interface{} {
+	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastWheelEvent(value)
 		target := CastDocument(value.Get("target"))

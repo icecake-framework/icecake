@@ -46,6 +46,10 @@ type JSValueProvider interface {
 	Value() JSValue
 }
 
+type JSValueWrapper interface {
+	Wrap(JSValueProvider)
+}
+
 // JSValue represents a JavaScript value. On wasm architecture,
 // it wraps the JSValue from https://golang.org/pkg/syscall/js/ package.
 type JSValue struct {

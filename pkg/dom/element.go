@@ -3,11 +3,13 @@ package dom
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 
 	syscalljs "syscall/js"
 
 	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/event"
+	"github.com/sunraylab/icecake/pkg/html"
 	"github.com/sunraylab/icecake/pkg/ick"
 	"github.com/sunraylab/icecake/pkg/js"
 )
@@ -369,7 +371,7 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 // 	WI_INSIDELAST  WHERE_INSERT = "beforeend"   // Just inside the element, after its last child.
 // 	WI_AFTEREND    WHERE_INSERT = "afterend"    // After the element itself.
 
-func (_me *Element) InsertHTML(_where INSERT_WHERE, _unsafeHtml ick.HTMLstring) *Element {
+func (_me *Element) InsertHTML(_where INSERT_WHERE, _unsafeHtml html.HTMLstring) *Element {
 	if !_me.IsDefined() {
 		return _me
 	}
@@ -1055,37 +1057,74 @@ func (_htmle *Element) AddWheelEvent(_listener func(*event.WheelEvent, *Element)
 // }
 
 // RenderHtml unfolding components if any
-// The element must be in the DOM to
-func (_elem *Element) RenderHtml(_where INSERT_WHERE, _body ick.HTMLstring, _data *ick.DataState) (_err error) {
+// _elem must be in the DOM
+func (_elem *Element) RenderHtml(_where INSERT_WHERE, _body html.HTMLstring, _data *html.DataState) error {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
 	}
 
 	out := new(bytes.Buffer)
-	_err = ick.RenderHtmlBody(out, _body, _data)
-	if _err == nil {
-		_elem.InsertHTML(_where, ick.HTMLstring(out.String()))
-		// TODO: loop over embedded component to add listeners
-
-		// TODO: showUnfoldedComponents(unfoldedCmps)
+	embedded, err := html.UnfoldHtml(out, _body, _data)
+	if err == nil {
+		_elem.InsertHTML(_where, html.HTMLstring(out.String()))
+		if embedded != nil {
+			for _, e := range embedded {
+				if l, ok := e.(event.Listener); ok {
+					l.AddListeners()
+				}
+			}
+		}
 	}
-	return _err
+	return err
 }
 
 // RenderComponent
-func (_elem *Element) RenderSnippet(_where INSERT_WHERE, _cmp any, _data *ick.DataState) (_err error) {
+func (_elem *Element) RenderSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
 	if !_elem.IsDefined() {
-		return console.Errorf("RenderComponent: failed on undefined element")
+		return "", console.Errorf("RenderComponent: failed on undefined element")
 	}
 
+	// render the html element and body, unfolding sub components
 	out := new(bytes.Buffer)
-	_err = ick.RenderHtmlSnippet(out, _cmp, _data)
+	_id, _err = html.WriteHtmlSnippet(out, _snippet, _data)
 	if _err == nil {
-		_elem.InsertHTML(_where, ick.HTMLstring(out.String()))
-		// TODO: loop over embedded component
-		// if l, ok := _cmp.(Listener); ok {
-		// 	l.AddListeners()
-		// }
+		// insert the html element into the dom
+		_elem.InsertHTML(_where, html.HTMLstring(out.String()))
+		if c, ok := _snippet.(html.HtmlComposer); ok {
+			embedded := c.Embedded()
+			// proceed with embedded components
+			if embedded != nil {
+				for id, sub := range embedded {
+					// look if the id is in the DOM and wrap it to the component
+					if w, ok := sub.(js.JSValueWrapper); ok {
+						cmpe := Id(id) // look everywhere in the DOM
+						if cmpe != nil {
+							w.Wrap(cmpe)
+						}
+					} else {
+						console.Errorf("sub component of HtmlComposer %q is not a js wrapper: %s", _id, reflect.TypeOf(sub).String())
+					}
+				}
+			} else {
+				console.Errorf("HtmlComposer %q do not have any embedded components", _id)
+			}
+		} else {
+			// can be a simple html component without event handling
+			console.Errorf("_snippet %q not an HtmlComposer %v", _id, reflect.TypeOf(_snippet).String())
+		}
+
+		if l, ok := _snippet.(event.Listener); ok {
+			l.AddListeners()
+		}
 	}
-	return nil
+	return _id, nil
 }
+
+// func Render(c HtmlComposer) (_id string, _html HTMLstring) {
+// 	out := new(bytes.Buffer)
+// 	id, err := RenderHtmlSnippet(out, c, nil)
+// 	if err != nil {
+// 		log.Printf("error rendering html snippet: %s\n", err.Error())
+// 	}
+// 	return id, HTMLstring(out.String())
+// }
