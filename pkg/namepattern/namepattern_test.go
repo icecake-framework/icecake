@@ -1,4 +1,4 @@
-package htmlname
+package namepattern
 
 import "testing"
 

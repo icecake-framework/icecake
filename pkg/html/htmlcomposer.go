@@ -13,7 +13,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/htmlname"
+	"github.com/sunraylab/icecake/pkg/namepattern"
 	"github.com/sunraylab/icecake/pkg/registry"
 )
 
@@ -280,7 +280,7 @@ func unfoldBody(_parent HtmlComposer, _output io.Writer, _body []byte, _data *Da
 
 			default: // build component ick-tagname
 				r, size := utf8.DecodeRune(_body[i:mini(ilast+1, i+4)])
-				if size != 0 && htmlname.IsValidRune(r, false) {
+				if size != 0 && namepattern.IsValidRune(r, false) {
 					i += size - 1
 					walk.fieldto = i
 				} else {
@@ -320,7 +320,7 @@ func unfoldBody(_parent HtmlComposer, _output io.Writer, _body []byte, _data *Da
 
 			default: // build attribute name
 				r, size := utf8.DecodeRune(_body[i:mini(ilast+1, i+4)])
-				if size > 0 && htmlname.IsValidRune(r, walk.fieldat == 0) {
+				if size > 0 && namepattern.IsValidRune(r, walk.fieldat == 0) {
 					if walk.fieldat == 0 {
 						walk.startfield(i)
 					}
@@ -493,7 +493,7 @@ func parseAttributes(_alist string, _cmp HtmlComposer, _overwrite bool) (_err er
 		strnames, unparsed, hasval = strings.Cut(unparsed, "=")
 		names := strings.Fields(strnames)
 		for i, n := range names {
-			if !htmlname.IsValid(n) {
+			if !namepattern.IsValid(n) {
 				return fmt.Errorf("attribute name %q is not valid", n)
 			}
 			if i < len(names)-1 || !hasval {

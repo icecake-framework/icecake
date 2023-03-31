@@ -13,7 +13,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/sunraylab/icecake/pkg/htmlname"
+	"github.com/sunraylab/icecake/pkg/namepattern"
 )
 
 type ID string
@@ -315,7 +315,7 @@ func unfoldBody(_output io.Writer, _body []byte, _data any, _deep int) (_err err
 
 			default: // build component ick-tagname
 				r, size := utf8.DecodeRune(_body[i:mini(ilast+1, i+4)])
-				if size != 0 && htmlname.IsValidRune(r, false) {
+				if size != 0 && namepattern.IsValidRune(r, false) {
 					i += size - 1
 					walk.extendfield(i)
 				} else {
@@ -352,7 +352,7 @@ func unfoldBody(_output io.Writer, _body []byte, _data any, _deep int) (_err err
 
 			default: // build attribute name
 				r, size := utf8.DecodeRune(_body[i:mini(ilast+1, i+4)])
-				if size > 0 && htmlname.IsValidRune(r, walk.fieldat == 0) {
+				if size > 0 && namepattern.IsValidRune(r, walk.fieldat == 0) {
 					if walk.fieldat == 0 {
 						walk.startfield(i)
 					}

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sunraylab/icecake/pkg/htmlname"
+	"github.com/sunraylab/icecake/pkg/namepattern"
 )
 
 type StringQuotes string
@@ -94,7 +94,7 @@ func ParseAttributes(_alist string) (_pattrs *Attributes, _err error) {
 		strnames, unparsed, _ = strings.Cut(unparsed, "=")
 		names := strings.Fields(strnames)
 		for _, n := range names {
-			if !htmlname.IsValid(n) {
+			if !namepattern.IsValid(n) {
 				return nil, fmt.Errorf("attribute name %q is not valid", n)
 			}
 			_pattrs.amap[n] = ""
