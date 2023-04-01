@@ -2,6 +2,7 @@ package dom
 
 import (
 	"net/url"
+	"time"
 
 	syscalljs "syscall/js"
 
@@ -162,11 +163,16 @@ func (_doc *Document) SetCookie(value string) *Document {
 
 // LastModified returns a string containing the date and time on which the current document was last modified.
 //
-// TODO: handle time.Time
+// TODO: test LastModified
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/lastModified
-func (_doc Document) LastModified() string {
-	return _doc.Get("lastModified").String()
+func (_doc Document) LastModified() time.Time {
+	strtime := _doc.Get("lastModified").String()
+	t, err := time.Parse("01/02/2006 15:04:05", strtime)
+	if err != nil {
+		console.Warnf("Document:LastModified error: %s", err.Error())
+	}
+	return t
 }
 
 // ReadyState describes the loading state of the document. When the value of this property changes, a readystatechange event fires on the document object.

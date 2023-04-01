@@ -61,7 +61,7 @@ func main() {
 	// 5th notification message
 	// embedded into another html
 	h := `<ick-notify Message="This notify component is <strong>embedded into an html string</strong>." class="is-info is-light" role="success"/>`
-	dom.Id("content").RenderHtml(dom.INSERT_LAST_CHILD, html.String(h), nil)
+	dom.Id("content").InsertHTML(dom.INSERT_LAST_CHILD, html.String(h), nil)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")

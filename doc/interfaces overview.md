@@ -30,11 +30,15 @@ type JSValueWrapper interface {
 }
 ```
 
-## Listener
+## UIComposer
 
 ```go
-type Listener interface {
+type UIComposer interface {
+	html.HTMLComposer
+	js.JSValueWrapper
+	Mount()
 	AddListeners()
 	RemoveListeners()
+	UnMount()
 }
 ```

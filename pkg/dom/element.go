@@ -15,7 +15,7 @@ import (
 )
 
 /****************************************************************************
-* enum used by Element
+* Enum
 *****************************************************************************/
 
 type INSERT_WHERE int
@@ -86,9 +86,9 @@ func (_elem *Element) Remove() {
 	_elem.Call("remove")
 }
 
-/****************************************************************************
+/******************************************************************************
 * Element's Properties & Methods
-*****************************************************************************/
+*******************************************************************************/
 
 // TagName returns the tag name of the element on which it's called.
 // Always in Uppercase for HTML element.
@@ -359,12 +359,7 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 	return CastElements(elems)
 }
 
-// 	WI_BEFOREBEGIN WHERE_INSERT = "beforebegin" // Before the Element itself.
-// 	WI_INSIDEFIRST WHERE_INSERT = "afterbegin"  // Just inside the element, before its first child.
-// 	WI_INSIDELAST  WHERE_INSERT = "beforeend"   // Just inside the element, after its last child.
-// 	WI_AFTEREND    WHERE_INSERT = "afterend"    // After the element itself.
-
-func (_me *Element) InsertHTML(_where INSERT_WHERE, _unsafeHtml html.String) *Element {
+func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.String) *Element {
 	if !_me.IsDefined() {
 		return _me
 	}
@@ -383,6 +378,76 @@ func (_me *Element) InsertHTML(_where INSERT_WHERE, _unsafeHtml html.String) *El
 		_me.Set("innerHTML", string(_unsafeHtml))
 	}
 	return _me
+}
+
+// InsertHTML unfolds and renders the html of the _html and write it into the DOM.
+// All embedded components are wrapped with their DOM element and their listeners are added to the DOM.
+// Returns an error if _elem in not the DOM or if an error occurs during UnfoldHtml or mounting process.
+func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.String, _data *html.DataState) (_err error) {
+	if !_elem.IsDefined() || !_elem.IsInDOM() {
+		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
+	}
+
+	var embedded map[string]any
+	out := new(bytes.Buffer)
+	embedded, _err = html.UnfoldHtml(out, _html, _data)
+	if _err == nil {
+		// insert the html element into the dom and wrapit
+		_elem.InsertRawHTML(_where, html.String(out.String()))
+
+		// mount every embedded components
+		if embedded != nil {
+			// DEBUG: console.Warnf("scanning %+v", embedded)
+			for subid, sub := range embedded {
+				// look everywhere in the DOM
+				if sube := Id(subid); sube != nil {
+					if cmp, ok := sub.(UIComposer); ok {
+						// DEBUG: console.Warnf("wrapping %+v", w)
+						_err = mountDeepSnippet(cmp, sube)
+					}
+				}
+			}
+		} else {
+			_err = console.Errorf("html string does not have any embedded components")
+		}
+	} else {
+		console.Errorf(_err.Error())
+	}
+	return _err
+}
+
+// InsertSnippet unfolds and renders the html of the _snippet and write it into the DOM.
+// The _snippet and all its embedded components are wrapped with their DOM element and their listeners are added to the DOM.
+// _snippet can be either an HTMLComposer or an UIComposer
+// Returns an error if _elem in not the DOM or if an error occurs during WriteHTMLSnippet or mounting process.
+//
+// FIXME: disallow inserting a snippet with the same id already in the DOM
+func (_elem *Element) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
+	if !_elem.IsDefined() {
+		return "", console.Errorf("Element:InsertSnippet failed on undefined element")
+	}
+
+	snippet, ok := _snippet.(html.HTMLComposer)
+	if !ok {
+		return "", console.Errorf("Element:InsertSnippet failed. _snippet parameter must implement HTMLComposer interface or UIComposer interface")
+	}
+
+	out := new(bytes.Buffer)
+	_id, _err = html.WriteHTMLSnippet(out, snippet, _data)
+	if _err == nil {
+		// insert the html element into the dom and wrapit
+		newe := _elem.InsertRawHTML(_where, html.String(out.String()))
+
+		// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
+		if snippet, ok := _snippet.(UIComposer); ok {
+			_err = mountDeepSnippet(snippet, newe)
+		} else {
+			_err = console.Warnf("_snippet %q(%v) not mounted, it's not an UIComposer", _id, reflect.TypeOf(_snippet).String())
+		}
+	} else {
+		console.Errorf(_err.Error())
+	}
+	return _id, nil
 }
 
 // InsertText insert the formated _value as a simple text (not an HTML string) at the _where position.
@@ -430,212 +495,6 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element 
 	}
 	return _me
 }
-
-// InnerHTML ets or sets the HTML or XML markup contained within the element.
-//
-// To insert the HTML into the document rather than replace the contents of an element, use the method insertAdjacentHTML().
-//
-// When writing to innerHTML, it will overwrite the content of the source element.
-// That means the HTML has to be loaded and re-parsed. This is not very efficient especially when using inside loops.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
-// func (_elem *Element) SetInnerHTML(_unsafeHtml string) *Element {
-// 	if !_elem.IsDefined() {
-// 		return _elem
-// 	}
-// 	_elem.Set("innerHTML", _unsafeHtml)
-// 	return _elem
-// }
-
-// OuterHTML gets the serialized HTML fragment describing the element including its descendants.
-// It can also be set to replace the element with nodes parsed from the given string.
-//
-// To only obtain the HTML representation of the contents of an element,
-// or to replace the contents of an element, use the innerHTML property instead.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
-// func (_elem *Element) SetOuterHTML(_unsafeHtml string) *Element {
-// 	if !_elem.IsDefined() {
-// 		return _elem
-// 	}
-// 	_elem.Set("outerHTML", _unsafeHtml)
-// 	return _elem
-// }
-
-// InnerText represents the rendered text content of a node and its descendants.
-//
-// InnerText gets pure text, removing any html or css, while TextContent keeps the representation.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/innerText
-// func (_htmle *Element) SetInnerText(value string) *Element {
-// 	if !_htmle.IsDefined() {
-// 		return &Element{}
-// 	}
-// 	input := value
-// 	_htmle.Set("innerText", input)
-// 	return _htmle
-// }
-
-// InsertAdjacentElement inserts a given element node at a given position relative to the element it is invoked upon.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentElement
-// func (_elem *Element) InsertAdjacentElement(_where WHERE_INSERT, _element *Element) *Element {
-// 	if !_elem.IsDefined() {
-// 		return new(Element)
-// 	}
-// 	_elem.Call("insertAdjacentElement", string(_where), _element.JSValue)
-// 	return _elem
-// }
-
-// InsertAdjacentText given a relative position and a string, inserts a new text node at the given position relative to the element it is called from.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentText
-// func (_elem *Element) InsertAdjacentText(_where WHERE_INSERT, _text string) *Element {
-// 	if !_elem.IsDefined() {
-// 		return &Element{}
-// 	}
-// 	_elem.Call("insertAdjacentText", string(_where), _text)
-// 	return _elem
-// }
-
-// InsertAdjacentHTML parses the specified text as HTML or XML and inserts the resulting nodes into the DOM tree at a specified position.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML
-// func (_elem *Element) InsertAdjacentHTML(_where WHERE_INSERT, _text string) *Element {
-// 	if !_elem.IsDefined() {
-// 		return &Element{}
-// 	}
-// 	_elem.Call("insertAdjacentHTML", string(_where), _text)
-// 	return _elem
-// }
-
-// Prepend inserts a set of Node objects or string objects before the first child of the Element.
-// String objects are inserted as equivalent Text nodes.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
-// func (_elem *Element) PrependNodes(_nodes ...*Node) *Element {
-// 	if !_elem.IsDefined() {
-// 		return &Element{}
-// 	}
-// 	var args []any = make([]any, len(_nodes))
-// 	var end int
-// 	for _, n := range _nodes {
-// 		if n != nil {
-// 			jsn := n.JSValue
-// 			args[end] = jsn
-// 			end++
-// 		}
-// 	}
-// 	_elem.Call("prepend", args[0:end]...)
-// 	return _elem
-// }
-
-// Prepend inserts a set of Node objects or string objects before the first child of the Element.
-// String objects are inserted as equivalent Text nodes.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
-// func (_elem *Element) PrependStrings(_strs []string) *Element {
-// 	if !_elem.IsDefined() {
-// 		return &Element{}
-// 	}
-// 	var args []any = make([]any, len(_strs))
-// 	var end int
-// 	for _, n := range _strs {
-// 		args[end] = n
-// 		end++
-// 	}
-// 	_elem.Call("prepend", args[0:end]...)
-// 	return _elem
-// }
-
-// Append inserts a set of Node objects or string objects after the last child of the Element.
-// String objects are inserted as equivalent Text nodes.
-//
-// This method is supported by all browsers and is a much cleaner way of inserting nodes, text, data, etc. into the DOM.
-//
-// Allows you to also append string objects, whereas Node.appendChild() only accepts Node objects.
-//
-// Has no return value, whereas Node.appendChild() returns the appended Node object.
-//
-// Can append several nodes and strings, whereas Node.appendChild() can only append one node.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/append
-// func (_elem *Element) AppendNodes(_nodes []*Node) *Element {
-// 	if !_elem.IsDefined() {
-// 		return &Element{}
-// 	}
-// 	var args []any = make([]any, len(_nodes))
-// 	var end int
-// 	for _, n := range _nodes {
-// 		if n != nil {
-// 			jsn := n.JSValue
-// 			args[end] = jsn
-// 			end++
-// 		}
-// 	}
-// 	_elem.Call("append", args[0:end]...)
-// 	return _elem
-// }
-
-// Append inserts a set of Node objects or string objects after the last child of the Element.
-// String objects are inserted as equivalent Text nodes.
-//
-// This method is supported by all browsers and is a much cleaner way of inserting nodes, text, data, etc. into the DOM.
-//
-// Allows you to also append string objects, whereas Node.appendChild() only accepts Node objects.
-//
-// Has no return value, whereas Node.appendChild() returns the appended Node object.
-//
-// Can append several nodes and strings, whereas Node.appendChild() can only append one node.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/append
-// func (_elem *Element) AppendStrings(_strs ...string) *Element {
-// 	if !_elem.IsDefined() {
-// 		return &Element{}
-// 	}
-// 	var args []any = make([]any, len(_strs))
-// 	var end int
-// 	for _, n := range _strs {
-// 		args[end] = n
-// 		end++
-// 	}
-// 	_elem.Call("append", args[0:end]...)
-// 	return _elem
-// }
-
-// func (_elem *Element) InsertNodesBefore(_nodes []*Node) *Element {
-// 	if !_elem.IsDefined() {
-// 		return &Element{}
-// 	}
-// 	var _args []any = make([]any, len(_nodes))
-// 	var _end int
-// 	for _, n := range _nodes {
-// 		if n != nil {
-// 			jsn := n.JSValue
-// 			_args[_end] = jsn
-// 			_end++
-// 		}
-// 	}
-// 	_elem.Call("before", _args[0:_end]...)
-// 	return _elem
-// }
-
-// func (_elem *Element) InsertNodesAfter(_nodes []*Node) *Element {
-// 	if !_elem.IsDefined() {
-// 		return &Element{}
-// 	}
-// 	var _args []any = make([]any, len(_nodes))
-// 	var _end int
-// 	for _, n := range _nodes {
-// 		if n != nil {
-// 			jsn := n.JSValue
-// 			_args[_end] = jsn
-// 			_end++
-// 		}
-// 	}
-// 	_elem.Call("after", _args[0:_end]...)
-// 	return _elem
-// }
 
 // ScrollTop gets or sets the number of pixels that an element's content is scrolled vertically.
 //
@@ -697,10 +556,6 @@ func (_elem *Element) ScrollIntoView() *Element {
 	return _elem
 }
 
-/****************************************************************************
-* HTMLElement's properties & methods
-*****************************************************************************/
-
 // AccessKey A string indicating the single-character keyboard key to give access to the button.
 func (_elem *Element) AccessKey() string {
 	if !_elem.IsDefined() {
@@ -756,8 +611,112 @@ func (_htmle *Element) Blur() *Element {
 }
 
 /****************************************************************************
-* Element's events
+* Event handling
 *****************************************************************************/
+
+// AddFullscreenChange is adding doing AddEventListener for 'FullscreenChange' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_elem *Element) AddFullscreenEvent(_evttyp event.FULLSCREEN_EVENT, _listener func(*event.Event, *Element)) {
+	if !_elem.IsDefined() || !_elem.IsInDOM() {
+		console.Warnf("AddFullscreenEvent not listening on nil Element")
+		return
+	}
+	evh := makelistenerElement_Event(_listener)
+	_elem.addListener(string(_evttyp), evh)
+}
+
+// AddGenericEvent adds Event Listener for a GENERIC_EVENT  on target.
+// Returns the function to call to remove and release the listener
+func (_htmle *Element) AddGenericEvent(_evttyp event.GENERIC_EVENT, _listener func(*event.Event, *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		console.Warnf("AddGenericEvent failed: nil Element or not in DOM")
+		return
+	}
+	jsevh := makehandler_Element_Event(_listener)
+	_htmle.addListener(string(_evttyp), jsevh)
+}
+
+// AddClick adds Event Listener for MOUSE_EVENT on target.
+// Returns the function to call to remove and release the listener
+func (_htmle *Element) AddMouseEvent(_evttyp event.MOUSE_EVENT, listener func(*event.MouseEvent, *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		console.Warnf("AddMouseEvent failed: nil Element or not in DOM")
+		return
+	}
+	evh := makehandler_Element_MouseEvent(listener)
+	_htmle.addListener(string(_evttyp), evh)
+}
+
+// AddBlur is adding doing AddEventListener for 'Blur' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddFocusEvent(_evttyp event.FOCUS_EVENT, listener func(*event.FocusEvent, *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		console.Warnf("AddFocusEvent failed: nil Element or not in DOM")
+		return
+	}
+	evh := makelistenerElement_FocusEvent(listener)
+	_htmle.addListener(string(_evttyp), evh)
+}
+
+// AddGotPointerCapture is adding doing AddEventListener for 'GotPointerCapture' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddPointerEvent(_evttyp event.POINTER_EVENT, _listener func(*event.PointerEvent, *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		console.Warnf("AddPointerEvent failed: nil Element or not in DOM")
+		return
+	}
+	evh := makelistenerElement_PointerEvent(_listener)
+	_htmle.addListener(string(_evttyp), evh)
+}
+
+// AddInput is adding doing AddEventListener for 'Input' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddInputEvent(_evttyp event.INPUT_EVENT, listener func(*event.InputEvent, *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		console.Warnf("AddInputEvent failed: nil Element or not in DOM")
+		return
+	}
+	evh := makelistenerElement_InputEvent(listener)
+	_htmle.addListener(string(_evttyp), evh)
+}
+
+// AddKeyDown is adding doing AddEventListener for 'KeyDown' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddKeyboard(_evttyp event.KEYBOARD_EVENT, listener func(*event.KeyboardEvent, *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		console.Warnf("AddKeyboard failed: nil Element or not in DOM")
+		return
+	}
+	evh := makelistenerElement_KeyboardEvent(listener)
+	_htmle.addListener(string(_evttyp), evh)
+}
+
+// AddResize is adding doing AddEventListener for 'Resize' on target.
+// This method is returning allocated javascript function that need to be released.
+func (_htmle *Element) AddResizeEvent(_listener func(*event.UIEvent, *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		console.Warnf("AddResizeEvent failed: nil Element or not in DOM")
+		return
+	}
+	evh := makelistenerElement_UIEvent(_listener)
+	_htmle.addListener("resize", evh)
+}
+
+// The wheel event fires when the user rotates a wheel button on a pointing device (typically a mouse).
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
+func (_htmle *Element) AddWheelEvent(_listener func(*event.WheelEvent, *Element)) {
+	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
+		console.Warnf("AddWheelEvent failed: nil Element or not in DOM")
+		return
+	}
+	evh := makeHTMLElement_WheelEvent(_listener)
+	_htmle.addListener("wheel", evh)
+}
+
+/******************************************************************************
+* Private Area
+*******************************************************************************/
 
 // event attribute: Event
 func makelistenerElement_Event(_listener func(*event.Event, *Element)) syscalljs.Func {
@@ -777,21 +736,6 @@ func makelistenerElement_Event(_listener func(*event.Event, *Element)) syscalljs
 	return js.FuncOf(fn)
 }
 
-// AddFullscreenChange is adding doing AddEventListener for 'FullscreenChange' on target.
-// This method is returning allocated javascript function that need to be released.
-func (_elem *Element) AddFullscreenEvent(_evttyp event.FULLSCREEN_EVENT, _listener func(*event.Event, *Element)) {
-	if !_elem.IsDefined() || !_elem.IsInDOM() {
-		console.Warnf("AddFullscreenEvent not listening on nil Element")
-		return
-	}
-	evh := makelistenerElement_Event(_listener)
-	_elem.addListener(string(_evttyp), evh)
-}
-
-/****************************************************************************
-* HTMLElement's events
-*****************************************************************************/
-
 // event attribute: Event
 func makehandler_Element_Event(_listener func(*event.Event, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
@@ -808,17 +752,6 @@ func makehandler_Element_Event(_listener func(*event.Event, *Element)) syscalljs
 		return nil
 	}
 	return js.FuncOf(fn)
-}
-
-// AddGenericEvent adds Event Listener for a GENERIC_EVENT  on target.
-// Returns the function to call to remove and release the listener
-func (_htmle *Element) AddGenericEvent(_evttyp event.GENERIC_EVENT, _listener func(*event.Event, *Element)) {
-	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		console.Warnf("AddGenericEvent failed: nil Element or not in DOM")
-		return
-	}
-	jsevh := makehandler_Element_Event(_listener)
-	_htmle.addListener(string(_evttyp), jsevh)
 }
 
 // event attribute: MouseEvent
@@ -839,17 +772,6 @@ func makehandler_Element_MouseEvent(listener func(*event.MouseEvent, *Element)) 
 	return js.FuncOf(fn)
 }
 
-// AddClick adds Event Listener for MOUSE_EVENT on target.
-// Returns the function to call to remove and release the listener
-func (_htmle *Element) AddMouseEvent(_evttyp event.MOUSE_EVENT, listener func(*event.MouseEvent, *Element)) {
-	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		console.Warnf("AddMouseEvent failed: nil Element or not in DOM")
-		return
-	}
-	evh := makehandler_Element_MouseEvent(listener)
-	_htmle.addListener(string(_evttyp), evh)
-}
-
 // event attribute: FocusEvent
 func makelistenerElement_FocusEvent(_listener func(*event.FocusEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
@@ -866,17 +788,6 @@ func makelistenerElement_FocusEvent(_listener func(*event.FocusEvent, *Element))
 		return nil
 	}
 	return js.FuncOf(fn)
-}
-
-// AddBlur is adding doing AddEventListener for 'Blur' on target.
-// This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddFocusEvent(_evttyp event.FOCUS_EVENT, listener func(*event.FocusEvent, *Element)) {
-	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		console.Warnf("AddFocusEvent failed: nil Element or not in DOM")
-		return
-	}
-	evh := makelistenerElement_FocusEvent(listener)
-	_htmle.addListener(string(_evttyp), evh)
 }
 
 // event attribute: PointerEvent
@@ -897,17 +808,6 @@ func makelistenerElement_PointerEvent(_listener func(*event.PointerEvent, *Eleme
 	return js.FuncOf(fn)
 }
 
-// AddGotPointerCapture is adding doing AddEventListener for 'GotPointerCapture' on target.
-// This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddPointerEvent(_evttyp event.POINTER_EVENT, _listener func(*event.PointerEvent, *Element)) {
-	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		console.Warnf("AddPointerEvent failed: nil Element or not in DOM")
-		return
-	}
-	evh := makelistenerElement_PointerEvent(_listener)
-	_htmle.addListener(string(_evttyp), evh)
-}
-
 // event attribute: InputEvent
 func makelistenerElement_InputEvent(_listener func(*event.InputEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
@@ -924,17 +824,6 @@ func makelistenerElement_InputEvent(_listener func(*event.InputEvent, *Element))
 		return nil
 	}
 	return js.FuncOf(fn)
-}
-
-// AddInput is adding doing AddEventListener for 'Input' on target.
-// This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddInputEvent(_evttyp event.INPUT_EVENT, listener func(*event.InputEvent, *Element)) {
-	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		console.Warnf("AddInputEvent failed: nil Element or not in DOM")
-		return
-	}
-	evh := makelistenerElement_InputEvent(listener)
-	_htmle.addListener(string(_evttyp), evh)
 }
 
 // event attribute: KeyboardEvent
@@ -955,17 +844,6 @@ func makelistenerElement_KeyboardEvent(_listener func(*event.KeyboardEvent, *Ele
 	return js.FuncOf(fn)
 }
 
-// AddKeyDown is adding doing AddEventListener for 'KeyDown' on target.
-// This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddKeyboard(_evttyp event.KEYBOARD_EVENT, listener func(*event.KeyboardEvent, *Element)) {
-	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		console.Warnf("AddKeyboard failed: nil Element or not in DOM")
-		return
-	}
-	evh := makelistenerElement_KeyboardEvent(listener)
-	_htmle.addListener(string(_evttyp), evh)
-}
-
 // event attribute: UIEvent
 func makelistenerElement_UIEvent(_listener func(*event.UIEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
@@ -984,17 +862,6 @@ func makelistenerElement_UIEvent(_listener func(*event.UIEvent, *Element)) sysca
 	return js.FuncOf(fn)
 }
 
-// AddResize is adding doing AddEventListener for 'Resize' on target.
-// This method is returning allocated javascript function that need to be released.
-func (_htmle *Element) AddResizeEvent(_listener func(*event.UIEvent, *Element)) {
-	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		console.Warnf("AddResizeEvent failed: nil Element or not in DOM")
-		return
-	}
-	evh := makelistenerElement_UIEvent(_listener)
-	_htmle.addListener("resize", evh)
-}
-
 // event attribute: WheelEvent
 func makeHTMLElement_WheelEvent(_listener func(*event.WheelEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
@@ -1011,140 +878,4 @@ func makeHTMLElement_WheelEvent(_listener func(*event.WheelEvent, *Element)) sys
 		return nil
 	}
 	return js.FuncOf(fn)
-}
-
-// The wheel event fires when the user rotates a wheel button on a pointing device (typically a mouse).
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
-func (_htmle *Element) AddWheelEvent(_listener func(*event.WheelEvent, *Element)) {
-	if !_htmle.IsDefined() || !_htmle.IsInDOM() {
-		console.Warnf("AddWheelEvent failed: nil Element or not in DOM")
-		return
-	}
-	evh := makeHTMLElement_WheelEvent(_listener)
-	_htmle.addListener("wheel", evh)
-}
-
-/****************************************************************************
-* Extra rendering
-*****************************************************************************/
-
-// RenderHtml unfolding components if any
-// _elem must be in the DOM
-// BUG:must wrap recursively
-func (_elem *Element) RenderHtml(_where INSERT_WHERE, _body html.String, _data *html.DataState) (_err error) {
-	if !_elem.IsDefined() || !_elem.IsInDOM() {
-		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
-	}
-
-	var embedded map[string]any
-	out := new(bytes.Buffer)
-	embedded, _err = html.UnfoldHtml(out, _body, _data)
-	if _err == nil {
-
-		_elem.InsertHTML(_where, html.String(out.String()))
-
-		// wrap every embedded components with their dom element
-		if embedded != nil {
-			// DEBUG: console.Warnf("scanning %+v", embedded)
-			for subid, sub := range embedded {
-				// look if the id is in the DOM and wrap it to the component
-				if w, ok := sub.(js.JSValueWrapper); ok {
-					sube := Id(subid) // look everywhere in the DOM
-					if sube != nil {
-						// DEBUG:
-						console.Warnf("wrapping %+v", w)
-						w.Wrap(sube)
-					}
-				} else {
-					_err = console.Errorf("sub component %q in html is not a js wrapper", reflect.TypeOf(sub).String())
-				}
-
-				// add listeners into the DOM if any
-				if l, ok := sub.(Listener); ok {
-					l.AddListeners()
-				} else {
-					_err = console.Warnf("embedded component in html string is not a listener", reflect.TypeOf(sub).String())
-				}
-
-			}
-		} else {
-			_err = console.Errorf("html string does not have any embedded components")
-		}
-
-		// if embedded != nil {
-		// 	for _, e := range embedded {
-		// 		if l, ok := e.(event.Listener); ok {
-		// 			l.AddListeners()
-		// 		}
-		// 	}
-		// }
-	} else {
-		console.Errorf(_err.Error())
-	}
-	return _err
-}
-
-// InsertSnippet render the _snippet, insert it into the DOM, wrap every embedded compoent with their DOM element
-// FIXME: disallow inserting a snippet with the same id already in the DOM
-func (_elem *Element) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
-	if !_elem.IsDefined() {
-		return "", console.Errorf("Element:InsertSnippet failed on undefined element")
-	}
-
-	// render the html element and body, unfolding sub components
-	out := new(bytes.Buffer)
-	_id, _err = html.WriteHtmlSnippet(out, _snippet, _data)
-	if _err == nil {
-
-		// insert the html element into the dom
-		newe := _elem.InsertHTML(_where, html.String(out.String()))
-		if w, ok := _snippet.(js.JSValueWrapper); ok {
-			w.Wrap(newe)
-		} else {
-			_err = console.Errorf("_snippet %q(%v) is not an JSValueWrapper", _id, reflect.TypeOf(_snippet).String())
-		}
-
-		// wrap every embedded components with their dom element
-		if c, ok := _snippet.(html.HTMLComposer); ok {
-			_err = WrapEmbedded(c)
-		} else {
-			// can be a simple html component without event handling
-			_err = console.Errorf("_snippet %q(%v) is not an HtmlComposer", _id, reflect.TypeOf(_snippet).String())
-		}
-
-		// add listeners into the DOM if any
-		if l, ok := _snippet.(Listener); ok {
-			l.AddListeners()
-		} else {
-			_err = console.Warnf("_snippet %q(%v) is not a listener", _id, reflect.TypeOf(_snippet).String())
-		}
-
-	} else {
-		console.Errorf(_err.Error())
-	}
-	return _id, nil
-}
-
-// wrap every embedded components with their dom element and add their listeners and sub-listeners
-func WrapEmbedded(_snippet html.HTMLComposer) (_err error) {
-	embedded := _snippet.Embedded()
-	if embedded == nil {
-		return console.Errorf("HtmlComposer %q does not have any embedded components", _snippet.Id())
-	}
-
-	// DEBUG: console.Warnf("scanning %+v", embedded)
-	for subid, sub := range embedded {
-		// look for the id in the DOM and wrap it to the component
-		if w, ok := sub.(js.JSValueWrapper); ok {
-			sube := Id(subid) // look everywhere in the DOM
-			if sube != nil {
-				// DEBUG: console.Warnf("wrapping %+v", w)
-				w.Wrap(sube)
-			}
-		} else {
-			_err = console.Warnf("%q embed a non wrappable component: %q", _snippet.Id(), reflect.TypeOf(sub).String())
-		}
-	}
-	return _err
 }

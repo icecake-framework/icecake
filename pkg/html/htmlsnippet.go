@@ -151,7 +151,7 @@ func (s *HTMLSnippet) SetTabIndex(idx uint) *HTMLSnippet {
 	return s
 }
 
-// TODO: find away to avoid the overwrite parameter
+// TODO: find a way to avoid overwrite parameter
 func (s *HTMLSnippet) SetAttribute(key string, value String, overwrite bool) {
 	s.makemap()
 	key = strings.Trim(key, " ")

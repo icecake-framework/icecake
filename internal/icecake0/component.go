@@ -476,7 +476,7 @@ func updateCProperty(_cprop reflect.Value, _value string) (_erra error) {
 				_cprop.SetInt(int64(i))
 			}
 
-		// TODO: handle other data types
+		// TODO: updateCProperty -> handle other data types
 		default:
 			return fmt.Errorf("unmanaged type %q", _cprop.Kind().String())
 		}

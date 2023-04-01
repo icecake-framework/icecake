@@ -8,15 +8,18 @@ import (
 	"github.com/sunraylab/icecake/pkg/js"
 )
 
-type Listener interface {
-	AddListeners()
-	RemoveListeners()
-}
+// type Listener interface {
+// 	AddListeners()
+// 	RemoveListeners()
+// }
 
 type UIComposer interface {
 	html.HTMLComposer
 	js.JSValueWrapper
-	Listener
+	Mount()
+	AddListeners()
+	RemoveListeners()
+	UnMount()
 }
 
 /*****************************************************************************/
@@ -28,29 +31,25 @@ type UISnippet struct {
 	DOM Element
 }
 
-// AddListeners, by default, listen every embedded components into HtmlSnippet
-// AddListeners, by default, call AddListeners for every embedded components into HtmlSnippet
-func (_s *UISnippet) AddListeners() {
-	console.Warnf("Snippet.AddListeners for %q", _s.Id())
-	embedded := _s.Embedded()
-	if embedded != nil {
-		for _, e := range embedded {
-			if l, ok := e.(Listener); ok {
-				l.AddListeners()
-			}
-		}
-	} else {
-		// DEBUG:
-		console.Warnf("Snippet.AddListeners for %q is empty", _s.Id())
-	}
-}
+// Mount does nothing by default. Can be implemented by the component embedding UISnippet.
+func (_s *UISnippet) Mount() {}
+
+// UnMount does nothing by default. Can be implemented by the component embedding UISnippet.
+func (_s *UISnippet) UnMount() {}
+
+// AddListeners does nothing by default. Can be implemented by the component embedding UISnippet.
+func (_s *UISnippet) AddListeners() {}
 
 // Wrap implements the JSValueWrapper to enable wrapping of a dom.Element usually
 // to wrap embedded component instantiated during unfolding an html string.
+// Does not need to be overloaded by the component embedding UISnippet.
 func (_s *UISnippet) Wrap(_jsvp js.JSValueProvider) {
 	_s.DOM.Wrap(_jsvp)
 }
 
+// RemoveListeners remove all event handlers attached to this UISnippet Element.
+// If RemoveListeners is implemented by the component embedding UISnippet then the UISnippet one should be called.
+// Usually RemoveListeners does not need to be overloaded because every listeners added to the Element are automatically removed.
 func (_s *UISnippet) RemoveListeners() {
 	_s.DOM.RemoveListeners()
 }
@@ -59,7 +58,7 @@ func (_s *UISnippet) RemoveListeners() {
 func (_s *UISnippet) HTML(_snippet UIComposer) (_html html.String) {
 	// render the html element and body, unfolding sub components
 	out := new(bytes.Buffer)
-	id, err := html.WriteHtmlSnippet(out, _snippet, nil)
+	id, err := html.WriteHTMLSnippet(out, _snippet, nil)
 	if err == nil {
 		_s.Embed(id, _snippet)
 		_html = html.String(out.String())
@@ -76,4 +75,47 @@ func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data
 	_parent.DOM.InsertSnippet(_where, _snippet, _data)
 	_parent.AddListeners()
 	return _id, nil
+}
+
+/******************************************************************************
+* Private Area
+*******************************************************************************/
+
+// mountDeepSnippet wraps _elem to the _snippet add its listeners and call the customized Mount function.
+// mountDeepSnippet is called recursively for every embedded components of the _snippet.
+func mountDeepSnippet(_snippet UIComposer, _elem *Element) (_err error) {
+	_snippet.Wrap(_elem)
+	_snippet.AddListeners()
+	_snippet.Mount()
+
+	if embedded := _snippet.Embedded(); embedded != nil {
+		// DEBUG: console.Warnf("scanning %+v", embedded)
+		for subid, sub := range embedded {
+			// look everywhere in the DOM
+			if sube := Id(subid); sube != nil {
+				if cmp, ok := sub.(UIComposer); ok {
+					// DEBUG: console.Warnf("wrapping %+v", w)
+					_err = mountDeepSnippet(cmp, sube)
+				}
+			}
+		}
+	}
+	return _err
+}
+
+// FIXME: must call unmount somewhere
+// unmountDeepSnippet remove listeners anc all Unmount recusrively for every embedded components
+func unmountDeepSnippet(_snippet UIComposer) {
+	_snippet.RemoveListeners()
+	_snippet.UnMount()
+
+	if embedded := _snippet.Embedded(); embedded != nil {
+		// DEBUG: console.Warnf("scanning %+v", embedded)
+		for _, sub := range embedded {
+			if cmp, ok := sub.(UIComposer); ok {
+				// DEBUG: console.Warnf("wrapping %+v", w)
+				unmountDeepSnippet(cmp)
+			}
+		}
+	}
 }

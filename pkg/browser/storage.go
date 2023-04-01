@@ -34,7 +34,7 @@ func castStorage(_jsv js.JSValueProvider) *Storage {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
 func SessionStorage() *Storage {
-	// TODO: tryget
+	// TODO: tryget SessionStorage
 	rsp := Win().Call("ickSessionStorage")
 	return castStorage(rsp)
 }
@@ -45,7 +45,7 @@ func SessionStorage() *Storage {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
 func LocalStorage() *Storage {
-	// TODO: tryget
+	// TODO: tryget LocalStorage
 	//value := _win.jsValue.Get("localStorage")
 	jsv := Win().Call("ickLocalStorage")
 	return castStorage(jsv)

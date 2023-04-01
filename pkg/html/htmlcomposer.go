@@ -1,7 +1,6 @@
 package html
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -44,41 +43,49 @@ type HTMLComposer interface {
 }
 
 // Html returns the html rendered of the _composer
-func Html(_composer HTMLComposer, _data *DataState) String {
-	_, html := Render(_composer, _data)
-	return html
-}
+// XXX: func Html(_composer HTMLComposer, _data *DataState) String {
+// 	_, html := Render(_composer, _data)
+// 	return html
+// }
 
 // Render returns the html rendered of _snippet and the _id created
-func Render(_composer HTMLComposer, _data *DataState) (_id string, _html String) {
-	out := new(bytes.Buffer)
-	id, err := WriteHtmlSnippet(out, _composer, _data)
-	if err != nil {
-		log.Printf("error rendering html snippet: %s\n", err.Error())
-	}
-	return id, String(out.String())
-}
+// XXX: func Render(_composer HTMLComposer, _data *DataState) (_id string, _html String) {
+// 	out := new(bytes.Buffer)
+// 	id, err := WriteHtmlSnippet(out, _composer, _data)
+// 	if err != nil {
+// 		log.Printf("error rendering html snippet: %s\n", err.Error())
+// 	}
+// 	return id, String(out.String())
+// }
 
-// WriteHtmlSnippet render the HTML of the _composer, its tag element and its body, to _out.
-// Returns an error if _composer does not implement HtmlComposer interface.
-// Returns the id of the _composer rendered. This Id can be empty if nothing has been rendered (composer without tagname and with an empty body).
-// if the composer does not have a tagname, a virtual id (never in the DOM) is returned unless you've forced an Id.
-// Every ick-tag founded in the body of the composer are unfolded and rendered recursively.
-func WriteHtmlSnippet(_out io.Writer, _composer any, _data *DataState) (_id string, _err error) {
-	composer, ok := _composer.(HTMLComposer)
-	if !ok {
-		return "", fmt.Errorf("RenderHtmlSnippet failed: _cmp must implement HtmlComposer interface")
-	}
-	return renderHtmlSnippet(_out, composer, _data, 0)
-}
-
-// UnfoldHtml lookups for ick-component tags in the _html string and unfold each of them recursively into _output.
-// ick-component tags are autoclosing tags and should be in the form:
+// WriteHTMLSnippet render the HTML of the _composer, its tag element and its body, to _out.
 //
-//	`<ick-{tagname} [boolattribute] [attribute=[']value[']]/>`
+// If the composer provides a tagname the output looks like this:
+//
+//	`<{tagname} id={xxx} class="{ick-tag} [classes]" [attributes]>[body]<tagname/>`
+//
+// otherwise only the body is written:
+//
+//	`[body]`
+//
+// In this case a virtual id (never in the DOM) is returned unless you've forced one before the call.
+//
+// WriteHTMLSnippet returns the id allocated to the _composer. This Id can be empty if nothing has been rendered when the composer doesn't have a tagname and the generated body is empty.
+//
+// Every ick-tag founded in the body of the _composer are unfolded and written recursively.
+// Direct unfolded components feed the embedded list of the _composer if they implements also the HTMLComposer interface.
+func WriteHTMLSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState) (_id string, _err error) {
+	return writeHtmlSnippet(_out, _composer, _data, 0)
+}
+
+// UnfoldHtml lookups for ick-tags in the _html string and unfold each of them recursively into the _output.
+// ick-tags are autoclosing tags and should be in the form:
+//
+//	`<ick-{tag} [boolattribute] [attribute=[']value['] ...] [property=[']value['] ...]/>`
 //
 // otherwise an error is generated and the unfolding process stops immediatly.
-// Direct ick-components found and instantiated are returned in the _embedded map.
+//
+// Direct ick-tags found and instantiated are returned in the _embedded map.
 func UnfoldHtml(_out io.Writer, _html String, _data *DataState) (_embedded map[string]any, _err error) {
 	virts := &HTMLSnippet{}
 	if len(_html) > 0 {
@@ -87,11 +94,15 @@ func UnfoldHtml(_out io.Writer, _html String, _data *DataState) (_embedded map[s
 	return virts.Embedded(), _err
 }
 
-// renderHtmlSnippet render the HTML of the _composer, its tag element and its body, to _out.
+/******************************************************************************
+* PRIVATE area
+******************************************************************************/
+
+// writeHtmlSnippet render the HTML of the _composer, its tag element and its body, to _out.
 // Returns the id of the _composer rendered. Id can be empty if nothing has been rendered (composer without tagname and with an empty body).
 // if the composer does not have a tagname, a virtual id (never in the DOM) is returned unless you've forced an Id.
 // render may be called recursively 10 times max.
-func renderHtmlSnippet(_out io.Writer, _composer any, _data *DataState, _deep int) (_id string, _err error) {
+func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, _deep int) (_id string, _err error) {
 	if _deep > 10 {
 		_err = fmt.Errorf("RenderHtmlComposer stopped at level %d. Too many recursive calls", _deep)
 		log.Println(_err.Error())
@@ -381,7 +392,7 @@ func unfoldick(_parent HTMLComposer, _output io.Writer, _ickname string, _attrs 
 
 		// recursively unfold the component snippet
 		newcmpid := ""
-		newcmpid, _err = renderHtmlSnippet(_output, newcmp, _data, _deep+1)
+		newcmpid, _err = writeHtmlSnippet(_output, newcmp, _data, _deep+1)
 
 		// add it to the map of embedded components
 		if newcmpid != "" && _parent != nil {
@@ -500,8 +511,7 @@ func parseAttributes(_alist string, _cmp HTMLComposer, _overwrite bool) (_err er
 	return nil
 }
 
-// helpers
-
+// mini helper
 func mini(a int, b int) int {
 	if a < b {
 		return a
