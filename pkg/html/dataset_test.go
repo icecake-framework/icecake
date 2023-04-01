@@ -2,13 +2,13 @@ package html
 
 import "fmt"
 
-type testsnippet0 struct{ HtmlSnippet }
+type testsnippet0 struct{ HTMLSnippet }
 
 func (testsnippet0) Template(*DataState) (_t SnippetTemplate) { _t.TagName = "span"; return }
 
 type testsnippet1 struct {
-	HtmlSnippet
-	Html HTMLstring
+	HTMLSnippet
+	Html String
 }
 
 func (tst testsnippet1) Template(*DataState) (_t SnippetTemplate) { _t.Body = tst.Html; return }
@@ -21,15 +21,15 @@ func (testsnippet2) Template(*DataState) (_t SnippetTemplate) {
 	return
 }
 
-type testsnippet3 struct{ HtmlSnippet }
+type testsnippet3 struct{ HTMLSnippet }
 
 func (testsnippet3) Template(_data *DataState) (_t SnippetTemplate) {
 	strapp, _ := _data.App.(string)
-	_t.Body = HTMLstring(fmt.Sprintf("data.app=%s", strapp))
+	_t.Body = String(fmt.Sprintf("data.app=%s", strapp))
 	return
 }
 
-type testsnippetinfinite struct{ HtmlSnippet }
+type testsnippetinfinite struct{ HTMLSnippet }
 
 func (testsnippetinfinite) Template(_data *DataState) (_t SnippetTemplate) {
 	_t.Body = "<ick-test-infinite/>"

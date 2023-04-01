@@ -9,8 +9,8 @@ import (
 )
 
 type testsnippet1 struct {
-	html.HtmlSnippet
-	Html html.HTMLstring
+	html.HTMLSnippet
+	Html html.String
 }
 
 func (tst testsnippet1) Template(*html.DataState) (_t html.SnippetTemplate) {
@@ -28,7 +28,7 @@ func TestRegisterB(t *testing.T) {
 	r = registry.LookupRegistryEntry(testsnippet1{})
 	assert.Nil(t, r)
 
-	c1 := new(html.HtmlSnippet)
+	c1 := new(html.HTMLSnippet)
 	err := RegisterComposer("snippet", *c1)
 	assert.ErrorContains(t, err, "not a component")
 

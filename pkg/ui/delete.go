@@ -18,7 +18,7 @@ func init() {
 }
 
 type Delete struct {
-	Snippet
+	dom.UISnippet
 
 	// the element id to remove from the DOM
 	TargetID string
@@ -26,6 +26,9 @@ type Delete struct {
 	// The TargetID will be automatically removed after the clock Timeout duration if not zero.
 	// The timer starts when the delete button is rendered (call to addlisteners).
 	clock.Clock
+
+	// OnDelete, if set, is called when the deletion occurs and after the targetId has been removed
+	OnDelete func(*Delete)
 }
 
 func (_del *Delete) Template(_data *html.DataState) (_t html.SnippetTemplate) {
@@ -50,4 +53,7 @@ func (_del *Delete) AddListeners() {
 func (_del *Delete) RemoveTarget() {
 	_del.Stop()
 	dom.Id(_del.TargetID).Remove()
+	if _del.OnDelete != nil {
+		_del.OnDelete(_del)
+	}
 }

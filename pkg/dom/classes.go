@@ -13,8 +13,6 @@ import "github.com/sunraylab/icecake/pkg/js"
 type JSClasses struct {
 	jslist *js.JSValue // the corresponding DOMTokenList. if nil methods work with the cache.
 	owner  *Element    // the Element the classes belongs to.
-	// cache  []string // the internal slice of tokens only used when the classes object does not belong to an element yet.
-	//	cache ick.Classes // the internal slice of tokens only used when the classes object does not belong to an element yet.
 }
 
 /****************************************************************************
@@ -28,9 +26,6 @@ func (_classes JSClasses) String() (_str string) {
 	if _classes.owner != nil {
 		_str = _classes.owner.GetString("className")
 	}
-	// else {
-	// 	_str = _classes.cache.String()
-	// }
 	return _str
 }
 
@@ -39,7 +34,6 @@ func (_classes JSClasses) Count() int {
 	if _classes.jslist != nil {
 		return _classes.jslist.GetInt("length")
 	}
-	// return _classes.cache.Count()
 	return 0
 }
 
@@ -50,7 +44,6 @@ func (_classes JSClasses) At(_index int) string {
 		return _classes.jslist.Call("item", _index).String()
 	}
 	return ""
-	// return _classes.cache.At(_index)
 }
 
 // Has return true if token is found within the list.
@@ -61,8 +54,6 @@ func (_classes JSClasses) Has(_token string) bool {
 		return _classes.jslist.Call("contains", _token).Bool()
 	}
 	return false
-
-	// return _classes.cache.Has(_token)
 }
 
 // SetClasses adds token in the list. If a token already exist it's not added to avoid duplicate.
@@ -100,9 +91,6 @@ func (_classes *JSClasses) RemoveTokens(_tokens ...string) *JSClasses {
 	if _classes.jslist != nil {
 		_classes.jslist.Set("value", _classes.String())
 	}
-	// } else {
-	// 	_classes.removeCache(_tokens...)
-	// }
 	return _classes
 }
 
@@ -112,15 +100,7 @@ func (_classes *JSClasses) Toggle(_token string) (_isin bool) {
 	if _classes.jslist != nil {
 		return _classes.jslist.Call("toggle", _token).Bool()
 	}
-	// else {
-	// 	if _classes.hasCache(_token) {
-	// 		_classes.removeCache(_token)
-	// 	} else {
-	// 		_classes.addCache(_token)
-	// 		_isin = true
-	// 	}
-	// }
-	return _isin
+	return false
 }
 
 // Replace chains a Remove and a Add
@@ -128,8 +108,4 @@ func (_classes *JSClasses) Replace(_token string, _withToken string) {
 	if _classes.jslist != nil {
 		_classes.jslist.Call("replace", _token, _withToken)
 	}
-	// else {
-	// 	_classes.cache.RemoveCache(_token)
-	// 	_classes.addCache(_withToken)
-	// }
 }

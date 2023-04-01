@@ -25,7 +25,7 @@ func RenderMarkdown(_elem *dom.Element, _mdtxt string, _data *html.DataState, _o
 		return err
 	}
 
-	// HACK:
-	_elem.RenderHtml(dom.INSERT_BODY, html.HTMLstring(buf.String()), _data)
+	// TODO: better rendering with a reader ?
+	_elem.RenderHtml(dom.INSERT_BODY, html.String(buf.String()), _data)
 	return nil
 }

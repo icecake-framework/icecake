@@ -76,6 +76,11 @@ func (_v *JSValue) Wrap(_jsvp JSValueProvider) {
 	_v.jsvalue = _jsvp.Value().jsvalue
 }
 
+// Value returns the value itself for JSValueProvider interface
+func (_v JSValue) Value() JSValue {
+	return _v
+}
+
 // ValueOf returns x as a JavaScript value:
 //
 //	| Go                     | JavaScript             |
@@ -106,11 +111,6 @@ func ValueOf(x any) (_jsv JSValue) {
 		_jsv.jsvalue = js.ValueOf(x)
 	}
 	return _jsv
-}
-
-// Value returns the value itself for JSValueProvider interface
-func (_v JSValue) Value() JSValue {
-	return _v
 }
 
 // Type returns the JavaScript type of the value v. It is similar to JavaScript's typeof operator,
@@ -173,7 +173,7 @@ func (_v JSValue) Get(_pname string) JSValue {
 	return jsret
 }
 
-// TODO: tryget
+// TODO: Test TryGet and use it
 func TryGet(_v js.Value, p string) (result js.Value, err error) {
 	defer func() {
 		if x := recover(); x != nil {
@@ -354,25 +354,6 @@ func null() JSValue {
 * JSFunction
 ******************************************************************************/
 
-// type JSFunction struct {
-// 	//JSValue
-// 	fn js.Func
-// }
-
-// type JSFunc struct {
-// 	js.Func
-// }
-
-// Func is a wrapped Go function to be called by JavaScript.
-// type Func struct {
-// 	js.Value // the JavaScript function that invokes the Go function
-// 	id    uint32
-// }
-
-// func (f JSFunc) Release() {
-// 	f.Release()
-// }
-
 // FuncOf returns a wrapped function.
 //
 // Invoking the JavaScript function will synchronously call the Go function fn
@@ -398,11 +379,6 @@ func FuncOf(fn func(this JSValue, args []JSValue) any) js.Func {
 
 		return fn(val(this), wargs)
 	})
-
-	// return JSFunction{
-	// 	JSValue: JSValue{jsvalue: f.Value},
-	// 	fn:      f,
-	// }
 	return f
 }
 
@@ -442,8 +418,3 @@ func cleanArg(_v any) any {
 	return _v
 
 }
-
-// Undefined returns the JavaScript value "undefined".
-// func Undefined() JSValue {
-// 	return JSValue{js.Undefined()}
-// }

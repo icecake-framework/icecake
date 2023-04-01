@@ -11,6 +11,7 @@ import (
 	"github.com/sunraylab/icecake/pkg/registry"
 )
 
+// Register a composer
 func RegisterComposer(ickname string, _composer any) (_err error) {
 	typ := reflect.TypeOf(_composer)
 	if typ.Kind() != reflect.Pointer {
@@ -19,13 +20,12 @@ func RegisterComposer(ickname string, _composer any) (_err error) {
 		return _err
 	}
 
-	// _, ok := reflect.New(typ).Interface().(HtmlComposer)
-	// _, ok := _composer.(HtmlComposer)
-	// if !ok {
-	// 	_err = fmt.Errorf("register component %q failed: must be an HtmlComposer", typ.String())
-	// 	log.Println(_err.Error())
-	// 	return _err
-	// }
+	_, ok := _composer.(html.HTMLComposer)
+	if !ok {
+		_err = fmt.Errorf("register component %q failed: must be an HtmlComposer", typ.String())
+		log.Println(_err.Error())
+		return _err
+	}
 
 	ickname = helper.Normalize(ickname)
 	if !strings.HasPrefix(ickname, "ick-") {
@@ -49,8 +49,9 @@ func RegisterComposer(ickname string, _composer any) (_err error) {
 	return nil
 }
 
-func RegisterSimpleSnippet(ickname string, tagname html.HTMLstring, body html.HTMLstring) (_err error) {
-	s := new(html.HtmlSnippet)
+// register a default snippet
+func RegisterDefaultSnippet(ickname string, tagname html.String, body html.String) (_err error) {
+	s := new(html.HTMLSnippet)
 	s.TagName = tagname
 	s.Body = body
 	return RegisterComposer(ickname, s)

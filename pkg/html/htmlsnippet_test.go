@@ -13,7 +13,7 @@ func TestComposeBasics(t *testing.T) {
 	out := new(bytes.Buffer)
 
 	// empty snippet
-	s00 := new(HtmlSnippet)
+	s00 := new(HTMLSnippet)
 	_, err := WriteHtmlSnippet(out, s00, nil)
 	require.NoError(t, err)
 	require.Empty(t, out)
@@ -337,7 +337,7 @@ func TestComposeEmbedded(t *testing.T) {
 	out := new(bytes.Buffer)
 	for i, tst := range tstset {
 		out.Reset()
-		cmp.Html = HTMLstring(tst.in)
+		cmp.Html = String(tst.in)
 		_, err := WriteHtmlSnippet(out, cmp, nil)
 		if tst.err {
 			if err == nil {
@@ -366,7 +366,7 @@ func TestHTML(t *testing.T) {
 	registry.ResetRegistry()
 	out := new(bytes.Buffer)
 
-	s := &HtmlSnippet{TagName: "span"}
+	s := &HTMLSnippet{TagName: "span"}
 	_, err := WriteHtmlSnippet(out, s, nil)
 	require.NoError(t, err)
 	require.Equal(t, `<SPAN id="ick-1"></SPAN>`, out.String())
@@ -374,7 +374,7 @@ func TestHTML(t *testing.T) {
 	html := Html(s, nil)
 	require.Equal(t, `<SPAN id="ick-1"></SPAN>`, string(html))
 
-	s2 := &HtmlSnippet{TagName: "span", Body: "hello"}
+	s2 := &HTMLSnippet{TagName: "span", Body: "hello"}
 	html = Html(s2, nil)
 	require.Equal(t, `<SPAN id="ick-2">hello</SPAN>`, string(html))
 

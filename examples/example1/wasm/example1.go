@@ -31,18 +31,18 @@ func main() {
 
 	// 1. demonstrate the use of the go HTML templating package to build page content directly on the front-end.
 	htmlTemplate := `Hello <strong>%s</strong>!`
-	dom.Id("ex1a").RenderHtml(dom.INSERT_BODY, html.HTMLstring(fmt.Sprintf(htmlTemplate, "Bob")), nil)
-	dom.Id("ex1b").RenderHtml(dom.INSERT_BODY, html.HTMLstring(fmt.Sprintf(htmlTemplate, "Alice")), nil)
+	dom.Id("ex1a").RenderHtml(dom.INSERT_BODY, html.String(fmt.Sprintf(htmlTemplate, "Bob")), nil)
+	dom.Id("ex1b").RenderHtml(dom.INSERT_BODY, html.String(fmt.Sprintf(htmlTemplate, "Alice")), nil)
 
 	// To see what happend with a wrong html element ID,
 	// open the console on the browser side.
-	dom.Id("ex1c").RenderHtml(dom.INSERT_BODY, html.HTMLstring(fmt.Sprintf(htmlTemplate, "Carole")), nil)
+	dom.Id("ex1c").RenderHtml(dom.INSERT_BODY, html.String(fmt.Sprintf(htmlTemplate, "Carole")), nil)
 
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.
 	markdown.RenderMarkdown(dom.Id("ex1d"), "### Markdown\nHello **John**", nil)
 
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive
-	ick.RegisterSimpleSnippet("ick-icecake-brand", "", "<span class='brand'>Icecake</span>")
+	ick.RegisterDefaultSnippet("ick-icecake-brand", "", "<span class='brand'>Icecake</span>")
 	markdown.RenderMarkdown(dom.Id("readme"), readme, nil,
 		goldmark.WithRendererOptions(
 			mdhtml.WithUnsafe(),

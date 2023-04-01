@@ -17,28 +17,7 @@ import (
 	"github.com/sunraylab/icecake/pkg/registry"
 )
 
-// HTMLstring encapsulates a known safe HTMLstring document fragment.
-// It should not be used for HTMLstring from a third-party, or HTMLstring with
-// unclosed tags or comments.
-//
-// Use of this type presents a security risk:
-// the encapsulated content should come from a trusted source,
-// as it will be included verbatim in the output.
-type HTMLstring string
-
-type SnippetTemplate struct {
-	// The tagname used to render the html container element of this composer.
-	// If tagname returns an empety string, the rendering does not generates the container element,
-	// in such case snippet's attributes are ignored.
-	TagName HTMLstring
-
-	Attributes string
-
-	// Body returns the html template used to generate the content inside the container html element.
-	Body HTMLstring
-}
-
-type HtmlComposer interface {
+type HTMLComposer interface {
 	// InlineName returns the unique name of the composer.
 	// This name is used to register a component to enable inline instantiation,
 	// it's also used as a default class name in the component container.
@@ -52,10 +31,10 @@ type HtmlComposer interface {
 	Template(_data *DataState) SnippetTemplate
 
 	// SetAttribute saves a single key/value attribute. The value must be unquoted.
-	SetAttribute(key string, value HTMLstring, overwrite bool)
+	SetAttribute(key string, value String, overwrite bool)
 
 	// Attributes returns the formated list of attributes used to generate the container element,
-	Attributes() HTMLstring
+	Attributes() String
 
 	// Embed embeds sub-composers
 	Embed(id string, cmp any)
@@ -64,27 +43,20 @@ type HtmlComposer interface {
 	Embedded() map[string]any
 }
 
-type DataState struct {
-	//Id   string // the id of the current processing component
-	//Me   any    // the current processing component, should embedd an HtmlSnippet
-	Page any // the current ick page, can be nil
-	App  any // the current ick App, can be nil
-}
-
 // Html returns the html rendered of the _composer
-func Html(_composer HtmlComposer, _data *DataState) HTMLstring {
+func Html(_composer HTMLComposer, _data *DataState) String {
 	_, html := Render(_composer, _data)
 	return html
 }
 
 // Render returns the html rendered of _snippet and the _id created
-func Render(_composer HtmlComposer, _data *DataState) (_id string, _html HTMLstring) {
+func Render(_composer HTMLComposer, _data *DataState) (_id string, _html String) {
 	out := new(bytes.Buffer)
 	id, err := WriteHtmlSnippet(out, _composer, _data)
 	if err != nil {
 		log.Printf("error rendering html snippet: %s\n", err.Error())
 	}
-	return id, HTMLstring(out.String())
+	return id, String(out.String())
 }
 
 // WriteHtmlSnippet render the HTML of the _composer, its tag element and its body, to _out.
@@ -93,7 +65,7 @@ func Render(_composer HtmlComposer, _data *DataState) (_id string, _html HTMLstr
 // if the composer does not have a tagname, a virtual id (never in the DOM) is returned unless you've forced an Id.
 // Every ick-tag founded in the body of the composer are unfolded and rendered recursively.
 func WriteHtmlSnippet(_out io.Writer, _composer any, _data *DataState) (_id string, _err error) {
-	composer, ok := _composer.(HtmlComposer)
+	composer, ok := _composer.(HTMLComposer)
 	if !ok {
 		return "", fmt.Errorf("RenderHtmlSnippet failed: _cmp must implement HtmlComposer interface")
 	}
@@ -107,8 +79,8 @@ func WriteHtmlSnippet(_out io.Writer, _composer any, _data *DataState) (_id stri
 //
 // otherwise an error is generated and the unfolding process stops immediatly.
 // Direct ick-components found and instantiated are returned in the _embedded map.
-func UnfoldHtml(_out io.Writer, _html HTMLstring, _data *DataState) (_embedded map[string]any, _err error) {
-	virts := &HtmlSnippet{}
+func UnfoldHtml(_out io.Writer, _html String, _data *DataState) (_embedded map[string]any, _err error) {
+	virts := &HTMLSnippet{}
 	if len(_html) > 0 {
 		_err = unfoldBody(virts, _out, []byte(_html), _data, 0)
 	}
@@ -126,7 +98,7 @@ func renderHtmlSnippet(_out io.Writer, _composer any, _data *DataState, _deep in
 		return "", _err
 	}
 
-	composer := _composer.(HtmlComposer)
+	composer := _composer.(HTMLComposer)
 
 	// get ickname for this _composer
 	ickname := ""
@@ -138,9 +110,12 @@ func renderHtmlSnippet(_out io.Writer, _composer any, _data *DataState, _deep in
 	id := composer.Id()
 	if id == "" {
 		id = registry.GetUniqueId(ickname)
-		composer.SetAttribute("id", HTMLstring(id), false)
+		composer.SetAttribute("id", String(id), false)
 	}
 	_id = composer.Id()
+
+	// DEBUG:
+	fmt.Printf("level=%d -> rendering html snippet id=%q(%s)\n", _deep, _id, reflect.TypeOf(_composer).String())
 
 	// get the template
 	t := composer.Template(_data)
@@ -150,7 +125,7 @@ func renderHtmlSnippet(_out io.Writer, _composer any, _data *DataState, _deep in
 		// must merge template attributes with already loaded component attributes
 		// the id attribute is always ignored because already setup
 		parseAttributes(t.Attributes, composer, false)
-		composer.SetAttribute("class", HTMLstring(ickname), false)
+		composer.SetAttribute("class", String(ickname), false)
 		fmt.Fprintf(_out, "<%s %s>", tagname, composer.Attributes())
 	} else {
 		if len(t.Body) == 0 {
@@ -162,9 +137,6 @@ func renderHtmlSnippet(_out io.Writer, _composer any, _data *DataState, _deep in
 	if composer.Id() != _id {
 		panic("renderHtmlSnippet: id discrepency")
 	}
-
-	// DEBUG:
-	log.Printf("level=%d -> rendering html snippet id=%q(%s)\n", _deep, _id, reflect.TypeOf(_composer).String())
 
 	if len(t.Body) > 0 {
 		_err = unfoldBody(composer, _out, []byte(t.Body), _data, _deep)
@@ -210,7 +182,7 @@ func (_st *stepway) closeick(i int) {
 //	`<ick-{tagname} [boolattribute] [attribute=[']value[']]/>`
 //
 // otherwise an error is generated and the unfolding process stops immediatly.
-func unfoldBody(_parent HtmlComposer, _output io.Writer, _body []byte, _data *DataState, _deep int) (_err error) {
+func unfoldBody(_parent HTMLComposer, _output io.Writer, _body []byte, _data *DataState, _deep int) (_err error) {
 
 	field := func(s stepway) []byte {
 		return _body[s.fieldat:s.fieldto]
@@ -222,6 +194,7 @@ func unfoldBody(_parent HtmlComposer, _output io.Writer, _body []byte, _data *Da
 	attrs := make(map[string]string, 0)
 
 	ilast := len(_body) - 1
+nextbyte:
 	for i := 0; i <= ilast && _err == nil; i++ {
 		b := _body[i]
 		bclose_delim := string(_body[i:mini(i+2, ilast+1)]) == "/>"
@@ -261,7 +234,6 @@ func unfoldBody(_parent HtmlComposer, _output io.Writer, _body []byte, _data *Da
 					_err = errors.New("'<ick-' tag found without name")
 					break
 				}
-				// TODO : instantiate the component right now
 				ickname = strings.ToLower(ickname)
 				aname = ""
 				avalue = ""
@@ -290,9 +262,9 @@ func unfoldBody(_parent HtmlComposer, _output io.Writer, _body []byte, _data *Da
 
 		case processing_ANAME:
 			switch {
-			case b == ' ' && walk.fieldat == 0: // trim left spaces
-				break
-			case (b == ' ' || b == '=' || bclose_delim) && walk.fieldat > 0: // get and save aname
+			case (b == ' ' || b == '\n' || b == '\t') && walk.fieldat == 0: // trim left spaces and \n
+				continue nextbyte
+			case (b == ' ' || b == '=' || b == '\n' || b == '\t' || bclose_delim) && walk.fieldat > 0: // get and save aname
 				walk.fieldto = i
 				aname = string(field(walk))
 				attrs[aname] = ""
@@ -380,7 +352,7 @@ func unfoldBody(_parent HtmlComposer, _output io.Writer, _body []byte, _data *Da
 }
 
 // unfoldick render the ick-component corresponding to _ickname and its unfolded _attrs.
-func unfoldick(_parent HtmlComposer, _output io.Writer, _ickname string, _attrs map[string]string, _data *DataState, _deep int) (_err error) {
+func unfoldick(_parent HTMLComposer, _output io.Writer, _ickname string, _attrs map[string]string, _data *DataState, _deep int) (_err error) {
 	// does this tag refer to a registered component ?
 	regentry := registry.GetRegistryEntry(_ickname)
 	if regentry.Component() != nil {
@@ -388,7 +360,7 @@ func unfoldick(_parent HtmlComposer, _output io.Writer, _ickname string, _attrs 
 		// clone the registered component
 		newref := reflect.New(reflect.TypeOf(regentry.Component()).Elem())
 		newref.Elem().Set(reflect.ValueOf(regentry.Component()).Elem())
-		newcmp := newref.Interface().(HtmlComposer)
+		newcmp := newref.Interface().(HTMLComposer)
 
 		// process unfolded attributes, set value of ickcomponent field when name of attribute matches field name,
 		// otherwise set unfolded attribute to the attribute of the component.
@@ -397,7 +369,7 @@ func unfoldick(_parent HtmlComposer, _output io.Writer, _ickname string, _attrs 
 			if !found {
 				// this attribute is not a field of the componenent
 				// keep it as is unless it is the class attribute, in this case, add the tokens
-				newcmp.SetAttribute(aname, HTMLstring(avalue), false)
+				newcmp.SetAttribute(aname, String(avalue), false)
 			} else {
 				// feed data struct with the value
 				field := newref.Elem().FieldByName(aname)
@@ -480,7 +452,7 @@ func parseQuoted(_str string) string {
 // An attribute can have a value at the right of an "=" symbol.
 // The value can be delimited by quotes ( " or ' ) and in that case may contains whitespaces.
 // The string is processed until the end or an error occurs when invalid char is met.
-func parseAttributes(_alist string, _cmp HtmlComposer, _overwrite bool) (_err error) {
+func parseAttributes(_alist string, _cmp HTMLComposer, _overwrite bool) (_err error) {
 
 	//pattrs = new(Attributes)
 	//pattrs.amap = make(map[string]StringQuotes)
@@ -522,8 +494,18 @@ func parseAttributes(_alist string, _cmp HtmlComposer, _overwrite bool) (_err er
 			istart = 0
 		}
 		value, unparsed, _ = strings.Cut(unparsed[istart:], string(delim))
-		_cmp.SetAttribute(name, HTMLstring(value), _overwrite)
+		_cmp.SetAttribute(name, String(value), _overwrite)
 		//		_pattrs.amap[name] = StringQuotes(value)
 	}
 	return nil
+}
+
+// helpers
+
+func mini(a int, b int) int {
+	if a < b {
+		return a
+	} else {
+		return b
+	}
 }

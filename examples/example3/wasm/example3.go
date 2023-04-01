@@ -72,7 +72,7 @@ func OnClickBtn1(event *event.MouseEvent, target *dom.Element) {
 	notif.SetClasses("is-warning is-light")
 
 	// Insert the component into the DOM
-	dom.Id("notif_container").RenderSnippet(dom.INSERT_LAST_CHILD, notif, nil)
+	dom.Id("notif_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)
 }
 
 func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
@@ -80,16 +80,16 @@ func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 	// instantiate the Notify component and init its data
 	idtimeleft := registry.GetUniqueId("timeleft")
 	notif := new(ui.Notify)
-	notif.Message = `This message will be automatically removed in <strong><span id="` + html.HTMLstring(idtimeleft) + `"></span> seconds</strong>, unless you close it before. 😀`
-	notif.Timeout = time.Second * 7
+	notif.Message = `This message will be automatically removed in <strong><span id="` + html.String(idtimeleft) + `"></span> seconds</strong>, unless you close it before. 😀`
+	notif.Delete.Timeout = time.Second * 7
 	notif.SetClasses("is-danger is-light").SetAttribute("role", "alert", true)
-	notif.Tic = func(clk *clock.Clock) {
+	notif.Delete.Tic = func(clk *clock.Clock) {
 		s := math.Round(notif.Delete.TimeLeft().Seconds())
 		dom.Id(idtimeleft).InsertText(dom.INSERT_BODY, "%v", s)
 	}
 
 	// Insert the component into the DOM
-	dom.Id("notif_container").RenderSnippet(dom.INSERT_LAST_CHILD, notif, nil)
+	dom.Id("notif_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)
 }
 
 func OnClickBtn3(event *event.MouseEvent, target *dom.Element) {
@@ -102,7 +102,7 @@ func OnClickBtn3(event *event.MouseEvent, target *dom.Element) {
 	notif.SetClasses("is-success toast")
 
 	// Insert the component into the DOM
-	dom.Id("toast_container").RenderSnippet(dom.INSERT_LAST_CHILD, notif, nil)
+	dom.Id("toast_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)
 }
 
 func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
@@ -118,5 +118,5 @@ func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
 	</box>`
 
 	// Insert the component into the DOM
-	dom.Id("ex3_container").RenderHtml(dom.INSERT_LAST_CHILD, html.HTMLstring(h), nil)
+	dom.Id("ex3_container").RenderHtml(dom.INSERT_LAST_CHILD, html.String(h), nil)
 }

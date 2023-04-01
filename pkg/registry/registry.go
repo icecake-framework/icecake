@@ -20,7 +20,7 @@ type RegistryEntry struct {
 	name  string // unique name of the component
 	cmp   any    // The component type that must be instantiated
 	count int    // number of time this object has already been instantiated
-	//	css   string       // the unique css related to this component. will be added into the head of the page
+	//	css   string       // TODO: handle the unique css related to this component. will be added into the head of the page
 }
 
 func (_r RegistryEntry) Name() string {

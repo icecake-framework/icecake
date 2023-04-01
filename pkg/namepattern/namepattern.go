@@ -142,6 +142,7 @@ func compileCharset(_strcharsets string) (_ret []charset, _err error) {
 // _S can be either a single letter or a hexa code formatted with the pattern `\x{FF...}`.
 func parseRune(_s string) (_r rune, _err error) {
 	switch len([]rune(_s)) {
+	// TODO: handle "\\u" case
 	case 0:
 		return 0, fmt.Errorf("empty string")
 	case 1:
@@ -159,7 +160,6 @@ func parseRune(_s string) (_r rune, _err error) {
 			_r = rune(r)
 		default:
 			return 0, fmt.Errorf("wrong range definition")
-			// TODO: case "\\u"
 		}
 	}
 	return _r, nil

@@ -74,10 +74,6 @@ const (
 	FULLSCREEN_ONERROR  FULLSCREEN_EVENT = "fullscreenerror"
 )
 
-type Listener interface {
-	AddListeners()
-}
-
 /******************************************************************************
 * event Handler
 *******************************************************************************/
@@ -98,29 +94,6 @@ func (h Handler) Release() {
 		h.release()
 	}
 }
-
-/******************************************************************************
-* EventTarget
-*******************************************************************************/
-
-// EventTarget is the root of many objetcs: nodes, window...
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
-// type EventTarget struct {
-// 	js.JSValue               // embedded js.Value
-// 	eventHandlers []*Handler // eventhandlers added with an listener to this eventtarget
-// }
-
-// // CastEventTarget is casting a js.Value into EventTarget.
-// func CastEventTarget(_jsv js.JSValueProvider) *EventTarget {
-// 	if _jsv.Value().Type() != js.TYPE_OBJECT {
-// 		console.Errorf("casting EventTarget failed")
-// 		return nil
-// 	}
-// 	evttget := new(EventTarget)
-// 	evttget.JSValue = _jsv.Value()
-// 	return evttget
-// }
 
 /******************************************************************************
 * Event
@@ -455,12 +428,12 @@ func (_this *MouseEvent) GetModifierState(keyArg string) bool {
 * WheelEvent
  */
 
-type DOM_DELTA uint
+type WHEEL_DELTA_MODE uint
 
 const (
-	DOM_DELTA_PIXEL DOM_DELTA = 0x00
-	DOM_DELTA_LINE  DOM_DELTA = 0x01
-	DOM_DELTA_PAGE  DOM_DELTA = 0x02
+	WHEEL_DELTA_PIXEL WHEEL_DELTA_MODE = 0x00
+	WHEEL_DELTA_LINE  WHEEL_DELTA_MODE = 0x01
+	WHEEL_DELTA_PAGE  WHEEL_DELTA_MODE = 0x02
 )
 
 type WheelEvent struct {
@@ -494,8 +467,8 @@ func (_this *WheelEvent) DeltaZ() float64 {
 }
 
 // DeltaMode returning attribute 'deltaMode' with
-func (_this *WheelEvent) DeltaMode() DOM_DELTA {
-	return DOM_DELTA(_this.Get("deltaMode").Int())
+func (_this *WheelEvent) DeltaMode() WHEEL_DELTA_MODE {
+	return WHEEL_DELTA_MODE(_this.Get("deltaMode").Int())
 }
 
 /**********************************************************************************
@@ -669,13 +642,13 @@ const (
 	KEYBOARD_ONKEYUP    KEYBOARD_EVENT = "keyup"
 )
 
-type DOM_KEY_LOCATION uint
+type KEYBOARD_LOCATION uint
 
 const (
-	DOM_KEY_LOCATION_STANDARD DOM_KEY_LOCATION = 0x00
-	DOM_KEY_LOCATION_LEFT     DOM_KEY_LOCATION = 0x01
-	DOM_KEY_LOCATION_RIGHT    DOM_KEY_LOCATION = 0x02
-	DOM_KEY_LOCATION_NUMPAD   DOM_KEY_LOCATION = 0x03
+	KEYBOARD_LOC_STANDARD KEYBOARD_LOCATION = 0x00
+	KEYBOARD_LOC_LEFT     KEYBOARD_LOCATION = 0x01
+	KEYBOARD_LOC_RIGHT    KEYBOARD_LOCATION = 0x02
+	KEYBOARD_LOC_NUMPAD   KEYBOARD_LOCATION = 0x03
 )
 
 type KeyboardEvent struct {
@@ -704,8 +677,8 @@ func (_this *KeyboardEvent) Code() string {
 }
 
 // Location returning attribute 'location' with
-func (_this *KeyboardEvent) Location() DOM_KEY_LOCATION {
-	return DOM_KEY_LOCATION(_this.Get("location").Int())
+func (_this *KeyboardEvent) Location() KEYBOARD_LOCATION {
+	return KEYBOARD_LOCATION(_this.Get("location").Int())
 }
 
 // CtrlKey returning attribute 'ctrlKey' with

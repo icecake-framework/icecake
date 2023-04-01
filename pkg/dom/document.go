@@ -371,17 +371,6 @@ func (_doc Document) SelectorQueryAll(selectors string) []*Element {
 	return CastElements(elems)
 }
 
-// CreateAttribute  creates a new attribute node, and returns it. The object created is a node implementing the Attr interface.
-// The DOM does not enforce what sort of attributes can be added to a particular element in this manner.
-//
-// # TODO test CreateAttribute
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/createAttribute
-// func (_doc *Document) CreateAttribute(localName string) *Attribute {
-// 	attr := _doc.jsValue.Call("createAttribute", localName)
-// 	return CastAttribute(attr)
-// }
-
 // GetElementAtPoint returns the topmost Element at the specified coordinates (relative to the viewport).
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/elementFromPoint

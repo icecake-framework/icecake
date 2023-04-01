@@ -29,13 +29,6 @@ const (
 	INSERT_BODY                            // like inner html
 )
 
-// const (
-// 	WI_BEFOREBEGIN WHERE_INSERT = "beforebegin" // Before the Element itself.
-// 	WI_INSIDEFIRST WHERE_INSERT = "afterbegin"  // Just inside the element, before its first child.
-// 	WI_INSIDELAST  WHERE_INSERT = "beforeend"   // Just inside the element, after its last child.
-// 	WI_AFTEREND    WHERE_INSERT = "afterend"    // After the element itself.
-// )
-
 /****************************************************************************
 * Element
 *****************************************************************************/
@@ -371,7 +364,7 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 // 	WI_INSIDELAST  WHERE_INSERT = "beforeend"   // Just inside the element, after its last child.
 // 	WI_AFTEREND    WHERE_INSERT = "afterend"    // After the element itself.
 
-func (_me *Element) InsertHTML(_where INSERT_WHERE, _unsafeHtml html.HTMLstring) *Element {
+func (_me *Element) InsertHTML(_where INSERT_WHERE, _unsafeHtml html.String) *Element {
 	if !_me.IsDefined() {
 		return _me
 	}
@@ -1036,95 +1029,122 @@ func (_htmle *Element) AddWheelEvent(_listener func(*event.WheelEvent, *Element)
 * Extra rendering
 *****************************************************************************/
 
-// // RenderNamedValue look recursively for any _elem children having the "data-ick-namedvalue" token matching _name
-// // and render inner text with the _value
-// func (_elem *Element) RenderChildrenValue(_name string, _format string, _value ...any) {
-// 	if !_elem.IsDefined() {
-// 		return
-// 	}
-// 	_name = helper.Normalize(_name)
-// 	text := fmt.Sprintf(_format, _value...)
-
-// 	children := _elem.FilteredChildren(NT_ELEMENT, func(_node *Node) bool {
-// 		// BUG:
-// 		namedvalue, _ := CastElement(_node).Attributes().Attribute("data-ick-namedvalue")
-// 		return _name == namedvalue
-// 	})
-
-// 	for _, node := range children {
-// 		CastElement(node).RenderValue(text)
-// 	}
-// }
-
 // RenderHtml unfolding components if any
 // _elem must be in the DOM
-func (_elem *Element) RenderHtml(_where INSERT_WHERE, _body html.HTMLstring, _data *html.DataState) error {
+// BUG:must wrap recursively
+func (_elem *Element) RenderHtml(_where INSERT_WHERE, _body html.String, _data *html.DataState) (_err error) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
 	}
 
+	var embedded map[string]any
 	out := new(bytes.Buffer)
-	embedded, err := html.UnfoldHtml(out, _body, _data)
-	if err == nil {
-		_elem.InsertHTML(_where, html.HTMLstring(out.String()))
+	embedded, _err = html.UnfoldHtml(out, _body, _data)
+	if _err == nil {
+
+		_elem.InsertHTML(_where, html.String(out.String()))
+
+		// wrap every embedded components with their dom element
 		if embedded != nil {
-			for _, e := range embedded {
-				if l, ok := e.(event.Listener); ok {
-					l.AddListeners()
+			// DEBUG: console.Warnf("scanning %+v", embedded)
+			for subid, sub := range embedded {
+				// look if the id is in the DOM and wrap it to the component
+				if w, ok := sub.(js.JSValueWrapper); ok {
+					sube := Id(subid) // look everywhere in the DOM
+					if sube != nil {
+						// DEBUG:
+						console.Warnf("wrapping %+v", w)
+						w.Wrap(sube)
+					}
+				} else {
+					_err = console.Errorf("sub component %q in html is not a js wrapper", reflect.TypeOf(sub).String())
 				}
+
+				// add listeners into the DOM if any
+				if l, ok := sub.(Listener); ok {
+					l.AddListeners()
+				} else {
+					_err = console.Warnf("embedded component in html string is not a listener", reflect.TypeOf(sub).String())
+				}
+
 			}
+		} else {
+			_err = console.Errorf("html string does not have any embedded components")
 		}
+
+		// if embedded != nil {
+		// 	for _, e := range embedded {
+		// 		if l, ok := e.(event.Listener); ok {
+		// 			l.AddListeners()
+		// 		}
+		// 	}
+		// }
+	} else {
+		console.Errorf(_err.Error())
 	}
-	return err
+	return _err
 }
 
-// RenderComponent
-func (_elem *Element) RenderSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
+// InsertSnippet render the _snippet, insert it into the DOM, wrap every embedded compoent with their DOM element
+// FIXME: disallow inserting a snippet with the same id already in the DOM
+func (_elem *Element) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
 	if !_elem.IsDefined() {
-		return "", console.Errorf("RenderComponent: failed on undefined element")
+		return "", console.Errorf("Element:InsertSnippet failed on undefined element")
 	}
 
 	// render the html element and body, unfolding sub components
 	out := new(bytes.Buffer)
 	_id, _err = html.WriteHtmlSnippet(out, _snippet, _data)
 	if _err == nil {
+
 		// insert the html element into the dom
-		_elem.InsertHTML(_where, html.HTMLstring(out.String()))
-		if c, ok := _snippet.(html.HtmlComposer); ok {
-			embedded := c.Embedded()
-			// proceed with embedded components
-			if embedded != nil {
-				for id, sub := range embedded {
-					// look if the id is in the DOM and wrap it to the component
-					if w, ok := sub.(js.JSValueWrapper); ok {
-						cmpe := Id(id) // look everywhere in the DOM
-						if cmpe != nil {
-							w.Wrap(cmpe)
-						}
-					} else {
-						console.Errorf("sub component of HtmlComposer %q is not a js wrapper: %s", _id, reflect.TypeOf(sub).String())
-					}
-				}
-			} else {
-				console.Errorf("HtmlComposer %q do not have any embedded components", _id)
-			}
+		newe := _elem.InsertHTML(_where, html.String(out.String()))
+		if w, ok := _snippet.(js.JSValueWrapper); ok {
+			w.Wrap(newe)
 		} else {
-			// can be a simple html component without event handling
-			console.Errorf("_snippet %q not an HtmlComposer %v", _id, reflect.TypeOf(_snippet).String())
+			_err = console.Errorf("_snippet %q(%v) is not an JSValueWrapper", _id, reflect.TypeOf(_snippet).String())
 		}
 
-		if l, ok := _snippet.(event.Listener); ok {
-			l.AddListeners()
+		// wrap every embedded components with their dom element
+		if c, ok := _snippet.(html.HTMLComposer); ok {
+			_err = WrapEmbedded(c)
+		} else {
+			// can be a simple html component without event handling
+			_err = console.Errorf("_snippet %q(%v) is not an HtmlComposer", _id, reflect.TypeOf(_snippet).String())
 		}
+
+		// add listeners into the DOM if any
+		if l, ok := _snippet.(Listener); ok {
+			l.AddListeners()
+		} else {
+			_err = console.Warnf("_snippet %q(%v) is not a listener", _id, reflect.TypeOf(_snippet).String())
+		}
+
+	} else {
+		console.Errorf(_err.Error())
 	}
 	return _id, nil
 }
 
-// func Render(c HtmlComposer) (_id string, _html HTMLstring) {
-// 	out := new(bytes.Buffer)
-// 	id, err := RenderHtmlSnippet(out, c, nil)
-// 	if err != nil {
-// 		log.Printf("error rendering html snippet: %s\n", err.Error())
-// 	}
-// 	return id, HTMLstring(out.String())
-// }
+// wrap every embedded components with their dom element and add their listeners and sub-listeners
+func WrapEmbedded(_snippet html.HTMLComposer) (_err error) {
+	embedded := _snippet.Embedded()
+	if embedded == nil {
+		return console.Errorf("HtmlComposer %q does not have any embedded components", _snippet.Id())
+	}
+
+	// DEBUG: console.Warnf("scanning %+v", embedded)
+	for subid, sub := range embedded {
+		// look for the id in the DOM and wrap it to the component
+		if w, ok := sub.(js.JSValueWrapper); ok {
+			sube := Id(subid) // look everywhere in the DOM
+			if sube != nil {
+				// DEBUG: console.Warnf("wrapping %+v", w)
+				w.Wrap(sube)
+			}
+		} else {
+			_err = console.Warnf("%q embed a non wrappable component: %q", _snippet.Id(), reflect.TypeOf(sub).String())
+		}
+	}
+	return _err
+}
