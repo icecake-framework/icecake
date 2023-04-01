@@ -1,173 +1,69 @@
 package ui
 
 import (
-	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/errors"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	"github.com/sunraylab/icecake/pkg/dom"
+	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/sunraylab/icecake/pkg/ick"
 )
 
-// A string indicating the behavior of the button
-type BUTTON_TYPE string
+func init() {
+	ick.RegisterComposer("ick-button", &Button{})
+}
+
+type BUTTON_TYPE int
 
 const (
-	BTNT_SUBMIT BUTTON_TYPE = "submit" // The button submits the form. This is the default value if the attribute is not specified, or if it is dynamically changed to an empty or invalid value.
-	BTNT_RESET  BUTTON_TYPE = "reset"  // The button resets the form.
-	BTNT_BUTTON BUTTON_TYPE = "button" // The button does nothing with the form.
-	BTNT_MENU   BUTTON_TYPE = "menu"   // The button displays a menu.
+	BTN_TYPE_BUTTON BUTTON_TYPE = iota // <button> form buttons. The default value
+	BTN_TYPE_A                         // <a> anchor links
+	BTN_TYPE_SUBMIT                    // <input type="submit"> submit inputs
+	BTN_TYPE_RESET                     // <input type="reset"> reset inputs
 )
 
-/****************************************************************************
-* HTMLButtonElement
-*****************************************************************************/
-
-// https://developer.mozilla.org/en-US/docs/Web/API/Button
 type Button struct {
-	wick.Element
+	dom.UISnippet
+
+	ButtonType BUTTON_TYPE
+
+	IsOutlined bool
+	IsRounded  bool
+	IsLoading  bool
 }
 
-// CastButton is casting a js.Value into HTMLButtonElement.
-func CastButton(_jsvp wick.JSValueProvider) *Button {
-	if _jsvp.Value().Type() != wick.TYPE_OBJECT || _jsvp.Value().GetString("tagName") != "BUTTON" {
-		errors.ConsoleErrorf("casting HTMLButton failed")
-		return &Button{}
+func (_btn *Button) Template(*html.DataState) (_t html.SnippetTemplate) {
+	switch _btn.ButtonType {
+	case BTN_TYPE_A:
+		_t.TagName = "a"
+		_t.Attributes = `class="button"`
+	case BTN_TYPE_SUBMIT:
+		_t.TagName = "input"
+		_t.Attributes = `class="button" type="submit"`
+	case BTN_TYPE_RESET:
+		_t.TagName = "input"
+		_t.Attributes = `class="button" type="reset"`
+	default:
+		_t.TagName = "button"
 	}
-	cast := new(Button)
-	cast.JSValue = _jsvp.Value()
-	return cast
+
+	if _btn.IsOutlined {
+		_btn.SetClasses("is-outlined")
+	}
+	if _btn.IsRounded {
+		_btn.SetClasses("is-rounded")
+	}
+	if _btn.IsLoading {
+		_btn.SetClasses("is-loading")
+	}
+
+	// TODO: finalize
+
+	return _t
 }
 
-// GetButtonById returns a Button corresponding to the existing _id into the DOM,
-// otherwhise returns an undefined Button.
-func ButtonById(_id string) *Button {
-	_id = helper.Normalize(_id)
-	jse := wick.GetDocument().ChildById(_id)
-	if jse.IsObject() && jse.GetString("tagName") == "BUTTON" {
-		btn := new(Button)
-		btn.JSValue = jse.JSValue
-		return btn
+func (_btn *Button) Loading(_f bool) {
+	_btn.IsLoading = _f
+	if _f {
+		_btn.DOM.Classes().AddTokens("is-loading")
+	} else {
+		_btn.DOM.Classes().RemoveTokens("is-loading")
 	}
-
-	errors.ConsoleWarnf("GetElementById failed: %q not found, or not a <Element>", _id)
-	return new(Button)
-}
-
-/****************************************************************************
-* HTMLButtonElement's properties
-*****************************************************************************/
-
-// IsAutofocus returns a boolean value indicating whether or not the control should have input focus when the page loads,
-// unless the user overrides it, for example by typing in a different control. Only one form-associated element in a document can have this attribute specified.
-func (_btn *Button) IsAutofocus() bool {
-	if !_btn.IsDefined() {
-		return false
-	}
-	return _btn.GetBool("autofocus")
-}
-
-// SetAutofocus setting attribute 'autofocus' with
-// type bool (idl: boolean).
-func (_btn *Button) SetAutofocus(value bool) *Button {
-	if !_btn.IsDefined() {
-		return nil
-	}
-	_btn.Set("autofocus", value)
-	return _btn
-}
-
-// IsDisabled returns a boolean value indicating whether or not the control is disabled, meaning that it does not accept any clicks.
-func (_btn *Button) IsDisabled() bool {
-	if !_btn.IsDefined() {
-		return false
-	}
-	return _btn.GetBool("disabled")
-}
-
-// SetDisabled setting attribute 'disabled' with
-// type bool (idl: boolean).
-func (_btn *Button) SetDisabled(value bool) *Button {
-	if !_btn.IsDefined() {
-		return nil
-	}
-	_btn.Set("disabled", value)
-	return _btn
-}
-
-// Name of the object when submitted with a form. If specified, it must not be the empty string.
-func (_btn *Button) Name() string {
-	if !_btn.IsDefined() {
-		return wick.UNDEFINED_NODE
-	}
-	return _btn.GetString("name")
-}
-
-// Name of the object when submitted with a form. If specified, it must not be the empty string.
-func (_btn *Button) SetName(name string) {
-	if !_btn.IsDefined() {
-		return
-	}
-	_btn.Set("name", name)
-}
-
-// Value A string representing the current form control value of the button.
-func (_btn *Button) Value() string {
-	if !_btn.IsDefined() {
-		return wick.UNDEFINED_NODE
-	}
-	return _btn.GetString("value")
-}
-
-// Value A string representing the current form control value of the button.
-func (_btn *Button) SetValue(value string) {
-	if !_btn.IsDefined() {
-		return
-	}
-	_btn.Set("value", value)
-}
-
-// Type returning attribute 'type' with
-// type string (idl: DOMString).
-func (_btn *Button) Type() BUTTON_TYPE {
-	if !_btn.IsDefined() {
-		return BTNT_SUBMIT
-	}
-	typ := _btn.GetString("type")
-	return BUTTON_TYPE(typ)
-}
-
-// SetType setting attribute 'type' with
-// type string (idl: DOMString).
-func (_btn *Button) SetType(_typ BUTTON_TYPE) {
-	if !_btn.IsDefined() {
-		return
-	}
-	_btn.Set("type", string(_typ))
-}
-
-// WillValidate returns a boolean value indicating whether the button is a candidate for constraint validation.
-// It is false if any conditions bar it from constraint validation, including: its type property is reset or button; *
-// it has a <datalist> ancestor; or the disabled property is set to true.
-func (_btn *Button) WillValidate() bool {
-	if !_btn.IsDefined() {
-		return false
-	}
-	return _btn.GetBool("willValidate")
-}
-
-// ValidationMessage a string representing the localized message that describes the validation constraints
-// that the control does not satisfy (if any). This attribute is the empty string if the control is not a
-// candidate for constraint validation (willValidate is false), or it satisfies its constraints.
-func (_btn *Button) ValidationMessage() string {
-	if !_btn.IsDefined() {
-		return wick.UNDEFINED_NODE
-	}
-	return _btn.GetString("validationMessage")
-}
-
-// https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement/labels
-func (_btn *Button) Labels() []*wick.Element {
-	if !_btn.IsDefined() {
-		return make([]*wick.Element, 0)
-	}
-	elems := _btn.Get("labels")
-	return wick.CastElements(elems)
 }

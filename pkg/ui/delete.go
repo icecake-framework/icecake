@@ -2,9 +2,11 @@ package ui
 
 import (
 	"github.com/sunraylab/icecake/pkg/clock"
-	"github.com/sunraylab/icecake/pkg/errors"
-	ick "github.com/sunraylab/icecake/pkg/icecake"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	"github.com/sunraylab/icecake/pkg/console"
+	"github.com/sunraylab/icecake/pkg/dom"
+	"github.com/sunraylab/icecake/pkg/event"
+	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/sunraylab/icecake/pkg/ick"
 )
 
 /******************************************************************************
@@ -12,44 +14,46 @@ import (
 ******************************************************************************/
 
 func init() {
-	ick.TheCmpReg.RegisterComponent(Delete{})
+	ick.RegisterComposer("ick-delete", &Delete{})
 }
 
 type Delete struct {
-	wick.UIComponent
+	dom.UISnippet
 
 	// the element id to remove from the DOM
 	TargetID string
 
-	// The TargetID will be automatically removed after the clock Timeout duration, if not zero.
+	// The TargetID will be automatically removed after the clock Timeout duration if not zero.
 	// The timer starts when the delete button is rendered (call to addlisteners).
 	clock.Clock
+
+	// OnDelete, if set, is called when the deletion occurs and after the targetId has been removed
+	OnDelete func(*Delete)
 }
 
-func (_del *Delete) RegisterName() string {
-	return "ick-delete"
+func (_del *Delete) Template(_data *html.DataState) (_t html.SnippetTemplate) {
+	_t.TagName = "Button"
+	_t.Attributes = `class="delete" aria-label='delete'`
+	return
 }
 
-func (_del *Delete) Container(_compid string) (_tagname string, _classes string, _attrs string) {
-	return "button", "ick-delete delete", "aria-label='delete'"
-}
-
-func (_del *Delete) Listeners() {
+func (_del *Delete) AddListeners() {
 	if _del.TargetID != "" {
-		_del.AddMouseEvent(wick.MOUSE_ONCLICK, func(*wick.MouseEvent, *wick.Element) {
-			_del.Remove()
+		_del.DOM.AddMouseEvent(event.MOUSE_ONCLICK, func(*event.MouseEvent, *dom.Element) {
+			_del.RemoveTarget()
 		})
-		_del.Clock.Start(_del.Remove)
+		_del.Clock.Start(_del.RemoveTarget)
 
 	} else {
-		errors.ConsoleWarnf("missing TargetID for the ic-delete component")
+		console.Warnf("missing TargetID for the ic-delete component")
 	}
 }
 
-// Remove stops the timer and tocker, removes the delete component from the DOM
-// and removes also the TargetID from the DOM
-func (_del *Delete) Remove() {
+// RemoveTarget stops the timer and the ticker and removes the TargetID from the DOM
+func (_del *Delete) RemoveTarget() {
 	_del.Stop()
-	_del.UIComponent.Remove()
-	wick.App.ChildById(_del.TargetID).Remove()
+	dom.Id(_del.TargetID).Remove()
+	if _del.OnDelete != nil {
+		_del.OnDelete(_del)
+	}
 }

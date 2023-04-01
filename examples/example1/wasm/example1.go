@@ -11,10 +11,12 @@ import (
 
 	_ "embed"
 
+	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/sunraylab/icecake/pkg/ick"
 	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/renderer/html"
+	mdhtml "github.com/yuin/goldmark/renderer/html"
 )
 
 //go:embed readme.md
@@ -27,34 +29,23 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	doc := wick.GetDocument()
-
 	// 1. demonstrate the use of the go HTML templating package to build page content directly on the front-end.
-	var data1 struct{ Name string }
-	htmlTemplate := `Hello <strong>{{.Name}}</strong>!`
-
-	data1.Name = "Bob"
-	// HACK:
-	doc.ChildById("ex1a").RenderTemplate(htmlTemplate, data1)
-
-	data1.Name = "Alice"
-	doc.ChildById("ex1b").RenderTemplate(htmlTemplate, data1)
+	htmlTemplate := `Hello <strong>%s</strong>!`
+	dom.Id("ex1a").RenderHtml(dom.INSERT_BODY, html.String(fmt.Sprintf(htmlTemplate, "Bob")), nil)
+	dom.Id("ex1b").RenderHtml(dom.INSERT_BODY, html.String(fmt.Sprintf(htmlTemplate, "Alice")), nil)
 
 	// To see what happend with a wrong html element ID,
 	// open the console on the browser side.
-	data1.Name = "Carole"
-	doc.ChildById("ex1c").RenderTemplate(htmlTemplate, data1)
+	dom.Id("ex1c").RenderHtml(dom.INSERT_BODY, html.String(fmt.Sprintf(htmlTemplate, "Carole")), nil)
 
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.
-	data1.Name = "John"
-	markdown.RenderMarkdown(doc.ChildById("ex1d"), "### Markdown\nHello **{{.Name}}**", data1)
+	markdown.RenderMarkdown(dom.Id("ex1d"), "### Markdown\nHello **John**", nil)
 
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive
-	var data2 struct{ Brand string }
-	data2.Brand = "<span class='brand'>Icecake</span>"
-	markdown.RenderMarkdown(doc.ChildById("readme"), readme, data2,
+	ick.RegisterDefaultSnippet("ick-icecake-brand", "", "<span class='brand'>Icecake</span>")
+	markdown.RenderMarkdown(dom.Id("readme"), readme, nil,
 		goldmark.WithRendererOptions(
-			html.WithUnsafe(),
+			mdhtml.WithUnsafe(),
 		),
 	)
 

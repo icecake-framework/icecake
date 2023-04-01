@@ -4,31 +4,31 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	"github.com/sunraylab/icecake/pkg/dom"
 )
 
 func TestNode(t *testing.T) {
 
 	t.Run("IsInDOM", func(t *testing.T) {
 
-		assert.False(t, new(wick.Element).IsInDOM()) // console warning --> unable to get "isConnected": undefined js value
+		// console warning --> unable to get "isConnected": undefined js value
+		assert.False(t, new(dom.Element).IsInDOM())
 
-		div := wick.App.CreateElement("DIV").SetId("tstisindom")
+		div := dom.CreateElement("DIV").SetId("tstisindom")
 		assert.False(t, div.IsInDOM())
 
-		wick.App.ChildById("test-container").AppendChild(&div.Node)
+		dom.Doc().ChildById("test-container").AppendChild(&div.Node)
 		assert.True(t, div.IsInDOM())
 	})
 
 	t.Run("Children", func(t *testing.T) {
 
-		assert.False(t, new(wick.Node).HasChildren())
+		// console warning --> unable to call "hasChildNodes": undefined js value
+		assert.False(t, new(dom.Node).HasChildren())
 
-		dive := wick.App.ChildById("tstisindom")
+		dive := dom.Doc().ChildById("tstisindom")
 		assert.False(t, dive.HasChildren())
-		assert.True(t, wick.App.ChildById("test-container").HasChildren())
-
-		// has := _node.Call("hasChildNodes")
+		assert.True(t, dom.Doc().ChildById("test-container").HasChildren())
 	})
 
 }

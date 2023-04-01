@@ -16,9 +16,9 @@ func main() {
 
 	testing.Main(nil,
 		[]testing.InternalTest{
-			{"Test JSValue", TestJSValue},
-			{"Test Node", TestNode},
-			{"Test Window", TestWindow},
+			{"Tests JSValue", TestJSValue},
+			{"Tests Node", TestNode},
+			{"Tests browser", TestBrowser},
 		}, nil, nil)
 
 	// let's go

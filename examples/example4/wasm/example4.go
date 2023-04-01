@@ -9,11 +9,9 @@ package main
 import (
 	"fmt"
 
+	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/ui"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
 )
-
-var webapp *wick.WebApp
 
 // the main func is required by the wasm GO builder
 // outputs will appears in the console of the browser
@@ -22,28 +20,25 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	// we must call the icecake webapp factory once
-	webapp = wick.NewWebApp()
-
-	msg1 := &ui.Message{
-		Header:  "1st message: <strong>Hello World</strong>",
-		Message: "This is the default message layout. It may contains <a href='#'>link</a> or any other HTML content. It can't be deleted by the user.",
-	}
-	webapp.ChildById("msg-container").RenderComponent(msg1, nil)
+	// msg1 := &ui.Message{
+	// 	Header:  "1st message: <strong>Hello World</strong>",
+	// 	Message: "This is the default message layout. It may contains <a href='#'>link</a> or any other HTML content. It can't be deleted by the user.",
+	// }
+	// ui.RenderSnippet(webapp.ChildById("msg-container"), msg1, nil)
 
 	msg2 := &ui.Message{
 		Header:    "2nd message",
 		CanDelete: true,
 		Message:   "This second message use the BULMA <i>is-info</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message.",
 	}
-	msg2.Classes().AddTokens("is-info")
-	webapp.ChildById("msg-container").RenderComponent(msg2, nil)
+	msg2.SetClasses("is-info")
+	dom.Id("msg-container").InsertSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 
-	msg3 := &ui.Message{
-		Message: "<strong>3rd message:</strong>&nbsp;this third message don't have header",
-	}
-	msg3.Classes().AddTokens("is-warning")
-	webapp.ChildById("msg-container").RenderComponent(msg3, nil)
+	// msg3 := &ui.Message{
+	// 	Message: "<strong>3rd message:</strong>&nbsp;this third message don't have header",
+	// }
+	// msg3.SetClasses("is-warning")
+	// ui.RenderSnippet(webapp.ChildById("msg-container"), msg3, nil)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")

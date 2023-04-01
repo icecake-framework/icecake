@@ -1,8 +1,10 @@
 package ui
 
 import (
-	ick "github.com/sunraylab/icecake/pkg/icecake"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	"github.com/sunraylab/icecake/pkg/console"
+	"github.com/sunraylab/icecake/pkg/dom"
+	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/sunraylab/icecake/pkg/ick"
 )
 
 /******************************************************************************
@@ -10,34 +12,30 @@ import (
 ******************************************************************************/
 
 func init() {
-	ick.TheCmpReg.RegisterComponent(Message{})
+	ick.RegisterComposer("ick-message", &Message{})
 }
 
 type Message struct {
-	wick.UIComponent // embedded Component, with default implementation of composer interfaces
+	dom.UISnippet
 
-	Header    string // optional header to display on top of the message
-	CanDelete bool   // set to true to display the delete button and allow user to delete the message
-	Message   string // message to display within the notification
+	Header    html.String // optional header to display on top of the message
+	Message   html.String // message to display within the notification
+	CanDelete bool        // set to true to display the delete button and allow user to delete the message
 }
 
-func (*Message) RegisterName() string {
-	return "ick-message"
-}
-
-func (*Message) Container(_compid string) (_tagname string, _contclasses string, _contattrs string, _contstyle string) {
-	return "div", "ick-message message", "", ""
-}
-
-func (_msg *Message) Body() (_html string) {
+func (_msg *Message) Template(*html.DataState) (_t html.SnippetTemplate) {
+	_t.TagName = "div"
+	_t.Attributes = `class="message"`
 	if _msg.Header != "" {
-		var delhtml string
+		var delhtml html.String
 		if _msg.CanDelete {
-			//			delhtml = `<button class="delete" aria-label="delete"></button>`
-			delhtml = `<ick-delete TargetID='{{.Id}}'/>`
+			console.Warnf("TargetId=%s", _msg.Id())
+			delhtml = `<ick-delete TargetID='` + html.String(_msg.Id()) + `'/>`
 		}
-		_html += `<div class="message-header"><p>` + _msg.Header + `</p>` + delhtml + `</div>`
+		_t.Body = `<div class="message-header"><p>` + _msg.Header + `</p>` + delhtml + `</div>`
 	}
-	_html += `<div class="message-body">` + _msg.Message + `</div>`
-	return _html
+	if _msg.Message != "" {
+		_t.Body += `<div class="message-body">` + _msg.Message + `</div>`
+	}
+	return
 }

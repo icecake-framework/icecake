@@ -14,18 +14,21 @@ import (
 	_ "embed"
 
 	"github.com/sunraylab/icecake/pkg/clock"
+	"github.com/sunraylab/icecake/pkg/dom"
+	"github.com/sunraylab/icecake/pkg/event"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
+	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/sunraylab/icecake/pkg/registry"
 	"github.com/sunraylab/icecake/pkg/ui"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
-	"github.com/yuin/goldmark/renderer/html"
+	mdhtml "github.com/yuin/goldmark/renderer/html"
 )
 
 //go:embed "readme.md"
 var readme string
 
-var webapp *wick.WebApp
+// var webapp *dom.WebApp
 
 // the main func is required by the wasm GO builder
 // outputs will appears in the console of the browser
@@ -35,21 +38,21 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	// we must call the icecake webapp factory once
-	webapp = wick.NewWebApp()
+	// webapp = dom.NewWebApp()
 
 	// render readme
-	markdown.RenderMarkdown(webapp.ChildById("readme"), readme, nil,
+	markdown.RenderMarkdown(dom.Id("readme"), readme, nil,
 		goldmark.WithRendererOptions(
-			html.WithUnsafe()),
+			mdhtml.WithUnsafe()),
 		goldmark.WithExtensions(
 			highlighting.Highlighting,
 		))
 
 	// add global event handling
-	webapp.ChildById("btn1").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtn1)
-	webapp.ChildById("btn2").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtn2)
-	webapp.ChildById("btn3").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtn3)
-	webapp.ChildById("btn4").AddMouseEvent(wick.MOUSE_ONCLICK, OnClickBtn4)
+	dom.Id("btn1").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtn1)
+	dom.Id("btn2").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtn2)
+	dom.Id("btn3").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtn3)
+	dom.Id("btn4").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtn4)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
@@ -60,54 +63,52 @@ func main() {
 * browser event handlers
 ******************************************************************************/
 
-func OnClickBtn1(event *wick.MouseEvent, target *wick.Element) {
+func OnClickBtn1(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
 	notif := &ui.Notify{
 		Message: `This is a typical notification message <strong>including html <a href="#">link</a>.</strong> Use the closing button on the right corner to remove this notification.`,
 	}
-	notif.Classes().AddTokens("is-warning", "is-light")
+	notif.SetClasses("is-warning is-light")
 
 	// Insert the component into the DOM
-	webapp.ChildById("notif_container").RenderComponent(notif, nil)
+	dom.Id("notif_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)
 }
 
-func OnClickBtn2(event *wick.MouseEvent, target *wick.Element) {
+func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
+	idtimeleft := registry.GetUniqueId("timeleft")
 	notif := new(ui.Notify)
-	notif.Message = `This message will be automatically removed in <strong><span id="{{.Id}}-timeleft"></span> seconds</strong>, unless you close it before. 😀`
-	notif.Timeout = time.Second * 7
-	notif.Classes().AddTokens("is-danger", "is-light")
-	notif.Attributes().SetAttribute("role", "alert")
-	notif.Tic = func(clk *clock.Clock) {
-		fmt.Println("tic", notif.Id())
+	notif.Message = `This message will be automatically removed in <strong><span id="` + html.String(idtimeleft) + `"></span> seconds</strong>, unless you close it before. 😀`
+	notif.Delete.Timeout = time.Second * 7
+	notif.SetClasses("is-danger is-light").SetAttribute("role", "alert", true)
+	notif.Delete.Tic = func(clk *clock.Clock) {
 		s := math.Round(notif.Delete.TimeLeft().Seconds())
-		idtl := notif.Id() + "-timeleft"
-		webapp.ChildById(idtl).RenderValue("%v", s)
+		dom.Id(idtimeleft).InsertText(dom.INSERT_BODY, "%v", s)
 	}
 
 	// Insert the component into the DOM
-	webapp.ChildById("notif_container").RenderComponent(notif, nil)
+	dom.Id("notif_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)
 }
 
-func OnClickBtn3(event *wick.MouseEvent, target *wick.Element) {
+func OnClickBtn3(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
 	notif := &ui.Notify{
 		Message: `This is a toast notification`,
 	}
 	notif.Delete.Clock.Timeout = time.Second * 3
-	notif.Classes().AddTokens("is-success", "toast")
+	notif.SetClasses("is-success toast")
 
 	// Insert the component into the DOM
-	webapp.ChildById("toast_container").RenderComponent(notif, nil)
+	dom.Id("toast_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)
 }
 
-func OnClickBtn4(event *wick.MouseEvent, target *wick.Element) {
+func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
 
 	// define the HTML template
-	html := `<div class="box">
+	h := `<div class="box">
 	<p class="pb-2">This is an html template object embedding the &lt;ick-notify&gt; element.</p>
 	<div class="block">
 		<ick-notify Message="This message comes from the Notify Component <strong>embedded into an html template</strong>."
@@ -117,5 +118,5 @@ func OnClickBtn4(event *wick.MouseEvent, target *wick.Element) {
 	</box>`
 
 	// Insert the component into the DOM
-	webapp.ChildById("ex3_container").RenderTemplate(html, nil)
+	dom.Id("ex3_container").RenderHtml(dom.INSERT_LAST_CHILD, html.String(h), nil)
 }

@@ -3,8 +3,9 @@ package markdown
 import (
 	"bytes"
 
-	"github.com/sunraylab/icecake/pkg/errors"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	"github.com/sunraylab/icecake/pkg/console"
+	"github.com/sunraylab/icecake/pkg/dom"
+	"github.com/sunraylab/icecake/pkg/html"
 	"github.com/yuin/goldmark"
 )
 
@@ -12,7 +13,7 @@ import (
 // then use it as an HTML template to render it with data and components.
 //
 // Returns an error if the markdown processor fails.
-func RenderMarkdown(_elem *wick.Element, _mdtxt string, _data any, _options ...goldmark.Option) error {
+func RenderMarkdown(_elem *dom.Element, _mdtxt string, _data *html.DataState, _options ...goldmark.Option) error {
 	if !_elem.IsDefined() {
 		return nil
 	}
@@ -20,11 +21,11 @@ func RenderMarkdown(_elem *wick.Element, _mdtxt string, _data any, _options ...g
 	var buf bytes.Buffer
 	err := md.Convert([]byte(_mdtxt), &buf)
 	if err != nil {
-		errors.ConsoleWarnf("RenderMarkdown has error: %s", err.Error())
+		console.Warnf("RenderMarkdown has error: %s", err.Error())
 		return err
 	}
 
-	// HACK:
-	_elem.RenderTemplate(buf.String(), _data)
+	// TODO: better rendering with a reader ?
+	_elem.InsertHTML(dom.INSERT_BODY, html.String(buf.String()), _data)
 	return nil
 }

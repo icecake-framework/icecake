@@ -7,11 +7,11 @@ type Clock struct {
 	// The timer starts when the delete button is rendered.
 	Timeout time.Duration
 
-	// The optional ticker step, 1s by default.
-	// Ignored if greater than the timeout
+	// The optional ticker step, 1s by default
+	// Ignored if 0 or greater than the timeout
 	TickerStep time.Duration
 
-	// the function to call at every ticker step
+	// The function to call at every ticker step. Set nil to ignore ticker.
 	Tic func(*Clock)
 
 	start  time.Time    // The countdown start time
@@ -24,16 +24,15 @@ func (_clock *Clock) Start(_finished func()) {
 		return
 	}
 
-	if _clock.TickerStep == 0 {
-		_clock.TickerStep = 1 * time.Second
-	}
-
 	// Start the overall timer
 	_clock.start = time.Now()
 	_clock.timer = time.AfterFunc(_clock.Timeout, _finished)
 
 	// Start the countdown
 	if _clock.Tic != nil && _clock.TickerStep <= _clock.Timeout {
+		if _clock.TickerStep == 0 {
+			_clock.TickerStep = 1 * time.Second
+		}
 		go func() {
 			_clock.ticker = time.NewTicker(_clock.TickerStep)
 			_clock.Tic(_clock)

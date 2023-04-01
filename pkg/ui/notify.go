@@ -3,8 +3,9 @@ package ui
 import (
 	_ "embed"
 
-	ick "github.com/sunraylab/icecake/pkg/icecake"
-	wick "github.com/sunraylab/icecake/pkg/wicecake"
+	"github.com/sunraylab/icecake/pkg/dom"
+	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/sunraylab/icecake/pkg/ick"
 )
 
 /******************************************************************************
@@ -15,35 +16,31 @@ import (
 var notifycss string
 
 func init() {
-	ick.TheCmpReg.RegisterComponent(Notify{})
+	ick.RegisterComposer("ick-notify", &Notify{})
 }
 
 type Notify struct {
-	wick.UIComponent // embedded Component, with default implementation of composer interfaces
+	dom.UISnippet
 
 	// the message to display within the notification
-	Message string
+	Message html.String
 
-	Delete // the delete sub-component
+	// Notify includes a programmable Delete Button.
+	//
+	// Delete is a local variable rather than an embedded struct to avoid AddliSteners interface conflict.
+	// Notify implements AddliSteners interface via the UISnippet embedded.
+	Delete Delete
+
+	// TODO: handle toast style
+	// Toast bool
 }
 
-func (*Notify) RegisterName() string {
-	return "ick-notify"
-}
+func (_cmp *Notify) Template(*html.DataState) (t html.SnippetTemplate) {
 
-func (*Notify) RegisterCSS() string {
-	return notifycss
-}
+	_cmp.Delete.TargetID = _cmp.Id()
 
-func (c *Notify) Container(_compid string) (_tagname string, _contclasses string, _contattrs string, _contstyle string) {
-	c.Delete.TargetID = _compid
-	return "div", "ick-notify notification", "", ""
-}
-
-func (c *Notify) Body() (_html string) {
-
-	//_, del, _ := ick.App.CreateComponent(&c.Delete)
-
-	return "{{.Me.Delete}}" + c.Message
-	//return `<button class="delete"></button>` + c.Message
+	t.TagName = "div"
+	t.Attributes = `class="notification"`
+	t.Body = _cmp.HTML(&_cmp.Delete) + _cmp.Message
+	return
 }
