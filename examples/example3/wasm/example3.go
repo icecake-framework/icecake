@@ -118,5 +118,5 @@ func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
 	</box>`
 
 	// Insert the component into the DOM
-	dom.Id("ex3_container").RenderHtml(dom.INSERT_LAST_CHILD, html.String(h), nil)
+	dom.Id("ex3_container").InsertHTML(dom.INSERT_LAST_CHILD, html.String(h), nil)
 }

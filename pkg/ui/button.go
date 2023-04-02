@@ -24,9 +24,12 @@ type Button struct {
 
 	ButtonType BUTTON_TYPE
 
+	Title html.String
+
 	IsOutlined bool
 	IsRounded  bool
 	IsLoading  bool
+	IsDisabled bool
 }
 
 func (_btn *Button) Template(*html.DataState) (_t html.SnippetTemplate) {
@@ -42,7 +45,9 @@ func (_btn *Button) Template(*html.DataState) (_t html.SnippetTemplate) {
 		_t.Attributes = `class="button" type="reset"`
 	default:
 		_t.TagName = "button"
+		_t.Attributes = `class="button"`
 	}
+	_t.Body = _btn.Title
 
 	if _btn.IsOutlined {
 		_btn.SetClasses("is-outlined")
@@ -53,8 +58,11 @@ func (_btn *Button) Template(*html.DataState) (_t html.SnippetTemplate) {
 	if _btn.IsLoading {
 		_btn.SetClasses("is-loading")
 	}
+	if _btn.IsDisabled {
+		_btn.SetAttribute("disabled", "", true)
+	}
 
-	// TODO: finalize
+	// TODO: finalize button
 
 	return _t
 }
@@ -65,5 +73,23 @@ func (_btn *Button) Loading(_f bool) {
 		_btn.DOM.Classes().AddTokens("is-loading")
 	} else {
 		_btn.DOM.Classes().RemoveTokens("is-loading")
+	}
+}
+
+func (_btn *Button) Rounded(_f bool) {
+	_btn.IsRounded = _f
+	if _f {
+		_btn.DOM.Classes().AddTokens("is-rounded")
+	} else {
+		_btn.DOM.Classes().RemoveTokens("is-rounded")
+	}
+}
+
+func (_btn *Button) Outlined(_f bool) {
+	_btn.IsOutlined = _f
+	if _f {
+		_btn.DOM.Classes().AddTokens("is-outlined")
+	} else {
+		_btn.DOM.Classes().RemoveTokens("is-outlined")
 	}
 }
