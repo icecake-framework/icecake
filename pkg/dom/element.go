@@ -2,8 +2,11 @@ package dom
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 
 	syscalljs "syscall/js"
 
@@ -111,6 +114,75 @@ func (_elem *Element) Id() string {
 	return _elem.GetString("id")
 }
 
+// TabIndex represents the tab order of the current element.
+//
+// Tab order is as follows:
+//  1. Elements with a positive tabIndex. Elements that have identical tabIndex values should be navigated in the order they appear. Navigation proceeds from the lowest tabIndex to the highest tabIndex.
+//  1. Elements that do not support the tabIndex attribute or support it and assign tabIndex to 0, in the order they appear.
+//  1. Elements that are disabled do not participate in the tabbing order.
+//
+// Values don't need to be sequential, nor must they begin with any particular value.
+// They may even be negative, though each browser trims very large values.
+//
+// https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
+func (_elem *Element) TabIndex() (_idx int) {
+	found := _elem.Call("hasAttribute", "tabIndex").Bool()
+	if found {
+		sidx := _elem.Call("getAttribute", "tabIndex").String()
+		_idx, _ = strconv.Atoi(string(sidx))
+	}
+	return _idx
+}
+
+// Classes returns the class object related to _elem.
+// If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+func (_elem *Element) Classes() string {
+	return _elem.Get("className").String()
+}
+
+// Style returns the style attribute
+func (_elem *Element) Style() (_style string) {
+	found := _elem.Call("hasAttribute", "style").Bool()
+	if found {
+		_style = _elem.Call("getAttribute", "style").String()
+	}
+	return _style
+}
+
+// Style returns the style attribute
+func (_elem *Element) IsDisabled() bool {
+	found := _elem.Call("hasAttribute", "disabled").Bool()
+	if found {
+		str := _elem.Call("getAttribute", "disabled").String()
+		if strings.ToLower(str) != "false" && str != "0" {
+			return true
+		}
+	}
+	return false
+}
+
+func (_elem *Element) Attributes() string {
+	str := ""
+	jsa := _elem.Get("attributes")
+	len := jsa.GetInt("length")
+	for i := 0; i < len; i++ {
+		jsi := jsa.Call("item", i)
+		str += jsi.GetString("name")
+		value := jsi.GetString("value")
+		if value != "" {
+			delim := "'"
+			if strings.ContainsRune(value, rune('\'')) {
+				delim = "\""
+			}
+			str += `=` + delim + value + delim
+		}
+		str += " "
+	}
+	return strings.TrimRight(str, " ")
+}
+
 // Id rrepresents the element's identifier, reflecting the id global attribute.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/id
@@ -119,32 +191,210 @@ func (_elem *Element) SetId(_id string) *Element {
 	return _elem
 }
 
-// Classes returns the class object related to _elem.
-// If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-func (_elem *Element) Classes() *JSClasses {
-	jsclass := new(JSClasses)
-	if _elem.IsDefined() {
-		jsclass.owner = _elem
-		jslist := _elem.Get("classList")
-		jsclass.jslist = &jslist
+func (_elem *Element) SetDisabled(_f bool) {
+	if _f {
+		_elem.Call("setAttribute", "disabled", "")
+	} else {
+		_elem.Call("removeAttribute", "disabled")
 	}
-	return jsclass
 }
 
-// Classes returns the class object related to _elem.
-// If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
+func (_elem *Element) SetStyle(_style html.String) *Element {
+	_elem.Call("setAttribute", "style", string(_style))
+	return _elem
+}
+
+// TabIndex represents the tab order of the current element.
 //
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-func (_elem *Element) Attributes() *JSAttributes {
-	jsattr := new(JSAttributes)
-	if _elem.IsDefined() {
-		//jslist := _elem.Get("classList")
-		jsattr.owner = _elem
-		//_elem.classes.jslist = &jslist
+// Tab order is as follows:
+//  1. Elements with a positive tabIndex. Elements that have identical tabIndex values should be navigated in the order they appear. Navigation proceeds from the lowest tabIndex to the highest tabIndex.
+//  1. Elements that do not support the tabIndex attribute or support it and assign tabIndex to 0, in the order they appear.
+//  1. Elements that are disabled do not participate in the tabbing order.
+//
+// Values don't need to be sequential, nor must they begin with any particular value.
+// They may even be negative, though each browser trims very large values.
+//
+// https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
+func (_elem *Element) SetTabIndex(_index int) *Element {
+	_elem.Call("setAttribute", "tabIndex", strconv.Itoa(_index))
+	return _elem
+}
+
+func (_elem *Element) ResetClasses(_list html.String) *Element {
+	_elem.Set("className", string(_list))
+	return _elem
+}
+
+func (_elem *Element) SetClasses(_list html.String) *Element {
+	listf := strings.Fields(string(_list))
+	callp := make([]any, len(listf))
+	for i, listc := range listf {
+		if listc != "" {
+			callp[i] = listc
+		}
 	}
-	return jsattr
+	if len(callp) > 0 {
+		_elem.Get("classList").Call("add", callp...)
+	}
+	return _elem
+}
+
+func (_elem *Element) RemoveClasses(_list string) *Element {
+	listf := strings.Fields(string(_list))
+	callp := make([]any, len(listf))
+	for i, listc := range listf {
+		if listc != "" {
+			callp[i] = listc
+		}
+	}
+	if len(callp) > 0 {
+		_elem.Get("classList").Call("remove", callp...)
+	}
+	return _elem
+}
+
+func (_elem *Element) SwitchClasses(_remove string, _new html.String) *Element {
+	_elem.RemoveClasses(_remove)
+	_elem.SetClasses(_new)
+	return _elem
+}
+
+func (_elem *Element) HasClass(_class string) bool {
+	_class = strings.Trim(_class, " ")
+	if _class == "" {
+		return false
+	}
+	return _elem.Get("classList").Call("contains", _class).Bool()
+}
+
+func (_elem *Element) Attribute(_key string) (string, bool) {
+	_key = strings.Trim(_key, " ")
+	attr := _elem.Call("getAttribute", _key)
+	if attr.IsDefined() && attr.String() != "" {
+		return attr.String(), true
+	}
+	return "", false
+}
+
+func (_elem *Element) CreateAttribute(_key string, _value any) *Element {
+	_elem.setAttribute(_key, _value, false)
+	return _elem
+}
+
+func (_elem *Element) SetAttribute(_key string, _value any) *Element {
+	_elem.setAttribute(_key, _value, true)
+	return _elem
+}
+
+func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) error {
+	_key = strings.Trim(_key, " ")
+	switch strings.ToLower(_key) {
+	case "id":
+		found := _elem.Get("id").Type() == js.TYPE_STRING
+		if !found || overwrite {
+			switch v := _value.(type) {
+			case string:
+				_elem.SetId(v)
+			case html.String:
+				_elem.SetId(string(v))
+			default:
+				return errors.New("wrong value type for id")
+			}
+		}
+	case "tabindex":
+		found := _elem.Get("tabIndex").Type() == js.TYPE_STRING
+		if !found || overwrite {
+			switch v := _value.(type) {
+			case string:
+				idx, _ := strconv.Atoi(v)
+				_elem.SetTabIndex(idx)
+			case html.String:
+				idx, _ := strconv.Atoi(string(v))
+				_elem.SetTabIndex(idx)
+			case int:
+				_elem.SetTabIndex(v)
+			case uint:
+				_elem.SetTabIndex(int(v))
+			case float32:
+				_elem.SetTabIndex(int(v))
+			case float64:
+				_elem.SetTabIndex(int(v))
+			default:
+				return errors.New("wrong value type for tabindex")
+			}
+		}
+	case "class":
+		var lst html.String
+		switch v := _value.(type) {
+		case string:
+			lst = html.String(v)
+		case html.String:
+			lst = v
+		default:
+			return errors.New("wrong value type for class")
+		}
+		if overwrite {
+			_elem.ResetClasses(lst)
+		} else if _value != "" {
+			_elem.SetClasses(lst)
+		}
+	case "style":
+		// TODO: handle style update to not overwrite
+		found := _elem.Get("style").Type() == js.TYPE_STRING
+		if !found || overwrite {
+			var style html.String
+			switch v := _value.(type) {
+			case string:
+				style = html.String(v)
+			case html.String:
+				style = v
+			default:
+				return errors.New("wrong value type for class")
+			}
+			_elem.SetStyle(style)
+		}
+	default:
+		_, err := _elem.Check(_key)
+		if err != nil || overwrite {
+			var strv html.String
+			switch v := _value.(type) {
+			case string:
+				strv = html.String(v)
+			case html.String:
+				strv = v
+			case bool:
+				if v {
+					strv = ""
+				} else {
+					_elem.Call("removeAttribute", _key)
+					break
+				}
+			case int, uint, float32, float64:
+				strv = html.String(fmt.Sprintf("%v", v))
+			default:
+				return errors.New("wrong value type for " + _key)
+			}
+			_elem.Call("setAttribute", _key, string(strv))
+		}
+	}
+	return nil
+}
+
+func (_elem *Element) RemoveAttribute(_key string) *Element {
+	_key = strings.Trim(_key, " ")
+	_elem.Call("removeAttribute", _key)
+	return _elem
+}
+
+func (_elem *Element) ToggleAttribute(_key string) *Element {
+	_key = strings.Trim(_key, " ")
+	found := _elem.Call("hasAttribute", _key).Bool()
+	if found {
+		_elem.Call("removeAttribute", _key)
+	} else {
+		_elem.Call("setAttribute", _key, string(""))
+	}
+	return _elem
 }
 
 // InnerHTML gets or sets the HTML or XML markup contained within the element.
@@ -224,7 +474,7 @@ func (_root *Element) ChildrenByData(_data string, _value string) []*Element {
 		return make([]*Element, 0)
 	}
 	return _root.childrenMatching(999, func(e *Element) bool {
-		v, found := e.Attributes().Attribute(_data)
+		v, found := e.Attribute(_data)
 		if found {
 			if v != _value {
 				found = false
@@ -359,9 +609,10 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 	return CastElements(elems)
 }
 
-func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.String) *Element {
+// TODO: handle exceptions InsertRawHTML
+func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.String) {
 	if !_me.IsDefined() {
-		return _me
+		return
 	}
 	switch _where {
 	case INSERT_BEFORE_ME:
@@ -377,7 +628,6 @@ func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.String) 
 	case INSERT_BODY:
 		_me.Set("innerHTML", string(_unsafeHtml))
 	}
-	return _me
 }
 
 // InsertHTML unfolds and renders the html of the _html and write it into the DOM.
@@ -418,10 +668,9 @@ func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.String, _data *
 
 // InsertSnippet unfolds and renders the html of the _snippet and write it into the DOM.
 // The _snippet and all its embedded components are wrapped with their DOM element and their listeners are added to the DOM.
-// _snippet can be either an HTMLComposer or an UIComposer
-// Returns an error if _elem in not the DOM or if an error occurs during WriteHTMLSnippet or mounting process.
-//
-// FIXME: disallow inserting a snippet with the same id already in the DOM
+// _snippet can be either an HTMLComposer or an UIComposer.
+// Returns an error if _elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
+// Returns an error if WriteHTMLSnippet or mounting process fail.
 func (_elem *Element) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
 	if !_elem.IsDefined() {
 		return "", console.Errorf("Element:InsertSnippet failed on undefined element")
@@ -429,20 +678,29 @@ func (_elem *Element) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *ht
 
 	snippet, ok := _snippet.(html.HTMLComposer)
 	if !ok {
-		return "", console.Errorf("Element:InsertSnippet failed. _snippet parameter must implement HTMLComposer interface or UIComposer interface")
+		return "", console.Errorf("Element:InsertSnippet failed. snippet must implement HTMLComposer interface or UIComposer interface")
+	}
+	snippetid := snippet.Id()
+	if snippetid != "" {
+		if _, err := Doc().CheckId(snippet.Id()); err == nil {
+			return "", console.Errorf("Element:InsertSnippet failed. snippet's ID %q is already in the DOM.", snippetid)
+		}
 	}
 
 	out := new(bytes.Buffer)
 	_id, _err = html.WriteHTMLSnippet(out, snippet, _data)
 	if _err == nil {
 		// insert the html element into the dom and wrapit
-		newe := _elem.InsertRawHTML(_where, html.String(out.String()))
-
-		// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
-		if snippet, ok := _snippet.(UIComposer); ok {
-			_err = mountDeepSnippet(snippet, newe)
+		_elem.InsertRawHTML(_where, html.String(out.String()))
+		if newe := Id(_id); newe != nil {
+			// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
+			if snippet, ok := _snippet.(UIComposer); ok {
+				_err = mountDeepSnippet(snippet, newe)
+			} else {
+				_err = console.Warnf("snippet %q(%v) not mounted, it's not an UIComposer", _id, reflect.TypeOf(_snippet).String())
+			}
 		} else {
-			_err = console.Warnf("_snippet %q(%v) not mounted, it's not an UIComposer", _id, reflect.TypeOf(_snippet).String())
+			_err = console.Warnf("snippet %q(%v) not mounted: id not found in the DOM", _id, reflect.TypeOf(_snippet).String())
 		}
 	} else {
 		console.Errorf(_err.Error())
@@ -452,9 +710,9 @@ func (_elem *Element) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *ht
 
 // InsertText insert the formated _value as a simple text (not an HTML string) at the _where position.
 // The format string follow the fmt rules: https://pkg.go.dev/fmt#hdr-Printing
-func (_me *Element) InsertText(_where INSERT_WHERE, _format string, _value ...any) *Element {
+func (_me *Element) InsertText(_where INSERT_WHERE, _format string, _value ...any) {
 	if !_me.IsDefined() {
-		return _me
+		return
 	}
 	text := fmt.Sprintf(_format, _value...)
 	switch _where {
@@ -471,12 +729,11 @@ func (_me *Element) InsertText(_where INSERT_WHERE, _format string, _value ...an
 	case INSERT_BODY:
 		_me.Set("innerText", text)
 	}
-	return _me
 }
 
-func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element {
+func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) {
 	if !_me.IsDefined() {
-		return _me
+		return
 	}
 	switch _where {
 	case INSERT_BEFORE_ME:
@@ -493,7 +750,6 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) *Element 
 		_me.Set("innerHTML", "")
 		_me.Call("append", _elem.Value())
 	}
-	return _me
 }
 
 // ScrollTop gets or sets the number of pixels that an element's content is scrolled vertically.
@@ -565,7 +821,7 @@ func (_elem *Element) AccessKey() string {
 }
 
 // AccessKey A string indicating the single-character keyboard key to give access to the button.
-func (_htmle *Element) SetAccessKey(key bool) *Element {
+func (_htmle *Element) SetAccessKey(key string) *Element {
 	if !_htmle.IsDefined() {
 		return &Element{}
 	}
@@ -621,7 +877,7 @@ func (_elem *Element) AddFullscreenEvent(_evttyp event.FULLSCREEN_EVENT, _listen
 		console.Warnf("AddFullscreenEvent not listening on nil Element")
 		return
 	}
-	evh := makelistenerElement_Event(_listener)
+	evh := makehandler_Element_Event(_listener)
 	_elem.addListener(string(_evttyp), evh)
 }
 
@@ -718,25 +974,7 @@ func (_htmle *Element) AddWheelEvent(_listener func(*event.WheelEvent, *Element)
 * Private Area
 *******************************************************************************/
 
-// event attribute: Event
-func makelistenerElement_Event(_listener func(*event.Event, *Element)) syscalljs.Func {
-	fn := func(this js.JSValue, args []js.JSValue) any {
-		value := args[0]
-		evt := event.CastEvent(value)
-		target := CastElement(value.Get("target"))
-		defer func() {
-			if r := recover(); r != nil {
-				console.Errorf("Error processing event %q on %q(id=%s): %s", evt.Type(), target.TagName(), target.Id(), r)
-				console.Stackf()
-			}
-		}()
-		_listener(evt, target)
-		return nil
-	}
-	return js.FuncOf(fn)
-}
-
-// event attribute: Event
+// Event generic
 func makehandler_Element_Event(_listener func(*event.Event, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
@@ -754,7 +992,7 @@ func makehandler_Element_Event(_listener func(*event.Event, *Element)) syscalljs
 	return js.FuncOf(fn)
 }
 
-// event attribute: MouseEvent
+// MouseEvent
 func makehandler_Element_MouseEvent(listener func(*event.MouseEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
@@ -772,7 +1010,7 @@ func makehandler_Element_MouseEvent(listener func(*event.MouseEvent, *Element)) 
 	return js.FuncOf(fn)
 }
 
-// event attribute: FocusEvent
+// FocusEvent
 func makelistenerElement_FocusEvent(_listener func(*event.FocusEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
@@ -790,7 +1028,7 @@ func makelistenerElement_FocusEvent(_listener func(*event.FocusEvent, *Element))
 	return js.FuncOf(fn)
 }
 
-// event attribute: PointerEvent
+// PointerEvent
 func makelistenerElement_PointerEvent(_listener func(*event.PointerEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
@@ -808,7 +1046,7 @@ func makelistenerElement_PointerEvent(_listener func(*event.PointerEvent, *Eleme
 	return js.FuncOf(fn)
 }
 
-// event attribute: InputEvent
+// InputEvent
 func makelistenerElement_InputEvent(_listener func(*event.InputEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
@@ -826,7 +1064,7 @@ func makelistenerElement_InputEvent(_listener func(*event.InputEvent, *Element))
 	return js.FuncOf(fn)
 }
 
-// event attribute: KeyboardEvent
+// KeyboardEvent
 func makelistenerElement_KeyboardEvent(_listener func(*event.KeyboardEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
@@ -844,7 +1082,7 @@ func makelistenerElement_KeyboardEvent(_listener func(*event.KeyboardEvent, *Ele
 	return js.FuncOf(fn)
 }
 
-// event attribute: UIEvent
+// UIEvent
 func makelistenerElement_UIEvent(_listener func(*event.UIEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
@@ -862,7 +1100,7 @@ func makelistenerElement_UIEvent(_listener func(*event.UIEvent, *Element)) sysca
 	return js.FuncOf(fn)
 }
 
-// event attribute: WheelEvent
+// WheelEvent
 func makeHTMLElement_WheelEvent(_listener func(*event.WheelEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]

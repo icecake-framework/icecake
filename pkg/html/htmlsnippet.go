@@ -1,11 +1,14 @@
 package html
 
 import (
+	"errors"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/sunraylab/icecake/internal/helper"
+	"github.com/sunraylab/icecake/pkg/registry"
 )
 
 // String encapsulates a known safe String document fragment.
@@ -46,7 +49,7 @@ type DataState struct {
 type HTMLSnippet struct {
 	TagName  String            // optional TagName
 	Body     String            // optional Body
-	attrs    map[string]String // map of all attributes of any type
+	attrs    map[string]string // map of all attributes of any type
 	embedded map[string]any    // instantiated embedded objects
 }
 
@@ -57,179 +60,59 @@ func (s *HTMLSnippet) Id() string {
 	return string(id)
 }
 
-// SetId sets or overwrites the id attribute of the html snippet
-func (s *HTMLSnippet) SetId(_id String) *HTMLSnippet {
+// TabIndex returns the TabIndex attribute
+func (s *HTMLSnippet) TabIndex() int {
 	s.makemap()
-	s.attrs["01id"] = _id
-	return s
+	sidx := s.attrs["02tabIndex"]
+	idx, _ := strconv.Atoi(string(sidx))
+	return idx
 }
 
-// ResetClasses replaces any existing classes with _clist to the class attribute
-// _clist is parsed simply
-func (s *HTMLSnippet) ResetClasses(_clist String) *HTMLSnippet {
+// Classes returns the class attribute
+func (s *HTMLSnippet) Classes() string {
 	s.makemap()
-	n := ""
-	f := strings.Fields(string(_clist))
-	for _, c := range f {
-		if c != "" {
-			// TODO: check validity of the class name pattern
-			n += c + " "
+	str := s.attrs["03class"]
+	return string(str)
+}
+
+// Classes returns the class attribute
+func (s *HTMLSnippet) HasClass(_class string) bool {
+	_class = strings.Trim(_class, " ")
+	if _class == "" {
+		return false
+	}
+	s.makemap()
+	actual := s.attrs["03class"]
+	actualf := strings.Fields(string(actual))
+	for _, actualc := range actualf {
+		if actualc == _class {
+			return true
 		}
 	}
-	n = strings.TrimRight(n, " ")
-	if n == "" {
-		delete(s.attrs, "03class")
-	} else {
-		s.attrs["03class"] = String(n)
-	}
-	return s
+	return false
 }
 
-// AddClasses add c classes to the class attribute
-// any duplicate
-func (s *HTMLSnippet) SetClasses(list String) *HTMLSnippet {
+// Style returns the style attribute
+func (s *HTMLSnippet) Style() string {
 	s.makemap()
-	last := s.attrs["03class"]
-	new := string(last)
-	clsf := strings.Fields(string(last))
-	addf := strings.Fields(string(list))
-nexta:
-	for _, addc := range addf {
-		if addc != "" {
-			// TODO: check validity of the class name pattern
-
-			for _, cls := range clsf {
-				if cls == addc {
-					continue nexta
-				}
-			}
-			new += " " + addc
-		}
-	}
-	new = strings.TrimLeft(new, " ")
-	if new != "" {
-		s.attrs["03class"] = String(new)
-	}
-	return s
+	str := s.attrs["04style"]
+	return string(str)
 }
 
-// RemoveClass removes class c within the value of "class" attribute.
-// Does nothing if c did not exist.
-func (s *HTMLSnippet) RemoveClass(c string) *HTMLSnippet {
+// IsDisabled returns the boolean attribute
+func (s *HTMLSnippet) IsDisabled() bool {
 	s.makemap()
-	last := s.attrs["03class"]
-	new := ""
-	clsf := strings.Fields(string(last))
-	for _, cls := range clsf {
-		if cls != c {
-			new += cls + " "
-		}
+	str, found := s.attrs["05disabled"]
+	if !found || strings.ToLower(string(str)) == "false" || str == "0" {
+		return false
 	}
-	new = strings.TrimRight(new, " ")
-	s.attrs["03class"] = String(new)
-	return s
-}
-
-// SwitchClass removes class _remove within the value of "class" attribute and set the _new one
-// Does nothing if c did not exist.
-func (s *HTMLSnippet) SwitchClass(_remove string, _new String) *HTMLSnippet {
-	s.RemoveClass(_remove)
-	s.SetClasses(_new)
-	return s
-}
-
-func (s *HTMLSnippet) SetStyle(style String) *HTMLSnippet {
-	// TODO: check style validity
-	s.makemap()
-	s.attrs["04style"] = style
-	return s
-}
-
-func (s *HTMLSnippet) SetTabIndex(idx uint) *HTMLSnippet {
-	s.makemap()
-	s.attrs["02tabIndex"] = String(strconv.Itoa(int(idx)))
-	return s
-}
-
-// TODO: find a way to avoid overwrite parameter
-func (s *HTMLSnippet) SetAttribute(key string, value String, overwrite bool) {
-	s.makemap()
-	key = strings.Trim(key, " ")
-	switch strings.ToLower(key) {
-	case "id":
-		_, found := s.attrs["01id"]
-		if !found || overwrite {
-			s.SetId(value)
-		}
-	case "tabindex":
-		_, found := s.attrs["02tabIndex"]
-		if !found || overwrite {
-			idx, _ := strconv.Atoi(string(value))
-			s.SetTabIndex(uint(idx))
-		}
-	case "class":
-		if overwrite {
-			s.ResetClasses(value)
-		} else if value != "" {
-			s.SetClasses(value)
-		}
-	case "style":
-		// TODO: handle style update to not overwrite
-		_, found := s.attrs["04style"]
-		if !found || overwrite {
-			s.SetStyle(value)
-		}
-	default:
-		_, found := s.attrs["05"+key]
-		if !found || overwrite {
-			s.attrs["05"+key] = value
-		}
-	}
-}
-
-func (s *HTMLSnippet) RemoveAttribute(key string) *HTMLSnippet {
-	s.makemap()
-	key = strings.Trim(key, " ")
-	switch strings.ToLower(key) {
-	case "id":
-		delete(s.attrs, "01id")
-	case "tabindex":
-		delete(s.attrs, "02tabIndex")
-	case "class":
-		delete(s.attrs, "03class")
-	case "style":
-		delete(s.attrs, "04style")
-	default:
-		delete(s.attrs, "05"+key)
-	}
-	return s
-}
-
-// True set the boolean _key attribute in the list of attributes.
-// does nothing if the key is id, style or class
-func (s *HTMLSnippet) SetTrue(key string) *HTMLSnippet {
-	s.SetAttribute(key, "", true)
-	return s
-}
-
-// False unset the boolean _key attribute in the list of attributes.
-// does nothing if the key is id, style or class
-func (s *HTMLSnippet) SetFalse(key string) *HTMLSnippet {
-	s.RemoveAttribute(key)
-	return s
-}
-
-// Template is an interface implementation of HtmlComposer
-func (s HTMLSnippet) Template(*DataState) (_t SnippetTemplate) {
-	_t.TagName = s.TagName
-	_t.Body = s.Body
-	return
+	return true
 }
 
 // Attributes returns the formated list of attributes used to generate the container element.
 // always sorted the same way : 1.id 2.tabindex 3.class 4.style 5. other-alpha
 // Attributes is an interface implementation of HtmlComposer
-func (s HTMLSnippet) Attributes() String {
+func (s *HTMLSnippet) Attributes() String {
 	s.makemap()
 	if len(s.attrs) == 0 {
 		return ""
@@ -255,6 +138,265 @@ func (s HTMLSnippet) Attributes() String {
 	return String(html)
 }
 
+// SetId sets or overwrites the id attribute of the html snippet
+func (s *HTMLSnippet) SetId(_id String) *HTMLSnippet {
+	s.makemap()
+	s.attrs["01id"] = string(_id)
+	return s
+}
+
+func (s *HTMLSnippet) SetUniqueId(_prefix string) *HTMLSnippet {
+	s.makemap()
+	s.attrs["01id"] = registry.GetUniqueId(_prefix)
+	return s
+}
+
+func (s *HTMLSnippet) SetTabIndex(idx int) *HTMLSnippet {
+	s.makemap()
+	s.attrs["02tabIndex"] = strconv.Itoa(idx)
+	return s
+}
+
+func (s *HTMLSnippet) SetDisabled(_f bool) *HTMLSnippet {
+	s.makemap()
+	if _f {
+		s.attrs["05disabled"] = ""
+	} else {
+		delete(s.attrs, "05disabled")
+	}
+	return s
+}
+
+// ResetClasses replaces any existing classes with _clist to the class attribute
+// _clist must contains strings separated by spaces.
+// All classes are removed if _clist is empty.
+// TODO: check validity of the class name pattern
+func (s *HTMLSnippet) ResetClasses(_list String) *HTMLSnippet {
+	s.makemap()
+	n := ""
+	f := strings.Fields(string(_list))
+	for _, c := range f {
+		if c != "" {
+			n += c + " "
+		}
+	}
+	n = strings.TrimRight(n, " ")
+	if n == "" {
+		delete(s.attrs, "03class")
+	} else {
+		s.attrs["03class"] = n
+	}
+	return s
+}
+
+// SetClasses adds the _list of classes to the class attribute
+// duplicate are not inserted twice.
+// TODO: check validity of the class name pattern
+func (s *HTMLSnippet) SetClasses(_list String) *HTMLSnippet {
+	s.makemap()
+	actual := s.attrs["03class"]
+	new := string(actual)
+	actualf := strings.Fields(string(actual))
+	listf := strings.Fields(string(_list))
+nextf:
+	for _, listc := range listf {
+		if listc != "" {
+			for _, actualc := range actualf {
+				if actualc == listc {
+					continue nextf
+				}
+			}
+			new += " " + listc
+		}
+	}
+	new = strings.TrimLeft(new, " ")
+	if new != "" {
+		s.attrs["03class"] = new
+	}
+	return s
+}
+
+// RemoveClasses removes any class in _list from the "class" attribute.
+// Does nothing if c did not exist.
+func (s *HTMLSnippet) RemoveClasses(_list string) *HTMLSnippet {
+	s.makemap()
+	actual := s.attrs["03class"]
+	new := ""
+	actualf := strings.Fields(string(actual))
+	listf := strings.Fields(string(_list))
+nexta:
+	for _, actualc := range actualf {
+		for _, listc := range listf {
+			if actualc == listc {
+				continue nexta
+			}
+		}
+		new += " " + actualc
+	}
+	new = strings.TrimRight(new, " ")
+	s.attrs["03class"] = new
+	return s
+}
+
+// SwitchClasses removes _remove classes and set the _new one
+// Does nothing if c did not exist.
+func (s *HTMLSnippet) SwitchClasses(_remove string, _new String) *HTMLSnippet {
+	s.RemoveClasses(_remove)
+	s.SetClasses(_new)
+	return s
+}
+
+// TODO: check style validity
+func (s *HTMLSnippet) SetStyle(style String) *HTMLSnippet {
+	s.makemap()
+	s.attrs["04style"] = string(style)
+	return s
+}
+
+// CreateAttribute create an attribute and set its value.
+// If the attribute already exists nothing is done.
+func (s *HTMLSnippet) CreateAttribute(_key string, _value any) {
+	s.setAttribute(_key, _value, false)
+}
+
+// SetAttribute create an attribute and set its value.
+// If the attribute already exists the value is updated.
+func (s *HTMLSnippet) SetAttribute(_key string, _value any) {
+	s.setAttribute(_key, _value, true)
+}
+
+func (s *HTMLSnippet) Attribute(_key string) (string, bool) {
+	_key = strings.Trim(_key, " ")
+	v, found := s.attrs["05"+_key]
+	return string(v), found
+}
+
+func (s *HTMLSnippet) RemoveAttribute(_key string) *HTMLSnippet {
+	s.makemap()
+	_key = strings.Trim(_key, " ")
+	switch strings.ToLower(_key) {
+	case "id":
+		delete(s.attrs, "01id")
+	case "tabindex":
+		delete(s.attrs, "02tabIndex")
+	case "class":
+		delete(s.attrs, "03class")
+	case "style":
+		delete(s.attrs, "04style")
+	default:
+		delete(s.attrs, "05"+_key)
+	}
+	return s
+}
+
+// ToggleAttribute set the attribute if unset and unset it if set.
+func (s *HTMLSnippet) ToggleAttribute(_key string) {
+	s.makemap()
+	_key = strings.Trim(_key, " ")
+	_, found := s.attrs["05"+_key]
+	if !found {
+		s.attrs["05"+_key] = ""
+	} else {
+		delete(s.attrs, "05"+_key)
+	}
+}
+
+// TODO: find a way to avoid overwrite parameter
+func (s *HTMLSnippet) setAttribute(key string, value any, overwrite bool) error {
+	s.makemap()
+	key = strings.Trim(key, " ")
+	switch strings.ToLower(key) {
+	case "id":
+		_, found := s.attrs["01id"]
+		if !found || overwrite {
+			switch v := value.(type) {
+			case string:
+				s.SetId(String(v))
+			case String:
+				s.SetId(v)
+			default:
+				return errors.New("wrong value type for id")
+			}
+		}
+	case "tabindex":
+		_, found := s.attrs["02tabIndex"]
+		if !found || overwrite {
+			switch v := value.(type) {
+			case string:
+				idx, _ := strconv.Atoi(string(v))
+				s.SetTabIndex(idx)
+			case String:
+				idx, _ := strconv.Atoi(string(v))
+				s.SetTabIndex(idx)
+			case int:
+				s.SetTabIndex(v)
+			case uint:
+				s.SetTabIndex(int(v))
+			case float32:
+				s.SetTabIndex(int(v))
+			case float64:
+				s.SetTabIndex(int(v))
+			default:
+				return errors.New("wrong value type for tabindex")
+			}
+		}
+	case "class":
+		var lst String
+		switch v := value.(type) {
+		case string:
+			lst = String(v)
+		case String:
+			lst = v
+		default:
+			return errors.New("wrong value type for class")
+		}
+		if overwrite {
+			s.ResetClasses(lst)
+		} else if value != "" {
+			s.SetClasses(lst)
+		}
+	case "style":
+		// TODO: handle style update to not overwrite
+		_, found := s.attrs["04style"]
+		if !found || overwrite {
+			var style String
+			switch v := value.(type) {
+			case string:
+				style = String(v)
+			case String:
+				style = v
+			default:
+				return errors.New("wrong value type for class")
+			}
+			s.SetStyle(style)
+		}
+	default:
+		_, found := s.attrs["05"+key]
+		if !found || overwrite {
+			var strv string
+			switch v := value.(type) {
+			case string:
+				strv = v
+			case String:
+				strv = string(v)
+			case bool:
+				if v {
+					strv = ""
+				} else {
+					delete(s.attrs, "05"+key)
+					break
+				}
+			case int, uint, float32, float64:
+				strv = fmt.Sprintf("%v", v)
+			default:
+				return errors.New("wrong value type for " + key)
+			}
+			s.attrs["05"+key] = strv
+		}
+	}
+	return nil
+}
+
 func (s *HTMLSnippet) Embed(id string, cmp any) {
 	id = helper.Normalize(id)
 	if s.embedded == nil {
@@ -268,13 +410,20 @@ func (s HTMLSnippet) Embedded() map[string]any {
 	return s.embedded
 }
 
+// Template is an interface implementation of HtmlComposer
+func (s HTMLSnippet) Template(*DataState) (_t SnippetTemplate) {
+	_t.TagName = s.TagName
+	_t.Body = s.Body
+	return
+}
+
 /******************************************************************************
  * PRIVATE
  *****************************************************************************/
 
 func (s *HTMLSnippet) makemap() {
 	if s.attrs == nil {
-		s.attrs = make(map[string]String)
+		s.attrs = make(map[string]string)
 	}
 }
 

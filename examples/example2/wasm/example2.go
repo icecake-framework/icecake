@@ -15,7 +15,6 @@ import (
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/event"
 	"github.com/sunraylab/icecake/pkg/extensions/markdown"
-	"github.com/sunraylab/icecake/pkg/ui"
 )
 
 //go:embed "readme.md"
@@ -43,9 +42,9 @@ func main() {
 	updateUI()
 
 	// add simple event hendling
-	ui.ButtonById("btn-ex2").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtnEx2)
-	ui.ButtonById("btn-lightmode").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtnLightMode)
-	ui.ButtonById("btn-darkmode").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtnDarkMode)
+	dom.Id("btn-ex2").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtnEx2)
+	dom.Id("btn-lightmode").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtnLightMode)
+	dom.Id("btn-darkmode").AddMouseEvent(event.MOUSE_ONCLICK, OnClickBtnDarkMode)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
@@ -87,12 +86,16 @@ func updateUI() {
 
 func updateDarkMode(dark bool) {
 	if dark {
-		dom.Doc().Body().Classes().AddTokens("dark")
+		dom.Doc().Body().SetClasses("dark")
 	} else {
-		dom.Doc().Body().Classes().RemoveTokens("dark")
+		dom.Doc().Body().RemoveClasses("dark")
 	}
-	ui.ButtonById("btn-lightmode").SetDisabled(!dark)
-	ui.ButtonById("btn-darkmode").SetDisabled(dark)
+	sdark := "false"
+	if dark {
+		sdark = "true"
+	}
+	dom.Id("btn-lightmode").SetAttribute("dark", sdark)
+	dom.Id("btn-darkmode").SetAttribute("dark", sdark)
 
 	browser.LocalStorage().Set("darkmode", fmt.Sprintf("%v", dark))
 }

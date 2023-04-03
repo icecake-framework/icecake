@@ -41,7 +41,7 @@ func main() {
 		Message: `This message will be automatically removed in few seconds, unless you close it before. 😀`,
 	}
 	notif3.Delete.Timeout = time.Second * 5
-	notif3.SetClasses("is-danger is-light").SetAttribute("role", "alert", true)
+	notif3.SetClasses("is-danger is-light").SetAttribute("role", "alert")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, notif3, nil)
 
 	// 4th notification message

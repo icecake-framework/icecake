@@ -82,7 +82,7 @@ func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 	notif := new(ui.Notify)
 	notif.Message = `This message will be automatically removed in <strong><span id="` + html.String(idtimeleft) + `"></span> seconds</strong>, unless you close it before. 😀`
 	notif.Delete.Timeout = time.Second * 7
-	notif.SetClasses("is-danger is-light").SetAttribute("role", "alert", true)
+	notif.SetClasses("is-danger is-light").SetAttribute("role", "alert")
 	notif.Delete.Tic = func(clk *clock.Clock) {
 		s := math.Round(notif.Delete.TimeLeft().Seconds())
 		dom.Id(idtimeleft).InsertText(dom.INSERT_BODY, "%v", s)
@@ -118,5 +118,5 @@ func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
 	</box>`
 
 	// Insert the component into the DOM
-	dom.Id("ex3_container").RenderHtml(dom.INSERT_LAST_CHILD, html.String(h), nil)
+	dom.Id("ex3_container").InsertHTML(dom.INSERT_LAST_CHILD, html.String(h), nil)
 }
