@@ -1,6 +1,7 @@
 package dom
 
 import (
+	"fmt"
 	"net/url"
 	"time"
 
@@ -54,6 +55,8 @@ func Doc() Document {
 	return document
 }
 
+// Id returns the Element found in the doc with the _elementId attribute.
+// returns an undefined Element if the id is not found.
 func Id(_elementId string) (_result *Element) {
 	return Doc().ChildById(_elementId)
 }
@@ -61,9 +64,17 @@ func Id(_elementId string) (_result *Element) {
 // CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
-func CreateElement(tagName string) *Element {
-	elem := Doc().Call("createElement", tagName)
+func CreateElement(_tagName string) *Element {
+	elem := Doc().Call("createElement", _tagName)
 	return CastElement(elem)
+}
+
+// CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
+func CreateTextNode(_text string) *Node {
+	node := Doc().Call("createTextNode", _text)
+	return CastNode(node)
 }
 
 // Document represents any web page loaded in the browser and serves as an entry point into the web page's content, which is the DOM tree.
@@ -345,11 +356,24 @@ func (_doc Document) ChildById(_elementId string) (_result *Element) {
 	}
 	elem := _doc.Call("getElementById", _elementId)
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
-		//console.Warnf("ChildById success: %q \n", _elementId)
+		//DEBUG: console.Warnf("ChildById success: %q \n", _elementId)
 		return CastElement(elem)
 	}
 	console.Warnf("ChildById failed: %q not found, or not an <Element>\n", _elementId)
 	return new(Element)
+}
+
+func (_doc Document) CheckId(_elementId string) (_result *Element, _err error) {
+	_elementId = helper.Normalize(_elementId)
+	if _elementId == "" {
+		return new(Element), fmt.Errorf("CheckId called with an empty id")
+	}
+	elem := _doc.Call("getElementById", _elementId)
+	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
+		//DEBUG: console.Warnf("ChildById success: %q \n", _elementId)
+		return CastElement(elem), nil
+	}
+	return new(Element), fmt.Errorf("CheckId %q not found, or not an <Element>", _elementId)
 }
 
 // QuerySelector returns the first Element within the document that matches the specified selector, or group of selectors.

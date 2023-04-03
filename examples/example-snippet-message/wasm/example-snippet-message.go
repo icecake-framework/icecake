@@ -40,7 +40,7 @@ func main() {
 	}
 	msg4.SetClasses("is-success")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg4, nil)
-	msg4.SwitchClass("is-success", "is-danger")
+	msg4.SwitchClasses("is-success", "is-danger")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg4, nil)
 
 	msg5 := &ui.Message{}

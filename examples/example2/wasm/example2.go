@@ -86,16 +86,16 @@ func updateUI() {
 
 func updateDarkMode(dark bool) {
 	if dark {
-		dom.Doc().Body().Classes().AddTokens("dark")
+		dom.Doc().Body().SetClasses("dark")
 	} else {
-		dom.Doc().Body().Classes().RemoveTokens("dark")
+		dom.Doc().Body().RemoveClasses("dark")
 	}
 	sdark := "false"
 	if dark {
 		sdark = "true"
 	}
-	dom.Id("btn-lightmode").Attributes().SetAttribute("dark", sdark)
-	dom.Id("btn-darkmode").Attributes().SetAttribute("dark", sdark)
+	dom.Id("btn-lightmode").SetAttribute("dark", sdark)
+	dom.Id("btn-darkmode").SetAttribute("dark", sdark)
 
 	browser.LocalStorage().Set("darkmode", fmt.Sprintf("%v", dark))
 }

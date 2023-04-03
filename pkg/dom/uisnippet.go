@@ -44,7 +44,10 @@ func (_s *UISnippet) AddListeners() {}
 // to wrap embedded component instantiated during unfolding an html string.
 // Does not need to be overloaded by the component embedding UISnippet.
 func (_s *UISnippet) Wrap(_jsvp js.JSValueProvider) {
-	_s.DOM.Wrap(_jsvp)
+	if _s.DOM.Value().Truthy() {
+		console.Warnf("wrapping snippet %q to the already wrapped element %q", _s.Id(), _s.DOM.Id())
+	}
+	_s.DOM.JSValue = _jsvp.Value()
 }
 
 // RemoveListeners remove all event handlers attached to this UISnippet Element.
@@ -77,6 +80,13 @@ func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data
 	return _id, nil
 }
 
+func (_s *UISnippet) SetDisabled(_disable bool) {
+	_s.HTMLSnippet.SetDisabled(_disable)
+	if _s.DOM.IsInDOM() {
+		_s.DOM.SetDisabled(_disable)
+	}
+}
+
 /******************************************************************************
 * Private Area
 *******************************************************************************/
@@ -84,6 +94,7 @@ func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data
 // mountDeepSnippet wraps _elem to the _snippet add its listeners and call the customized Mount function.
 // mountDeepSnippet is called recursively for every embedded components of the _snippet.
 func mountDeepSnippet(_snippet UIComposer, _elem *Element) (_err error) {
+	//DEBUG: console.Warnf("mouting %s(%s)", _snippet.Id(), reflect.TypeOf(_snippet).String())
 	_snippet.Wrap(_elem)
 	_snippet.AddListeners()
 	_snippet.Mount()

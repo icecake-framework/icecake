@@ -22,7 +22,7 @@ func TestComposeBasics(t *testing.T) {
 	s0 := new(testsnippet0)
 	_, err = WriteHTMLSnippet(out, s0, nil)
 	require.NoError(t, err)
-	require.Equal(t, `<SPAN id="ick-1"></SPAN>`, out.String())
+	require.Equal(t, `<SPAN id="ick-2"></SPAN>`, out.String())
 
 	// force id, setup classes, attributes and style
 	out.Reset()
@@ -48,22 +48,22 @@ func TestComposeBasics(t *testing.T) {
 	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{})
 	s2 := new(testsnippet2)
 	WriteHTMLSnippet(out, s2, nil)
-	require.Equal(t, `<DIV id="ick-testsnippet2-1" tabIndex=2 class="ts2a ts2b ick-test-snippet2" style="display=test;" a2></DIV>`, out.String())
+	require.Equal(t, `<DIV id="ick-test-snippet2-1" tabIndex=2 class="ts2a ts2b ick-test-snippet2" style="display=test;" a2></DIV>`, out.String())
 
 	// snippet with a tagname, default attributes and custom attributes
 	out.Reset()
 	s2 = new(testsnippet2)
-	s2.SetId("tst").SetClasses("ts2c").SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "", false)
+	s2.SetId("tst").SetClasses("ts2c").SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "")
 	WriteHTMLSnippet(out, s2, nil)
-	require.Equal(t, `<DIV id="tst" tabIndex=1 class="ts2c ts2a ts2b ick-testsnippet2" style="color=red;" a2 a3></DIV>`, out.String())
+	require.Equal(t, `<DIV id="tst" tabIndex=1 class="ts2c ts2a ts2b ick-test-snippet2" style="color=red;" a2 a3></DIV>`, out.String())
 
 	// update custom attributes on an existing component
 	out.Reset()
-	s2.SetClasses("ts2a ts2d").SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "", false)
-	s2.RemoveClass("ts2c")
+	s2.SetClasses("ts2a ts2d").SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "")
+	s2.RemoveClasses("ts2c")
 	s2.RemoveAttribute("a3")
 	WriteHTMLSnippet(out, s2, nil)
-	require.Equal(t, `<DIV id="tst" tabIndex=3 class="ts2a ts2b ick-testsnippet2 ts2d" style="color=blue;" a2 a4></DIV>`, out.String())
+	require.Equal(t, `<DIV id="tst" tabIndex=3 class="ts2a ts2b ick-test-snippet2 ts2d" style="color=blue;" a2 a4></DIV>`, out.String())
 }
 
 func TestComposeDataState(t *testing.T) {
@@ -361,24 +361,3 @@ func TestComposeEmbedded(t *testing.T) {
 		}
 	}
 }
-
-// XXX: func TestHTML(t *testing.T) {
-// 	registry.ResetRegistry()
-// 	out := new(bytes.Buffer)
-
-// 	s := &HTMLSnippet{TagName: "span"}
-// 	_, err := WriteHtmlSnippet(out, s, nil)
-// 	require.NoError(t, err)
-// 	require.Equal(t, `<SPAN id="ick-1"></SPAN>`, out.String())
-
-// 	html := Html(s, nil)
-// 	require.Equal(t, `<SPAN id="ick-1"></SPAN>`, string(html))
-
-// 	s2 := &HTMLSnippet{TagName: "span", Body: "hello"}
-// 	html = Html(s2, nil)
-// 	require.Equal(t, `<SPAN id="ick-2">hello</SPAN>`, string(html))
-
-// 	s3 := &testsnippet2{}
-// 	html = Html(s3, nil)
-// 	require.Equal(t, `<DIV id="ick-3" tabIndex=2 class="ts2a ts2b" style="display=test;" a2></DIV>`, string(html))
-// }

@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"net/url"
+
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/html"
 	"github.com/sunraylab/icecake/pkg/ick"
@@ -23,13 +25,15 @@ type Button struct {
 	dom.UISnippet
 
 	ButtonType BUTTON_TYPE
+	HRef       url.URL
 
 	Title html.String
 
 	IsOutlined bool
 	IsRounded  bool
 	IsLoading  bool
-	IsDisabled bool
+
+	// TODO: handles buttons properties for color, size, display
 }
 
 func (_btn *Button) Template(*html.DataState) (_t html.SnippetTemplate) {
@@ -37,6 +41,9 @@ func (_btn *Button) Template(*html.DataState) (_t html.SnippetTemplate) {
 	case BTN_TYPE_A:
 		_t.TagName = "a"
 		_t.Attributes = `class="button"`
+		if href := _btn.HRef.String(); href != "" {
+			_t.Attributes += ` href="` + href + `"`
+		}
 	case BTN_TYPE_SUBMIT:
 		_t.TagName = "input"
 		_t.Attributes = `class="button" type="submit"`
@@ -58,38 +65,36 @@ func (_btn *Button) Template(*html.DataState) (_t html.SnippetTemplate) {
 	if _btn.IsLoading {
 		_btn.SetClasses("is-loading")
 	}
-	if _btn.IsDisabled {
-		_btn.SetAttribute("disabled", "", true)
-	}
+	_btn.SetDisabled(_btn.IsDisabled())
 
 	// TODO: finalize button
 
 	return _t
 }
 
-func (_btn *Button) Loading(_f bool) {
+func (_btn *Button) SetLoading(_f bool) {
 	_btn.IsLoading = _f
 	if _f {
-		_btn.DOM.Classes().AddTokens("is-loading")
+		_btn.DOM.SetClasses("is-loading")
 	} else {
-		_btn.DOM.Classes().RemoveTokens("is-loading")
+		_btn.DOM.RemoveClasses("is-loading")
 	}
 }
 
-func (_btn *Button) Rounded(_f bool) {
+func (_btn *Button) SetRounded(_f bool) {
 	_btn.IsRounded = _f
 	if _f {
-		_btn.DOM.Classes().AddTokens("is-rounded")
+		_btn.DOM.SetClasses("is-rounded")
 	} else {
-		_btn.DOM.Classes().RemoveTokens("is-rounded")
+		_btn.DOM.RemoveClasses("is-rounded")
 	}
 }
 
-func (_btn *Button) Outlined(_f bool) {
+func (_btn *Button) SetOutlined(_f bool) {
 	_btn.IsOutlined = _f
 	if _f {
-		_btn.DOM.Classes().AddTokens("is-outlined")
+		_btn.DOM.SetClasses("is-outlined")
 	} else {
-		_btn.DOM.Classes().RemoveTokens("is-outlined")
+		_btn.DOM.RemoveClasses("is-outlined")
 	}
 }

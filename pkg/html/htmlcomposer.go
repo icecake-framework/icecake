@@ -29,8 +29,13 @@ type HTMLComposer interface {
 	// Template returns a SnippetTemplate used to render the html string of a Snippet.
 	Template(_data *DataState) SnippetTemplate
 
-	// SetAttribute saves a single key/value attribute. The value must be unquoted.
-	SetAttribute(key string, value String, overwrite bool)
+	// CreateAttribute saves a single key/value attribute. String value must be unquoted.
+	// If the key exists, nothing happen.
+	CreateAttribute(key string, value any)
+
+	// SetAttribute saves a single key/value attribute. String value must be unquoted.
+	// If the key exists value is updated
+	SetAttribute(key string, value any)
 
 	// Attributes returns the formated list of attributes used to generate the container element,
 	Attributes() String
@@ -41,22 +46,6 @@ type HTMLComposer interface {
 	// Embedded return all sub-composers
 	Embedded() map[string]any
 }
-
-// Html returns the html rendered of the _composer
-// XXX: func Html(_composer HTMLComposer, _data *DataState) String {
-// 	_, html := Render(_composer, _data)
-// 	return html
-// }
-
-// Render returns the html rendered of _snippet and the _id created
-// XXX: func Render(_composer HTMLComposer, _data *DataState) (_id string, _html String) {
-// 	out := new(bytes.Buffer)
-// 	id, err := WriteHtmlSnippet(out, _composer, _data)
-// 	if err != nil {
-// 		log.Printf("error rendering html snippet: %s\n", err.Error())
-// 	}
-// 	return id, String(out.String())
-// }
 
 // WriteHTMLSnippet render the HTML of the _composer, its tag element and its body, to _out.
 //
@@ -109,8 +98,6 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 		return "", _err
 	}
 
-	composer := _composer.(HTMLComposer)
-
 	// get ickname for this _composer
 	ickname := ""
 	if entry := registry.LookupRegistryEntry(_composer); entry != nil {
@@ -118,26 +105,26 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 	}
 
 	// get best id
-	id := composer.Id()
+	id := _composer.Id()
 	if id == "" {
 		id = registry.GetUniqueId(ickname)
-		composer.SetAttribute("id", String(id), false)
+		_composer.CreateAttribute("id", id)
 	}
-	_id = composer.Id()
+	_id = _composer.Id()
 
 	// DEBUG:
 	fmt.Printf("level=%d -> rendering html snippet id=%q(%s)\n", _deep, _id, reflect.TypeOf(_composer).String())
 
 	// get the template
-	t := composer.Template(_data)
+	t := _composer.Template(_data)
 	tagname := helper.NormalizeUp(string(t.TagName))
 
 	if tagname != "" {
 		// must merge template attributes with already loaded component attributes
 		// the id attribute is always ignored because already setup
-		parseAttributes(t.Attributes, composer, false)
-		composer.SetAttribute("class", String(ickname), false)
-		fmt.Fprintf(_out, "<%s %s>", tagname, composer.Attributes())
+		parseAttributes(t.Attributes, _composer)
+		_composer.CreateAttribute("class", ickname)
+		fmt.Fprintf(_out, "<%s %s>", tagname, _composer.Attributes())
 	} else {
 		if len(t.Body) == 0 {
 			log.Printf("Warning empty html snippet, no tagname and no body: level=%d, type:%s\n", _deep, reflect.TypeOf(_composer).String())
@@ -145,12 +132,12 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 		}
 	}
 	// DEBUG:
-	if composer.Id() != _id {
+	if _composer.Id() != _id {
 		panic("renderHtmlSnippet: id discrepency")
 	}
 
 	if len(t.Body) > 0 {
-		_err = unfoldBody(composer, _out, []byte(t.Body), _data, _deep)
+		_err = unfoldBody(_composer, _out, []byte(t.Body), _data, _deep)
 	}
 
 	if tagname != "" {
@@ -380,7 +367,7 @@ func unfoldick(_parent HTMLComposer, _output io.Writer, _ickname string, _attrs 
 			if !found {
 				// this attribute is not a field of the componenent
 				// keep it as is unless it is the class attribute, in this case, add the tokens
-				newcmp.SetAttribute(aname, String(avalue), false)
+				newcmp.CreateAttribute(aname, String(avalue))
 			} else {
 				// feed data struct with the value
 				field := newref.Elem().FieldByName(aname)
@@ -463,7 +450,7 @@ func parseQuoted(_str string) string {
 // An attribute can have a value at the right of an "=" symbol.
 // The value can be delimited by quotes ( " or ' ) and in that case may contains whitespaces.
 // The string is processed until the end or an error occurs when invalid char is met.
-func parseAttributes(_alist string, _cmp HTMLComposer, _overwrite bool) (_err error) {
+func parseAttributes(_alist string, _cmp HTMLComposer) (_err error) {
 
 	//pattrs = new(Attributes)
 	//pattrs.amap = make(map[string]StringQuotes)
@@ -480,7 +467,7 @@ func parseAttributes(_alist string, _cmp HTMLComposer, _overwrite bool) (_err er
 				return fmt.Errorf("attribute name %q is not valid", n)
 			}
 			if i < len(names)-1 || !hasval {
-				_cmp.SetAttribute(n, "", _overwrite)
+				_cmp.CreateAttribute(n, "")
 			}
 			//_pattrs.amap[n] = ""
 		}
@@ -505,7 +492,7 @@ func parseAttributes(_alist string, _cmp HTMLComposer, _overwrite bool) (_err er
 			istart = 0
 		}
 		value, unparsed, _ = strings.Cut(unparsed[istart:], string(delim))
-		_cmp.SetAttribute(name, String(value), _overwrite)
+		_cmp.CreateAttribute(name, String(value))
 		//		_pattrs.amap[name] = StringQuotes(value)
 	}
 	return nil

@@ -1,6 +1,8 @@
 package js
 
 import (
+	"fmt"
+	"reflect"
 	"syscall/js"
 
 	"github.com/sunraylab/icecake/pkg/console"
@@ -71,7 +73,7 @@ func (_v JSValue) New(args ...any) JSValue {
 
 func (_v *JSValue) Wrap(_jsvp JSValueProvider) {
 	if _v.jsvalue.Truthy() {
-		console.Warnf("wrapping an already wrapped element")
+		console.Warnf("wrapping an already wrapped jsvalue")
 	}
 	_v.jsvalue = _jsvp.Value().jsvalue
 }
@@ -159,8 +161,15 @@ func (_v JSValue) Call(m string, args ...any) JSValue {
 	return val(res)
 }
 
+func makeArgs(args []any) {
+	for _, arg := range args {
+		fmt.Println("makeargs:ValueOf =", reflect.TypeOf(arg).String())
+	}
+}
+
 // Get returns the JavaScript property p of value v.
-// It panics if v is not a JavaScript object. Returns js.null if _v is undefined and print a warning.
+// Returns js.null if _v is undefined or unable to get p.
+// Print a warning in these cases.
 func (_v JSValue) Get(_pname string) JSValue {
 	if !_v.IsDefined() {
 		console.Warnf("unable to get %q: undefined js value\n", _pname)
@@ -171,6 +180,18 @@ func (_v JSValue) Get(_pname string) JSValue {
 		console.Warnf("get %q returns an undefined js value\n", _pname)
 	}
 	return jsret
+}
+
+// Check is like Get but returns an error without printing a warning in case of an error
+func (_v JSValue) Check(_pname string) (JSValue, error) {
+	if !_v.IsDefined() {
+		return null(), fmt.Errorf("unable to get %q: undefined js value", _pname)
+	}
+	jsret := val(_v.jsvalue.Get(_pname))
+	if !jsret.IsDefined() {
+		return null(), fmt.Errorf("get %q returns an undefined js value\n", _pname)
+	}
+	return jsret, nil
 }
 
 // TODO: Test TryGet and use it
@@ -387,34 +408,53 @@ func val(_v js.Value) JSValue {
 }
 
 func cleanArgs(args ...any) []any {
-	for i, a := range args {
-		args[i] = cleanArg(a)
+	for i, aa := range args {
+		switch a := aa.(type) {
+		case JSValue:
+			args[i] = a.jsvalue
+		default:
+			args[i] = a
+		}
 	}
 	return args
 }
 
-func cleanArg(_v any) any {
-	switch v := _v.(type) {
-	case map[string]any:
-		m := make(map[string]any, len(v))
-		for key, val := range v {
-			m[key] = cleanArg(val)
-		}
-		return m
+// func cleanArg(_v any) any {
+// 	//DEBUG:
+// 	fmt.Println(reflect.TypeOf(_v).String())
 
-	case []any:
-		s := make([]any, len(v))
-		for i, val := range v {
-			s[i] = cleanArgs(val)
-		}
+// 	switch v := _v.(type) {
+// 	case map[string]any:
+// 		m := make(map[string]any, len(v))
+// 		for key, val := range v {
+// 			m[key] = cleanArg(val)
+// 		}
+// 		return m
 
-	// case JSFunc:
-	// 	return v.Value
+// 	case []any:
+// 		// DEBUG:
+// 		fmt.Println("claning a slice")
+// 		s := make([]any, len(v))
+// 		for i, val := range v {
+// 			s[i] = cleanArgs(val)
+// 		}
+// 		return s
 
-	case JSValue:
-		return v.jsvalue
-	}
+// 	case []string:
+// 		// DEBUG:
+// 		fmt.Println("claning a string slice")
+// 		s := make([]string, len(v))
+// 		for i, val := range v {
+// 			s[i] = val
+// 		}
 
-	return _v
+// 		// case JSFunc:
+// 	// 	return v.Value
 
-}
+// 	case JSValue:
+// 		return v.jsvalue
+// 	}
+
+// 	return _v
+
+// }
