@@ -45,7 +45,8 @@ func RegisterComposer(ickname string, _composer any) (_err error) {
 	}
 
 	registry.AddRegistryEntry(ickname, _composer)
-	log.Printf("component %q(%s) registered\n", ickname, typ.String())
+	// DEBUG:
+	fmt.Printf("component %q(%s) registered\n", ickname, typ.String())
 	return nil
 }
 
