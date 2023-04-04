@@ -82,7 +82,7 @@ func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data
 
 func (_s *UISnippet) SetDisabled(_disable bool) {
 	_s.HTMLSnippet.SetDisabled(_disable)
-	if _s.DOM.IsInDOM() {
+	if _s.DOM.IsDefined() && _s.DOM.IsInDOM() {
 		_s.DOM.SetDisabled(_disable)
 	}
 }
