@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/sunraylab/icecake/pkg/registry"
 )
@@ -359,5 +360,20 @@ func TestComposeEmbedded(t *testing.T) {
 				t.FailNow()
 			}
 		}
+	}
+}
+
+func TestUnfoldbody3(t *testing.T) {
+
+	html := String(`<ick-button class="m-2 is-primary is-light" data-example=6 Title="Embedded" IsOutlined/>`)
+
+	out := new(bytes.Buffer)
+	embedded, err := UnfoldHtml(out, html, nil)
+	require.NoError(t, err)
+	require.NotNil(t, embedded)
+
+	for _, sub := range embedded {
+		_, ok := sub.(HTMLComposer)
+		assert.True(t, ok)
 	}
 }
