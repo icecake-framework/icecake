@@ -5,7 +5,6 @@ import (
 
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/html"
-	"github.com/sunraylab/icecake/pkg/ick"
 )
 
 /******************************************************************************
@@ -16,7 +15,7 @@ import (
 var notifycss string
 
 func init() {
-	ick.RegisterComposer("ick-notify", &Notify{})
+	html.RegisterComposer("ick-notify", &Notify{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
 }
 
 type Notify struct {

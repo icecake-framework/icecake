@@ -35,25 +35,23 @@
         <div class="container">
             <h1 class="title">Icecake Go Wasm Framework</h1>
             <h2 class="subtitle">Example2</h2>
-            <div class="content" id="readme"></div>
+            <div class="content" id="readme">
+                <div class="subtitle">Use of BULMA CSS framework.</div>
 
-            <div class="columns has-text-centered is-vcentered pt-5">
-                <div class="column">
-                    <button class="button is-primary" id="btn-ex2">Count:&nbsp;<span data-ick-namedvalue="count1"></span></button>
-                </div>
-                <div class="column">
-                    <div class="block subtitle is-4">Count:&nbsp;<span data-ick-namedvalue="count1"></span></div>
-                </div>
-                <div class="column">
-                    <div class="block subtitle is-4">Count:&nbsp;<span id="count1"></span></div>
-                </div>
-            </div>
+                <div class="subtitle mb-3">Basic event handling.</div>
+                <button class="button is-primary mb-5" id="btn-ex2">Count:&nbsp;<span data-ick-namedvalue="count1"></span></button>
 
-            <div class="columns has-text-centered is-vcentered">
-                <div class="column">
-                    <button class="button is-primary is-light" id="btn-lightmode">light mode</button>
-                    <button class="button is-primary is-light" id="btn-darkmode">dark mode</button>
+                <div class="subtitle mb-3">Rendering a formated value directly within an element by Id.</div>
+                <div class="block subtitle">Count:&nbsp;<span id="count1"></span></div>
+
+                <div class="subtitle mb-3">Rendering named value with the use of
+                    <code>data-ick-namedvalue</code> attribute.
                 </div>
+                <div class="block subtitle">Count:&nbsp;<span data-ick-namedvalue="count1"></span></div>
+
+                <div class="subtitle mb-3">Work with local storage.</div>
+                <button class="button is-primary is-light" id="btn-lightmode">light mode</button>
+                <button class="button is-primary is-light" id="btn-darkmode">dark mode</button>
             </div>
         </div>
     </section>

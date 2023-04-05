@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -122,7 +123,7 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 	if tagname != "" {
 		// must merge template attributes with already loaded component attributes
 		// the id attribute is always ignored because already setup
-		parseAttributes(t.Attributes, _composer)
+		ParseAttributes(string(t.Attributes), _composer)
 		_composer.CreateAttribute("class", ickname)
 		fmt.Fprintf(_out, "<%s %s>", tagname, _composer.Attributes())
 	} else {
@@ -199,6 +200,7 @@ nextbyte:
 		bopen_delim := string(_body[i:mini(i+5, ilast+1)]) == "<ick-"
 
 		// decide what to do according to walk.processing and b value _</>*
+		funfoldick := false
 		switch walk.processing {
 		case processing_NONE:
 			switch {
@@ -244,9 +246,7 @@ nextbyte:
 			case bclose_delim: // process a single ick-component
 				walk.closeick(i)
 				i += 2 - 1
-
-				//log.Println("composing embedded component:", ickname)
-				_err = unfoldick(_parent, _output, ickname, attrs, _data, _deep)
+				funfoldick = true
 
 			default: // build component ick-tagname
 				r, size := utf8.DecodeRune(_body[i:mini(ilast+1, i+4)])
@@ -284,9 +284,7 @@ nextbyte:
 			case bclose_delim: // process an ick-component
 				walk.closeick(i)
 				i += 2 - 1
-
-				//log.Println("composing embedded component:", ickname)
-				unfoldick(_parent, _output, ickname, attrs, _data, _deep)
+				funfoldick = true
 
 			default: // build attribute name
 				r, size := utf8.DecodeRune(_body[i:mini(ilast+1, i+4)])
@@ -326,11 +324,7 @@ nextbyte:
 				case bclose_delim: // process an ick-component
 					walk.closeick(i)
 					i += 2 - 1
-
-					log.Println("composing embedded component:", ickname)
-					//fmt.Fprintf(_output, "*** composing embedded component %q ***", ickname)
-					unfoldick(_parent, _output, ickname, attrs, _data, _deep)
-
+					funfoldick = true
 				default: // look for another aname
 					walk.processing = processing_ANAME
 					walk.startfield(0)
@@ -345,13 +339,23 @@ nextbyte:
 				walk.fieldto = i
 			}
 		}
+
+		if funfoldick {
+			fmt.Printf("level=%v -> unfolding embedded component: %s\n", _deep, ickname)
+			if warning := unfoldick(_parent, _output, ickname, attrs, _data, _deep); warning != nil {
+				fmt.Printf("warning %q: %s\n", ickname, warning.Error())
+				// DEBUG: fmt.Printf("embedded attributes: %v\n", attrs)
+			}
+		}
 	}
 	return _err
 }
 
 // unfoldick render the ick-component corresponding to _ickname and its unfolded _attrs.
+// returns an error if the component or a sub component is not registered, or an embedded attribute type is unmannaged and it's value can't be parsed
 func unfoldick(_parent HTMLComposer, _output io.Writer, _ickname string, _attrs map[string]string, _data *DataState, _deep int) (_err error) {
 	// does this tag refer to a registered component ?
+	htmlerr := ""
 	regentry := registry.GetRegistryEntry(_ickname)
 	if regentry.Component() != nil {
 
@@ -363,6 +367,7 @@ func unfoldick(_parent HTMLComposer, _output io.Writer, _ickname string, _attrs 
 		// process unfolded attributes, set value of ickcomponent field when name of attribute matches field name,
 		// otherwise set unfolded attribute to the attribute of the component.
 		for aname, avalue := range _attrs {
+			//DEBUG:			fmt.Println(aname, newref.Elem().Type())
 			_, found := newref.Elem().Type().FieldByName(aname)
 			if !found {
 				// this attribute is not a field of the componenent
@@ -371,33 +376,38 @@ func unfoldick(_parent HTMLComposer, _output io.Writer, _ickname string, _attrs 
 			} else {
 				// feed data struct with the value
 				field := newref.Elem().FieldByName(aname)
-				if _err = updateProperty(field, avalue); _err != nil {
-					return _err
+				if err := updateProperty(field, avalue); err != nil {
+					htmlerr = fmt.Sprintf("<!-- unable to unfold %s component: %s for %s attribute -->", _ickname, err.Error(), aname)
+					break
 				}
 			}
 		}
 
-		// recursively unfold the component snippet
-		newcmpid := ""
-		newcmpid, _err = writeHtmlSnippet(_output, newcmp, _data, _deep+1)
+		if htmlerr == "" {
+			// recursively unfold the component snippet
+			newcmpid := ""
+			newcmpid, _err = writeHtmlSnippet(_output, newcmp, _data, _deep+1)
 
-		// add it to the map of embedded components
-		if newcmpid != "" && _parent != nil {
-			_parent.Embed(newcmpid, newcmp)
+			// add it to the map of embedded components
+			if newcmpid != "" && _parent != nil {
+				_parent.Embed(newcmpid, newcmp)
+			}
 		}
 
 	} else {
-		// the tag is not a registered component
-		// unable to instantiate it
-		htmlmsg := fmt.Sprintf("<!-- unable to unfold unregistered %s component -->", _ickname)
-		_output.Write([]byte(htmlmsg))
-		log.Println(htmlmsg)
-		_err = errors.New(htmlmsg)
+		htmlerr = fmt.Sprintf("<!-- unable to unfold unregistered %s component -->", _ickname)
 	}
+
+	if htmlerr != "" {
+		_output.Write([]byte(htmlerr))
+		_err = errors.New(htmlerr)
+	}
+
 	return _err
 }
 
 // updateProperty updates _cprop with the _value trying to convert the _value to the type of _cprop
+// returns an error if _cprop type is unmannaged and it's value can't be parsed
 func updateProperty(_cprop reflect.Value, _value string) (_erra error) {
 	switch _cprop.Type().String() {
 	case "time.Duration":
@@ -406,22 +416,34 @@ func updateProperty(_cprop reflect.Value, _value string) (_erra error) {
 		if _erra == nil {
 			_cprop.SetInt(int64(d))
 		}
+	case "*url.URL":
+		uu, err := url.Parse(_value)
+		if err != nil {
+			_erra = err
+			break
+		}
+		_cprop.Set(reflect.ValueOf(uu))
 
 	default:
 		switch _cprop.Kind() {
 		case reflect.String:
 			_cprop.SetString(_value)
-
 		case reflect.Int64:
 			var i int
 			i, _erra = strconv.Atoi(_value)
 			if _erra == nil {
 				_cprop.SetInt(int64(i))
 			}
+		case reflect.Bool:
+			f := true
+			if s := strings.ToLower(strings.Trim(_value, " ")); s == "false" || s == "0" {
+				f = false
+			}
+			_cprop.SetBool(f)
 
 		// TODO: handle other data types
 		default:
-			return fmt.Errorf("unmanaged type %q", _cprop.Kind().String())
+			return fmt.Errorf("unmanaged type %s", _cprop.Type().String()) // _cprop.Kind().String()
 		}
 	}
 	return _erra
@@ -450,7 +472,8 @@ func parseQuoted(_str string) string {
 // An attribute can have a value at the right of an "=" symbol.
 // The value can be delimited by quotes ( " or ' ) and in that case may contains whitespaces.
 // The string is processed until the end or an error occurs when invalid char is met.
-func parseAttributes(_alist string, _cmp HTMLComposer) (_err error) {
+// TODO: secure _alist ?
+func ParseAttributes(_alist string, _cmp HTMLComposer) (_err error) {
 
 	//pattrs = new(Attributes)
 	//pattrs.amap = make(map[string]StringQuotes)
@@ -505,4 +528,33 @@ func mini(a int, b int) int {
 	} else {
 		return b
 	}
+}
+
+func debugValue(_v reflect.Value) {
+	fmt.Printf("Type: %s\n", _v.Type().String())
+
+	n := _v.Type().NumMethod()
+	fmt.Printf("Nb Method: %v\n", n)
+	for i := 0; i < n; i++ {
+		m := _v.Method(i)
+		name := _v.Type().Method(i).Name
+		fmt.Printf("Method %v: %s %s '%v'\n", i, name, m.String(), m)
+	}
+
+	n = _v.NumField()
+	fmt.Printf("Nb Field: %v\n", n)
+	for i := 0; i < n; i++ {
+		m := _v.Field(i)
+		name := _v.Type().Field(i).Name
+		fmt.Printf("Field %v: %v %v '%v'\n", i, name, m.Type().String(), m)
+	}
+}
+
+func debugAny(_v any) {
+	fmt.Printf("Type: %v\n", reflect.TypeOf(_v).String())
+	fmt.Printf("Type: %v\n", reflect.ValueOf(_v).Interface())
+
+	_, ok := _v.(*url.URL)
+	fmt.Printf("Type url.URL: %v\n", ok)
+
 }

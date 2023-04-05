@@ -1,5 +1,0 @@
-- Rendering a formated value directly within an element by Id.
-- Rendering named value with the use of `data-ick-namedvalue` attribute.
-- Basic event handling.
-- Use of BULMA CSS framework.
-- Work with local storage.

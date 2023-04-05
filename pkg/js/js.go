@@ -182,6 +182,33 @@ func (_v JSValue) Get(_pname string) JSValue {
 	return jsret
 }
 
+func TryGet(_param ...string) (JSValue, error) {
+	tryArgs := make([]any, len(_param)+1)
+	tryArgs[0] = js.Global()
+	for i, v := range _param {
+		tryArgs[i+1] = js.ValueOf(v)
+	}
+	arr := js.Global().Call("tryGet", tryArgs...)
+	if arr1 := arr.Index(1); !arr1.Equal(js.Null()) {
+		return JSValue{}, &js.Error{Value: arr1}
+	}
+	return JSValue{arr.Index(0)}, nil
+}
+
+// FIX: tryset
+func TrySet(_param ...string) error {
+	tryArgs := make([]any, len(_param)+1)
+	tryArgs[0] = js.Global()
+	for i, v := range _param {
+		tryArgs[i+1] = js.ValueOf(v)
+	}
+	arr := js.Global().Call("trySet", tryArgs...)
+	if arr1 := arr.Index(1); !arr1.Equal(js.Null()) {
+		return &js.Error{Value: arr1}
+	}
+	return nil
+}
+
 // Check is like Get but returns an error without printing a warning in case of an error
 func (_v JSValue) Check(_pname string) (JSValue, error) {
 	if !_v.IsDefined() {
@@ -192,19 +219,6 @@ func (_v JSValue) Check(_pname string) (JSValue, error) {
 		return null(), fmt.Errorf("get %q returns an undefined js value\n", _pname)
 	}
 	return jsret, nil
-}
-
-// TODO: Test TryGet and use it
-func TryGet(_v js.Value, p string) (result js.Value, err error) {
-	defer func() {
-		if x := recover(); x != nil {
-			var ok bool
-			if err, ok = x.(error); !ok {
-				err = console.Errorf("%v", x)
-			}
-		}
-	}()
-	return _v.Get(p), nil
 }
 
 // Set sets the JavaScript property p of value v to ValueOf(x).

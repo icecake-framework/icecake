@@ -5,9 +5,15 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <title>icecake example</title>
     <style>
         .brand {
+            color: red;
+            text-decoration: underline;
+        }
+
+        .brand:hover {
             color: blue;
         }
     </style>
@@ -15,20 +21,27 @@
 </head>
 
 <body>
-    <h1>Icecake Go Wasm Framework</h1>
-    <h2>Example1</h2>
 
-    <h3>Server Side Content</h3>
-    <p>Hello mate!</p>
+    <section id="body" class="section">
+        <div class="container">
+            <h1 class="title">Icecake Go Wasm Framework</h1>
+            <h2 class="subtitle">Example 1 : wasm code written in go executed on the front.</h2>
 
-    <h3>Client Side Content</h3>
-    <p>The content under the line is added to the DOM by the webassembly code loaded and executed on the client side.</p>
+            <div class="box content">
+                <h3>Server Side Content</h3>
+                <p>Hello World!</p>
+            </div>
 
-    <hr />
-    <div id="ex1a">loading in progress...</div>
-    <div id="ex1b">Html templating with your go data...</div>
-    <div id="ex1d">simple markdown rendering...</div>
-    <div id="readme">markdown rendering with an embedded source text...</div>
+            <div class="box content">
+                <h3>Client Side Content</h3>
+                <p>The content under the line is added to the DOM by the webassembly code loaded and executed on the client side.</p>
+
+                <hr />
+                <div id="readme">Markdown rendering with an embedded source text. Loading...</div>
+            </div>
+
+        </div>
+    </section>
 
     <!-- wasm js required files -->
     <script src="wasm_exec.js"></script>

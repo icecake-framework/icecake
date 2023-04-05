@@ -4,7 +4,6 @@ import (
 	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/html"
-	"github.com/sunraylab/icecake/pkg/ick"
 )
 
 /******************************************************************************
@@ -12,7 +11,7 @@ import (
 ******************************************************************************/
 
 func init() {
-	ick.RegisterComposer("ick-message", &Message{})
+	html.RegisterComposer("ick-message", &Message{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
 }
 
 type Message struct {

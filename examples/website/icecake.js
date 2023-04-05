@@ -4,30 +4,32 @@ function ickError(msg) { console.error(msg) }
 
 function ickWarn(msg) { console.warn(msg) }
 
-/******************************************************************************
- * Local Storage
- */
-
-function ickLocalStorage() {
-    var ls;
+function tryGet() {
     try {
-        ls = window.localStorage;
-    } catch (e) {
-        console.log("ick", e.error);
-        return null;
+        var source = arguments[0];
+        for (var i = 1; i < arguments.length; i++)
+            source = source[arguments[i]];
+
+        return [source, null];
     }
-    return ls;
+    catch (err) {
+        console.warn("tryGet", err.error);
+        return [null, err];
+    }
 }
 
-function ickSessionStorage() {
-    var ls;
+function trySet() {
     try {
-        ls = window.sessionStorage;
-    } catch (e) {
-        console.log("ick", e.error);
-        return null;
+        var source = arguments[0];
+        for (var i = 1; i < arguments.length; i++)
+            source = source[arguments[i]];
+
+        return [null];
     }
-    return ls;
+    catch (err) {
+        console.warn("trySet", err.error);
+        return [err];
+    }
 }
 
 function ickStorageSetItem(storage, key, value) {

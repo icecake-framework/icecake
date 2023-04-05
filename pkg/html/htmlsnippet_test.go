@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/sunraylab/icecake/pkg/registry"
 )
@@ -32,7 +33,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// The same but when registered
 	out.Reset()
-	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{})
+	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{}, nil)
 	WriteHTMLSnippet(out, s0, nil)
 	require.Equal(t, `<SPAN id="helloworld0" tabIndex=1 class="test ick-test-snippet0" style="color=red;"></SPAN>`, out.String())
 
@@ -45,7 +46,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// snippet with a tagname and default attributes
 	out.Reset()
-	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{})
+	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{}, nil)
 	s2 := new(testsnippet2)
 	WriteHTMLSnippet(out, s2, nil)
 	require.Equal(t, `<DIV id="ick-test-snippet2-1" tabIndex=2 class="ts2a ts2b ick-test-snippet2" style="display=test;" a2></DIV>`, out.String())
@@ -86,7 +87,7 @@ func TestUnfoldBody1(t *testing.T) {
 	s := &testsnippet0{}
 	s.TagName = "div"
 	s.Body = "test"
-	registry.AddRegistryEntry("ick-test-snippet0", s)
+	registry.AddRegistryEntry("ick-test-snippet0", s, nil)
 	err := unfoldBody(nil, out, []byte("<ick-test-snippet0/>"), nil, 0)
 	require.NoError(t, err)
 	require.Equal(t, `<SPAN id="ick-test-snippet0-1" class="ick-test-snippet0"></SPAN>`, out.String())
@@ -242,9 +243,9 @@ func TestUnfoldBody2(t *testing.T) {
 
 	// restet the component registrey for tests
 	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{})
-	registry.AddRegistryEntry("ick-test-snippet1", &testsnippet1{})
-	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{})
+	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{}, nil)
+	registry.AddRegistryEntry("ick-test-snippet1", &testsnippet1{}, nil)
+	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{}, nil)
 
 	output := new(bytes.Buffer)
 	for i, tst := range tstset {
@@ -327,10 +328,10 @@ func TestComposeEmbedded(t *testing.T) {
 
 	// restet the component registrey for tests
 	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{})
-	registry.AddRegistryEntry("ick-test-snippet1", &testsnippet1{})
-	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{})
-	registry.AddRegistryEntry("ick-test-infinite", &testsnippetinfinite{})
+	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{}, nil)
+	registry.AddRegistryEntry("ick-test-snippet1", &testsnippet1{}, nil)
+	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{}, nil)
+	registry.AddRegistryEntry("ick-test-infinite", &testsnippetinfinite{}, nil)
 
 	// running tests
 	cmp := new(testsnippet1)
@@ -359,5 +360,20 @@ func TestComposeEmbedded(t *testing.T) {
 				t.FailNow()
 			}
 		}
+	}
+}
+
+func TestUnfoldbody3(t *testing.T) {
+
+	html := String(`<ick-button class="m-2 is-primary is-light" data-example=6 Title="Embedded" IsOutlined/>`)
+
+	out := new(bytes.Buffer)
+	embedded, err := UnfoldHtml(out, html, nil)
+	require.NoError(t, err)
+	require.NotNil(t, embedded)
+
+	for _, sub := range embedded {
+		_, ok := sub.(HTMLComposer)
+		assert.True(t, ok)
 	}
 }
