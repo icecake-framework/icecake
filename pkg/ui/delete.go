@@ -6,7 +6,6 @@ import (
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/event"
 	"github.com/sunraylab/icecake/pkg/html"
-	"github.com/sunraylab/icecake/pkg/ick"
 )
 
 /******************************************************************************
@@ -14,7 +13,7 @@ import (
 ******************************************************************************/
 
 func init() {
-	ick.RegisterComposer("ick-delete", &Delete{})
+	html.RegisterComposer("ick-delete", &Delete{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
 }
 
 type Delete struct {

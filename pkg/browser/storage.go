@@ -1,7 +1,6 @@
 package browser
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/sunraylab/icecake/internal/helper"
@@ -12,18 +11,27 @@ import (
 * Storage
 ******************************************************************************/
 
+type strorage_type int
+
+const (
+	st_local   strorage_type = 0
+	st_session strorage_type = 0
+)
+
 // https://developer.mozilla.org/fr/docs/Web/API/Web_Storage_API
 type Storage struct {
 	js.JSValue
+	storagetype strorage_type
 }
 
 // CastStorage is casting a js.Value into Storage.
-func castStorage(_jsv js.JSValueProvider) *Storage {
+func castStorage(_jsv js.JSValueProvider, _st strorage_type) *Storage {
 	if !_jsv.Value().IsObject() {
 		return nil
 	}
 	ret := new(Storage)
 	ret.JSValue = _jsv.Value()
+	ret.storagetype = _st
 	return ret
 }
 
@@ -34,9 +42,11 @@ func castStorage(_jsv js.JSValueProvider) *Storage {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
 func SessionStorage() *Storage {
-	// TODO: tryget SessionStorage
-	rsp := Win().Call("ickSessionStorage")
-	return castStorage(rsp)
+	jsv, err := js.TryGet("window", "sessionStorage")
+	if err != nil {
+		return nil
+	}
+	return castStorage(jsv, st_session)
 }
 
 // allows you to access a Storage object for the Document's origin; the stored data is saved across browser sessions.
@@ -45,10 +55,11 @@ func SessionStorage() *Storage {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
 func LocalStorage() *Storage {
-	// TODO: tryget LocalStorage
-	//value := _win.jsValue.Get("localStorage")
-	jsv := Win().Call("ickLocalStorage")
-	return castStorage(jsv)
+	jsv, err := js.TryGet("window", "localStorage")
+	if err != nil {
+		return nil
+	}
+	return castStorage(jsv, st_local)
 }
 
 // Length returns the number of data items stored in a given Storage object.
@@ -121,16 +132,23 @@ func (_store *Storage) GetInt(key string) (_value int) {
 // when passed a key name, will return that key's value, or null if the key does not exist, in the given Storage object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem
+// TODO: handle error
 func (_store *Storage) Set(key string, value string) error {
 	if _store == nil {
 		return nil
 	}
-	//_store.jsValue.Call("setItem", key, value)
+	_store.Call("setItem", key, value)
 
-	rsp := js.Global().Call("ickStorageSetItem", _store.Value(), key, value)
-	if rsp.Type() == js.TYPE_STRING {
-		return fmt.Errorf(rsp.String())
-	}
+	// storage := "sessionStorage"
+	// if _store.storagetype == st_local {
+	// 	storage = "localStorage"
+	// }
+
+	// err := js.TrySet("window", storage, "setItem", key, value)
+	// if err != nil {
+	// 	console.Errorf(err.Error())
+	// 	return err
+	// }
 	return nil
 }
 

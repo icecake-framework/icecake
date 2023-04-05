@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -122,7 +123,7 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 	if tagname != "" {
 		// must merge template attributes with already loaded component attributes
 		// the id attribute is always ignored because already setup
-		parseAttributes(t.Attributes, _composer)
+		ParseAttributes(string(t.Attributes), _composer)
 		_composer.CreateAttribute("class", ickname)
 		fmt.Fprintf(_out, "<%s %s>", tagname, _composer.Attributes())
 	} else {
@@ -415,9 +416,13 @@ func updateProperty(_cprop reflect.Value, _value string) (_erra error) {
 		if _erra == nil {
 			_cprop.SetInt(int64(d))
 		}
-	case "url.URL":
-		field := _cprop.FieldByName("Path")
-		field.SetString(_value)
+	case "*url.URL":
+		uu, err := url.Parse(_value)
+		if err != nil {
+			_erra = err
+			break
+		}
+		_cprop.Set(reflect.ValueOf(uu))
 
 	default:
 		switch _cprop.Kind() {
@@ -467,7 +472,8 @@ func parseQuoted(_str string) string {
 // An attribute can have a value at the right of an "=" symbol.
 // The value can be delimited by quotes ( " or ' ) and in that case may contains whitespaces.
 // The string is processed until the end or an error occurs when invalid char is met.
-func parseAttributes(_alist string, _cmp HTMLComposer) (_err error) {
+// TODO: secure _alist ?
+func ParseAttributes(_alist string, _cmp HTMLComposer) (_err error) {
 
 	//pattrs = new(Attributes)
 	//pattrs.amap = make(map[string]StringQuotes)
@@ -522,4 +528,33 @@ func mini(a int, b int) int {
 	} else {
 		return b
 	}
+}
+
+func debugValue(_v reflect.Value) {
+	fmt.Printf("Type: %s\n", _v.Type().String())
+
+	n := _v.Type().NumMethod()
+	fmt.Printf("Nb Method: %v\n", n)
+	for i := 0; i < n; i++ {
+		m := _v.Method(i)
+		name := _v.Type().Method(i).Name
+		fmt.Printf("Method %v: %s %s '%v'\n", i, name, m.String(), m)
+	}
+
+	n = _v.NumField()
+	fmt.Printf("Nb Field: %v\n", n)
+	for i := 0; i < n; i++ {
+		m := _v.Field(i)
+		name := _v.Type().Field(i).Name
+		fmt.Printf("Field %v: %v %v '%v'\n", i, name, m.Type().String(), m)
+	}
+}
+
+func debugAny(_v any) {
+	fmt.Printf("Type: %v\n", reflect.TypeOf(_v).String())
+	fmt.Printf("Type: %v\n", reflect.ValueOf(_v).Interface())
+
+	_, ok := _v.(*url.URL)
+	fmt.Printf("Type url.URL: %v\n", ok)
+
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/sunraylab/icecake/pkg/browser"
 	"github.com/sunraylab/icecake/pkg/dom"
@@ -18,6 +19,8 @@ func main() {
 
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
+
+	dom.MountCSSLinks()
 
 	btn = make([]*ui.Button, 0)
 	content := dom.Id("content")
@@ -53,7 +56,7 @@ func main() {
 	btn = append(btn, b4)
 
 	b5 := &ui.Button{Title: "Go To Home", ButtonType: ui.BTN_TYPE_A}
-	b5.HRef.Path = "/"
+	b5.HRef, _ = url.Parse("/")
 	b5.SetClasses("m-2 is-link is-light").SetAttribute("data-example", 5)
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b5, nil)
 	btn = append(btn, b5)

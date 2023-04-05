@@ -14,6 +14,8 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
+	dom.MountCSSLinks()
+
 	msg1 := &ui.Message{
 		Message: "This is a simple message without header.",
 	}

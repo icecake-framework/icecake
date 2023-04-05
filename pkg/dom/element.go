@@ -633,6 +633,7 @@ func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.String) 
 // InsertHTML unfolds and renders the html of the _html and write it into the DOM.
 // All embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // Returns an error if _elem in not the DOM or if an error occurs during UnfoldHtml or mounting process.
+// HACK: better rendering with a reader ?
 func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.String, _data *html.DataState) (_err error) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
@@ -644,7 +645,6 @@ func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.String, _data *
 	if _err == nil {
 		// insert the html element into the dom and wrapit
 		_elem.InsertRawHTML(_where, html.String(out.String()))
-
 		// mount every embedded components
 		if embedded != nil {
 			// DEBUG: console.Warnf("scanning %+v", embedded)

@@ -2,10 +2,12 @@ package dom
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/sunraylab/icecake/pkg/console"
 	"github.com/sunraylab/icecake/pkg/html"
 	"github.com/sunraylab/icecake/pkg/js"
+	"github.com/sunraylab/icecake/pkg/registry"
 )
 
 // type Listener interface {
@@ -58,12 +60,13 @@ func (_s *UISnippet) RemoveListeners() {
 }
 
 // Html builds and unfolds the UIcomposer and returns its cStringng HTML string
+// dees not mount the component inti the DOM, so does not wrap it nor addlisteners.
+// Renders the html element and body, unfolding and embeddind sub components.
 func (_s *UISnippet) HTML(_snippet UIComposer) (_html html.String) {
-	// render the html element and body, unfolding sub components
 	out := new(bytes.Buffer)
 	id, err := html.WriteHTMLSnippet(out, _snippet, nil)
 	if err == nil {
-		_s.Embed(id, _snippet)
+		_s.Embed(id, _snippet) // need to embed the snippet itself
 		_html = html.String(out.String())
 	}
 	return _html
@@ -74,7 +77,6 @@ func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data
 	if _parent == nil || !_parent.DOM.IsDefined() {
 		return "", console.Errorf("Snippet:InsertSnippetfailed on undefined _parent")
 	}
-
 	_parent.DOM.InsertSnippet(_where, _snippet, _data)
 	_parent.AddListeners()
 	return _id, nil
@@ -87,6 +89,42 @@ func (_s *UISnippet) SetDisabled(_disable bool) {
 	}
 }
 
+// MountCSSLinks inserts links elements to the Head section of the Document for every csslinkref found TheRegistry of components.
+// If a link already exists for a csslinkref nothing is done.
+// MountCSSLinks must be called at the early begining of the wasm code.
+func MountCSSLinks() {
+	reg := registry.Map()
+	for ickname, e := range reg {
+		fmt.Println("Mounting CSSLinks for", ickname)
+		if !e.IsCSSLinkMounted() {
+			links := e.CSSLinkRefs()
+			if links != nil {
+				for _, l := range links {
+					if l == "" {
+						continue
+					}
+					head := Doc().Head()
+					children := head.ChildrenMatching(func(e *Element) bool {
+						if e.TagName() == "LINK" {
+							href, _ := e.Attribute("href")
+							if href == l {
+								return true
+							}
+						}
+						return false
+					})
+					if len(children) == 0 {
+						e := CreateElement("LINK").SetAttribute("href", l).SetAttribute("rel", "stylesheet")
+						head.InsertElement(INSERT_LAST_CHILD, e)
+
+					}
+				}
+			}
+			e.SetCSSLinkMounted()
+		}
+	}
+}
+
 /******************************************************************************
 * Private Area
 *******************************************************************************/
@@ -94,6 +132,9 @@ func (_s *UISnippet) SetDisabled(_disable bool) {
 // mountDeepSnippet wraps _elem to the _snippet add its listeners and call the customized Mount function.
 // mountDeepSnippet is called recursively for every embedded components of the _snippet.
 func mountDeepSnippet(_snippet UIComposer, _elem *Element) (_err error) {
+	// insert the stylesheet into the document header
+	// XXX
+
 	//DEBUG: console.Warnf("mouting %s(%s)", _snippet.Id(), reflect.TypeOf(_snippet).String())
 	_snippet.Wrap(_elem)
 	_snippet.AddListeners()

@@ -21,12 +21,13 @@ import (
 type String string
 
 type SnippetTemplate struct {
-	// The tagname used to render the html container element of this composer.
+	// Tagname is used to render the html container element of this composer.
 	// If tagname returns an empety string, the rendering does not generates the container element,
 	// in such case snippet's attributes are ignored.
 	TagName String
 
-	Attributes string
+	// if a TagName is defined, Attributes will be rendered with the html container element of this composer.
+	Attributes String
 
 	// Body returns the html template used to generate the content inside the container html element.
 	Body String
@@ -414,6 +415,7 @@ func (s HTMLSnippet) Embedded() map[string]any {
 func (s HTMLSnippet) Template(*DataState) (_t SnippetTemplate) {
 	_t.TagName = s.TagName
 	_t.Body = s.Body
+	_t.Attributes = s.Attributes()
 	return
 }
 

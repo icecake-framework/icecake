@@ -41,7 +41,7 @@ func main() {
 	// webapp = dom.NewWebApp()
 
 	// render readme
-	markdown.RenderMarkdown(dom.Id("readme"), readme, nil,
+	markdown.RenderIn(dom.Id("readme"), readme, nil,
 		goldmark.WithRendererOptions(
 			mdhtml.WithUnsafe()),
 		goldmark.WithExtensions(

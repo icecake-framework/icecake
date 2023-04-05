@@ -9,18 +9,11 @@ package main
 import (
 	"fmt"
 
-	_ "embed"
-
 	"github.com/sunraylab/icecake/pkg/browser"
 	"github.com/sunraylab/icecake/pkg/dom"
 	"github.com/sunraylab/icecake/pkg/event"
-	"github.com/sunraylab/icecake/pkg/extensions/markdown"
 )
 
-//go:embed "readme.md"
-var readme string
-
-// var webapp *dom.WebApp
 var gcount float64
 
 // the main func is required by the wasm GO builder
@@ -30,13 +23,11 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	// webapp = dom.NewWebApp()
+	dom.MountCSSLinks()
 
 	// proceed with localstorage
 	gdark := browser.LocalStorage().GetBool("darkmode")
 	updateDarkMode(gdark)
-
-	markdown.RenderMarkdown(dom.Id("readme"), readme, nil)
 
 	// init UI with a first update
 	updateUI()
@@ -73,14 +64,13 @@ func OnClickBtnDarkMode(event *event.MouseEvent, target *dom.Element) {
 ******************************************************************************/
 
 func updateUI() {
-
-	// 1st solution: render a value for any `data-ic-namedvalue="count1"` inside "sectionbody"
+	// render a value for any `data-ic-namedvalue="count1"` inside "sectionbody"
 	children := dom.Id("sectionbody").ChildrenByData("data-ick-namedvalue", "count1")
 	for _, e := range children {
-		e.InsertText(dom.INSERT_BODY, "%v", gcount)
+		e.InsertText(dom.INSERT_BODY, "%.1f", gcount)
 	}
 
-	// 2nd solution: render a value inside an elem selected by it's id
+	// render a value inside an elem selected by it's id
 	dom.Id("count1").InsertText(dom.INSERT_BODY, "%.1f", gcount)
 }
 
