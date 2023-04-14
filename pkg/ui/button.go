@@ -48,8 +48,7 @@ type Button struct {
 
 	IsOutlined bool // Outlined button style
 	IsRounded  bool // Rounded button style
-
-	IsLoading bool // Loading button state
+	IsLoading  bool // Loading button state
 
 	// TODO: handles buttons properties for color, size, display
 }
@@ -95,29 +94,32 @@ func (_btn *Button) Template(*html.DataState) (_t html.SnippetTemplate) {
 	return _t
 }
 
-func (_btn *Button) SetLoading(_f bool) {
+func (_btn *Button) SetLoading(_f bool) *Button {
 	_btn.IsLoading = _f
 	if _f {
 		_btn.DOM.SetClasses("is-loading")
 	} else {
 		_btn.DOM.RemoveClasses("is-loading")
 	}
+	return _btn
 }
 
-func (_btn *Button) SetRounded(_f bool) {
+func (_btn *Button) SetRounded(_f bool) *Button {
 	_btn.IsRounded = _f
 	if _f {
 		_btn.DOM.SetClasses("is-rounded")
 	} else {
 		_btn.DOM.RemoveClasses("is-rounded")
 	}
+	return _btn
 }
 
-func (_btn *Button) SetOutlined(_f bool) {
+func (_btn *Button) SetOutlined(_f bool) *Button {
 	_btn.IsOutlined = _f
 	if _f {
 		_btn.DOM.SetClasses("is-outlined")
 	} else {
 		_btn.DOM.RemoveClasses("is-outlined")
 	}
+	return _btn
 }
