@@ -89,8 +89,9 @@ func (_s *UISnippet) SetDisabled(_disable bool) {
 	}
 }
 
-// MountCSSLinks inserts links elements to the Head section of the Document for every csslinkref found TheRegistry of components.
+// MountCSSLinks inserts links elements to the Head section of the Document for every csslinkref found in TheRegistry of components.
 // If a link already exists for a csslinkref nothing is done.
+// MountCSSLinks call is optional if your html head already contains stylesheet links for your css or if you import it in your own js code.
 // MountCSSLinks must be called at the early begining of the wasm code.
 func MountCSSLinks() {
 	reg := registry.Map()
@@ -132,9 +133,6 @@ func MountCSSLinks() {
 // mountDeepSnippet wraps _elem to the _snippet add its listeners and call the customized Mount function.
 // mountDeepSnippet is called recursively for every embedded components of the _snippet.
 func mountDeepSnippet(_snippet UIComposer, _elem *Element) (_err error) {
-	// insert the stylesheet into the document header
-	// XXX
-
 	//DEBUG: console.Warnf("mouting %s(%s)", _snippet.Id(), reflect.TypeOf(_snippet).String())
 	_snippet.Wrap(_elem)
 	_snippet.AddListeners()

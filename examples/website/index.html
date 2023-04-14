@@ -13,11 +13,15 @@
 </head>
 
 <body>
-    <div class="section">
-        <div class="container">
+    <section class="hero is-primary is-small">
+        <div class="hero-body">
             <h1 class="title">Icecake Go Wasm Framework</h1>
             <h2 class="subtitle">Examples</h2>
+        </div>
+    </section>
 
+    <div class="section">
+        <div class="container">
             <div class="box">
                 <div>
                     <a href="example-element.html">dom.Element<span class="icon"><i class="bi bi-box-arrow-in-up-right"></i></span></a>
@@ -29,15 +33,75 @@
             </div>
 
             <div class="box">
-                <div>
-                    <a href="example-snippet-button.html">Snippet Button<span class="icon"><i class="bi bi-box-arrow-in-up-right"></i></span></a>
-                </div>
-                <div>
-                    <a href="example-snippet-message.html">Snippet Message<span class="icon"><i class="bi bi-box-arrow-in-up-right"></i></span></a>
-                </div>
-                <div>
-                    <a href="example-snippet-notify.html">Snippet Notify<span class="icon"><i class="bi bi-box-arrow-in-up-right"></i></span></a>
-                </div>
+                <h3 class="title is-4">Snippets</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>
+                                <div style="width: 150px;"></div>
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="pb-2">
+                                <a href="example-snippet-card.html">Card</a>
+                            </td>
+                            <td class="px-2">
+                                <span class="tags has-addons"><span class="tag">tag</span><span class="tag is-info is-light">ick-card</span></span>
+                            </td>
+                            <td>
+                                flexible card with optional header, image, content, footer
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pb-2">
+                                <a href="example-snippet-button.html">Button</a>
+                            </td>
+                            <td class="px-2">
+                                <span class="tags has-addons"><span class="tag">tag</span><span class="tag is-info is-light">ick-button</span></span>
+                            </td>
+                            <td>
+                                multiple types, styles, states
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pb-2">
+                                <a href="example-snippet-message.html">Message</a>
+                            </td>
+                            <td class="px-2">
+                                <span class="tags has-addons"><span class="tag">tag</span><span class="tag is-info is-light">ick-message</span></span>
+                            </td>
+                            <td>
+                                message, optional header, optional delete button
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pb-2">
+                                <a href="example-snippet-notify.html">Notify</a>
+                            </td>
+                            <td class="px-2">
+                                <span class="tags has-addons"><span class="tag">tag</span><span class="tag is-info is-light">ick-notify</span></span>
+                            </td>
+                            <td>
+                                message with a delete button
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pb-2">
+                                <a href="#">Delete</a>
+                            </td>
+                            <td class="px-2">
+                                <span class="tags has-addons"><span class="tag">tag</span><span class="tag is-info is-light">ick-delete</span></span>
+                            </td>
+                            <td>
+                                delete button with a target to remove, optional timeout for autodelete and ticker
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <div class="box">

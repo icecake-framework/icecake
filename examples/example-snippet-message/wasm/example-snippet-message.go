@@ -16,9 +16,7 @@ func main() {
 
 	dom.MountCSSLinks()
 
-	msg1 := &ui.Message{
-		Message: "This is a simple message without header.",
-	}
+	msg1 := &ui.Message{Message: "This is a simple message without header."}
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg1, nil)
 
 	msg2 := &ui.Message{

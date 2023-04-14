@@ -18,7 +18,7 @@ type Message struct {
 	dom.UISnippet
 
 	Header    html.String // optional header to display on top of the message
-	Message   html.String // message to display within the notification
+	Message   html.String // message to display within the message
 	CanDelete bool        // set to true to display the delete button and allow user to delete the message
 }
 
