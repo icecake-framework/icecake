@@ -35,7 +35,7 @@ func main() {
 	img3.Src, _ = url.Parse("/icecake.svg")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, img3, nil)
 
-	img4 := html.String(`<ick-image Size="is-96x96" Src="/icecake.svg"/>`)
+	img4 := html.String(`<ick-image Size="96x96" Src="/icecake.svg"/>`)
 	dom.Id("content").InsertHTML(dom.INSERT_LAST_CHILD, img4, nil)
 
 	// let's go
