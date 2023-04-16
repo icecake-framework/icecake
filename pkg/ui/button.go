@@ -21,7 +21,7 @@ type BUTTON_TYPE int
 
 const (
 	BTN_TYPE_BUTTON BUTTON_TYPE = iota // <button> form buttons.
-	BTN_TYPE_A                         // <a> anchor links
+	BTN_TYPE_A                         // <a> anchor link
 	BTN_TYPE_SUBMIT                    // <input type="submit"> submit inputs
 	BTN_TYPE_RESET                     // <input type="reset"> reset inputs
 )
@@ -51,6 +51,28 @@ type Button struct {
 	IsLoading  bool // Loading button state
 
 	// TODO: handles buttons properties for color, size, display
+}
+
+func NewButton(_title html.String) *Button {
+	btn := new(Button)
+	btn.ButtonType = BTN_TYPE_BUTTON
+	btn.Title = _title
+	return btn
+}
+
+func NewButtonLink(_title html.String, _rawUrl string) *Button {
+	btn := new(Button)
+	btn.ButtonType = BTN_TYPE_A
+	btn.Title = _title
+	btn.TryParseHRef(_rawUrl)
+	return btn
+}
+
+// TryParseHRef parses _rawUrl to HRef ignoring errors.
+// _btn.HRef can stay nil in case of error.
+func (_btn *Button) TryParseHRef(_rawUrl string) *Button {
+	_btn.HRef, _ = url.Parse(_rawUrl)
+	return _btn
 }
 
 func (_btn *Button) Template(*html.DataState) (_t html.SnippetTemplate) {

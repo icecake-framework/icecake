@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/url"
 
 	"github.com/sunraylab/icecake/pkg/browser"
 	"github.com/sunraylab/icecake/pkg/dom"
@@ -25,38 +24,37 @@ func main() {
 	btn = make([]*ui.Button, 0)
 	content := dom.Id("content")
 
-	b0 := &ui.Button{Title: "Click here"}
+	b0 := ui.NewButton("Click here")
 	b0.SetClasses("m-2 is-link")
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b0, nil)
 	b0.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClick)
 	btn = append(btn, b0)
 
-	b1 := &ui.Button{Title: "Toggle Rounded"}
+	b1 := ui.NewButton("Toggle Rounded")
 	b1.SetClasses("m-2 is-link").SetAttribute("data-example", 1)
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b1, nil)
 	b1.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClickExample)
 	btn = append(btn, b1)
 
-	b2 := &ui.Button{Title: "Toggle Outlined"}
+	b2 := ui.NewButton("Toggle Outlined")
 	b2.SetClasses("m-2 is-link").SetAttribute("data-example", 2)
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b2, nil)
 	b2.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClickExample)
 	btn = append(btn, b2)
 
-	b3 := &ui.Button{Title: "Toggle Loading"}
+	b3 := ui.NewButton("Toggle Loading")
 	b3.SetClasses("m-2 is-link").SetAttribute("data-example", 3)
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b3, nil)
 	b3.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClickExample)
 	btn = append(btn, b3)
 
-	b4 := &ui.Button{Title: "Toggle Disabled"}
+	b4 := ui.NewButton("Toggle Disabled")
 	b4.SetClasses("m-2 is-link").SetAttribute("data-example", 4)
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b4, nil)
 	b4.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClickExample)
 	btn = append(btn, b4)
 
-	b5 := &ui.Button{Title: "Go To Home"}
-	b5.HRef, _ = url.Parse("/")
+	b5 := ui.NewButtonLink("Go To Home", "/")
 	b5.SetOutlined(true).SetClasses("m-2 is-info").SetAttribute("data-example", 5)
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b5, nil)
 
