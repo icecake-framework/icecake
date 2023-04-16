@@ -62,6 +62,7 @@ func (_s *UISnippet) RemoveListeners() {
 // Html builds and unfolds the UIcomposer and returns its cStringng HTML string
 // dees not mount the component inti the DOM, so does not wrap it nor addlisteners.
 // Renders the html element and body, unfolding and embeddind sub components.
+// TODO: refactor HTML
 func (_s *UISnippet) HTML(_snippet UIComposer) (_html html.String) {
 	out := new(bytes.Buffer)
 	id, err := html.WriteHTMLSnippet(out, _snippet, nil)
