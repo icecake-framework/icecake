@@ -53,6 +53,20 @@ type Image struct {
 	IsRounded bool     // Rounded image style
 }
 
+func NewImage(_rawUrl string, _size IMG_SIZE) *Image {
+	img := new(Image)
+	img.Size = _size
+	img.TryParseSrc(_rawUrl)
+	return img
+}
+
+// TryParseSrc parses _rawurl to _img.Src and returns _img to allow chaining.
+// Parsing errors are ignored and if any Src may stay nil.
+func (_img *Image) TryParseSrc(_rawUrl string) *Image {
+	_img.Src, _ = url.Parse(_rawUrl)
+	return _img
+}
+
 func (_img *Image) Template(*html.DataState) (_t html.SnippetTemplate) {
 	_t.TagName = "figure"
 	var imgsize html.String
@@ -69,6 +83,6 @@ func (_img *Image) Template(*html.DataState) (_t html.SnippetTemplate) {
 	if _img.Src != nil {
 		src = html.String(_img.Src.String())
 	}
-	_t.Body = `<img ` + htmlRounded + ` role="img" focusable="false" src="` + src + `">`
+	_t.Body = `<img ` + htmlRounded + ` role="img" focusable="false" src="` + src + `" alt="` + src + `">`
 	return _t
 }
