@@ -34,7 +34,7 @@ func (_card *Card) Template(*html.DataState) (_t html.SnippetTemplate) {
 	}
 
 	if _card.Image != nil {
-		_t.Body += _card.HTML(_card.Image)
+		_t.Body += _card.RenderHTML(_card.Image)
 	}
 
 	if _card.Content != "" {

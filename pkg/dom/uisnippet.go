@@ -59,30 +59,31 @@ func (_s *UISnippet) RemoveListeners() {
 	_s.DOM.RemoveListeners()
 }
 
-// Html builds and unfolds the UIcomposer and returns its cStringng HTML string
-// dees not mount the component inti the DOM, so does not wrap it nor addlisteners.
-// Renders the html element and body, unfolding and embeddind sub components.
-// TODO: refactor HTML
-func (_s *UISnippet) HTML(_snippet UIComposer) (_html html.String) {
+// RenderHTML builds and unfolds the UIcomposer and returns its html string.
+// RenderHTML does not mount the component into the DOM.
+func (_parent *UISnippet) RenderHTML(_snippet UIComposer) (_html html.String) {
 	out := new(bytes.Buffer)
 	id, err := html.WriteHTMLSnippet(out, _snippet, nil)
 	if err == nil {
-		_s.Embed(id, _snippet) // need to embed the snippet itself
+		_parent.Embed(id, _snippet) // need to embed the snippet itself
 		_html = html.String(out.String())
 	}
 	return _html
 }
 
-// InsertSnippet
-func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
-	if _parent == nil || !_parent.DOM.IsDefined() {
-		return "", console.Errorf("Snippet:InsertSnippetfailed on undefined _parent")
-	}
-	_parent.DOM.InsertSnippet(_where, _snippet, _data)
-	_parent.AddListeners()
-	return _id, nil
-}
+// TODO: InsertSnippet within a parent ?
+// InsertSnippet insrets a _snippet within the _parent (according to the _where location) and add _parents lisneters
+// func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
+// 	if _parent == nil || !_parent.DOM.IsDefined() {
+// 		return "", console.Errorf("Snippet:InsertSnippetfailed on undefined _parent")
+// 	}
+// 	_id, _err = _parent.DOM.InsertSnippet(_where, _snippet, _data)
+// 	_parent.AddListeners()
+// 	return _id, nil
+// }
 
+// SetDisabled set the disable state of the _s snippet.
+// If the snippet is already in the the DOM, then SetDisable updates the disable attribute of the html element in the DOM.
 func (_s *UISnippet) SetDisabled(_disable bool) {
 	_s.HTMLSnippet.SetDisabled(_disable)
 	if _s.DOM.IsDefined() && _s.DOM.IsInDOM() {
