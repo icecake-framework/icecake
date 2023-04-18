@@ -146,6 +146,9 @@ func (s *HTMLSnippet) SetId(_id String) *HTMLSnippet {
 	return s
 }
 
+// SetUniqueId sets or overwrites the id attribute of the html snippet
+// generating a unique id starting with the _prefix.
+// "ick-" is used to prefix the returned id if _prefix is empty.
 func (s *HTMLSnippet) SetUniqueId(_prefix string) *HTMLSnippet {
 	s.makemap()
 	s.attrs["01id"] = registry.GetUniqueId(_prefix)
@@ -266,12 +269,16 @@ func (s *HTMLSnippet) SetAttribute(_key string, _value any) {
 	s.setAttribute(_key, _value, true)
 }
 
+// Attribute returns the value of the attribute identified by _key.
+// Returns false if the attribute does not exist.
 func (s *HTMLSnippet) Attribute(_key string) (string, bool) {
 	_key = strings.Trim(_key, " ")
 	v, found := s.attrs["05"+_key]
 	return string(v), found
 }
 
+// RemoveAttribute remove the the attribute identified by _key.
+// Does nothing if the _key is not found.
 func (s *HTMLSnippet) RemoveAttribute(_key string) *HTMLSnippet {
 	s.makemap()
 	_key = strings.Trim(_key, " ")
@@ -290,7 +297,7 @@ func (s *HTMLSnippet) RemoveAttribute(_key string) *HTMLSnippet {
 	return s
 }
 
-// ToggleAttribute set the attribute if unset and unset it if set.
+// ToggleAttribute toggles the boolean attribute _key. Sets it when unsetted, and unset whrn setted.
 func (s *HTMLSnippet) ToggleAttribute(_key string) {
 	s.makemap()
 	_key = strings.Trim(_key, " ")
@@ -398,15 +405,19 @@ func (s *HTMLSnippet) setAttribute(key string, value any, overwrite bool) error 
 	return nil
 }
 
-func (s *HTMLSnippet) Embed(id string, cmp any) {
-	id = helper.Normalize(id)
-	if s.embedded == nil {
-		s.embedded = make(map[string]any, 1)
+// Embed adds _cmp to the map of embedded components within the _parent.
+// If a component with the same _id has already been embedded it's replaced.
+// Usually the _id is the id of the html element.
+func (_parent *HTMLSnippet) Embed(_id string, _cmp any) {
+	_id = helper.Normalize(_id)
+	if _parent.embedded == nil {
+		_parent.embedded = make(map[string]any, 1)
 	}
-	s.embedded[id] = cmp
+	_parent.embedded[_id] = _cmp
 	// DEBUG: fmt.Printf("embedding %q(%v) into %s\n", id, reflect.TypeOf(cmp).String(), s.Id())
 }
 
+// Embedded returns the map of embedded components, keyed by their id.
 func (s HTMLSnippet) Embedded() map[string]any {
 	return s.embedded
 }

@@ -88,7 +88,7 @@ func UnfoldHtml(_out io.Writer, _html String, _data *DataState) (_embedded map[s
 * PRIVATE area
 ******************************************************************************/
 
-// writeHtmlSnippet render the HTML of the _composer, its tag element and its body, to _out.
+// writeHtmlSnippet renders the HTML of the _composer, its tag element and its body, to _out.
 // Returns the id of the _composer rendered. Id can be empty if nothing has been rendered (composer without tagname and with an empty body).
 // if the composer does not have a tagname, a virtual id (never in the DOM) is returned unless you've forced an Id.
 // render may be called recursively 10 times max.
@@ -105,24 +105,25 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 		ickname = entry.Name()
 	}
 
-	// get best id
-	id := _composer.Id()
-	if id == "" {
-		id = registry.GetUniqueId(ickname)
+	// get the best id
+	// TODO: explain the rule about the id
+	if _composer.Id() == "" {
+		id := registry.GetUniqueId(ickname)
 		_composer.CreateAttribute("id", id)
 	}
 	_id = _composer.Id()
 
-	// DEBUG:
+	// DEBUG: rendering html snippet
 	fmt.Printf("level=%d -> rendering html snippet id=%q(%s)\n", _deep, _id, reflect.TypeOf(_composer).String())
 
 	// get the template
 	t := _composer.Template(_data)
-	tagname := helper.NormalizeUp(string(t.TagName))
 
+	// open the tag if any
+	tagname := helper.NormalizeUp(string(t.TagName))
 	if tagname != "" {
 		// must merge template attributes with already loaded component attributes
-		// the id attribute is always ignored because already setup
+		// TODO: clarify the rule --> the id attribute is always ignored because already setup ?
 		ParseAttributes(string(t.Attributes), _composer)
 		_composer.CreateAttribute("class", ickname)
 		fmt.Fprintf(_out, "<%s %s>", tagname, _composer.Attributes())
@@ -132,18 +133,21 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 			return "", nil
 		}
 	}
-	// DEBUG:
+	// DEBUG: id discrepency
 	if _composer.Id() != _id {
 		panic("renderHtmlSnippet: id discrepency")
 	}
 
+	// Unfold the body
 	if len(t.Body) > 0 {
 		_err = unfoldBody(_composer, _out, []byte(t.Body), _data, _deep)
 	}
 
+	// close the tag
 	if tagname != "" {
 		fmt.Fprintf(_out, "</%s>", tagname)
 	}
+
 	return _id, _err
 }
 
@@ -181,6 +185,7 @@ func (_st *stepway) closeick(i int) {
 //	`<ick-{tagname} [boolattribute] [attribute=[']value[']]/>`
 //
 // otherwise an error is generated and the unfolding process stops immediatly.
+// TODO: handle body within ickopening and ickclosing tags
 func unfoldBody(_parent HTMLComposer, _output io.Writer, _body []byte, _data *DataState, _deep int) (_err error) {
 
 	field := func(s stepway) []byte {
@@ -341,6 +346,7 @@ nextbyte:
 		}
 
 		if funfoldick {
+			// DEBUG: unfolding embedded component
 			fmt.Printf("level=%v -> unfolding embedded component: %s\n", _deep, ickname)
 			if warning := unfoldick(_parent, _output, ickname, attrs, _data, _deep); warning != nil {
 				fmt.Printf("warning %q: %s\n", ickname, warning.Error())
