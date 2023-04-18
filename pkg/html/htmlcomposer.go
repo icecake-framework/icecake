@@ -126,10 +126,14 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 		// TODO: clarify the rule --> the id attribute is always ignored because already setup ?
 		ParseAttributes(string(t.Attributes), _composer)
 		_composer.CreateAttribute("class", ickname)
-		fmt.Fprintf(_out, "<%s %s>", tagname, _composer.Attributes())
+		if t.Tag.TagSelfClosing {
+			fmt.Fprintf(_out, "<%s %s", tagname, _composer.Attributes())
+		} else {
+			fmt.Fprintf(_out, "<%s %s>", tagname, _composer.Attributes())
+		}
 	} else {
 		if len(t.Body) == 0 {
-			log.Printf("Warning empty html snippet, no tagname and no body: level=%d, type:%s\n", _deep, reflect.TypeOf(_composer).String())
+			log.Printf("WriteHtmlSnippet Warning: empty html snippet, no tagname and no body. level=%d, type:%s\n", _deep, reflect.TypeOf(_composer).String())
 			return "", nil
 		}
 	}
@@ -140,12 +144,20 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 
 	// Unfold the body
 	if len(t.Body) > 0 {
-		_err = unfoldBody(_composer, _out, []byte(t.Body), _data, _deep)
+		if t.Tag.TagSelfClosing {
+			log.Printf("WriteHtmlSnippet Warning: body ignored with self-closing tag. level=%d, type:%s\n", _deep, reflect.TypeOf(_composer).String())
+		} else {
+			_err = unfoldBody(_composer, _out, []byte(t.Body), _data, _deep)
+		}
 	}
 
 	// close the tag
 	if tagname != "" {
-		fmt.Fprintf(_out, "</%s>", tagname)
+		if t.Tag.TagSelfClosing {
+			fmt.Fprintf(_out, "/>")
+		} else {
+			fmt.Fprintf(_out, "</%s>", tagname)
+		}
 	}
 
 	return _id, _err
