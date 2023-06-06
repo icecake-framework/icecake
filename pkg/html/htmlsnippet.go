@@ -285,10 +285,11 @@ func (_snippet *HTMLSnippet) SetAttribute(_key string, _value any) {
 }
 
 // SetAttributeIf SetAttribute if the _condition is true.
-func (_snippet *HTMLSnippet) SetAttributeIf(_condition bool, _key string, _value any) {
+func (_snippet *HTMLSnippet) SetAttributeIf(_condition bool, _key string, _value any) *HTMLSnippet {
 	if _condition {
 		_snippet.setAttribute(_key, _value, true)
 	}
+	return _snippet
 }
 
 // Attribute returns the value of the attribute identified by _key.
