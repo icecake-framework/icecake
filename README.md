@@ -24,21 +24,35 @@ Sources of inspiration:
 
 This repo is an Alpha version with many work in progress.
 
-Current works focus on:
+Current works on Alpha4 focus on:
 - unfolding html containing ick-components tags, including custom attributes
 - instantiating ick-components, embedded or not  
 - rendering any html containing ick-component on the front side, with event handling
+- provide examples to use UI Snippets 
+- provide core UI Snippets: 
+    - button
+    - card
+    - image
+    - input
+    - message
+    - notify
 
-In parrallel we're doing many refactoring to make code more coder friendly.
-
+In parallel we're doing many refactoring to make code more coder friendly.
 
 ## Tech
 
 - Go 1.20 and it's wasm compiler
 - based on the ``syscall/js`` package
-- CSS responsive framework, without any JS code: [Bulma](https://bulma.io/)
+- UI snippets use CSS framework [Bulma](https://bulma.io/). Bulma is a pure CSS framework without any JS code.
 
-## Project layout
+## Examples
+
+Open `examples/website/index.html` in any browser to run examples.
+
+You can use the [vscode liverserver extension](https://marketplace.visualstudio.com/items?itemName%3Dritwickdey.LiveServer) to do so.
+
+
+## Project directory layout
 
 The Directory structure follows [go ecosystem recommendation](https://github.com/golang-standards/project-layout).
 
@@ -50,42 +64,29 @@ icecake
 │   ├── LICENCE
 │   └── .gitignore
 │
-├── configs                         # congigurations files, loaded at server startup
-│   ├── dev.env                 
-│   └── prod.env          
-│
 ├── build                           # build scripts
 │   └── Taskfile.yaml               # building task configuration, ic. autobuild the front
-│
-├── doc                             # overall doc
-│   ├── cheatsheet.ods              # overview of icecake structs and methods
-│   └── [*.*]                       
 │
 ├── cmd
 │   └── icecake                     # the icecake CLI command required to run the SPA server
 │       └── icecake.go          
+│
+├── configs                         # congigurations files, loaded at server startup
+│   ├── dev.env                 
+│   └── prod.env          
+│
+├── doc                             # overall icecake doc
+│   ├── cheatsheet.ods              # overview of icecake structs and methods
+│   └── [*.*]                       
 │
 ├── internal
 │   ├── helper
 │   └── testwasm                    # wasm test environment
 │
 ├── pkg
-│   ├── spaserver                   # SPA server 
-│   │   ├── webserver.go                   
-│   │   └── middleware.go                   
-│   ├── ick                         # icecake package with framework primitives, ic WebAPI embedded 
-│   │   └── [*.go]                   
-│   ├── spasdk                      # SDK for any SPA client willing to call SPA APIs
-│   │   └── [*.go]                   
-│   ├── uielements                  # UI Elements
-│   │   └── [*.go]                   
-│   ├── uicomponents                # UI Components, using bulma CSS framework
-│   │   └── [*.go]                   
-│   ├── extensions                  # Extensions of the standard icecake package
-│       └── {extensionName}
-│           └── [*.go]                   
+│   ├── spaserver                   # see description of packages here under
 │
-├── web                             # source codes and assets required by the front, even server side described in the go file
+├── web                             # source codes and assets required by the front
 │   ├── static
 │   │   ├── wasm_exec.js            # this file is mandatory and is provided by the go compiler
 │   │   ├── wasm_spa.js             # WebAssembly initialization for this app
@@ -103,7 +104,27 @@ icecake
 
 ```
 
-### About Web Assembly with go
+## Packages
+
+| pkg           | description |
+| -             | - |
+| `browser`     | provides primitives to interact directly with the browser, its navigation hystory and the local or the session storages.
+| `dom`         | provides primitives to interact with the DOM of a webpage. Traditional node, element, and document's methods can be call in go here. An UISnippet struct and an UIComposer Interface are provided to allow rendering of HTMLSnippet and to handle event listening.
+| `event`       | defines all types of the dom event handlers with their methods
+| `html`        | provides an HTMLSnippet struct and an HTMLComposer Interface to allow html rendering of ick-name tags in different ways.
+| `clock`       | provides a timer and a ticker with possibility to add callback functions at every tic and at the end of the timer.
+| `console `    | provides helpers to raise enhanced messages in the browser console.
+| `js`          | ``syscall/js`` extended with ``console`` 
+| `registry`    | provides the global Registry of HtmlSnippets and UISnippets.
+| `spasdk`      | usefull functions to call API on the spaserver.
+| `spaserver`   | provides a configurable webserver dedicated to serve an spa with wasm code.
+| `ui`          | core UI Snippets
+| `namepattern` | provides functions to check validity of an HTML name such a a token name or the name of an attribute.
+| `extensions`  | provides optional packages for frontend rendering, not imported and compiled by default in the wasm code.
+
+
+
+## About Web Assembly with go
 
 Some documentation available here https://tinygo.org/docs/guides/webassembly/ and here https://github.com/golang/go/wiki/WebAssembly
 
@@ -142,7 +163,7 @@ Your settings.json file should look something like this:
 }
 ```
 
-## Testing wasm code
+### Testing wasm code
 
 Testing front with wasm and DOM components can not be executed with the standard `go test` command. To test wasm code into a browser well we need to run a dedicated html page which will execute the wasm test code.
 
@@ -150,7 +171,7 @@ Wasm test code and environement is located into `internal/testwasm`.
 
 Run the task `task -t ./build/Taskfile.yaml test_wasm` to build all `test*.go` files. `tests.go` is the wasm entry point that will be executed when you load the dedicated HTML page `internal/testswasm/index.html`
 
-## Testing the back 
+### Testing the back 
 
 ```bash
 $ task -t ./build/Taskfile.yaml unit_test

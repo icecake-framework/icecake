@@ -15,7 +15,7 @@
     <section class="hero is-primary is-small">
         <div class="hero-body">
             <h1 class="title">Icecake Go Wasm Framework</h1>
-            <h2 class="subtitle">Button Snippet Example</h2>
+            <h2 class="subtitle">Input Snippet Example</h2>
         </div>
     </section>
     <section class="section has-background-light">
@@ -28,21 +28,13 @@
         <div class="container">
             <div class="content">
                 <h4>Embeddable snippet</h4>
-                <span class="tags has-addons"><span class="tag">tag</span><span class="tag is-info is-light">&lt;ick-button ... /&gt;</ick-button...></span></span>
+                <span class="tags has-addons"><span class="tag">tag</span><span class="tag is-info is-light">&lt;ick-input ... /&gt;</ick-button...></span></span>
                 <p>example: <code>
-                    &lt;ick-button Title="Home" IsOutlined HRef='/index.html'/&gt;
+                    &lt;ick-input /&gt;
                 </code></p>
                 <h4>Properties</h4>
-                <p><strong>HRef: </strong>specifies the url link associated with the button. HRef is optional, if it's defined the button type is automatically set to BTN_TYPE_A and renders as a <code>&lt;a&gt;</code> element.</p>
-                <p><strong>Title: </strong>the text rendered inside the button. Can be a simple text or a more complex html string.</p>
-
                 <h4>Style</h4>
-                <p><strong>IsOutlined: </strong>Outlined button style.</p>
-                <p><strong>IsRounded: </strong>Rounded button style.</p>
-                <p>The ickecake ui.button is based on the <a href="https://bulma.io/documentation/elements/button/">bulma css button</a>, so any additional bulma class can be used.</p>
-                <h4>State</h4>
-                <p><strong>IsLoading: </strong>Loading state.</p>
-                <p><strong>IsDisabled: </strong>Disabled state.</p>
+                <p>The ickecake ui.input is based on the <a href="https://bulma.io/documentation/form/input/">bulma css input</a>, so any additional bulma class can be used.</p>
                 <h4>Go Wasm</h4>
                 <p><i>to come</i></p>
             </div>
@@ -53,7 +45,7 @@
     <script src="wasm_exec.js"></script>
     <script>
         const goWasm = new Go()
-        WebAssembly.instantiateStreaming(fetch("example-snippet-button.wasm"), goWasm.importObject)
+        WebAssembly.instantiateStreaming(fetch("example-snippet-input.wasm"), goWasm.importObject)
             .then((result) => {
                 goWasm.run(result.instance)
             })

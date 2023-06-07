@@ -48,7 +48,8 @@ type Button struct {
 
 	IsOutlined bool // Outlined button style
 	IsRounded  bool // Rounded button style
-	IsLoading  bool // Loading button state
+
+	IsLoading bool // Loading button state
 
 	// TODO: handles buttons properties for color, size, display
 }
