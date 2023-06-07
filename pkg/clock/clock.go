@@ -2,6 +2,7 @@ package clock
 
 import "time"
 
+// Clock provides a timer and a ticker with possibility to add callback functions at every tic and at the end of the timer.
 type Clock struct {
 	// The TargetID will be automatically removed after Timeout duration, if not zero.
 	// The timer starts when the delete button is rendered.
@@ -12,6 +13,7 @@ type Clock struct {
 	TickerStep time.Duration
 
 	// The function to call at every ticker step. Set nil to ignore ticker.
+	// TODO: move Tic as a parameter of Start
 	Tic func(*Clock)
 
 	start  time.Time    // The countdown start time
@@ -19,6 +21,7 @@ type Clock struct {
 	ticker *time.Ticker // internal ticker to handle time left before closing
 }
 
+// Start starts the timer and the ticker, according to Timeout and TickerStep properties.
 func (_clock *Clock) Start(_finished func()) {
 	if _clock.Timeout == 0 {
 		return
@@ -29,20 +32,22 @@ func (_clock *Clock) Start(_finished func()) {
 	_clock.timer = time.AfterFunc(_clock.Timeout, _finished)
 
 	// Start the countdown
-	if _clock.Tic != nil && _clock.TickerStep <= _clock.Timeout {
+	tic := _clock.Tic
+	if tic != nil && _clock.TickerStep <= _clock.Timeout {
 		if _clock.TickerStep == 0 {
 			_clock.TickerStep = 1 * time.Second
 		}
 		go func() {
 			_clock.ticker = time.NewTicker(_clock.TickerStep)
-			_clock.Tic(_clock)
-			for _ = range _clock.ticker.C {
-				_clock.Tic(_clock)
+			tic(_clock)
+			for range _clock.ticker.C {
+				tic(_clock)
 			}
 		}()
 	}
 }
 
+// Stop stops the ticker and the timer.
 func (_clock *Clock) Stop() {
 	if _clock.ticker != nil {
 		_clock.ticker.Stop()
@@ -52,11 +57,16 @@ func (_clock *Clock) Stop() {
 	}
 }
 
+// StartTime returns the last countdown start time. Can be a Zero time if the clock has never been started.
 func (_clock *Clock) StartTime() time.Time {
 	return _clock.start
 }
 
+// Timeleft returns the time left before the end of the timer, or zero if the clock is not started.
 func (_clock *Clock) TimeLeft() time.Duration {
+	if _clock.start.IsZero() {
+		return 0
+	}
 	tl := time.Until(_clock.start.Add(_clock.Timeout))
 	if tl < 0 {
 		tl = 0
