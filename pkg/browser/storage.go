@@ -3,8 +3,8 @@ package browser
 import (
 	"strconv"
 
-	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/js"
+	"github.com/icecake-framework/icecake/internal/helper"
+	"github.com/icecake-framework/icecake/pkg/js"
 )
 
 /******************************************************************************

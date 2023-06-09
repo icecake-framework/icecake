@@ -12,9 +12,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/namepattern"
-	"github.com/sunraylab/icecake/pkg/registry"
+	"github.com/icecake-framework/icecake/internal/helper"
+	"github.com/icecake-framework/icecake/pkg/namepattern"
+	"github.com/icecake-framework/icecake/pkg/registry"
 )
 
 type HTMLComposer interface {

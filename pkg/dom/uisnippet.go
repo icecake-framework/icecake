@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/sunraylab/icecake/pkg/console"
-	"github.com/sunraylab/icecake/pkg/html"
-	"github.com/sunraylab/icecake/pkg/js"
-	"github.com/sunraylab/icecake/pkg/registry"
+	"github.com/icecake-framework/icecake/pkg/console"
+	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/js"
+	"github.com/icecake-framework/icecake/pkg/registry"
 )
 
 // type Listener interface {

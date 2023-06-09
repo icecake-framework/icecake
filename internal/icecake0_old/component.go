@@ -13,7 +13,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/sunraylab/icecake/pkg/namepattern"
+	"github.com/icecake-framework/icecake/pkg/namepattern"
 )
 
 type ID string

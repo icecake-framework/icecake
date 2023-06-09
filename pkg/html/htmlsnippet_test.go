@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/icecake-framework/icecake/pkg/registry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/sunraylab/icecake/pkg/registry"
 )
 
 func TestComposeBasics(t *testing.T) {

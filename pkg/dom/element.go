@@ -10,11 +10,11 @@ import (
 
 	syscalljs "syscall/js"
 
-	"github.com/sunraylab/icecake/pkg/console"
-	"github.com/sunraylab/icecake/pkg/event"
-	"github.com/sunraylab/icecake/pkg/html"
-	"github.com/sunraylab/icecake/pkg/ick"
-	"github.com/sunraylab/icecake/pkg/js"
+	"github.com/icecake-framework/icecake/pkg/console"
+	"github.com/icecake-framework/icecake/pkg/event"
+	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ick"
+	"github.com/icecake-framework/icecake/pkg/js"
 )
 
 /****************************************************************************

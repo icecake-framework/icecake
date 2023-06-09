@@ -1,9 +1,9 @@
 package ui
 
 import (
-	"github.com/sunraylab/icecake/pkg/console"
-	"github.com/sunraylab/icecake/pkg/dom"
-	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/console"
+	"github.com/icecake-framework/icecake/pkg/dom"
+	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 /******************************************************************************

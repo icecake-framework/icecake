@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/registry"
+	"github.com/icecake-framework/icecake/internal/helper"
+	"github.com/icecake-framework/icecake/pkg/registry"
 )
 
 // RegisterComposer registers a _composer with the unique _ickname.

@@ -3,8 +3,8 @@ package html
 import (
 	"testing"
 
+	"github.com/icecake-framework/icecake/pkg/registry"
 	"github.com/stretchr/testify/assert"
-	"github.com/sunraylab/icecake/pkg/registry"
 )
 
 // type testsnippet1 struct {

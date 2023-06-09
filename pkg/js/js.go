@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"syscall/js"
 
-	"github.com/sunraylab/icecake/pkg/console"
+	"github.com/icecake-framework/icecake/pkg/console"
 )
 
 // TYPE represents the JavaScript type of a Value.

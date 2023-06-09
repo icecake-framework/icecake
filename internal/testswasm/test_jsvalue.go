@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/icecake-framework/icecake/pkg/js"
 	"github.com/stretchr/testify/assert"
-	"github.com/sunraylab/icecake/pkg/js"
 )
 
 var wait chan struct{}

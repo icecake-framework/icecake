@@ -5,12 +5,12 @@ import (
 	"math"
 	"time"
 
-	"github.com/sunraylab/icecake/pkg/clock"
-	"github.com/sunraylab/icecake/pkg/console"
-	"github.com/sunraylab/icecake/pkg/dom"
-	"github.com/sunraylab/icecake/pkg/html"
-	"github.com/sunraylab/icecake/pkg/registry"
-	"github.com/sunraylab/icecake/pkg/ui"
+	"github.com/icecake-framework/icecake/pkg/clock"
+	"github.com/icecake-framework/icecake/pkg/console"
+	"github.com/icecake-framework/icecake/pkg/dom"
+	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/registry"
+	"github.com/icecake-framework/icecake/pkg/ui"
 )
 
 // This main package contains the web assembly source code for the icecake example.

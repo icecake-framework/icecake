@@ -1,4 +1,4 @@
-module github.com/sunraylab/icecake
+module github.com/icecake-framework/icecake
 
 go 1.20
 

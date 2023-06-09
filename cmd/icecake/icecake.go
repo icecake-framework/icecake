@@ -7,8 +7,8 @@ import (
 	"flag"
 	"log"
 
+	"github.com/icecake-framework/icecake/pkg/spaserver"
 	"github.com/joho/godotenv"
-	"github.com/sunraylab/icecake/pkg/spaserver"
 )
 
 func main() {

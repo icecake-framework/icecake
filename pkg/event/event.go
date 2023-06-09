@@ -5,8 +5,8 @@ import (
 
 	syscalljs "syscall/js"
 
-	"github.com/sunraylab/icecake/pkg/console"
-	"github.com/sunraylab/icecake/pkg/js"
+	"github.com/icecake-framework/icecake/pkg/console"
+	"github.com/icecake-framework/icecake/pkg/js"
 )
 
 /*********************************************************************************

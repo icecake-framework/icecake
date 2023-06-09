@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sunraylab/icecake/pkg/spasdk"
+	"github.com/icecake-framework/icecake/pkg/spasdk"
 )
 
 // the main func is required by the wasm GO builder
