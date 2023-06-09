@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/sunraylab/icecake/pkg/browser"
-	"github.com/sunraylab/icecake/pkg/dom"
-	"github.com/sunraylab/icecake/pkg/event"
-	"github.com/sunraylab/icecake/pkg/html"
-	"github.com/sunraylab/icecake/pkg/ui"
+	"github.com/icecake-framework/icecake/pkg/browser"
+	"github.com/icecake-framework/icecake/pkg/dom"
+	"github.com/icecake-framework/icecake/pkg/event"
+	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ui"
 )
 
 var btn []*ui.Button

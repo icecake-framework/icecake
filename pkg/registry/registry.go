@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/sunraylab/icecake/internal/helper"
+	"github.com/icecake-framework/icecake/internal/helper"
 )
 
 // The registry is the global Registry instantiated once and used by the HtmlSnippet and other components.

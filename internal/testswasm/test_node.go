@@ -3,8 +3,8 @@ package main
 import (
 	"testing"
 
+	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/stretchr/testify/assert"
-	"github.com/sunraylab/icecake/pkg/dom"
 )
 
 func TestNode(t *testing.T) {

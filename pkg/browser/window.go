@@ -6,9 +6,9 @@ import (
 
 	syscalljs "syscall/js"
 
-	"github.com/sunraylab/icecake/pkg/console"
-	"github.com/sunraylab/icecake/pkg/event"
-	"github.com/sunraylab/icecake/pkg/js"
+	"github.com/icecake-framework/icecake/pkg/console"
+	"github.com/icecake-framework/icecake/pkg/event"
+	"github.com/icecake-framework/icecake/pkg/js"
 )
 
 var windows Window

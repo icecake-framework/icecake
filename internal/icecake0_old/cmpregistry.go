@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sunraylab/icecake/internal/helper"
+	"github.com/icecake-framework/icecake/internal/helper"
 )
 
 type componentRegEntry struct {

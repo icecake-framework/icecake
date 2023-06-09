@@ -15,7 +15,7 @@ The markdown source includes two components wich are rendered with the icecake m
 
 `<ick-icecake-brand/>`: <ick-icecake-brand/> 
 
-`<ick-button/>`: <ick-button Title="See Other Examples" HRef="/" Class="is-link is-light is-small is-outlined"/> <ick-button Title="See Source Code" HRef="https://github.com/sunraylab/icecake/blob/main/examples/example1/wasm/example1.go" Class="is-link is-light is-small is-outlined"/>
+`<ick-button/>`: <ick-button Title="See Other Examples" HRef="/" Class="is-link is-light is-small is-outlined"/> <ick-button Title="See Source Code" HRef="https://github.com/icecake-framework/icecake/blob/main/examples/example1/wasm/example1.go" Class="is-link is-light is-small is-outlined"/>
 
 ### Build
 

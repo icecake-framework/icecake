@@ -9,8 +9,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/sunraylab/icecake/pkg/dom"
-	"github.com/sunraylab/icecake/pkg/ui"
+	"github.com/icecake-framework/icecake/pkg/dom"
+	"github.com/icecake-framework/icecake/pkg/ui"
 )
 
 // the main func is required by the wasm GO builder

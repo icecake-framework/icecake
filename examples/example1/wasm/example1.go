@@ -11,11 +11,11 @@ import (
 
 	_ "embed"
 
-	_ "github.com/sunraylab/icecake/pkg/ui" // automatic registering of the ui components
+	_ "github.com/icecake-framework/icecake/pkg/ui" // automatic registering of the ui components
 
-	"github.com/sunraylab/icecake/pkg/dom"
-	"github.com/sunraylab/icecake/pkg/extensions/markdown"
-	"github.com/sunraylab/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/dom"
+	"github.com/icecake-framework/icecake/pkg/extensions/markdown"
+	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/yuin/goldmark"
 	mdhtml "github.com/yuin/goldmark/renderer/html"
 )

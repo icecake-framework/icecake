@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/icecake-framework/icecake/pkg/browser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/sunraylab/icecake/pkg/browser"
 )
 
 func TestBrowser(t *testing.T) {

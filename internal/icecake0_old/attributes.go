@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sunraylab/icecake/pkg/namepattern"
+	"github.com/icecake-framework/icecake/pkg/namepattern"
 )
 
 type StringQuotes string

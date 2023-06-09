@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sunraylab/icecake/internal/helper"
-	"github.com/sunraylab/icecake/pkg/registry"
+	"github.com/icecake-framework/icecake/internal/helper"
+	"github.com/icecake-framework/icecake/pkg/registry"
 )
 
 // String encapsulates a known safe String document fragment.
