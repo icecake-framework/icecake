@@ -40,6 +40,6 @@ func (_cmp *Notify) Template(*html.DataState) (t html.SnippetTemplate) {
 
 	t.TagName = "div"
 	t.Attributes = `class="notification"`
-	t.Body = _cmp.RenderHTML(&_cmp.Delete) + _cmp.Message
+	t.Body = _cmp.RenderChildHTML(&_cmp.Delete) + _cmp.Message
 	return
 }

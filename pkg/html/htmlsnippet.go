@@ -1,6 +1,7 @@
 package html
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"sort"
@@ -273,21 +274,32 @@ func (_snippet *HTMLSnippet) SetStyle(style String) *HTMLSnippet {
 }
 
 // CreateAttribute create an attribute and set its value.
-// If the attribute already exists nothing is done.
-func (_snippet *HTMLSnippet) CreateAttribute(_key string, _value any) {
-	_snippet.setAttribute(_key, _value, false)
+// If the attribute already exists nothing is done. Use SetAttribute if you want to create OR update an attribute.
+func (_snippet *HTMLSnippet) CreateAttribute(_key string, _value any) HTMLComposer {
+	err := _snippet.setAttribute(_key, _value, false)
+	if err != nil {
+		fmt.Println("CreateAttribute fails:", err)
+	}
+	return _snippet
 }
 
 // SetAttribute create an attribute and set its value.
 // If the attribute already exists the value is updated.
-func (_snippet *HTMLSnippet) SetAttribute(_key string, _value any) {
-	_snippet.setAttribute(_key, _value, true)
+func (_snippet *HTMLSnippet) SetAttribute(_key string, _value any) HTMLComposer {
+	err := _snippet.setAttribute(_key, _value, true)
+	if err != nil {
+		fmt.Println("SetAttribute fails:", err)
+	}
+	return _snippet
 }
 
 // SetAttributeIf SetAttribute if the _condition is true.
 func (_snippet *HTMLSnippet) SetAttributeIf(_condition bool, _key string, _value any) *HTMLSnippet {
 	if _condition {
-		_snippet.setAttribute(_key, _value, true)
+		err := _snippet.setAttribute(_key, _value, true)
+		if err != nil {
+			fmt.Println("SetAttributeIf fails:", err)
+		}
 	}
 	return _snippet
 }
@@ -332,7 +344,6 @@ func (_snippet *HTMLSnippet) ToggleAttribute(_key string) {
 	}
 }
 
-// TODO: find a way to avoid overwrite parameter
 func (_snippet *HTMLSnippet) setAttribute(key string, value any, overwrite bool) error {
 	_snippet.makemap()
 	key = strings.Trim(key, " ")
@@ -342,9 +353,17 @@ func (_snippet *HTMLSnippet) setAttribute(key string, value any, overwrite bool)
 		if !found || overwrite {
 			switch v := value.(type) {
 			case string:
-				_snippet.SetId(String(v))
+				if v == "" {
+					delete(_snippet.attrs, "01id")
+				} else {
+					_snippet.SetId(String(v))
+				}
 			case String:
-				_snippet.SetId(v)
+				if v == "" {
+					delete(_snippet.attrs, "01id")
+				} else {
+					_snippet.SetId(v)
+				}
 			default:
 				return errors.New("wrong value type for id")
 			}
@@ -451,6 +470,19 @@ func (_snippet HTMLSnippet) Template(*DataState) (_t SnippetTemplate) {
 	_t.Body = _snippet.Body
 	_t.Attributes = _snippet.Attributes()
 	return
+}
+
+// RenderChildHTML builds and unfolds the _snippet HTMLComposer and returns its html string.
+// The _snippet is embedded into the _parent.
+// RenderChildHTML does not mount the component into the DOM and so it can't respond to events.
+func (_parent *HTMLSnippet) RenderChildHTML(_snippet HTMLComposer) (_html String) {
+	out := new(bytes.Buffer)
+	id, err := WriteHTMLSnippet(out, _snippet, nil, true)
+	if err == nil {
+		_parent.Embed(id, _snippet) // need to embed the snippet itself
+		_html = String(out.String())
+	}
+	return _html
 }
 
 /******************************************************************************

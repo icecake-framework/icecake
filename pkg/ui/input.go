@@ -56,7 +56,7 @@ func (_in *InputField) Template(_data *html.DataState) (_t html.SnippetTemplate)
 	_in.uilabel.SetClasses("label")
 	if _in.Label != "" {
 		_in.uilabel.Body = _in.Label
-		_t.Body += _in.RenderHTML(&_in.uilabel)
+		_t.Body += _in.RenderChildHTML(&_in.uilabel)
 	}
 
 	// <input>
@@ -80,9 +80,9 @@ func (_in *InputField) Template(_data *html.DataState) (_t html.SnippetTemplate)
 	_in.uicontrol.TagName = "div"
 	_in.uicontrol.SetClasses("control")
 	_in.uicontrol.SetClassesIf(_in.State == INPUT_LOADING, "is-loading")
-	_in.uicontrol.Body = _in.RenderHTML(&_in.uiinput)
+	_in.uicontrol.Body = _in.RenderChildHTML(&_in.uiinput)
 
-	_t.Body += _in.RenderHTML(&_in.uicontrol)
+	_t.Body += _in.RenderChildHTML(&_in.uicontrol)
 
 	// <p help>
 	_in.uihelp.TagName = "p"
@@ -97,7 +97,7 @@ func (_in *InputField) Template(_data *html.DataState) (_t html.SnippetTemplate)
 			_in.uihelp.SetClasses("is-danger")
 		}
 		_in.uihelp.Body = _in.Help
-		_t.Body += _in.RenderHTML(&_in.uihelp)
+		_t.Body += _in.RenderChildHTML(&_in.uihelp)
 	}
 
 	return

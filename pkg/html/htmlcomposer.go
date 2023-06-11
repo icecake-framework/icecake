@@ -1,6 +1,7 @@
 package html
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -32,11 +33,11 @@ type HTMLComposer interface {
 
 	// CreateAttribute saves a single key/value attribute. String value must be unquoted.
 	// If the key exists, nothing happen.
-	CreateAttribute(key string, value any)
+	CreateAttribute(key string, value any) HTMLComposer
 
 	// SetAttribute saves a single key/value attribute. String value must be unquoted.
 	// If the key exists value is updated
-	SetAttribute(key string, value any)
+	SetAttribute(key string, value any) HTMLComposer
 
 	// Attributes returns the formated list of attributes used to generate the container element,
 	Attributes() String
@@ -64,11 +65,16 @@ type HTMLComposer interface {
 //
 // Every ick-tag founded in the body of the _composer are unfolded and written recursively.
 // Direct unfolded components feed the embedded list of the _composer if they implements also the HTMLComposer interface.
-func WriteHTMLSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState) (_id string, _err error) {
-	return writeHtmlSnippet(_out, _composer, _data, 0)
+//
+// Note about the Id of the _composer:
+//
+//   - Set _withId to false to ensure that the snippet won't have an Id. Already setup Id are removed in this case.
+//   - Set _withId to true to keep the Id already setup within the _composer or to get a new unique id if the _composer does not define one.
+func WriteHTMLSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, _withId bool) (_id string, _err error) {
+	return writeHTMLSnippet(_out, _composer, _data, _withId, 0)
 }
 
-// UnfoldHtml lookups for ick-tags in the _html string and unfold each of them recursively into the _output.
+// UnfoldHTML lookups for ick-tags in the _html string and unfold each of them recursively into the _output.
 // ick-tags are autoclosing tags and should be in the form:
 //
 //	`<ick-{tag} [boolattribute] [attribute=[']value['] ...] [property=[']value['] ...]/>`
@@ -76,7 +82,7 @@ func WriteHTMLSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState) 
 // otherwise an error is generated and the unfolding process stops immediatly.
 //
 // Direct ick-tags found and instantiated are returned in the _embedded map.
-func UnfoldHtml(_out io.Writer, _html String, _data *DataState) (_embedded map[string]any, _err error) {
+func UnfoldHTML(_out io.Writer, _html String, _data *DataState) (_embedded map[string]any, _err error) {
 	virts := &HTMLSnippet{}
 	if len(_html) > 0 {
 		_err = unfoldBody(virts, _out, []byte(_html), _data, 0)
@@ -84,16 +90,36 @@ func UnfoldHtml(_out io.Writer, _html String, _data *DataState) (_embedded map[s
 	return virts.Embedded(), _err
 }
 
+// RenderHTMLSnippet builds and unfolds the _snippet HTMLComposer and returns its html string.
+// RenderChildHTML does not mount the component into the DOM and so it can't respond to events.
+func RenderHTMLSnippet(_snippet HTMLComposer) (_html String, _id string, _err error) {
+	out := new(bytes.Buffer)
+	_id, _err = WriteHTMLSnippet(out, _snippet, nil, true)
+	if _err == nil {
+		_html = String(out.String())
+	}
+	return _html, _id, _err
+}
+
 /******************************************************************************
 * PRIVATE area
 ******************************************************************************/
 
-// writeHtmlSnippet renders the HTML of the _composer, its tag element and its body, to _out.
-// Returns the id of the _composer rendered. Id can be empty if nothing has been rendered (composer without tagname and with an empty body).
-// if the composer does not have a tagname, a virtual id (never in the DOM) is returned unless you've forced an Id.
-// render may be called recursively 10 times max.
-func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, _deep int) (_id string, _err error) {
-	if _deep > 10 {
+const maxDEEP int = 10
+
+// writeHTMLSnippet renders the HTML of the _composer, its tag element and its body, to _out.
+// Returns the id of the _composer rendered.
+// Rendering of sub-snippets may be called recursively maxDEEP times max to avoid infinite loop.
+// if _deep if < 0 then sub-snippets are not rendered
+//
+// Note about the Id of the _composer:
+//   - Id can be empty if nothing has been rendered: case of a composer without tagname and with an empty body.
+//   - Set _withId to false to ensure that the snippet won't have an Id. Already setup Id are removed in this case.
+//   - Set _withId to true to keep the Id already setup within the _composer or to get a new unique id if the _composer does not define one.
+//   - if the composer does not have a tagname, a virtual id (never in the DOM) is returned unless you've forced an Id.
+//   - remember that it's not possible to force an Id within the Snippet Template nor in an ick-tag property. This is wanted.
+func writeHTMLSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, _withId bool, _deep int) (_id string, _err error) {
+	if _deep > maxDEEP {
 		_err = fmt.Errorf("RenderHtmlComposer stopped at level %d. Too many recursive calls", _deep)
 		log.Println(_err.Error())
 		return "", _err
@@ -105,41 +131,50 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 		ickname = entry.Name()
 	}
 
-	// get the best id
-	// TODO: explain the rule about the id
-	if _composer.Id() == "" {
-		id := registry.GetUniqueId(ickname)
-		_composer.CreateAttribute("id", id)
+	// with or without en Id ?
+	if _withId {
+		if _composer.Id() == "" {
+			id := registry.GetUniqueId(ickname)
+			_composer.CreateAttribute("id", id)
+		}
+		_id = _composer.Id()
 	}
-	_id = _composer.Id()
 
 	// DEBUG: rendering html snippet
-	fmt.Printf("level=%d -> rendering html snippet id=%q(%s)\n", _deep, _id, reflect.TypeOf(_composer).String())
+	var fmtid string
+	if _id != "" {
+		fmtid = "id=" + _id
+	}
+	fmt.Printf("level=%d -> rendering html snippet %s(%s)\n", _deep, fmtid, reflect.TypeOf(_composer).String())
 
-	// get the template
+	// get the template. May reset or overwrite the id new
 	t := _composer.Template(_data)
 
 	// open the tag if any
 	tagname := helper.NormalizeUp(string(t.TagName))
 	if tagname != "" {
-		// must merge template attributes with already loaded component attributes
-		// TODO: clarify the rule --> the id attribute is always ignored because already setup ?
+		// must merge template attributes with already loaded component attributes.
+		// existing _composer attributes are not overwritten.
 		ParseAttributes(string(t.Attributes), _composer)
+		if !_withId {
+			_composer.SetAttribute("id", "")
+		}
 		_composer.CreateAttribute("class", ickname)
 		if t.Tag.TagSelfClosing {
 			fmt.Fprintf(_out, "<%s %s", tagname, _composer.Attributes())
 		} else {
 			fmt.Fprintf(_out, "<%s %s>", tagname, _composer.Attributes())
 		}
+		// DEBUG: Id discrepency
+		if _composer.Id() != _id {
+			panic("writeHtmlSnippet: Id discrepency")
+		}
+
 	} else {
 		if len(t.Body) == 0 {
 			log.Printf("WriteHtmlSnippet Warning: empty html snippet, no tagname and no body. level=%d, type:%s\n", _deep, reflect.TypeOf(_composer).String())
 			return "", nil
 		}
-	}
-	// DEBUG: id discrepency
-	if _composer.Id() != _id {
-		panic("renderHtmlSnippet: id discrepency")
 	}
 
 	// Unfold the body
@@ -154,7 +189,8 @@ func writeHtmlSnippet(_out io.Writer, _composer HTMLComposer, _data *DataState, 
 	// close the tag
 	if tagname != "" {
 		if t.Tag.TagSelfClosing {
-			fmt.Fprintf(_out, "/>")
+			//DEBUG fmt.Fprintf(_out, "/>")
+			fmt.Fprintf(_out, ">")
 		} else {
 			fmt.Fprintf(_out, "</%s>", tagname)
 		}
@@ -371,6 +407,7 @@ nextbyte:
 
 // unfoldick render the ick-component corresponding to _ickname and its unfolded _attrs.
 // returns an error if the component or a sub component is not registered, or an embedded attribute type is unmannaged and it's value can't be parsed
+// unfold sub components only if _deep is >= 0
 func unfoldick(_parent HTMLComposer, _output io.Writer, _ickname string, _attrs map[string]string, _data *DataState, _deep int) (_err error) {
 	// does this tag refer to a registered component ?
 	htmlerr := ""
@@ -401,10 +438,10 @@ func unfoldick(_parent HTMLComposer, _output io.Writer, _ickname string, _attrs 
 			}
 		}
 
-		if htmlerr == "" {
+		if htmlerr == "" && _deep >= 0 {
 			// recursively unfold the component snippet
 			newcmpid := ""
-			newcmpid, _err = writeHtmlSnippet(_output, newcmp, _data, _deep+1)
+			newcmpid, _err = writeHTMLSnippet(_output, newcmp, _data, true, _deep+1)
 
 			// add it to the map of embedded components
 			if newcmpid != "" && _parent != nil {
@@ -490,11 +527,10 @@ func parseQuoted(_str string) string {
 // An attribute can have a value at the right of an "=" symbol.
 // The value can be delimited by quotes ( " or ' ) and in that case may contains whitespaces.
 // The string is processed until the end or an error occurs when invalid char is met.
+// Existing _cmp attributes are not overwritten.
 // TODO: secure _alist ?
 func ParseAttributes(_alist string, _cmp HTMLComposer) (_err error) {
 
-	//pattrs = new(Attributes)
-	//pattrs.amap = make(map[string]StringQuotes)
 	var strnames string
 	unparsed := _alist
 	for i := 0; len(unparsed) > 0; i++ {
@@ -510,7 +546,6 @@ func ParseAttributes(_alist string, _cmp HTMLComposer) (_err error) {
 			if i < len(names)-1 || !hasval {
 				_cmp.CreateAttribute(n, "")
 			}
-			//_pattrs.amap[n] = ""
 		}
 
 		// remove blanks just after "="
@@ -534,7 +569,6 @@ func ParseAttributes(_alist string, _cmp HTMLComposer) (_err error) {
 		}
 		value, unparsed, _ = strings.Cut(unparsed[istart:], string(delim))
 		_cmp.CreateAttribute(name, String(value))
-		//		_pattrs.amap[name] = StringQuotes(value)
 	}
 	return nil
 }

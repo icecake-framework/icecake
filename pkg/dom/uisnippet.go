@@ -1,7 +1,7 @@
 package dom
 
 import (
-	"bytes"
+	// "bytes"
 	"fmt"
 
 	"github.com/icecake-framework/icecake/pkg/console"
@@ -61,15 +61,15 @@ func (_s *UISnippet) RemoveListeners() {
 
 // RenderHTML builds and unfolds the UIcomposer and returns its html string.
 // RenderHTML does not mount the component into the DOM.
-func (_parent *UISnippet) RenderHTML(_snippet UIComposer) (_html html.String) {
-	out := new(bytes.Buffer)
-	id, err := html.WriteHTMLSnippet(out, _snippet, nil)
-	if err == nil {
-		_parent.Embed(id, _snippet) // need to embed the snippet itself
-		_html = html.String(out.String())
-	}
-	return _html
-}
+// func (_parent *UISnippet) RenderHTML(_snippet UIComposer) (_html html.String) {
+// 	out := new(bytes.Buffer)
+// 	id, err := html.WriteHTMLSnippet(out, _snippet, nil)
+// 	if err == nil {
+// 		_parent.Embed(id, _snippet) // need to embed the snippet itself
+// 		_html = html.String(out.String())
+// 	}
+// 	return _html
+// }
 
 // TODO: InsertSnippet within a parent ?
 // InsertSnippet insrets a _snippet within the _parent (according to the _where location) and add _parents lisneters

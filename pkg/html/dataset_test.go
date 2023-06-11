@@ -6,6 +6,14 @@ type testsnippet0 struct{ HTMLSnippet }
 
 func (testsnippet0) Template(*DataState) (_t SnippetTemplate) { _t.TagName = "span"; return }
 
+type testsnippetid struct{ HTMLSnippet }
+
+func (_tst testsnippetid) Template(*DataState) (_t SnippetTemplate) {
+	_t.TagName = "span"
+	_t.Attributes = `id="IdTemplate1"`
+	return
+}
+
 type testsnippet1 struct {
 	HTMLSnippet
 	Html String

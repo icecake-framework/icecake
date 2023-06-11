@@ -641,7 +641,7 @@ func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.String, _data *
 
 	var embedded map[string]any
 	out := new(bytes.Buffer)
-	embedded, _err = html.UnfoldHtml(out, _html, _data)
+	embedded, _err = html.UnfoldHTML(out, _html, _data)
 	if _err == nil {
 		// insert the html element into the dom and wrapit
 		_elem.InsertRawHTML(_where, html.String(out.String()))
@@ -688,7 +688,7 @@ func (_elem *Element) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *ht
 	}
 
 	out := new(bytes.Buffer)
-	_id, _err = html.WriteHTMLSnippet(out, snippet, _data)
+	_id, _err = html.WriteHTMLSnippet(out, snippet, _data, true)
 	if _err == nil {
 		// insert the html element into the dom and wrapit
 		_elem.InsertRawHTML(_where, html.String(out.String()))
