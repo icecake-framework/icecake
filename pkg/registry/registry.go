@@ -14,7 +14,7 @@ var theRegistry registry
 // RegistryEntry defines a component
 type RegistryEntry struct {
 	mu             sync.Mutex
-	name           string   // unique name of the component
+	tagname        string   // unique name of the component
 	cmp            any      // The component type that must be instantiated. This must be a pointer.
 	count          int      // number of time this object has already been instantiated
 	csslinkref     []string // slice of required stylesheet link ref for this component. will be added once into the head of the page
@@ -30,8 +30,8 @@ func (_r *RegistryEntry) Count() int {
 }
 
 // Name returns the unique name of the component
-func (_r RegistryEntry) Name() string {
-	return _r.name
+func (_r RegistryEntry) TagName() string {
+	return _r.tagname
 }
 
 // Component returns the component type that must be instantiated
@@ -84,9 +84,9 @@ func AddRegistryEntry(_name string, _cmp any, _css []string) {
 	_name = helper.Normalize(_name)
 
 	entry := RegistryEntry{
-		name:  _name,
-		cmp:   _cmp,
-		count: 0,
+		tagname: _name,
+		cmp:     _cmp,
+		count:   0,
 	}
 	if _css != nil {
 		entry.csslinkref = make([]string, len(_css))
@@ -108,7 +108,7 @@ func GetRegistryEntry(_name string) *RegistryEntry {
 	}
 	regentry, found := theRegistry.entries[_name]
 	if !found {
-		regentry = &RegistryEntry{name: _name}
+		regentry = &RegistryEntry{tagname: _name}
 	}
 	return regentry
 }
@@ -134,8 +134,8 @@ func LookupRegistryEntry(_cmp any) *RegistryEntry {
 func GetUniqueId(_prefix string) string {
 	regentry := GetRegistryEntry(_prefix)
 	idx := regentry.Count()
-	theRegistry.entries[regentry.name] = regentry
-	return regentry.name + "-" + strconv.Itoa(idx)
+	theRegistry.entries[regentry.tagname] = regentry
+	return regentry.tagname + "-" + strconv.Itoa(idx)
 }
 
 // ResetRegistry is only used for testing

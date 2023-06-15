@@ -1,45 +1,48 @@
 package html
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
-type testsnippet0 struct{ HTMLSnippet }
-
-func (testsnippet0) Template(*DataState) (_t SnippetTemplate) { _t.TagName = "span"; return }
-
+// testsnippetid
 type testsnippetid struct{ HTMLSnippet }
 
-func (_tst testsnippetid) Template(*DataState) (_t SnippetTemplate) {
-	_t.TagName = "span"
-	_t.Attributes = `id="IdTemplate1"`
-	return
+func (s testsnippetid) Tag() *Tag {
+	s.Tag().SetName("span")
+	s.Tag().Attributes().SetId("IdTemplate1")
+	return s.Tag()
 }
 
+// testsnippet1
 type testsnippet1 struct {
 	HTMLSnippet
-	Html String
+	Html HTMLString
 }
 
-func (tst testsnippet1) Template(*DataState) (_t SnippetTemplate) { _t.Body = tst.Html; return }
+func (tst *testsnippet1) WriteBody(out io.Writer) error {
+	err := tst.UnfoldHTML(out, tst.Html, nil)
+	return err
+}
 
+// testsnippet2
 type testsnippet2 struct{ testsnippet1 }
 
-func (testsnippet2) Template(*DataState) (_t SnippetTemplate) {
-	_t.TagName = "div"
-	_t.Attributes = `class="ts2a ts2b" tabIndex=2 style="display=test;" a2`
-	return
+func (testsnippet2) Tag() *Tag {
+	return NewTag("div", TryParseAttributes(`class="ts2a ts2b" tabIndex=2 style="display=test;" a2`))
 }
 
+// testsnippet3
 type testsnippet3 struct{ HTMLSnippet }
 
-func (testsnippet3) Template(_data *DataState) (_t SnippetTemplate) {
-	strapp, _ := _data.App.(string)
-	_t.Body = String(fmt.Sprintf("data.app=%s", strapp))
-	return
+func (s testsnippet3) WriteBody(out io.Writer) error {
+	_, err := WriteString(out, fmt.Sprintf("data.app=%s", s.dataState.App.(string)))
+	return err
 }
 
+// testsnippetinfinite
 type testsnippetinfinite struct{ HTMLSnippet }
 
-func (testsnippetinfinite) Template(_data *DataState) (_t SnippetTemplate) {
-	_t.Body = "<ick-test-infinite/>"
-	return
+func (s testsnippetinfinite) WriteBody(out io.Writer) error {
+	return s.UnfoldHTML(out, "<ick-test-infinite/>", nil)
 }

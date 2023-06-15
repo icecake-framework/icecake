@@ -407,10 +407,10 @@ func (_node *Node) addListener(_evttyp string, _evjsh syscalljs.Func) {
 	_node.Call("addEventListener", _evttyp, _evjsh)
 }
 
-// Release need to be called only when avent handlers have been added to the Event-target.
-// Release removes all event listeners and release ressources allocated fot the associated js func
-func (_node *Node) RemoveListeners() {
-	for _, evh := range _node.evth {
+// RemoveListeners removes all event listeners and release ressources allocated fot the associated js func
+// To be called only when event handlers have been added to the node.
+func (node *Node) RemoveListeners() {
+	for _, evh := range node.evth {
 		evh.Release()
 	}
 }

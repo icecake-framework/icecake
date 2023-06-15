@@ -69,7 +69,7 @@ func main() {
 
 func print(_title string, _value any) {
 	v := fmt.Sprintf("%v", _value)
-	dom.Id("content").InsertRawHTML(dom.INSERT_LAST_CHILD, html.String(_title+": <strong>"+v+"</strong><br/>"))
+	dom.Id("content").InsertRawHTML(dom.INSERT_LAST_CHILD, html.HTMLString(_title+": <strong>"+v+"</strong><br/>"))
 }
 
 func sprintBool(f bool) string {

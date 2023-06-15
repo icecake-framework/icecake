@@ -199,7 +199,7 @@ func (_elem *Element) SetDisabled(_f bool) {
 	}
 }
 
-func (_elem *Element) SetStyle(_style html.String) *Element {
+func (_elem *Element) SetStyle(_style html.HTMLString) *Element {
 	_elem.Call("setAttribute", "style", string(_style))
 	return _elem
 }
@@ -220,12 +220,12 @@ func (_elem *Element) SetTabIndex(_index int) *Element {
 	return _elem
 }
 
-func (_elem *Element) ResetClasses(_list html.String) *Element {
+func (_elem *Element) ResetClasses(_list html.HTMLString) *Element {
 	_elem.Set("className", string(_list))
 	return _elem
 }
 
-func (_elem *Element) SetClasses(_list html.String) *Element {
+func (_elem *Element) SetClasses(_list html.HTMLString) *Element {
 	listf := strings.Fields(string(_list))
 	callp := make([]any, len(listf))
 	for i, listc := range listf {
@@ -253,7 +253,7 @@ func (_elem *Element) RemoveClasses(_list string) *Element {
 	return _elem
 }
 
-func (_elem *Element) SwitchClasses(_remove string, _new html.String) *Element {
+func (_elem *Element) SwitchClasses(_remove string, _new html.HTMLString) *Element {
 	_elem.RemoveClasses(_remove)
 	_elem.SetClasses(_new)
 	return _elem
@@ -295,7 +295,7 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 			switch v := _value.(type) {
 			case string:
 				_elem.SetId(v)
-			case html.String:
+			case html.HTMLString:
 				_elem.SetId(string(v))
 			default:
 				return errors.New("wrong value type for id")
@@ -308,7 +308,7 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 			case string:
 				idx, _ := strconv.Atoi(v)
 				_elem.SetTabIndex(idx)
-			case html.String:
+			case html.HTMLString:
 				idx, _ := strconv.Atoi(string(v))
 				_elem.SetTabIndex(idx)
 			case int:
@@ -324,11 +324,11 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 			}
 		}
 	case "class":
-		var lst html.String
+		var lst html.HTMLString
 		switch v := _value.(type) {
 		case string:
-			lst = html.String(v)
-		case html.String:
+			lst = html.HTMLString(v)
+		case html.HTMLString:
 			lst = v
 		default:
 			return errors.New("wrong value type for class")
@@ -342,11 +342,11 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 		// TODO: handle style update to not overwrite
 		found := _elem.Get("style").Type() == js.TYPE_STRING
 		if !found || overwrite {
-			var style html.String
+			var style html.HTMLString
 			switch v := _value.(type) {
 			case string:
-				style = html.String(v)
-			case html.String:
+				style = html.HTMLString(v)
+			case html.HTMLString:
 				style = v
 			default:
 				return errors.New("wrong value type for class")
@@ -356,11 +356,11 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 	default:
 		_, err := _elem.Check(_key)
 		if err != nil || overwrite {
-			var strv html.String
+			var strv html.HTMLString
 			switch v := _value.(type) {
 			case string:
-				strv = html.String(v)
-			case html.String:
+				strv = html.HTMLString(v)
+			case html.HTMLString:
 				strv = v
 			case bool:
 				if v {
@@ -370,7 +370,7 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 					break
 				}
 			case int, uint, float32, float64:
-				strv = html.String(fmt.Sprintf("%v", v))
+				strv = html.HTMLString(fmt.Sprintf("%v", v))
 			default:
 				return errors.New("wrong value type for " + _key)
 			}
@@ -610,7 +610,7 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 }
 
 // TODO: handle exceptions InsertRawHTML
-func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.String) {
+func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.HTMLString) {
 	if !_me.IsDefined() {
 		return
 	}
@@ -634,17 +634,17 @@ func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.String) 
 // All embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // Returns an error if _elem in not the DOM or if an error occurs during UnfoldHtml or mounting process.
 // HACK: better rendering with a reader ?
-func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.String, _data *html.DataState) (_err error) {
+func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.HTMLString, ds *html.DataState) (_err error) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
 	}
 
 	var embedded map[string]any
 	out := new(bytes.Buffer)
-	embedded, _err = html.UnfoldHTML(out, _html, _data)
+	embedded, _err = html.UnfoldHTML(out, _html, ds)
 	if _err == nil {
 		// insert the html element into the dom and wrapit
-		_elem.InsertRawHTML(_where, html.String(out.String()))
+		_elem.InsertRawHTML(_where, html.HTMLString(out.String()))
 		// mount every embedded components
 		if embedded != nil {
 			// DEBUG: console.Warnf("scanning %+v", embedded)
@@ -670,42 +670,47 @@ func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.String, _data *
 // The _snippet and all its embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // _snippet can be either an HTMLComposer or an UIComposer.
 // Returns an error if _elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
-// Returns an error if WriteHTMLSnippet or mounting process fail.
-func (_elem *Element) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
+// Returns an error if WriteSnippet or mounting process fail.
+func (_elem *Element) InsertSnippet(where INSERT_WHERE, composer any, ds *html.DataState) (snippetid string, err error) {
 	if !_elem.IsDefined() {
 		return "", console.Errorf("Element:InsertSnippet failed on undefined element")
 	}
 
-	snippet, ok := _snippet.(html.HTMLComposer)
+	snippet, ok := composer.(html.HTMLComposer)
 	if !ok {
 		return "", console.Errorf("Element:InsertSnippet failed. snippet must implement HTMLComposer interface or UIComposer interface")
 	}
-	snippetid := snippet.Id()
-	if snippetid != "" {
-		if _, err := Doc().CheckId(snippet.Id()); err == nil {
-			return "", console.Errorf("Element:InsertSnippet failed. snippet's ID %q is already in the DOM.", snippetid)
+
+	// if requested id is defined then check that no elements are already into the DOM with this id.
+	// if requested is nil, an unique id will be generated by WriteSnippet here under
+	reqid := snippet.Tag().Attributes().Id()
+	if reqid != "" {
+		if _, err := Doc().CheckId(reqid); err == nil {
+			return "", console.Errorf("Element:InsertSnippet failed. snippet's ID %q is already in the DOM.", reqid)
 		}
 	}
 
 	out := new(bytes.Buffer)
-	_id, _err = html.WriteHTMLSnippet(out, snippet, _data, true)
-	if _err == nil {
-		// insert the html element into the dom and wrapit
-		_elem.InsertRawHTML(_where, html.String(out.String()))
-		if newe := Id(_id); newe != nil {
-			// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
-			if snippet, ok := _snippet.(UIComposer); ok {
-				_err = mountDeepSnippet(snippet, newe)
-			} else {
-				_err = console.Warnf("snippet %q(%v) not mounted, it's not an UIComposer", _id, reflect.TypeOf(_snippet).String())
-			}
+	// FIXME noid
+	snippetid, err = html.WriteSnippet(out, snippet, ds, false)
+	if err != nil {
+		console.Errorf(err.Error())
+		return "", err
+	}
+
+	// insert the html element into the dom and wrapit
+	_elem.InsertRawHTML(where, html.HTMLString(out.String()))
+	if newe := Id(snippetid); newe != nil {
+		// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
+		if snippet, ok := composer.(UIComposer); ok {
+			err = mountDeepSnippet(snippet, newe)
 		} else {
-			_err = console.Warnf("snippet %q(%v) not mounted: id not found in the DOM", _id, reflect.TypeOf(_snippet).String())
+			err = console.Warnf("snippet %q(%v) not mounted, it's not an UIComposer", snippetid, reflect.TypeOf(composer).String())
 		}
 	} else {
-		console.Errorf(_err.Error())
+		err = console.Warnf("snippet %q(%v) not mounted: id not found in the DOM", snippetid, reflect.TypeOf(composer).String())
 	}
-	return _id, nil
+	return snippetid, nil
 }
 
 // InsertText insert the formated _value as a simple text (not an HTML string) at the _where position.

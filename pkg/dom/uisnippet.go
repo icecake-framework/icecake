@@ -10,17 +10,19 @@ import (
 	"github.com/icecake-framework/icecake/pkg/registry"
 )
 
-// type Listener interface {
-// 	AddListeners()
-// 	RemoveListeners()
-// }
+type UIListener interface {
+	AddListeners()
+	RemoveListeners()
+}
 
 type UIComposer interface {
 	html.HTMLComposer
+
 	js.JSValueWrapper
+
+	UIListener
+
 	Mount()
-	AddListeners()
-	RemoveListeners()
 	UnMount()
 }
 
@@ -63,7 +65,7 @@ func (_s *UISnippet) RemoveListeners() {
 // RenderHTML does not mount the component into the DOM.
 // func (_parent *UISnippet) RenderHTML(_snippet UIComposer) (_html html.String) {
 // 	out := new(bytes.Buffer)
-// 	id, err := html.WriteHTMLSnippet(out, _snippet, nil)
+// 	id, err := html.WriteSnippet(out, _snippet, nil)
 // 	if err == nil {
 // 		_parent.Embed(id, _snippet) // need to embed the snippet itself
 // 		_html = html.String(out.String())
@@ -81,15 +83,6 @@ func (_s *UISnippet) RemoveListeners() {
 // 	_parent.AddListeners()
 // 	return _id, nil
 // }
-
-// SetDisabled set the disable state of the _s snippet.
-// If the snippet is already in the the DOM, then SetDisable updates the disable attribute of the html element in the DOM.
-func (_s *UISnippet) SetDisabled(_disable bool) {
-	_s.HTMLSnippet.SetDisabled(_disable)
-	if _s.DOM.IsDefined() && _s.DOM.IsInDOM() {
-		_s.DOM.SetDisabled(_disable)
-	}
-}
 
 // MountCSSLinks inserts links elements to the Head section of the Document for every csslinkref found in TheRegistry of components.
 // If a link already exists for a csslinkref nothing is done.

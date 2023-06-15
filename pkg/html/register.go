@@ -51,17 +51,17 @@ func RegisterComposer(_ickname string, _composer any, _css []string) (_err error
 	}
 
 	if registry.IsRegistered(_ickname) {
-		log.Printf("registering composer %q warning: already registered", _ickname)
+		log.Printf("registering composer %q warning: already registered\n", _ickname)
 		return _err
 	}
 
 	registry.AddRegistryEntry(_ickname, _composer, _css)
 
-	// DEBUG:
-	fmt.Printf("registering composer %s(%s) with success\n", _ickname, typ.String())
+	// DEBUG: fmt.Printf("registering composer %s(%s) with success\n", _ickname, typ.String())
 	return nil
 }
 
+// TODO: RegisterHTMLSnippet
 // RegisterHTMLSnippet allows registering a simple HTMLSnippet with a simple line of code.
 // The HTMLSnippet will be rendered every time the auto-closing ick-tag will be met within an html string.
 //
@@ -71,12 +71,12 @@ func RegisterComposer(_ickname string, _composer any, _css []string) (_err error
 //   - If the _ickname does not meet tye pattern "ick-*"
 //   - If the _composer does not implement the HTMLComposer interface
 //   - If parsing _template attributes fails
-func RegisterHTMLSnippet(_ickname string, _template SnippetTemplate) (_err error) {
-	s := new(HTMLSnippet)
-	s.TagName = _template.TagName
-	s.Body = _template.Body
-	if _err = ParseAttributes(string(_template.Attributes), s); _err != nil {
-		return _err
-	}
-	return RegisterComposer(_ickname, s, nil)
-}
+// func RegisterHTMLSnippet(_ickname string, _template SnippetTemplate) (_err error) {
+// 	s := new(HTMLSnippet)
+// 	s.TagName = _template.TagName
+// 	s.Body = _template.Body
+// 	if _err = ParseAttributes(string(_template.Attributes), s); _err != nil {
+// 		return _err
+// 	}
+// 	return RegisterComposer(_ickname, s, nil)
+// }

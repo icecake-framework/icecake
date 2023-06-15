@@ -27,7 +27,8 @@
             "console": "integratedTerminal",
             "args": [
                 "--output",
-                "./docs"
+                "./docs",
+                "--verbose"
             ]
         },
         {

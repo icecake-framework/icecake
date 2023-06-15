@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"github.com/icecake-framework/icecake/pkg/dom"
-	"github.com/icecake-framework/icecake/pkg/ui"
+	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 // the main func is required by the wasm GO builder
@@ -26,12 +26,11 @@ func main() {
 	// }
 	// ui.RenderSnippet(webapp.ChildById("msg-container"), msg1, nil)
 
-	msg2 := &ui.Message{
-		Header:    "2nd message",
-		CanDelete: true,
-		Message:   "This second message use the BULMA <i>is-info</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message.",
-	}
-	msg2.SetClasses("is-info")
+	msg2 := &html.Message{}
+	msg2.Header = "2nd message"
+	msg2.CanDelete = true
+	msg2.Message = "This second message use the BULMA <i>is-info</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message."
+	msg2.Tag().Attributes().SetClasses("is-info")
 	dom.Id("msg-container").InsertSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 
 	// msg3 := &ui.Message{

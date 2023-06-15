@@ -6,6 +6,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
+	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/ui"
 )
 
@@ -20,45 +21,40 @@ func main() {
 
 	dom.MountCSSLinks()
 
-	in1 := &ui.InputField{
-		PlaceHolder: "Very simple",
-	}
-	in1.SetClasses("mr-4")
+	in1 := &ui.InputField{}
+	in1.PlaceHolder = "Very simple"
+	in1.Tag().Attributes().SetClasses("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in1, nil)
 
-	in2 := &ui.InputField{
-		Label:       "Name",
-		PlaceHolder: "Text input",
-		Help:        "With a label, a placeholder, and a help",
-	}
-	in2.SetClasses("mr-4")
+	in2 := &ui.InputField{}
+	in2.Label = "Name"
+	in2.PlaceHolder = "Text input"
+	in2.Help = "With a label, a placeholder, and a help"
+	in2.Tag().Attributes().SetClasses("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in2, nil)
 
-	in3 := &ui.InputField{
-		Label:       "Username",
-		PlaceHolder: "Text input",
-		Help:        "Rounded style",
-		Value:       "my name",
-		IsRounded:   true,
-	}
-	in3.SetClasses("mr-4")
+	in3 := &ui.InputField{}
+	in3.Label = "Username"
+	in3.PlaceHolder = "Text input"
+	in3.Help = "Rounded style"
+	in3.Value = "my name"
+	in3.IsRounded = true
+	in3.Tag().Attributes().SetClasses("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in3, nil)
 
-	in4 := &ui.InputField{
-		Label:       "Loading",
-		PlaceHolder: "Text input",
-		State:       ui.INPUT_LOADING,
-		Help:        "With loading state",
-	}
-	in4.SetClasses("mr-4")
+	in4 := &ui.InputField{}
+	in4.Label = "Loading"
+	in4.PlaceHolder = "Text input"
+	in4.State = html.INPUT_LOADING
+	in4.Help = "With loading state"
+	in4.Tag().Attributes().SetClasses("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in4, nil)
 
-	in5 = &ui.InputField{
-		Label:       "eMail",
-		PlaceHolder: "email address",
-		Help:        "Enter a valid email address",
-	}
-	in5.SetClasses("mr-4")
+	in5 = &ui.InputField{}
+	in5.Label = "eMail"
+	in5.PlaceHolder = "email address"
+	in5.Help = "Enter a valid email address"
+	in5.Tag().Attributes().SetClasses("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in5, nil)
 	in5.DOM.AddInputEvent(event.INPUT_ONINPUT, OnInput)
 

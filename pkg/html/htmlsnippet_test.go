@@ -15,55 +15,53 @@ func TestComposeBasics(t *testing.T) {
 
 	// empty snippet
 	s00 := new(HTMLSnippet)
-	_, err := WriteHTMLSnippet(out, s00, nil, true)
+	_, err := WriteSnippet(out, s00, nil, false)
 	require.NoError(t, err)
 	require.Empty(t, out)
 
 	// unregistered snippet with a simple tagname and an empty body
-	s0 := new(testsnippet0)
-	_, err = WriteHTMLSnippet(out, s0, nil, true)
+	s0 := NewSnippet("span", nil, "")
+	_, err = WriteSnippet(out, s0, nil, false)
 	require.NoError(t, err)
 	require.Equal(t, `<SPAN id="ick-2"></SPAN>`, out.String())
 
 	// force id, setup classes, attributes and style
 	out.Reset()
-	s0.SetId("helloworld0").SetClasses("test").SetTabIndex(1).SetStyle("color=red;")
-	WriteHTMLSnippet(out, s0, nil, true)
+	s0.Tag().Attributes().SetTabIndex(1).SetStyle("color=red;").SetId("helloworld0").SetClasses("test")
+	WriteSnippet(out, s0, nil, false)
 	require.Equal(t, `<SPAN id="helloworld0" tabIndex=1 class="test" style="color=red;"></SPAN>`, out.String())
 
 	// The same but when registered
 	out.Reset()
-	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{}, nil)
-	WriteHTMLSnippet(out, s0, nil, true)
+	registry.AddRegistryEntry("ick-test-snippet0", NewSnippet("span", nil, ""), nil)
+	WriteSnippet(out, s0, nil, false)
 	require.Equal(t, `<SPAN id="helloworld0" tabIndex=1 class="test ick-test-snippet0" style="color=red;"></SPAN>`, out.String())
 
 	// unregistered snippet with a simple body and no tagname
 	out.Reset()
 	s1 := new(testsnippet1)
 	s1.Html = `Hello World`
-	WriteHTMLSnippet(out, s1, nil, true)
+	WriteSnippet(out, s1, nil, false)
 	require.Equal(t, "Hello World", out.String())
 
 	// snippet with a tagname and default attributes
 	out.Reset()
 	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{}, nil)
 	s2 := new(testsnippet2)
-	WriteHTMLSnippet(out, s2, nil, true)
+	WriteSnippet(out, s2, nil, false)
 	require.Equal(t, `<DIV id="ick-test-snippet2-1" tabIndex=2 class="ts2a ts2b ick-test-snippet2" style="display=test;" a2></DIV>`, out.String())
 
 	// snippet with a tagname, default attributes and custom attributes
 	out.Reset()
 	s2 = new(testsnippet2)
-	s2.SetId("tst").SetClasses("ts2c").SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "")
-	WriteHTMLSnippet(out, s2, nil, true)
+	s2.Tag().Attributes().SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "", true).SetId("tst").SetClasses("ts2c")
+	WriteSnippet(out, s2, nil, false)
 	require.Equal(t, `<DIV id="tst" tabIndex=1 class="ts2c ts2a ts2b ick-test-snippet2" style="color=red;" a2 a3></DIV>`, out.String())
 
 	// update custom attributes on an existing component
 	out.Reset()
-	s2.SetClasses("ts2a ts2d").SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "")
-	s2.RemoveClasses("ts2c")
-	s2.RemoveAttribute("a3")
-	WriteHTMLSnippet(out, s2, nil, true)
+	s2.Tag().Attributes().SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "", true).SetClasses("ts2a ts2d").RemoveClasses("ts2c").RemoveAttribute("a3")
+	WriteSnippet(out, s2, nil, false)
 	require.Equal(t, `<DIV id="tst" tabIndex=3 class="ts2a ts2b ick-test-snippet2 ts2d" style="color=blue;" a2 a4></DIV>`, out.String())
 }
 
@@ -73,7 +71,7 @@ func TestComposeDataState(t *testing.T) {
 	ds := &DataState{
 		App: "hello world",
 	}
-	_, err := WriteHTMLSnippet(out, s3, ds, true)
+	_, err := WriteSnippet(out, s3, ds, false)
 	require.NoError(t, err)
 	require.Equal(t, `data.app=hello world`, out.String())
 }
@@ -84,17 +82,15 @@ func TestUnfoldBody1(t *testing.T) {
 	out := new(bytes.Buffer)
 
 	out.Reset()
-	s := &testsnippet0{}
-	s.TagName = "div"
-	s.Body = "test"
+	s := NewSnippet("div", TryParseAttributes("test"), "")
 	registry.AddRegistryEntry("ick-test-snippet0", s, nil)
-	err := unfoldBody(nil, out, []byte("<ick-test-snippet0/>"), nil, 0)
+	err := unfoldHTML(nil, out, []byte("<ick-test-snippet0/>"), nil, 0)
 	require.NoError(t, err)
 	require.Equal(t, `<SPAN id="ick-test-snippet0-1" class="ick-test-snippet0"></SPAN>`, out.String())
 
 	out.Reset()
-	s = &testsnippet0{}
-	unfoldBody(nil, out, []byte(`<ick-test-snippet0 empty1='' empty2="" bool/>`), nil, 0)
+	s = NewSnippet("span", nil, "")
+	unfoldHTML(nil, out, []byte(`<ick-test-snippet0 empty1='' empty2="" bool/>`), nil, 0)
 	require.Equal(t, `<SPAN id="ick-test-snippet0-2" class="ick-test-snippet0" bool empty1 empty2></SPAN>`, out.String())
 }
 
@@ -243,14 +239,15 @@ func TestUnfoldBody2(t *testing.T) {
 
 	// restet the component registrey for tests
 	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{}, nil)
+	testsnippet0 := NewSnippet("span", nil, "")
+	registry.AddRegistryEntry("ick-test-snippet0", testsnippet0, nil)
 	registry.AddRegistryEntry("ick-test-snippet1", &testsnippet1{}, nil)
 	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{}, nil)
 
 	output := new(bytes.Buffer)
 	for i, tst := range tstset {
 		output.Reset()
-		err := unfoldBody(nil, output, []byte(tst.in), nil, 0)
+		err := unfoldHTML(nil, output, []byte(tst.in), nil, 0)
 		if tst.err {
 			if err == nil {
 				fmt.Printf("T%v) %s\n", i, tst.name)
@@ -328,7 +325,8 @@ func TestComposeEmbedded(t *testing.T) {
 
 	// restet the component registrey for tests
 	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{}, nil)
+	testsnippet0 := NewSnippet("span", nil, "")
+	registry.AddRegistryEntry("ick-test-snippet0", testsnippet0, nil)
 	registry.AddRegistryEntry("ick-test-snippet1", &testsnippet1{}, nil)
 	registry.AddRegistryEntry("ick-test-snippet2", &testsnippet2{}, nil)
 	registry.AddRegistryEntry("ick-test-infinite", &testsnippetinfinite{}, nil)
@@ -338,8 +336,8 @@ func TestComposeEmbedded(t *testing.T) {
 	out := new(bytes.Buffer)
 	for i, tst := range tstset {
 		out.Reset()
-		cmp.Html = String(tst.in)
-		_, err := WriteHTMLSnippet(out, cmp, nil, true)
+		cmp.Html = HTMLString(tst.in)
+		_, err := WriteSnippet(out, cmp, nil, false)
 		if tst.err {
 			if err == nil {
 				fmt.Printf("T%v) %s\n", i, tst.name)
@@ -365,7 +363,7 @@ func TestComposeEmbedded(t *testing.T) {
 
 func TestUnfoldbody3(t *testing.T) {
 
-	html := String(`<ick-button class="m-2 is-primary is-light" data-example=6 Title="Embedded" IsOutlined/>`)
+	html := HTMLString(`<ick-button class="m-2 is-primary is-light" data-example=6 Title="Embedded" IsOutlined/>`)
 
 	out := new(bytes.Buffer)
 	embedded, err := UnfoldHTML(out, html, nil)
@@ -382,15 +380,16 @@ func TestUnfoldbody3(t *testing.T) {
 func TestSnippetId(t *testing.T) {
 
 	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-test-snippet0", &testsnippet0{}, nil)
+	testsnippet0 := NewSnippet("span", nil, "")
+	registry.AddRegistryEntry("ick-test-snippet0", testsnippet0, nil)
 
 	out := new(bytes.Buffer)
 
 	// A> setup an ID upfront, before rendering
-	cmpA := new(testsnippet0)
+	cmpA := testsnippet0
 	// A.1> withid = false
-	cmpA.SetId("idA1")
-	id, err := WriteHTMLSnippet(out, cmpA, nil, false)
+	cmpA.Tag().Attributes().SetId("idA1")
+	id, err := WriteSnippet(out, cmpA, nil, true)
 	if err != nil {
 		t.Error(err)
 	}
@@ -400,8 +399,8 @@ func TestSnippetId(t *testing.T) {
 
 	// A.2> withid = true
 	out.Reset()
-	cmpA.SetId("IdA2")
-	id, err = WriteHTMLSnippet(out, cmpA, nil, true)
+	cmpA.Tag().Attributes().SetId("IdA2")
+	id, err = WriteSnippet(out, cmpA, nil, false)
 	if err != nil {
 		t.Error(err)
 	}
@@ -413,7 +412,7 @@ func TestSnippetId(t *testing.T) {
 	cmpB := new(testsnippetid)
 	// B.1> withid = false
 	out.Reset()
-	id, err = WriteHTMLSnippet(out, cmpB, nil, false)
+	id, err = WriteSnippet(out, cmpB, nil, true)
 	if err != nil {
 		t.Error(err)
 	}
@@ -423,7 +422,7 @@ func TestSnippetId(t *testing.T) {
 
 	// B.2> withid = true
 	out.Reset()
-	id, err = WriteHTMLSnippet(out, cmpB, nil, true)
+	id, err = WriteSnippet(out, cmpB, nil, false)
 	if err != nil {
 		t.Error(err)
 	}

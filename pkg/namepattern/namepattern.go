@@ -7,14 +7,15 @@ import (
 	"unicode/utf8"
 )
 
+// a range of runes
 type charset struct {
 	from rune
 	to   rune
 }
 
 var (
-	charset0 []charset
-	charsetN []charset
+	charset0 []charset // list of range of runes valid for the first char of a name
+	charsetN []charset // list of range of runes valid for the following chars of a name
 )
 
 // IsValid returns true or false if the s match allowed HTML Name pattern. https://stackoverflow.com/questions/925994/what-characters-are-allowed-in-an-html-attribute-name.
@@ -22,8 +23,8 @@ var (
 //
 //	returns FALSE if s is empty
 //
-// must be trim before, if required
-func IsValid(s string) (_ret bool) {
+// must be trimed before, if required
+func IsValid(s string) bool {
 	if s == "" {
 		return false
 	}
@@ -55,11 +56,7 @@ func IsValidRune(r rune, first bool) bool {
 	}
 }
 
-/******************************************************************************
- * PRIVATE
- */
-
-func isValidRune(cs *[]charset, r rune) (_ret bool) {
+func isValidRune(cs *[]charset, r rune) bool {
 	for _, cset := range *cs {
 		if r >= cset.from && r <= cset.to {
 			return true
@@ -98,20 +95,21 @@ func mustCompileCharset(_strcharsets string) (_ret []charset) {
 
 // compileCharset converts a chartset string into a slice of chartset.
 //
-// The chartstring can combine multiple set with pipe char "|". Every set can be either a single char or a range with hexa rune code defined in braket [\xFF-\xFF]
-func compileCharset(_strcharsets string) (_ret []charset, _err error) {
+// The chartstring can combine multiple sets separated by pipe char "|".
+// Every set can be either a single char or a range with hexa rune code defined in braket [\xFF-\xFF]
+func compileCharset(_strcharsets string) (ret []charset, err error) {
 	startCharsets := strings.Split(_strcharsets, "|")
 	for _, subset := range startCharsets {
 		switch len(subset) {
 		case 0: // empty subset
-			_err = fmt.Errorf("subset can not be empty")
+			err = fmt.Errorf("subset can not be empty")
 
 		case 1: // single char subset
 			cset := charset{}
-			cset.from, _err = parseRune(subset)
-			if _err == nil {
+			cset.from, err = parseRune(subset)
+			if err == nil {
 				cset.to = cset.from
-				_ret = append(_ret, cset)
+				ret = append(ret, cset)
 			}
 
 		default: // range subset expected
@@ -120,45 +118,45 @@ func compileCharset(_strcharsets string) (_ret []charset, _err error) {
 				fromto := strings.Split(subset, "-")
 				if len(fromto) == 2 {
 					cset := charset{}
-					cset.from, _err = parseRune(fromto[0])
-					if _err == nil {
-						cset.to, _err = parseRune(fromto[1])
-						if _err == nil {
-							_ret = append(_ret, cset)
+					cset.from, err = parseRune(fromto[0])
+					if err == nil {
+						cset.to, err = parseRune(fromto[1])
+						if err == nil {
+							ret = append(ret, cset)
 						}
 					}
 				} else {
-					_err = fmt.Errorf("wrong range subset from-to format")
+					err = fmt.Errorf("wrong range subset from-to format")
 				}
 			} else {
-				_err = fmt.Errorf("wrong range subset format, braket missing")
+				err = fmt.Errorf("wrong range subset format, braket missing")
 			}
 		}
 	}
-	return _ret, _err
+	return ret, err
 }
 
-// parseRune Returns the rune code corresponding to the _s string.
-// _S can be either a single letter or a hexa code formatted with the pattern `\x{FF...}`.
-func parseRune(_s string) (_r rune, _err error) {
-	switch len([]rune(_s)) {
-	// TODO: handle "\\u" case
+// parseRune Returns the rune code corresponding to the given string.
+// This given string can be either a single letter or a hexa code formatted with the pattern `\x{FF...}`.
+func parseRune(s string) (_r rune, _err error) {
+	switch len([]rune(s)) {
 	case 0:
 		return 0, fmt.Errorf("empty string")
 	case 1:
-		_r, _ = utf8.DecodeRune([]byte(_s))
+		_r, _ = utf8.DecodeRune([]byte(s))
 		if _r == utf8.RuneError {
 			return 0, fmt.Errorf("wrong rune hexa code in range")
 		}
 	default:
-		switch _s[:2] {
+		switch s[:2] {
 		case "\\x":
-			r, err := strconv.ParseInt(_s[2:], 16, 32)
+			r, err := strconv.ParseInt(s[2:], 16, 32)
 			if err != nil {
 				return 0, fmt.Errorf("wrong hexa in range")
 			}
 			_r = rune(r)
 		default:
+			// TODO: handle "\\u" case
 			return 0, fmt.Errorf("wrong range definition")
 		}
 	}
