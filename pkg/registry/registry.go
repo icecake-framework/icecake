@@ -66,6 +66,12 @@ func IsRegistered(_name string) bool {
 	return found
 }
 
+func (_reg *registry) init() {
+	if _reg.entries == nil {
+		_reg.entries = make(map[string]*RegistryEntry, 0)
+	}
+}
+
 // Registry stores definition of components in a map, by unique name
 type registry struct {
 	entries map[string]*RegistryEntry
@@ -141,14 +147,4 @@ func GetUniqueId(_prefix string) string {
 // ResetRegistry is only used for testing
 func ResetRegistry() {
 	theRegistry.entries = make(map[string]*RegistryEntry, 1)
-}
-
-/******************************************************************************
-* Private
-******************************************************************************/
-
-func (_reg *registry) init() {
-	if _reg.entries == nil {
-		_reg.entries = make(map[string]*RegistryEntry, 0)
-	}
 }

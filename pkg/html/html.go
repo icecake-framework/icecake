@@ -5,8 +5,6 @@ import (
 	"io"
 	"net/url"
 	"reflect"
-
-	"github.com/icecake-framework/icecake/internal/helper"
 )
 
 // HTMLString encapsulates a known safe string document fragment.
@@ -28,71 +26,6 @@ func (strhtml HTMLString) String() string {
 	return string(strhtml)
 }
 
-// Tag of an HTML element
-type Tag struct {
-	name        string       // internal name, use the factory or SetName to update it
-	selfClosing bool         // specify if this is a selfclosing tag, automatically setup by SetName. Use SetSelfClosing to force your value.
-	attrs       AttributeMap // map of all tag attributes of any type, including the id if there's one.
-	virtualid   string       // used internally by the rendering process
-}
-
-func NewTag(name string, amap AttributeMap) *Tag {
-	tag := new(Tag)
-	tag.SetName(name)
-	if amap == nil {
-		tag.attrs = make(AttributeMap)
-	} else {
-		tag.attrs = amap
-	}
-	return tag
-}
-
-func (tag Tag) HasName() bool {
-	return tag.name == ""
-}
-
-// SetName normalizes the name and automaticlally update the SelfClosing according to HTML specifications
-// https://developer.mozilla.org/en-US/docs/Glossary/Void_element
-func (tag *Tag) SetName(name string) *Tag {
-	tag.name = helper.Normalize(name)
-	switch tag.name {
-	case "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr":
-		tag.selfClosing = true
-	default:
-		tag.selfClosing = false
-	}
-	return tag
-}
-
-func (tag *Tag) SetSelfClosing(sc bool) *Tag {
-	tag.selfClosing = sc
-	return tag
-}
-
-func (tag *Tag) Attributes() AttributeMap {
-	if tag.attrs == nil {
-		tag.attrs = make(AttributeMap)
-	}
-	return tag.attrs
-}
-
-func (tag Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
-	if tag.name != "" {
-		_, err = WriteStrings(out, "<", tag.name, " ", tag.Attributes().String(), ">")
-		if err == nil {
-			selfclosed = tag.selfClosing
-		}
-	}
-	return
-}
-
-func (tag Tag) RenderClosing(out io.Writer) (err error) {
-	if tag.name != "" && !tag.selfClosing {
-		_, err = WriteStrings(out, "</", tag.name, ">")
-	}
-	return
-}
-
 type DataState struct {
 	//Id   string // the id of the current processing component
 	//Me   any    // the current processing component, should embedd an HtmlSnippet
@@ -100,7 +33,8 @@ type DataState struct {
 	App  any // the current ick App, can be nil
 }
 
-// WriteStringsIf writes one or many strings to w only if the condition is true
+// WriteStringsIf writes one or many strings to w only if the condition is true.
+// errors comes from the writer.
 func WriteStringsIf(condition bool, w io.Writer, ss ...string) (n int, err error) {
 	if !condition {
 		return 0, nil
@@ -109,6 +43,8 @@ func WriteStringsIf(condition bool, w io.Writer, ss ...string) (n int, err error
 }
 
 // WriteStrings writes one or many strings to w
+// Returns the number of bytes written.
+// errors comes from the writer.
 func WriteStrings(w io.Writer, ss ...string) (n int, err error) {
 	nn := 0
 	for _, s := range ss {
@@ -124,6 +60,7 @@ func WriteStrings(w io.Writer, ss ...string) (n int, err error) {
 // WriteString writes the contents of the string s to w, which accepts a slice of bytes.
 // If w implements StringWriter, its WriteString method is invoked directly.
 // Otherwise, w.Write is called exactly once.
+// // errors comes from the writer.
 func WriteString(out io.Writer, s string) (n int, err error) {
 	return io.WriteString(out, s)
 }
