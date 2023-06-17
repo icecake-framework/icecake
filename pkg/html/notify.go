@@ -37,7 +37,7 @@ var _ HTMLComposer = (*Notify)(nil)
 
 func (notify *Notify) Tag() *Tag {
 	notify.tag.SetName("div")
-	notify.tag.Attributes().SetClasses("notification")
+	notify.tag.Attributes().AddClasses("notification")
 	return &notify.tag
 }
 

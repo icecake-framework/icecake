@@ -23,7 +23,7 @@ func main() {
 		Header:  "simple message",
 		Message: "This is a simple message with a header.",
 	}
-	msg2.Tag().Attributes().SetClasses("is-info")
+	msg2.Tag().Attributes().AddClasses("is-info")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 
 	msg3 := &html.Message{
@@ -31,20 +31,20 @@ func main() {
 		CanDelete: true,
 		Message:   "This message use the BULMA <i>is-warning</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message.",
 	}
-	msg3.Tag().Attributes().SetClasses("is-warning")
+	msg3.Tag().Attributes().AddClasses("is-warning")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg3, nil)
 
 	msg4 := &html.Message{
 		Header:    "only header",
 		CanDelete: true,
 	}
-	msg4.Tag().Attributes().SetClasses("is-success")
+	msg4.Tag().Attributes().AddClasses("is-success")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg4, nil)
-	msg4.Tag().Attributes().SwitchClasses("is-success", "is-danger")
+	msg4.Tag().Attributes().SwitchClass("is-success", "is-danger")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg4, nil)
 
 	msg5 := &html.Message{}
-	msg5.Tag().Attributes().SetClasses("is-danger")
+	msg5.Tag().Attributes().AddClasses("is-danger")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg5, nil)
 
 	// let's go

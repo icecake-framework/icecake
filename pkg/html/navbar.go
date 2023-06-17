@@ -53,9 +53,9 @@ func (item *NavbarItem) Tag() *Tag {
 
 	amap := item.tag.Attributes()
 	if item.ItemType == NAVBARIT_DIVIDER {
-		amap.SetClasses("navbar-divider")
+		amap.AddClasses("navbar-divider")
 	} else {
-		amap.SetClasses("navbar-item")
+		amap.AddClasses("navbar-item")
 		if item.HRef != nil {
 			if href := item.HRef.String(); href != "" {
 				amap.SetAttribute("href", href, true)
@@ -111,11 +111,10 @@ func (_nav *Navbar) AddItems(_items ...*NavbarItem) *Navbar {
 }
 
 func (nav *Navbar) Tag() *Tag {
-	nav.tag.SetName("nav")
-	amap := nav.tag.Attributes()
-	amap.SetClasses("navbar").setAttribute("role", "navigation", true)
-	amap.SetClassesIf(nav.IsTransparent, "is-transparent")
-	amap.SetClassesIf(nav.HasShadow, "has-shadow")
+	nav.tag.SetName("nav").Attributes().
+		AddClasses("navbar").SetAttribute("role", "navigation", true).
+		AddClassesIf(nav.IsTransparent, "is-transparent").
+		AddClassesIf(nav.HasShadow, "has-shadow")
 	return &nav.tag
 }
 

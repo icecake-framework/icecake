@@ -1,4 +1,4 @@
-package namepattern
+package stringpattern
 
 import (
 	"fmt"
@@ -14,46 +14,57 @@ type charset struct {
 }
 
 var (
-	charset0 []charset // list of range of runes valid for the first char of a name
-	charsetN []charset // list of range of runes valid for the following chars of a name
+	nameCharset0 []charset // list of range of runes valid for the first char of a name
+	nameCharsetN []charset // list of range of runes valid for the following chars of a name
+	styleCharset []charset // list of range of runes valid for a style string
 )
 
-// IsValid returns true or false if the s match allowed HTML Name pattern. https://stackoverflow.com/questions/925994/what-characters-are-allowed-in-an-html-attribute-name.
+// NameIsValid returns true or false if the s match allowed HTML Name pattern. https://stackoverflow.com/questions/925994/what-characters-are-allowed-in-an-html-attribute-name.
 // usefull to check attribute or token name.
 //
 //	returns FALSE if s is empty
 //
 // must be trimed before, if required
-func IsValid(s string) bool {
-	if s == "" {
+func IsValidName(name string) bool {
+	if name == "" {
 		return false
 	}
 
-	if charset0 == nil {
+	if nameCharset0 == nil {
 		new()
 	}
 
-	for i, c := range s {
+	for i, c := range name {
 		r := rune(c)
-		if (i == 0 && !isValidRune(&charset0, r)) || (i > 0 && !isValidRune(&charsetN, r)) {
+		if (i == 0 && !isValidRune(&nameCharset0, r)) || (i > 0 && !isValidRune(&nameCharsetN, r)) {
 			return false
 		}
 	}
 	return true
 }
 
-func IsValidRune(r rune, first bool) bool {
+func IsValidNameRune(r rune, first bool) bool {
 	if r == '\u0000' {
 		return false
 	}
-	if charset0 == nil {
+	if nameCharset0 == nil {
 		new()
 	}
 	if first {
-		return isValidRune(&charset0, r)
+		return isValidRune(&nameCharset0, r)
 	} else {
-		return isValidRune(&charsetN, r)
+		return isValidRune(&nameCharsetN, r)
 	}
+}
+
+func IsValidStyleRune(r rune) bool {
+	if r == '\u0000' {
+		return false
+	}
+	if styleCharset == nil {
+		new()
+	}
+	return isValidRune(&styleCharset, r)
 }
 
 func isValidRune(cs *[]charset, r rune) bool {
@@ -66,23 +77,27 @@ func isValidRune(cs *[]charset, r rune) bool {
 }
 
 func new() {
-	strcsA := `[a-z]|[A-Z]|_|:`
-	csA := mustCompileCharset(strcsA)
+	strNameCsA := `[a-z]|[A-Z]|_|:`
+	nameCsA := mustCompileCharset(strNameCsA)
 
-	strcsB := `[\xC0-\xD6]|[\xD8-\xF6]|[\x00F8-\x02FF]|[\x0370-\x037D]|[\x037F-\x1FFF]|[\x200C-\x200D]|[\x2070-\x218F]|[\x2C00-\x2FEF]|[\x3001-\xD7FF]|[\xF900-\xFDCF]|[\xFDF0-\xFFFD]|[\x10000-\xEFFFF]`
-	csB := mustCompileCharset(strcsB)
+	strNameCsB := `[\xC0-\xD6]|[\xD8-\xF6]|[\x00F8-\x02FF]|[\x0370-\x037D]|[\x037F-\x1FFF]|[\x200C-\x200D]|[\x2070-\x218F]|[\x2C00-\x2FEF]|[\x3001-\xD7FF]|[\xF900-\xFDCF]|[\xFDF0-\xFFFD]|[\x10000-\xEFFFF]`
+	nameCsB := mustCompileCharset(strNameCsB)
 
-	strcsC := `-|[0-9]|.`
-	csC := mustCompileCharset(strcsC)
+	strNameCsC := `-|[0-9]|.`
+	nameCsC := mustCompileCharset(strNameCsC)
 
-	strcsD := `\xB7|[\x0300-\x036F]|[\x203F-\x2040]`
-	csD := mustCompileCharset(strcsD)
+	strNameCsD := `\xB7|[\x0300-\x036F]|[\x203F-\x2040]`
+	nameCsD := mustCompileCharset(strNameCsD)
 
-	charset0 = append(csA, csB...)
+	nameCharset0 = append(nameCsA, nameCsB...)
 
-	charsetN = append(csA, csC...)
-	charsetN = append(charsetN, csB...)
-	charsetN = append(charsetN, csD...)
+	nameCharsetN = append(nameCsA, nameCsC...)
+	nameCharsetN = append(nameCharsetN, nameCsB...)
+	nameCharsetN = append(nameCharsetN, nameCsD...)
+
+	strStyleCsA := `[a-z]|[A-Z]|_|-|[0-9]|[\x00A0-\x00FF]`
+	styleCsA := mustCompileCharset(strStyleCsA)
+	styleCharset = append(styleCharset, styleCsA...)
 }
 
 func mustCompileCharset(_strcharsets string) (_ret []charset) {

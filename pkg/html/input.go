@@ -38,8 +38,7 @@ type InputField struct {
 var _ HTMLComposer = (*InputField)(nil)
 
 func (inputfield *InputField) Tag() *Tag {
-	inputfield.tag.SetName("div")
-	inputfield.tag.attrs.SetClasses("field")
+	inputfield.tag.SetName("div").Attributes().AddClasses("field")
 	return &inputfield.tag
 }
 
@@ -50,17 +49,17 @@ func (inputfield *InputField) WriteBody(out io.Writer) error {
 	// <input>
 	subinput := NewSnippet("input", nil, "")
 	inputattr := subinput.Tag().Attributes().
-		SetClasses("input").
-		SetClassesIf(inputfield.IsRounded, "is-rounded").
+		AddClasses("input").
+		AddClassesIf(inputfield.IsRounded, "is-rounded").
 		SetAttribute("type", "text", true).
 		SetAttributeIf(inputfield.PlaceHolder != "", "placeholder", inputfield.PlaceHolder, true)
 	switch inputfield.State {
 	case "success":
-		inputattr.SetClasses("is-success")
+		inputattr.AddClasses("is-success")
 	case "warning":
-		inputattr.SetClasses("is-warning")
+		inputattr.AddClasses("is-warning")
 	case "error":
-		inputattr.SetClasses("is-danger")
+		inputattr.AddClasses("is-danger")
 	case "readonly":
 		inputattr.SetAttribute("readonly", "", true)
 	}
@@ -77,14 +76,14 @@ func (inputfield *InputField) WriteBody(out io.Writer) error {
 	// <p help>
 	if inputfield.Help != "" {
 		subhelp := NewSnippet("p", nil, inputfield.Help)
-		helpattr := subinput.Tag().Attributes().SetClasses("help")
+		helpattr := subinput.Tag().Attributes().AddClasses("help")
 		switch inputfield.State {
 		case "success":
-			helpattr.SetClasses("is-success")
+			helpattr.AddClasses("is-success")
 		case "warning":
-			helpattr.SetClasses("is-warning")
+			helpattr.AddClasses("is-warning")
 		case "error":
-			helpattr.SetClasses("is-danger")
+			helpattr.AddClasses("is-danger")
 		}
 		inputfield.WriteChildSnippet(out, subhelp)
 	}

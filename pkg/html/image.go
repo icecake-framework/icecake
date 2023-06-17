@@ -76,7 +76,7 @@ func (img *Image) Tag() *Tag {
 	if img.Size != "" {
 		imgsize = "is-" + string(img.Size)
 	}
-	img.tag.Attributes().SetClasses("image " + imgsize)
+	img.tag.Attributes().AddClasses("image " + imgsize)
 
 	return &img.tag
 }

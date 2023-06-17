@@ -27,6 +27,6 @@ var _ HTMLComposer = (*Delete)(nil)
 
 func (del *Delete) Tag() *Tag {
 	del.tag.SetName("button")
-	del.tag.Attributes().SetClasses("delete").setAttribute("aria-label", "delete", true)
+	del.tag.Attributes().AddClasses("delete").SetAttribute("aria-label", "delete", true)
 	return &del.tag
 }

@@ -27,7 +27,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// force id, setup classes, attributes and style
 	out.Reset()
-	s0.Tag().Attributes().SetTabIndex(1).SetStyle("color=red;").SetId("helloworld0").SetClasses("test")
+	s0.Tag().Attributes().SetTabIndex(1).SetStyle("color=red;").SetId("helloworld0").AddClasses("test")
 	WriteSnippet(out, s0, nil, false)
 	require.Equal(t, `<SPAN id="helloworld0" tabIndex=1 class="test" style="color=red;"></SPAN>`, out.String())
 
@@ -54,13 +54,13 @@ func TestComposeBasics(t *testing.T) {
 	// snippet with a tagname, default attributes and custom attributes
 	out.Reset()
 	s2 = new(testsnippet2)
-	s2.Tag().Attributes().SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "", true).SetId("tst").SetClasses("ts2c")
+	s2.Tag().Attributes().SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "", true).SetId("tst").AddClasses("ts2c")
 	WriteSnippet(out, s2, nil, false)
 	require.Equal(t, `<DIV id="tst" tabIndex=1 class="ts2c ts2a ts2b ick-test-snippet2" style="color=red;" a2 a3></DIV>`, out.String())
 
 	// update custom attributes on an existing component
 	out.Reset()
-	s2.Tag().Attributes().SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "", true).SetClasses("ts2a ts2d").RemoveClasses("ts2c").RemoveAttribute("a3")
+	s2.Tag().Attributes().SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "", true).AddClasses("ts2a ts2d").RemoveClasses("ts2c").RemoveAttribute("a3")
 	WriteSnippet(out, s2, nil, false)
 	require.Equal(t, `<DIV id="tst" tabIndex=3 class="ts2a ts2b ick-test-snippet2 ts2d" style="color=blue;" a2 a4></DIV>`, out.String())
 }

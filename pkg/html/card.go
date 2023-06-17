@@ -21,8 +21,7 @@ type Card struct {
 var _ HTMLComposer = (*Card)(nil)
 
 func (card *Card) Tag() *Tag {
-	card.tag.SetName("div")
-	card.tag.Attributes().SetClasses("card")
+	card.tag.SetName("div").Attributes().AddClasses("card")
 	return &card.tag
 }
 

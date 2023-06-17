@@ -94,8 +94,7 @@ func (btn *Button) Tag() *Tag {
 		btn.tag.SetName("button")
 	}
 
-	amap := btn.tag.Attributes()
-	amap.SetClasses("button")
+	amap := btn.tag.Attributes().AddClasses("button")
 
 	href := ""
 	if btn.HRef != nil {
@@ -112,13 +111,13 @@ func (btn *Button) Tag() *Tag {
 	}
 
 	if btn.IsOutlined {
-		amap.SetClasses("is-outlined")
+		amap.AddClasses("is-outlined")
 	}
 	if btn.IsRounded {
-		amap.SetClasses("is-rounded")
+		amap.AddClasses("is-rounded")
 	}
 	if btn.IsLoading {
-		amap.SetClasses("is-loading")
+		amap.AddClasses("is-loading")
 	}
 	amap.SetDisabled(btn.IsDisabled)
 

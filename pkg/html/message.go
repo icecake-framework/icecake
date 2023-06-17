@@ -23,7 +23,7 @@ var _ HTMLComposer = (*Message)(nil)
 
 func (msg *Message) Tag() *Tag {
 	msg.tag.SetName("div")
-	msg.tag.Attributes().SetClasses("message")
+	msg.tag.Attributes().AddClasses("message")
 	return &msg.tag
 }
 

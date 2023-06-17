@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/icecake-framework/icecake/pkg/namepattern"
+	"github.com/icecake-framework/icecake/pkg/stringpattern"
 )
 
 type StringQuotes string
@@ -94,7 +94,7 @@ func ParseAttributes(_alist string) (_pattrs *Attributes, _err error) {
 		strnames, unparsed, _ = strings.Cut(unparsed, "=")
 		names := strings.Fields(strnames)
 		for _, n := range names {
-			if !namepattern.IsValid(n) {
+			if !stringpattern.IsValidName(n) {
 				return nil, fmt.Errorf("attribute name %q is not valid", n)
 			}
 			_pattrs.amap[n] = ""

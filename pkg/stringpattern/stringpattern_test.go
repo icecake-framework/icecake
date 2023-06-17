@@ -1,4 +1,4 @@
-package namepattern
+package stringpattern
 
 import "testing"
 
@@ -31,7 +31,7 @@ func TestIsValidHTMLName(t *testing.T) {
 	}
 
 	for _, tst := range tests {
-		out := IsValid(tst.In)
+		out := IsValidName(tst.In)
 		if out != tst.Target {
 			t.Errorf("%q failed. target: %v --> out: %v", tst.In, tst.Target, out)
 		}
