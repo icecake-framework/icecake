@@ -111,7 +111,7 @@ func TestStringifyAttributeValue(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, `'a"b'`, s)
 
-	s, err = StringifyAttributeValue(`a"b'c`)
+	_, err = StringifyAttributeValue(`a"b'c`)
 	assert.Error(t, err)
 }
 

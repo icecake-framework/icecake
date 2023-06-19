@@ -67,9 +67,9 @@ func (amap AttributeMap) setAttribute(name string, value string, update bool) (e
 	}
 
 	switch name {
-	case "id":
-		id := strings.Trim(value, " ")
-		amap.saveAttribute(name, id, update)
+	case "id", "name":
+		value = strings.Trim(value, " ")
+		amap.saveAttribute(name, value, update)
 	case "class":
 		if update {
 			amap.ResetClasses()
@@ -93,7 +93,7 @@ func (amap AttributeMap) setAttribute(name string, value string, update bool) (e
 // If the name or the value are not valid nothing is created and a log is printed out if verbose mode is on.
 // Use CheckAttribute to check name and value validity.
 //
-// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive https://www.w3.org/TR/2010/WD-html-markup-20101019/documents.html#:~:text=Attribute%20names%20for%20HTML%20elements%20must%20exactly%20match%20the%20names,attribute%20names%20are%20case%2Dsensitive.
+// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
 func (amap AttributeMap) SetAttributeIf(condition bool, name string, value string, update bool) AttributeMap {
 	if condition {
 		amap.SetAttribute(name, value, update)
@@ -168,7 +168,6 @@ func (amap AttributeMap) Id() string {
 //
 // SetId returns the map to allow chainning. SetId never returns an error.
 // If the id is not valid nothing is setted and a log is printed out if verbose mode is on.
-// Use CheckAttribute to check name and value validity.
 func (amap AttributeMap) SetId(id string) AttributeMap {
 	err := amap.setAttribute("id", id, true)
 	verbose.Error("SetId", err)
@@ -179,6 +178,23 @@ func (amap AttributeMap) SetId(id string) AttributeMap {
 // "ick-" is used to prefix the returned id if prefix is empty.
 func (amap AttributeMap) SetUniqueId(prefix string) {
 	amap.saveAttribute("id", registry.GetUniqueId(prefix), true)
+}
+
+// Name returns the name attribute if any
+func (amap AttributeMap) Name() string {
+	return amap["name"]
+}
+
+// SetName sets or overwrites the name attribute. In HTML5 name is case sensitive.
+// blanks at the ends of the id are automatically trimmed.
+// if name is empty, the name attribute is removed.
+//
+// SetName returns the map to allow chainning.
+// If the name is not valid nothing is setted and a log is printed out if verbose mode is on.
+func (amap AttributeMap) SetName(name string) AttributeMap {
+	err := amap.setAttribute("name", name, true)
+	verbose.Error("SetName", err)
+	return amap
 }
 
 // Classes returns the class attribute as a full string.
@@ -322,7 +338,7 @@ func checkstyle(style string) error {
 
 // Is returns true is the attribute exists and if it's value is not false nor 0.
 //
-// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive https://www.w3.org/TR/2010/WD-html-markup-20101019/documents.html#:~:text=Attribute%20names%20for%20HTML%20elements%20must%20exactly%20match%20the%20names,attribute%20names%20are%20case%2Dsensitive.
+// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
 func (amap AttributeMap) Is(name string) bool {
 	name = helper.Normalize(name)
 	value, found := amap[name]
@@ -417,7 +433,7 @@ func (amap AttributeMap) String() string {
 //
 // See the best practice (https://stackoverflow.com/questions/925994/what-characters-are-allowed-in-an-html-attribute-name) for rules we've applied for character allowed in Name.
 //
-// blanks at the ends of the name are automatically trimmed. Attributes name are case-insensitve https://www.w3.org/TR/2010/WD-html-markup-20101019/documents.html#:~:text=Attribute%20names%20for%20HTML%20elements,attribute%20names%20are%20case%2Dinsensitive.
+// blanks at the ends of the name are automatically trimmed. Attributes name are case-insensitve.
 func CheckAttribute(name string, value string) (err error) {
 	name = helper.Normalize(name)
 	return checkAttribute(name, value)
@@ -425,10 +441,10 @@ func CheckAttribute(name string, value string) (err error) {
 
 func checkAttribute(name string, value string) (err error) {
 	switch name {
-	case "id":
-		id := strings.Trim(value, " ")
-		if id == "" || !stringpattern.IsValidName(id) {
-			err = fmt.Errorf("id %q is not valid", id)
+	case "id", "name":
+		value := strings.Trim(value, " ")
+		if value == "" || !stringpattern.IsValidName(value) {
+			err = fmt.Errorf("%s %q is not valid", name, value)
 		}
 	case "class":
 		for _, c := range strings.Fields(value) {
@@ -486,8 +502,8 @@ func StringifyAttributeValue(value string) (string, error) {
 	return delim + value + delim, nil
 }
 
-// ParseAttributes tries to parse attributes into returns AttributeMap and ignore errors.
-// If verbose mode is on errors are logged out.
+// ParseAttributes tries to parse attributes and ignore errors.
+// errors are logged out if verbose mode is on.
 func ParseAttributes(alist string) AttributeMap {
 	amap, err := TryParseAttributes(alist)
 	verbose.Error("ParseAttributes", err)
@@ -500,7 +516,7 @@ func ParseAttributes(alist string) AttributeMap {
 // The value can be delimited by quotes ( " or ' ) and in that case may contains whitespaces.
 // The string is processed until the end or an error occurs when invalid char is met.
 //
-// Use ParseAttributes to chain call and ignore errors
+// Use ParseAttributes to chain calls and ignore errors.
 func TryParseAttributes(alist string) (amap AttributeMap, err error) {
 	amap = make(AttributeMap)
 	var strnames string
