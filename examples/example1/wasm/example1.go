@@ -33,7 +33,7 @@ func main() {
 	dom.MountCSSLinks()
 
 	// register a tiny html snippet
-	html.RegisterComposer("ick-icecake-brand", html.NewSnippet("a", html.TryParseAttributes(`class="brand" href="https://icecake.net"`), "<strong>Icecake</strong>"), nil)
+	html.RegisterComposer("ick-icecake-brand", html.NewSnippet("a", html.ParseAttributes(`class="brand" href="https://icecake.net"`), "<strong>Icecake</strong>"), nil)
 
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.

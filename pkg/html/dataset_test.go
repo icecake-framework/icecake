@@ -8,10 +8,11 @@ import (
 // testsnippetid
 type testsnippetid struct{ HTMLSnippet }
 
-func (s testsnippetid) Tag() *Tag {
+func (s *testsnippetid) Tag() *Tag {
 	s.Tag().SetName("span")
 	s.Tag().Attributes().SetId("IdTemplate1")
-	return s.Tag()
+	// FIXME
+	return nil
 }
 
 // testsnippet1
@@ -29,7 +30,7 @@ func (tst *testsnippet1) WriteBody(out io.Writer) error {
 type testsnippet2 struct{ testsnippet1 }
 
 func (testsnippet2) Tag() *Tag {
-	return NewTag("div", TryParseAttributes(`class="ts2a ts2b" tabIndex=2 style="display=test;" a2`))
+	return NewTag("div", ParseAttributes(`class="ts2a ts2b" tabIndex=2 style="display=test;" a2`))
 }
 
 // testsnippet3

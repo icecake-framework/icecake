@@ -82,7 +82,7 @@ func TestUnfoldBody1(t *testing.T) {
 	out := new(bytes.Buffer)
 
 	out.Reset()
-	s := NewSnippet("div", TryParseAttributes("test"), "")
+	s := NewSnippet("div", ParseAttributes("test"), "")
 	registry.AddRegistryEntry("ick-test-snippet0", s, nil)
 	err := unfoldHTML(nil, out, []byte("<ick-test-snippet0/>"), nil, 0)
 	require.NoError(t, err)

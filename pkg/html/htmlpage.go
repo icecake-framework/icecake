@@ -27,19 +27,19 @@ func NewHtml5Page(_lang string) *Html5Page {
 
 // AddMeta add a meta tag
 func (f *Html5Page) AddHeadMeta(attributes string) *Html5Page {
-	meta := NewSnippet("meta", TryParseAttributes(attributes), "")
+	meta := NewSnippet("meta", ParseAttributes(attributes), "")
 	f.HeadItems = append(f.HeadItems, meta)
 	return f
 }
 
 func (f *Html5Page) AddHeadLink(attributes string) *Html5Page {
-	link := NewSnippet("link", TryParseAttributes(attributes), "")
+	link := NewSnippet("link", ParseAttributes(attributes), "")
 	f.HeadItems = append(f.HeadItems, link)
 	return f
 }
 
 func (f *Html5Page) AddHeadScript(attributes string) *Html5Page {
-	script := NewSnippet("script", TryParseAttributes(attributes), "")
+	script := NewSnippet("script", ParseAttributes(attributes), "")
 	f.HeadItems = append(f.HeadItems, script)
 	return f
 }

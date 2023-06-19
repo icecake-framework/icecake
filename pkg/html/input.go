@@ -44,7 +44,7 @@ func (inputfield *InputField) Tag() *Tag {
 
 func (inputfield *InputField) WriteBody(out io.Writer) error {
 	// <label>
-	inputfield.WriteChildSnippetIf(inputfield.Label != "", out, NewSnippet("label", TryParseAttributes(`class="label"`), inputfield.Label))
+	inputfield.WriteChildSnippetIf(inputfield.Label != "", out, NewSnippet("label", ParseAttributes(`class="label"`), inputfield.Label))
 
 	// <input>
 	subinput := NewSnippet("input", nil, "")
@@ -66,7 +66,7 @@ func (inputfield *InputField) WriteBody(out io.Writer) error {
 	inputattr.SetAttributeIf(inputfield.Value != "", "value", inputfield.Value, true)
 
 	// <div control>
-	subcontrol := NewSnippet("div", TryParseAttributes("class=control"), "")
+	subcontrol := NewSnippet("div", ParseAttributes("class=control"), "")
 	// subcontrol.SetClassesIf(inputfield.State == INPUT_LOADING, "is-loading")
 
 	// inputfield.subcontrol.SetBodyTemplate(inputfield.RenderChildSnippet(&inputfield.subinput))
