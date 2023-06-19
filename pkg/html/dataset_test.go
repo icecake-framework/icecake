@@ -9,10 +9,9 @@ import (
 type testsnippetid struct{ HTMLSnippet }
 
 func (s *testsnippetid) Tag() *Tag {
-	s.Tag().SetName("span")
-	s.Tag().Attributes().SetId("IdTemplate1")
-	// FIXME
-	return nil
+	s.HTMLSnippet.Tag().SetName("span")
+	s.HTMLSnippet.Tag().Attributes().SetId("IdTemplate1")
+	return s.HTMLSnippet.Tag()
 }
 
 // testsnippet1

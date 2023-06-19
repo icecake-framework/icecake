@@ -6,7 +6,7 @@ import (
 	"github.com/icecake-framework/icecake/internal/helper"
 )
 
-// Tag of an HTML element
+// Tag represents the tag of an HTML element with its attributes.
 type Tag struct {
 	name        string       // internal name, use the factory or SetName to update it
 	selfClosing bool         // specify if this is a selfclosing tag, automatically setup by SetName. Use SetSelfClosing to force your value.
@@ -14,6 +14,7 @@ type Tag struct {
 	virtualid   string       // used internally by the rendering process but never rendered itself.
 }
 
+// Tag factory setting the tag named and allowing to assign a map of attibutes.
 func NewTag(name string, amap AttributeMap) *Tag {
 	tag := new(Tag)
 	tag.SetName(name)
