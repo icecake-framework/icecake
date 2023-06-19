@@ -64,7 +64,7 @@ func (tag *Tag) Attributes() AttributeMap {
 // if the tag name is empty, nothing is rendered and there's no error.
 // Returns selfclosed if the rendered opening tag as been closed too.
 // errors mays occurs from the writer only.
-func (tag Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
+func (tag *Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
 	if tag.name != "" {
 		_, err = WriteStrings(out, "<", tag.name, " ", tag.Attributes().String(), ">")
 		if err == nil {
@@ -77,7 +77,7 @@ func (tag Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
 // RenderClosing renders the closing tag HTML string to out.
 // if the tag name is empty or the tag is a selclosing one, nothing is rendered and there's no error.
 // errors mays occurs from the writer only.
-func (tag Tag) RenderClosing(out io.Writer) (err error) {
+func (tag *Tag) RenderClosing(out io.Writer) (err error) {
 	if tag.name != "" && !tag.selfClosing {
 		_, err = WriteStrings(out, "</", tag.name, ">")
 	}
