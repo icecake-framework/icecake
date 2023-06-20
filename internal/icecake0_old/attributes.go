@@ -222,8 +222,8 @@ func (_attrs Attributes) Spellcheck() bool {
 // TabIndex represents the tab order of the current element.
 //
 // Tab order is as follows:
-//  1. Elements with a positive tabIndex. Elements that have identical tabIndex values should be navigated in the order they appear. Navigation proceeds from the lowest tabIndex to the highest tabIndex.
-//  1. Elements that do not support the tabIndex attribute or support it and assign tabIndex to 0, in the order they appear.
+//  1. Elements with a positive tabindex. Elements that have identical tabindex values should be navigated in the order they appear. Navigation proceeds from the lowest tabindex to the highest tabindex.
+//  1. Elements that do not support the tabindex attribute or support it and assign tabindex to 0, in the order they appear.
 //  1. Elements that are disabled do not participate in the tabbing order.
 //
 // Values don't need to be sequential, nor must they begin with any particular value.
@@ -231,7 +231,7 @@ func (_attrs Attributes) Spellcheck() bool {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (_attrs Attributes) TabIndex() int {
-	stri, _ := _attrs.Attribute("tabIndex")
+	stri, _ := _attrs.Attribute("tabindex")
 	i, _ := strconv.Atoi(string(stri))
 	return i
 }
@@ -239,8 +239,8 @@ func (_attrs Attributes) TabIndex() int {
 // TabIndex represents the tab order of the current element.
 //
 // Tab order is as follows:
-//  1. Elements with a positive tabIndex. Elements that have identical tabIndex values should be navigated in the order they appear. Navigation proceeds from the lowest tabIndex to the highest tabIndex.
-//  1. Elements that do not support the tabIndex attribute or support it and assign tabIndex to 0, in the order they appear.
+//  1. Elements with a positive tabindex. Elements that have identical tabindex values should be navigated in the order they appear. Navigation proceeds from the lowest tabindex to the highest tabindex.
+//  1. Elements that do not support the tabindex attribute or support it and assign tabindex to 0, in the order they appear.
 //  1. Elements that are disabled do not participate in the tabbing order.
 //
 // Values don't need to be sequential, nor must they begin with any particular value.
@@ -248,7 +248,7 @@ func (_attrs Attributes) TabIndex() int {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (_attrs *Attributes) SetTabIndex(_index int) *Attributes {
-	_attrs.SetAttribute("tabIndex", StringQuotes(strconv.Itoa(_index)))
+	_attrs.SetAttribute("tabindex", StringQuotes(strconv.Itoa(_index)))
 	return _attrs
 }
 

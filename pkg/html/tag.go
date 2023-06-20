@@ -12,6 +12,8 @@ type Tag struct {
 	selfClosing bool         // specify if this is a selfclosing tag, automatically setup by SetName. Use SetSelfClosing to force your value.
 	attrs       AttributeMap // map of all tag attributes of any type, including the id if there's one.
 	virtualid   string       // used internally by the rendering process but never rendered itself.
+	deep        int          // deepness of the tag in a tag tree
+	seq         int          // sequence of the tag in a tag tree
 }
 
 // Tag factory setting the tag named and allowing to assign a map of attibutes.
@@ -29,7 +31,7 @@ func NewTag(name string, amap AttributeMap) *Tag {
 // HasName returns if the tag has a name or not.
 // A tag without name won't be rendered.
 func (tag Tag) HasName() bool {
-	return tag.name == ""
+	return tag.name != ""
 }
 
 // SetName normalizes the name and automaticlally update the SelfClosing attribute according to standard HTML5 specifications
@@ -56,6 +58,20 @@ func (tag *Tag) SetSelfClosing(sc bool) *Tag {
 func (tag *Tag) Attributes() AttributeMap {
 	if tag.attrs == nil {
 		tag.attrs = make(AttributeMap)
+	}
+	return tag.attrs
+}
+
+// ParseAttributes tries to parse attributes to the tag and ignore errors.
+// alist will be added or will update existing tag attributes.
+// errors are logged out if verbose mode is on.
+func (tag *Tag) ParseAttributes(alist string) AttributeMap {
+	if tag.attrs == nil {
+		tag.attrs = make(AttributeMap)
+	}
+	amap := ParseAttributes(alist)
+	for k, v := range amap {
+		tag.attrs[k] = v
 	}
 	return tag.attrs
 }

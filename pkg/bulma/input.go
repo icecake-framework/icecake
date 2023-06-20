@@ -1,9 +1,13 @@
-package html
+package bulma
 
-import "io"
+import (
+	"io"
+
+	"github.com/icecake-framework/icecake/pkg/html"
+)
 
 func init() {
-	RegisterComposer("ick-input", &InputField{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-input", &InputField{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
 }
 
 type INPUT_STATE string
@@ -18,11 +22,11 @@ const (
 )
 
 type InputField struct {
-	HTMLSnippet
+	html.HTMLSnippet
 
-	Label       HTMLString // Optional
-	PlaceHolder string     // Optional
-	Help        HTMLString // Optional
+	Label       html.HTMLString // Optional
+	PlaceHolder string          // Optional
+	Help        html.HTMLString // Optional
 
 	// The input value
 	Value string
@@ -35,23 +39,22 @@ type InputField struct {
 }
 
 // Ensure inputfield implements HTMLComposer interface
-var _ HTMLComposer = (*InputField)(nil)
+var _ html.HTMLComposer = (*InputField)(nil)
 
-func (inputfield *InputField) Tag() *Tag {
-	inputfield.tag.SetName("div").Attributes().AddClasses("field")
-	return &inputfield.tag
+func (inputfield *InputField) BuildTag(tag *html.Tag) {
+	tag.SetName("div").Attributes().AddClasses("field")
 }
 
-func (inputfield *InputField) WriteBody(out io.Writer) error {
+func (inputfield *InputField) RenderContent(out io.Writer) error {
 	// <label>
-	inputfield.WriteChildSnippetIf(inputfield.Label != "", out, NewSnippet("label", ParseAttributes(`class="label"`), inputfield.Label))
+	inputfield.RenderChildSnippetIf(!inputfield.Label.IsEmpty(), out, html.NewSnippet("label", html.ParseAttributes(`class="label"`)).SetContent(&inputfield.Label))
 
 	// <input>
-	subinput := NewSnippet("input", nil, "")
+	subinput := html.NewSnippet("input", nil)
 	inputattr := subinput.Tag().Attributes().
 		AddClasses("input").
 		AddClassesIf(inputfield.IsRounded, "is-rounded").
-		SetAttribute("type", "text", true).
+		SetAttribute("type", "text").
 		SetAttributeIf(inputfield.PlaceHolder != "", "placeholder", inputfield.PlaceHolder, true)
 	switch inputfield.State {
 	case "success":
@@ -61,21 +64,21 @@ func (inputfield *InputField) WriteBody(out io.Writer) error {
 	case "error":
 		inputattr.AddClasses("is-danger")
 	case "readonly":
-		inputattr.SetAttribute("readonly", "", true)
+		inputattr.SetAttribute("readonly", "")
 	}
 	inputattr.SetAttributeIf(inputfield.Value != "", "value", inputfield.Value, true)
 
 	// <div control>
-	subcontrol := NewSnippet("div", ParseAttributes("class=control"), "")
+	subcontrol := html.NewSnippet("div", html.ParseAttributes("class=control"))
 	// subcontrol.SetClassesIf(inputfield.State == INPUT_LOADING, "is-loading")
 
 	// inputfield.subcontrol.SetBodyTemplate(inputfield.RenderChildSnippet(&inputfield.subinput))
 
-	inputfield.WriteChildSnippet(out, subcontrol)
+	inputfield.RenderChildSnippet(out, subcontrol)
 
 	// <p help>
-	if inputfield.Help != "" {
-		subhelp := NewSnippet("p", nil, inputfield.Help)
+	if !inputfield.Help.IsEmpty() {
+		subhelp := html.NewSnippet("p", nil).SetContent(&inputfield.Help)
 		helpattr := subinput.Tag().Attributes().AddClasses("help")
 		switch inputfield.State {
 		case "success":
@@ -85,7 +88,7 @@ func (inputfield *InputField) WriteBody(out io.Writer) error {
 		case "error":
 			helpattr.AddClasses("is-danger")
 		}
-		inputfield.WriteChildSnippet(out, subhelp)
+		inputfield.RenderChildSnippet(out, subhelp)
 	}
 
 	return nil

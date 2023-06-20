@@ -1,15 +1,16 @@
-package html
+package bulma
 
 import (
 	"github.com/icecake-framework/icecake/pkg/clock"
+	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 func init() {
-	RegisterComposer("ick-delete", &Delete{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-delete", &Delete{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
 }
 
 type Delete struct {
-	HTMLSnippet
+	html.HTMLSnippet
 
 	// the element id to remove from the DOM
 	TargetID string
@@ -23,10 +24,9 @@ type Delete struct {
 }
 
 // Ensure Delete implements HTMLComposer interface
-var _ HTMLComposer = (*Delete)(nil)
+var _ html.HTMLComposer = (*Delete)(nil)
 
-func (del *Delete) Tag() *Tag {
-	del.tag.SetName("button")
-	del.tag.Attributes().AddClasses("delete").SetAttribute("aria-label", "delete", true)
-	return &del.tag
+func (del *Delete) BuildTag(tag *html.Tag) {
+	tag.SetName("button")
+	tag.Attributes().AddClasses("delete").SetAttribute("aria-label", "delete")
 }

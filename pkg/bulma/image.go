@@ -1,8 +1,10 @@
-package html
+package bulma
 
 import (
 	"io"
 	"net/url"
+
+	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 /******************************************************************************
@@ -10,7 +12,7 @@ import (
 ******************************************************************************/
 
 func init() {
-	RegisterComposer("ick-image", &Image{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-image", &Image{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
 }
 
 type IMG_SIZE string
@@ -44,16 +46,16 @@ const (
 
 // Image is a typical img element embedded into a figure container specifying the image size
 type Image struct {
-	HTMLSnippet
+	html.HTMLSnippet
 
-	Src       *url.URL   // the url for the source of the image
-	Alt       HTMLString // the alternative text
-	Size      IMG_SIZE   // the size or the ratio of the image
-	IsRounded bool       // Rounded image style
+	Src       *url.URL // the url for the source of the image
+	Alt       string   // the alternative text
+	Size      IMG_SIZE // the size or the ratio of the image
+	IsRounded bool     // Rounded image style
 }
 
 // Ensure Image implements HTMLComposer interface
-var _ HTMLComposer = (*Image)(nil)
+var _ html.HTMLComposer = (*Image)(nil)
 
 func NewImage(_rawUrl string, _size IMG_SIZE) *Image {
 	img := new(Image)
@@ -69,20 +71,18 @@ func (_img *Image) ParseSrcURL(_rawUrl string) (_err error) {
 	return
 }
 
-func (img *Image) Tag() *Tag {
-	img.tag.SetName("figure")
+func (img *Image) BuildTag(tag *html.Tag) {
+	tag.SetName("figure")
 
 	var imgsize string
 	if img.Size != "" {
 		imgsize = "is-" + string(img.Size)
 	}
-	img.tag.Attributes().AddClasses("image " + imgsize)
-
-	return &img.tag
+	tag.Attributes().AddClasses("image " + imgsize)
 }
 
 // Body returns any HTML string to unfold inside the html element
-func (_img *Image) WriteBody(out io.Writer) error {
+func (_img *Image) RenderContent(out io.Writer) error {
 	// func (_img *Image) BodyTemplate() (body HTMLString) {
 	var htmlRounded string
 	if _img.IsRounded {
@@ -93,12 +93,12 @@ func (_img *Image) WriteBody(out io.Writer) error {
 		src = _img.Src.String()
 	}
 	// HACK: use NewSnippet
-	WriteString(out, `<img `)
-	WriteString(out, htmlRounded)
-	WriteString(out, `role="img" focusable="false" `)
-	WriteStringsIf(src != "", out, `src="`, src, `" `)
-	WriteStringsIf(_img.Alt != "", out, `alt="`, string(_img.Alt), `" `)
-	WriteString(out, `>`)
+	html.WriteString(out, `<img `)
+	html.WriteString(out, htmlRounded)
+	html.WriteString(out, `role="img" focusable="false" `)
+	html.WriteStringsIf(src != "", out, `src="`, src, `" `)
+	html.WriteStringsIf(_img.Alt != "", out, `alt="`, _img.Alt, `" `)
+	html.WriteString(out, `>`)
 	return nil
 }
 

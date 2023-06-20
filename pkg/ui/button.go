@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/html"
 )
@@ -12,19 +13,19 @@ import (
 //
 // The IsDisabled property is directly handled by the embedded UISnippet.
 type Button struct {
-	*html.Button
+	*bulma.Button
 	DOM dom.Element
 }
 
 func NewButton(_title html.HTMLString) *Button {
 	btn := new(Button)
-	btn.Button = html.NewButton(_title)
+	btn.Button = bulma.NewButton(_title)
 	return btn
 }
 
 func NewButtonLink(_title html.HTMLString, _rawUrl string) *Button {
 	btn := new(Button)
-	btn.Button = html.NewButtonLink(_title, _rawUrl)
+	btn.Button = bulma.NewButtonLink(_title, _rawUrl)
 	return btn
 }
 

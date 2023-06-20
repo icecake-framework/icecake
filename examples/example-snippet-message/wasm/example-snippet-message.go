@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/html"
 )
@@ -16,26 +17,26 @@ func main() {
 
 	dom.MountCSSLinks()
 
-	msg1 := &html.Message{Message: "This is a simple message without header."}
+	msg1 := &bulma.Message{Message: html.String("This is a simple message without header.")}
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg1, nil)
 
-	msg2 := &html.Message{
-		Header:  "simple message",
-		Message: "This is a simple message with a header.",
+	msg2 := &bulma.Message{
+		Header:  html.String("simple message"),
+		Message: html.String("This is a simple message with a header."),
 	}
 	msg2.Tag().Attributes().AddClasses("is-info")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 
-	msg3 := &html.Message{
-		Header:    "message with delete button",
+	msg3 := &bulma.Message{
+		Header:    html.String("message with delete button"),
 		CanDelete: true,
-		Message:   "This message use the BULMA <i>is-warning</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message.",
+		Message:   html.String("This message use the BULMA <i>is-warning</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message."),
 	}
 	msg3.Tag().Attributes().AddClasses("is-warning")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg3, nil)
 
-	msg4 := &html.Message{
-		Header:    "only header",
+	msg4 := &bulma.Message{
+		Header:    html.String("only header"),
 		CanDelete: true,
 	}
 	msg4.Tag().Attributes().AddClasses("is-success")
@@ -43,7 +44,7 @@ func main() {
 	msg4.Tag().Attributes().SwitchClass("is-success", "is-danger")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg4, nil)
 
-	msg5 := &html.Message{}
+	msg5 := &bulma.Message{}
 	msg5.Tag().Attributes().AddClasses("is-danger")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg5, nil)
 

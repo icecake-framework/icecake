@@ -1,12 +1,14 @@
-package html
+package bulma
 
 import (
 	"io"
 	"net/url"
+
+	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 func init() {
-	RegisterComposer("ick-navbar", &Navbar{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-navbar", &Navbar{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
 }
 
 type NAVBARITEM_TYPE string
@@ -19,7 +21,7 @@ const (
 )
 
 type NavbarItem struct {
-	HTMLSnippet
+	html.HTMLSnippet
 
 	// The Item Type defines the location of the item in the navbar or if it's a simple divider.
 	// If ItemType is empty, NAVBARIT_START is used for rendering.
@@ -33,48 +35,53 @@ type NavbarItem struct {
 	// ImageSrc defines an optional image to display at the begining of the Item
 	ImageSrc *url.URL // the url for the source of the image
 
-	// Body
-	Body HTMLString
+	// Item Content
+	Content html.HTMLComposer
+
+	items []*NavbarItem // list of navbar items
 }
 
 // Ensure NavbarItem implements HTMLComposer interface
-var _ HTMLComposer = (*NavbarItem)(nil)
+var _ html.HTMLComposer = (*NavbarItem)(nil)
 
-func (item *NavbarItem) Tag() *Tag {
+func (item *NavbarItem) BuildTag(tag *html.Tag) {
 	if item.ItemType == NAVBARIT_DIVIDER {
-		item.tag.SetName("hr")
+		tag.SetName("hr")
 	} else {
 		if item.HRef != nil && item.HRef.String() != "" {
-			item.tag.SetName("a")
+			tag.SetName("a")
 		} else {
-			item.tag.SetName("div")
+			tag.SetName("div")
 		}
 	}
 
-	amap := item.tag.Attributes()
+	amap := tag.Attributes()
 	if item.ItemType == NAVBARIT_DIVIDER {
 		amap.AddClasses("navbar-divider")
 	} else {
 		amap.AddClasses("navbar-item")
 		if item.HRef != nil {
 			if href := item.HRef.String(); href != "" {
-				amap.SetAttribute("href", href, true)
+				amap.SetAttribute("href", href)
 			}
 		}
 	}
-
-	return &item.tag
 }
 
-func (item *NavbarItem) WriteBody(out io.Writer) error {
+func (item *NavbarItem) RenderContent(out io.Writer) error {
 	if item.ItemType != NAVBARIT_DIVIDER {
 		if item.ImageSrc != nil {
 			imgsrc := item.ImageSrc.String()
-			WriteStringsIf(imgsrc != "", out, `<img src="`, imgsrc, `" width="auto" height="28">`)
+			html.WriteStringsIf(imgsrc != "", out, `<img src="`, imgsrc, `" width="auto" height="28">`)
 		}
-		item.UnfoldHTML(out, item.Body, nil)
+		item.RenderChildSnippet(out, item.Content)
 	}
 	return nil
+}
+
+func (item *NavbarItem) AddItems(items ...*NavbarItem) *NavbarItem {
+	item.items = append(item.items, items...)
+	return item
 }
 
 // ParseHRef tries to parse rawUrl to HRef ignoring error.
@@ -91,9 +98,9 @@ func (item *NavbarItem) ParseImageSrc(rawUrl string) *NavbarItem {
 
 // Navbar is an UISnippet registered with the ick-tag `ick-navbar`.
 type Navbar struct {
-	HTMLSnippet
+	html.HTMLSnippet
 
-	items []*NavbarItem
+	items []*NavbarItem // list of navbar items
 
 	// Styling
 	IsTransparent bool
@@ -101,52 +108,51 @@ type Navbar struct {
 }
 
 // Ensure Navbar implements HTMLComposer interface
-var _ HTMLComposer = (*Navbar)(nil)
+var _ html.HTMLComposer = (*Navbar)(nil)
 
-func (_nav *Navbar) AddItems(_items ...*NavbarItem) *Navbar {
-	for _, item := range _items {
-		_nav.items = append(_nav.items, item)
-	}
+// AddItems adds items to the navbar .
+func (_nav *Navbar) AddItems(items ...*NavbarItem) *Navbar {
+	_nav.items = append(_nav.items, items...)
 	return _nav
 }
 
-func (nav *Navbar) Tag() *Tag {
-	nav.tag.SetName("nav").Attributes().
-		AddClasses("navbar").SetAttribute("role", "navigation", true).
+// BuildTag sets navbar tag
+func (nav *Navbar) BuildTag(tag *html.Tag) {
+	tag.SetName("nav").Attributes().
+		AddClasses("navbar").SetAttribute("role", "navigation").
 		AddClassesIf(nav.IsTransparent, "is-transparent").
 		AddClassesIf(nav.HasShadow, "has-shadow")
-	return &nav.tag
 }
 
-func (nav *Navbar) WriteBody(out io.Writer) error {
+func (nav *Navbar) RenderContent(out io.Writer) error {
 	// brand area
-	WriteString(out, `<div class="navbar-brand">`)
+	html.WriteString(out, `<div class="navbar-brand">`)
 
 	// brand items
 	for _, item := range nav.items {
-		nav.WriteChildSnippetIf(item.ItemType == NAVBARIT_BRAND, out, item)
+		nav.RenderChildSnippetIf(item.ItemType == NAVBARIT_BRAND, out, item)
 	}
 	// burger
-	WriteStrings(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
-	WriteString(out, `</div>`)
+	html.WriteStrings(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
+	html.WriteString(out, `</div>`)
 
 	// menu area
 	menuid := nav.Id() + `menu`
-	WriteStrings(out, `<div class="navbar-menu" id="`, menuid, `">`)
+	html.WriteStrings(out, `<div class="navbar-menu" id="`, menuid, `">`)
 
-	WriteStrings(out, `<div class="navbar-start">`)
+	html.WriteStrings(out, `<div class="navbar-start">`)
 	for _, item := range nav.items {
-		nav.WriteChildSnippetIf(item.ItemType == NAVBARIT_START, out, item)
+		nav.RenderChildSnippetIf(item.ItemType == NAVBARIT_START, out, item)
 	}
-	WriteString(out, `</div>`)
+	html.WriteString(out, `</div>`)
 
-	WriteStrings(out, `<div class="navbar-end">`)
+	html.WriteStrings(out, `<div class="navbar-end">`)
 	for _, item := range nav.items {
-		nav.WriteChildSnippetIf(item.ItemType == NAVBARIT_END, out, item)
+		nav.RenderChildSnippetIf(item.ItemType == NAVBARIT_END, out, item)
 	}
-	WriteString(out, `</div>`)
+	html.WriteString(out, `</div>`)
 
-	WriteString(out, `</div>`) // navbar-menu
+	html.WriteString(out, `</div>`) // navbar-menu
 
 	return nil
 }

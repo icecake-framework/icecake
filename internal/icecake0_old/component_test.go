@@ -14,7 +14,7 @@ type testcomponent struct {
 
 func (*testcomponent) RegisterName() string { return "ick-test" }
 func (*testcomponent) Container(_compid string) (_tagname string, _contclasses string, _contattrs string, _contstyle string) {
-	return "DIV", "test", "hidden tabIndex=2", "display=test;"
+	return "DIV", "test", "hidden tabindex=2", "display=test;"
 }
 
 type testinfinite struct {
@@ -57,7 +57,7 @@ func TestComposeFlat(t *testing.T) {
 	txt1.SetupAttributes().SetTabIndex(1)
 	*txt1.SetupStyle() = "color=red;"
 	ComposeHtmlE(out, txt1, nil)
-	require.Equal(t, "<SPAN class='text' id='helloworld0' style='color=red;' tabIndex=1>Hello World</SPAN>", out.String())
+	require.Equal(t, "<SPAN class='text' id='helloworld0' style='color=red;' tabindex=1>Hello World</SPAN>", out.String())
 
 	// classes combined setup classes and container class, priority to setup class
 	out.Reset()
@@ -66,7 +66,7 @@ func TestComposeFlat(t *testing.T) {
 	txt2.SetupAttributes().SetTabIndex(1)
 	*txt2.SetupStyle() = "color=red;"
 	ComposeHtmlE(out, txt2, nil)
-	require.Equal(t, "<DIV class='test text' hidden id='testcomponent-0' style='color=red;display=test;' tabIndex=1></DIV>", out.String())
+	require.Equal(t, "<DIV class='test text' hidden id='testcomponent-0' style='color=red;display=test;' tabindex=1></DIV>", out.String())
 }
 
 func TestComposeEmbedded(t *testing.T) {
@@ -91,24 +91,24 @@ func TestComposeEmbedded(t *testing.T) {
 			err:  false},
 
 		{name: "setup attributes",
-			in:   `Hello <ick-text style='color=red;' tabIndex=1 Content="Bob" class='text'/>`,
-			want: `<SPAN id='ick-text-7'>Hello <SPAN class='text' id='ick-text-8' style='color=red;' tabIndex=1>Bob</SPAN></SPAN>`,
+			in:   `Hello <ick-text style='color=red;' tabindex=1 Content="Bob" class='text'/>`,
+			want: `<SPAN id='ick-text-7'>Hello <SPAN class='text' id='ick-text-8' style='color=red;' tabindex=1>Bob</SPAN></SPAN>`,
 			err:  false},
 		{name: "overloadind class",
 			in:   `<ick-test class='text'/>`,
-			want: `<SPAN id='ick-text-9'><DIV class='test text' hidden id='ick-test-0' style='display=test;' tabIndex=2></DIV></SPAN>`,
+			want: `<SPAN id='ick-text-9'><DIV class='test text' hidden id='ick-test-0' style='display=test;' tabindex=2></DIV></SPAN>`,
 			err:  false},
 		{name: "overloadind attribute",
-			in:   `Hello <ick-test tabIndex=1/>`,
-			want: `<SPAN id='ick-text-10'>Hello <DIV class='test' hidden id='ick-test-1' style='display=test;' tabIndex=1></DIV></SPAN>`,
+			in:   `Hello <ick-test tabindex=1/>`,
+			want: `<SPAN id='ick-text-10'>Hello <DIV class='test' hidden id='ick-test-1' style='display=test;' tabindex=1></DIV></SPAN>`,
 			err:  false},
 		{name: "overloadind style",
 			in:   `Hello <ick-test style='color=red;'/>`,
-			want: `<SPAN id='ick-text-11'>Hello <DIV class='test' hidden id='ick-test-2' style='color=red;display=test;' tabIndex=2></DIV></SPAN>`,
+			want: `<SPAN id='ick-text-11'>Hello <DIV class='test' hidden id='ick-test-2' style='color=red;display=test;' tabindex=2></DIV></SPAN>`,
 			err:  false},
 		{name: "overloadind id",
 			in:   `Hello <ick-test id='forcedid'/>`,
-			want: `<SPAN id='ick-text-12'>Hello <DIV class='test' hidden id='forcedid' style='display=test;' tabIndex=2></DIV></SPAN>`,
+			want: `<SPAN id='ick-text-12'>Hello <DIV class='test' hidden id='forcedid' style='display=test;' tabindex=2></DIV></SPAN>`,
 			err:  false},
 		{name: "recursive",
 			in:   `<ick-infinite/>`,
@@ -177,11 +177,11 @@ func TestUnfoldBody(t *testing.T) {
 			err:  false},
 		{name: "icktag1",
 			in:   `<ick-test/>`,
-			want: `<DIV class='test' hidden id='ick-test-0' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV class='test' hidden id='ick-test-0' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "icktag2",
 			in:   `<ick-test />`,
-			want: `<DIV class='test' hidden id='ick-test-1' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV class='test' hidden id='ick-test-1' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "icktag3",
 			in:   `<ick-test>`,
@@ -193,15 +193,15 @@ func TestUnfoldBody(t *testing.T) {
 			err:  true},
 		{name: "attrib1",
 			in:   `<ick-test a/>`,
-			want: `<DIV a class='test' hidden id='ick-test-2' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a class='test' hidden id='ick-test-2' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "attrib2",
 			in:   `<ick-test a />`,
-			want: `<DIV a class='test' hidden id='ick-test-3' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a class='test' hidden id='ick-test-3' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "attrib3",
 			in:   `<ick-test  c a1  b />`,
-			want: `<DIV a1 b c class='test' hidden id='ick-test-4' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a1 b c class='test' hidden id='ick-test-4' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "attrib4",
 			in:   `<ick-test ; />`,
@@ -209,7 +209,7 @@ func TestUnfoldBody(t *testing.T) {
 			err:  true},
 		{name: "attrib5",
 			in:   `<ick-test a😀b />`,
-			want: `<DIV a😀b class='test' hidden id='ick-test-5' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a😀b class='test' hidden id='ick-test-5' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "attrib6",
 			in:   `<ick-test 1a />`,
@@ -233,56 +233,56 @@ func TestUnfoldBody(t *testing.T) {
 			err:  true},
 		{name: "value 1",
 			in:   `<ick-test a=1/>`,
-			want: `<DIV a=1 class='test' hidden id='ick-test-6' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a=1 class='test' hidden id='ick-test-6' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "value 2",
 			in:   `<ick-test abc=1 />`,
-			want: `<DIV abc=1 class='test' hidden id='ick-test-7' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV abc=1 class='test' hidden id='ick-test-7' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "quoted value 1",
 			in:   `<ick-test a='x'/>`,
-			want: `<DIV a='x' class='test' hidden id='ick-test-8' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a='x' class='test' hidden id='ick-test-8' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "quoted value 2",
 			in:   `<ick-test a= 'x' />`,
-			want: `<DIV a='x' class='test' hidden id='ick-test-9' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a='x' class='test' hidden id='ick-test-9' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "quoted value 3",
 			in:   `<ick-test a='x' />`,
-			want: `<DIV a='x' class='test' hidden id='ick-test-10' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a='x' class='test' hidden id='ick-test-10' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 
 		{name: "value with spaces",
 			in:   `<ick-test a=' x '/>`,
-			want: `<DIV a=' x ' class='test' hidden id='ick-test-11' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a=' x ' class='test' hidden id='ick-test-11' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "double quote value",
 			in:   `<ick-test a="y"/>`,
-			want: `<DIV a='y' class='test' hidden id='ick-test-12' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a='y' class='test' hidden id='ick-test-12' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "mixed quotes value",
 			in:   `<ick-test a="y'z;"/>`,
-			want: `<DIV a="y'z;" class='test' hidden id='ick-test-13' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a="y'z;" class='test' hidden id='ick-test-13' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "string with quote value",
 			in:   `<ick-test a=y'z/>`,
-			want: `<DIV a="y'z" class='test' hidden id='ick-test-14' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a="y'z" class='test' hidden id='ick-test-14' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "html value",
 			in:   `<ick-test a="<ok></>"/>`,
-			want: `<DIV a='<ok></>' class='test' hidden id='ick-test-15' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a='<ok></>' class='test' hidden id='ick-test-15' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "text + embedding + text",
 			in:   ` Hello <ick-test/> folks <ick-test/> ! `,
-			want: ` Hello <DIV class='test' hidden id='ick-test-16' style='display=test;' tabIndex=2></DIV> folks <DIV class='test' hidden id='ick-test-17' style='display=test;' tabIndex=2></DIV> ! `,
+			want: ` Hello <DIV class='test' hidden id='ick-test-16' style='display=test;' tabindex=2></DIV> folks <DIV class='test' hidden id='ick-test-17' style='display=test;' tabindex=2></DIV> ! `,
 			err:  false},
 		{name: "simple embedding with attributes",
 			in:   `<ick-test a b=1 c="x"/>`,
-			want: `<DIV a b=1 c='x' class='test' hidden id='ick-test-18' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a b=1 c='x' class='test' hidden id='ick-test-18' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "multi embedding with attributes",
 			in:   `<ick-test a b=1 c="x"/><ick-test c="y" d/>`,
-			want: `<DIV a b=1 c='x' class='test' hidden id='ick-test-19' style='display=test;' tabIndex=2></DIV><DIV c='y' class='test' d hidden id='ick-test-20' style='display=test;' tabIndex=2></DIV>`,
+			want: `<DIV a b=1 c='x' class='test' hidden id='ick-test-19' style='display=test;' tabindex=2></DIV><DIV c='y' class='test' d hidden id='ick-test-20' style='display=test;' tabindex=2></DIV>`,
 			err:  false},
 		{name: "setup attributes",
 			in:   `<ick-text class='text' d='test'/>`,

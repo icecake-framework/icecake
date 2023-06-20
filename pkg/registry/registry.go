@@ -83,22 +83,23 @@ func Map() map[string]*RegistryEntry {
 }
 
 // AddRegistryEntry create a new RegistryEntry and add it to the global and private registry.
-// No check is done on _name. If _name is already registered a new registryentry overwrites the existing one.
-// _css is optional and can be nil.
-func AddRegistryEntry(_name string, _cmp any, _css []string) {
+// No check is done on name. If name is already registered a new registryentry overwrites the existing one.
+// css is optional and can be nil.
+func AddRegistryEntry(name string, cmp any, css []string) *RegistryEntry {
 	theRegistry.init()
-	_name = helper.Normalize(_name)
+	name = helper.Normalize(name)
 
 	entry := RegistryEntry{
-		tagname: _name,
-		cmp:     _cmp,
+		tagname: name,
+		cmp:     cmp,
 		count:   0,
 	}
-	if _css != nil {
-		entry.csslinkref = make([]string, len(_css))
-		entry.csslinkref = append(entry.csslinkref, _css...)
+	if css != nil {
+		entry.csslinkref = make([]string, len(css))
+		entry.csslinkref = append(entry.csslinkref, css...)
 	}
-	theRegistry.entries[_name] = &entry
+	theRegistry.entries[name] = &entry
+	return &entry
 }
 
 // GetRegistryEntry returns the RegistryEntry corresponding to the _name.

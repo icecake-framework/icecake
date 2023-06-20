@@ -22,17 +22,18 @@ func TestLookupRegistryEntry(t *testing.T) {
 func TestRegisterComposer(t *testing.T) {
 
 	registry.ResetRegistry()
+
 	c1 := new(HTMLSnippet)
-	err := RegisterComposer("snippet", *c1, nil)
+	_, err := RegisterComposer("snippet", *c1, nil)
 	assert.ErrorContains(t, err, "not a component")
 
 	i := new(int)
-	err = RegisterComposer("snippet", i, nil)
+	_, err = RegisterComposer("snippet", i, nil)
 	assert.ErrorContains(t, err, "must be an HTMLComposer")
 
-	err = RegisterComposer("ick-test-snippet1", &HTMLSnippet{}, nil)
+	_, err = RegisterComposer("ick-testsnippet1", &testsnippet1{}, nil)
 	assert.NoError(t, err)
 
-	err = RegisterComposer("ick-test-snippet1", &HTMLSnippet{}, nil)
+	_, err = RegisterComposer("ick-testsnippet1", &testsnippet1{}, nil)
 	assert.NoError(t, err) // only log "already registered"
 }

@@ -3,170 +3,132 @@ package html
 import (
 	"bytes"
 	"io"
+	"reflect"
 
 	"github.com/icecake-framework/icecake/internal/helper"
+	"github.com/sunraylab/verbose"
 )
 
-// HTMLSnippet enables creation of simple or complex html string based on
-// an original templating system allowing embedding of other snippets.
-// HTMLSnippet output is an html element:
+// HTMLSnippet enables creation of simple or complex html strings based on
+// an original templating system. HTMLSnippet rendering is an html element string:
 //
-//	<tagname [attributes]>[body]</tagname>
+//	<tagname [attributes]>[content]</tagname>
 //
-// It is common to embed a HTMLSnippet into a struct to define an html component.
+// content can embed other HTMLsnippets in different ways:
+//
+//	content = "<ick"
+//
+// content can be empty. If tagname is empty only the content is rendered.
+// HTMLSnippet can be instantiated by itself or it can be embedded into a struct to define a more customizable html component.
 type HTMLSnippet struct {
-	tag  Tag // optional Tag
-	body HTMLString
-	//attrs     AttributeMap   // map of all attributes of any type
-	embedded  map[string]any // instantiated embedded objects
-	dataState *DataState
-	// attrs     map[string]string // map of all attributes of any type
+	Content HTMLComposer // the HTML composer to render within the enclosed tag.
+
+	// FIXME taggg
+	tagg Tag // HTML Element Tag with its attributes.
+
+	sub map[string]any // instantiated embedded sub-snippet if any.
+
+	ds *DataState // a reference to a datastate that can be used for rendering.
 }
 
 // Ensure HTMLSnippet implements HTMLComposer interface
 var _ HTMLComposer = (*HTMLSnippet)(nil)
 
-func NewSnippet(tagname string, amap AttributeMap, body HTMLString) *HTMLSnippet {
+// NewSnippet returns a new HTMLSnippet with a given tag name, a map of attributes and a content.
+// All parameters are optional nevertheless if none of them are provided you should rather simply instantiate the HTMLSnippet struct.
+func NewSnippet(tagname string, amap AttributeMap) *HTMLSnippet {
 	snippet := new(HTMLSnippet)
-	snippet.tag.SetName(tagname)
-	snippet.tag.attrs = amap
-	snippet.body = body
+	snippet.tagg.SetName(tagname)
+	snippet.tagg.attrs = amap
 	return snippet
 }
 
-func (_snippet *HTMLSnippet) SetDataState(ds *DataState) {
-	_snippet.dataState = ds
+// SetDataState
+func (snippet *HTMLSnippet) SetDataState(ds *DataState) *HTMLSnippet {
+	snippet.ds = ds
+	return snippet
 }
 
-// makemap ensure good memory allocation of the map of attributes
-// func (_snippet *HTMLSnippet) makemap() {
-// 	if _snippet.attrs == nil {
-// 		_snippet.attrs = make(map[string]string)
-// 	}
-// }
-
-// This implementation of Tag returns the internal tag that may have been setup
-// with the Snippet factory.
-func (_snippet *HTMLSnippet) Tag() *Tag {
-	return &_snippet.tag
+// SetDataState
+func (snippet *HTMLSnippet) SetContent(content HTMLComposer) *HTMLSnippet {
+	snippet.Content = content
+	return snippet
 }
 
-// Id Returns the unique Id of a Snippet.
-func (_snippet *HTMLSnippet) Id() string {
-	return _snippet.tag.Attributes().Id()
+// Tag returns a reference to the snippet tag.
+func (s *HTMLSnippet) Tag() *Tag {
+	return &s.tagg
 }
 
-// SetTag setup the Tag of the Snippet
-// The HTMLComposer is returned allowing call chaining.
-// func (_snippet *HTMLSnippet) SetTag(tag Tag) {
-// 	_snippet.tag = tag
-// }
+// This default implementation of BuildTag does nothing.
+// So as the tag may have been preset before rendering.
+func (s *HTMLSnippet) BuildTag(tag *Tag) {
+}
 
-// func (_snippet *HTMLSnippet) TagAttributes() AttributeMap {
-// 	_snippet.makemap()
-// 	return _snippet.attrs
-// }
+// Id Returns the id of the Snippet.
+// Can be empty.
+func (s HTMLSnippet) Id() string {
+	return s.tagg.Attributes().Id()
+}
 
-// BodyTemplate returns the HTML template to unfold inside the html element of the HTMLComposer.
-// func (_snippet *HTMLSnippet) BodyTemplate() HTMLString {
-// 	return _snippet.bodytemplate
-// }
+// String renders the snippet and returns its corresponding HTML string.
+// errors are logged out if verbose mode is turned on.
+// Returns an empty string if an error occurs.
+func (s *HTMLSnippet) String() string {
+	out := new(bytes.Buffer)
+	err := RenderSnippet(out, nil, s)
+	if err != nil {
+		verbose.Error("RenderSnippet", err)
+		return ""
+	}
+	return out.String()
+}
 
-// SetBodyTemplates sets the HTML template to unfold inside the html element of the HTMLComposer.
-// The HTMLComposer is returned allowing call chaining.
-// func (_snippet *HTMLSnippet) SetBodyTemplate(_body HTMLString) HTMLComposer {
-// 	_snippet.bodytemplate = _body
-// 	return _snippet
-// }
+// RenderSnippet writes the HTML string the tag element and the content of the composer to the writer.
+// The content is unfolded to look for sub-snippet and every sub-snippet are also written to the writer.
+// If the child request an ID, RenderSnippet generates an ID by prefixing its parent id.
+// In addition the child is appended into the list of sub-components.
+func (parent *HTMLSnippet) RenderChildSnippet(out io.Writer, childsnippet HTMLComposer) error {
+	return RenderSnippet(out, parent, childsnippet)
+}
 
-// WriteBody writes the HTML string corresponing to the body of the HTML element
+// RenderSnippetIf renders the Snippet only if the condition is true otherwise does nothing.
+func (parent *HTMLSnippet) RenderChildSnippetIf(condition bool, out io.Writer, childsnippet HTMLComposer) error {
+	if !condition {
+		return nil
+	}
+	return parent.RenderChildSnippet(out, childsnippet)
+}
+
+// RenderChildHTML renders an HTML template string into out.
+func (parent *HTMLSnippet) RenderChildHTML(out io.Writer, html HTMLString) error {
+	// FIXME call child, and call render html at a very low level within html
+	return RenderHTML(out, parent, []byte(html.Content))
+}
+
+// RenderContent writes the HTML string corresponing to the body of the HTML element
 // Default Snippet unfolds body property if an, and write it.
 // Can be overloaded by a custom snippet embedding HTMLSnippet.
-func (_parent HTMLSnippet) WriteBody(out io.Writer) (err error) {
-	// FIXME: return somethng else than err
-	_, err = io.WriteString(out, string(_parent.body))
+func (s *HTMLSnippet) RenderContent(out io.Writer) (err error) {
+	if s.Content != nil {
+		err = s.RenderChildSnippet(out, s.Content)
+	}
 	return
-}
-
-// Embedded returns the map of embedded components, keyed by their id.
-func (_parent HTMLSnippet) Embedded() map[string]any {
-	return _parent.embedded
 }
 
 // Embed adds subcmp to the map of embedded components within the _parent.
 // If a component with the same _id has already been embedded it's replaced.
 // Usually the _id is the id of the html element.
-func (parent *HTMLSnippet) Embed(id string, subcmp HTMLComposer) {
+func (s *HTMLSnippet) Embed(id string, subcmp HTMLComposer) {
 	strid := helper.Normalize(id)
-	if parent.embedded == nil {
-		parent.embedded = make(map[string]any, 1)
+	if s.sub == nil {
+		s.sub = make(map[string]any, 1)
 	}
-	parent.embedded[strid] = subcmp
-	// DEBUG: fmt.Printf("embedding %q(%v) into %s\n", id, reflect.TypeOf(cmp).String(), s.Id())
+	s.sub[strid] = subcmp
+	verbose.Debug("embedding (%v) %q\n", reflect.TypeOf(subcmp).String(), strid)
 }
 
-// String renders and unfold the _snippet and returns its corresponding HTML string
-// FIXME handle child html rather than writesnippet
-func (_snippet *HTMLSnippet) String() HTMLString {
-	out := new(bytes.Buffer)
-	_, err := WriteSnippet(out, _snippet, nil, true)
-	if err != nil {
-		return ""
-	}
-	return HTMLString(out.String())
+// Embedded returns the map of embedded components, keyed by their id.
+func (s HTMLSnippet) Embedded() map[string]any {
+	return s.sub
 }
-
-// RenderChildSnippet builds and unfolds the childsnippet and returns its html string.
-// The _snippet is embedded into the _parent.
-// RenderChildSnippet does not mount the component into the DOM and so it can't respond to events.
-// func (_parent *HTMLSnippet) RenderChildSnippet(childsnippet HTMLComposer) (_html HTMLString) {
-// 	out := new(bytes.Buffer)
-// 	id, err := WriteSnippet(out, _childsnippet, nil, true)
-// 	if err == nil {
-// 		_parent.Embed(id, _childsnippet) // need to embed the snippet itself
-// 		_html = HTMLString(out.String())
-// 	}
-// 	return _html
-// }
-
-// WriteChildSnippet writes the HTML string of the composer, its tag element and its body, to the writer.
-// The body is unfolded to look for sub-snippet and ever sub-snippet are also written to the writer.
-// If the child request an ID, WriteChildSnippet generates an ID by prefixing its parent id.
-// In addition the child is appended into the list of sub-components.
-func (parent *HTMLSnippet) WriteChildSnippet(out io.Writer, childsnippet HTMLComposer) error {
-	// FIXME consider rendering a child (unfolding)
-	id, err := WriteSnippet(out, childsnippet, nil, true)
-	if err == nil {
-		parent.Embed(id, childsnippet) // need to embed the snippet itself
-	}
-	return err
-}
-
-// WriteChildSnippet writes the HTML string of the composer, its tag element and its body, to the writer, only if the condition is true, otherwise does nothing.
-// The body is unfolded to look for sub-snippet and ever sub-snippet are also written to the writer.
-// If the child request an ID, WriteChildSnippet generates an ID by prefixing its parent id.
-// In addition the child is appended into the list of sub-components.
-func (parent *HTMLSnippet) WriteChildSnippetIf(condition bool, out io.Writer, childsnippet HTMLComposer) error {
-	if !condition {
-		return nil
-	}
-	return parent.WriteChildSnippet(out, childsnippet)
-}
-
-func (parent *HTMLSnippet) UnfoldHTML(out io.Writer, html HTMLString, ds *DataState) error {
-	if len(html) > 0 {
-		return unfoldHTML(parent, out, []byte(html), ds, 0)
-	}
-	return nil
-}
-
-// Template returns a SnippetTemplate used to render the html string of a Snippet.
-// By default it returns any already setup _snippet properties.
-// If overloaded,
-// It's used by WriteSnippet, Unfold, RenderSnippet.
-// func (_snippet HTMLSnippet) Template(*DataState) (_t SnippetTemplate) {
-// 	_t.Tag = _snippet.Tag
-// 	_t.Body = _snippet.Body
-// 	_t.Attributes = _snippet.Attributes()
-// 	return
-// }

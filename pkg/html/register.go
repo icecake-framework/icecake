@@ -8,6 +8,7 @@ import (
 
 	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/registry"
+	"github.com/sunraylab/verbose"
 )
 
 // RegisterComposer registers a _composer with the unique _ickname.
@@ -23,42 +24,56 @@ import (
 //   - If the _ickname has already been registered
 //   - If the _ickname does not meet the pattern "ick-*"
 //   - If the _composer does not implement the HTMLComposer interface
-func RegisterComposer(_ickname string, _composer any, _css []string) (_err error) {
-	typ := reflect.TypeOf(_composer)
+func RegisterComposer(ickname string, composer any, css []string) (entry *registry.RegistryEntry, err error) {
+	typ := reflect.TypeOf(composer)
 	if typ.Kind() != reflect.Pointer {
-		_err = fmt.Errorf("register composering %q failed: must register a pointer to a component not a component", typ.String())
-		log.Println(_err.Error())
-		return _err
+		err = fmt.Errorf("registering composer %q failed: must register a pointer to a component not a component", typ.String())
+		log.Println(err.Error())
+		return nil, err
 	}
 
-	_, ok := _composer.(HTMLComposer)
+	cmp, ok := composer.(HTMLComposer)
 	if !ok {
-		_err = fmt.Errorf("registering composer %q failed: must be an HTMLComposer", typ.String())
-		log.Println(_err.Error())
-		return _err
+		err = fmt.Errorf("registering composer %q failed: must be an HTMLComposer", typ.String())
+		log.Println(err.Error())
+		return nil, err
 	}
 
-	_ickname = helper.Normalize(_ickname)
-	if !strings.HasPrefix(_ickname, "ick-") {
-		_err = fmt.Errorf("registering composer %q failed: name must start by 'ick-'", typ.String())
-		log.Println(_err.Error())
-		return _err
-	}
-	if len(_ickname) == 0 {
-		_err = fmt.Errorf("registering composer %q failed: name missing", typ.String())
-		log.Println(_err.Error())
-		return _err
+	tag := cmp.Tag()
+	if tag == nil {
+		err = fmt.Errorf("registering composer %q failed: HTMLComposer Tag() must return a valid reference", typ.String())
+		log.Println(err.Error())
+		return nil, err
 	}
 
-	if registry.IsRegistered(_ickname) {
-		log.Printf("registering composer %q warning: already registered\n", _ickname)
-		return _err
+	ickname = helper.Normalize(ickname)
+	if !strings.HasPrefix(ickname, "ick-") {
+		err = fmt.Errorf("registering composer %q failed: name must start by 'ick-'", typ.String())
+		log.Println(err.Error())
+		return nil, err
 	}
 
-	registry.AddRegistryEntry(_ickname, _composer, _css)
+	if len(ickname) == 0 {
+		err = fmt.Errorf("registering composer %q failed: name missing", typ.String())
+		log.Println(err.Error())
+		return nil, err
+	}
 
-	// DEBUG: fmt.Printf("registering composer %s(%s) with success\n", _ickname, typ.String())
-	return nil
+	cmp.BuildTag(tag)
+	if !tag.HasName() {
+		log.Printf("registering composer %q warning: HTMLComposer without tag Builder", ickname)
+	}
+
+	if registry.IsRegistered(ickname) {
+		log.Printf("registering composer %q warning: already registered\n", ickname)
+		return nil, err
+	}
+
+	entry = registry.AddRegistryEntry(ickname, composer, css)
+
+	verbose.Debug("registering composer %s(%s) with success\n", ickname, typ.String())
+
+	return entry, nil
 }
 
 // TODO: RegisterHTMLSnippet

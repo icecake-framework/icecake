@@ -1,12 +1,14 @@
-package html
+package bulma
 
 import (
 	"io"
 	"net/url"
+
+	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 func init() {
-	RegisterComposer("ick-button", &Button{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-button", &Button{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
 }
 
 // The button type can be one of the following:
@@ -31,7 +33,7 @@ const (
 //
 // The IsDisabled property is directly handled by the embedded UISnippet.
 type Button struct {
-	HTMLSnippet
+	html.HTMLSnippet
 
 	// The button type.
 	// If nothing is specified, the default ButtonType is BTN_TYPE_BUTTON.
@@ -43,7 +45,7 @@ type Button struct {
 	HRef *url.URL
 
 	// The title of the Button. Can be a simple text or a more complex html string.
-	Title HTMLString
+	Title html.HTMLString
 
 	IsOutlined bool // Outlined button style
 	IsRounded  bool // Rounded button style
@@ -55,16 +57,16 @@ type Button struct {
 }
 
 // Ensure Button implements HTMLComposer interface
-var _ HTMLComposer = (*Button)(nil)
+var _ html.HTMLComposer = (*Button)(nil)
 
-func NewButton(title HTMLString) *Button {
+func NewButton(title html.HTMLString) *Button {
 	btn := new(Button)
 	btn.ButtonType = BTN_TYPE_BUTTON
 	btn.Title = title
 	return btn
 }
 
-func NewButtonLink(title HTMLString, _rawUrl string) *Button {
+func NewButtonLink(title html.HTMLString, _rawUrl string) *Button {
 	btn := new(Button)
 	btn.ButtonType = BTN_TYPE_A
 	btn.Title = title
@@ -78,23 +80,23 @@ func (btn *Button) ParseAnchor(rawUrl string) (err error) {
 	return
 }
 
-func (btn *Button) Tag() *Tag {
+func (btn *Button) BuildTag(tag *html.Tag) {
 
 	if btn.HRef != nil && btn.HRef.String() != "" {
 		btn.ButtonType = BTN_TYPE_A
 	}
 	switch btn.ButtonType {
 	case BTN_TYPE_A:
-		btn.tag.SetName("a")
+		tag.SetName("a")
 	case BTN_TYPE_SUBMIT:
-		btn.tag.SetName("input")
+		tag.SetName("input")
 	case BTN_TYPE_RESET:
-		btn.tag.SetName("input")
+		tag.SetName("input")
 	default:
-		btn.tag.SetName("button")
+		tag.SetName("button")
 	}
 
-	amap := btn.tag.Attributes().AddClasses("button")
+	amap := tag.Attributes().AddClasses("button")
 
 	href := ""
 	if btn.HRef != nil {
@@ -104,9 +106,9 @@ func (btn *Button) Tag() *Tag {
 	case BTN_TYPE_A:
 		amap.SetAttributeIf(href != "", "href", href, true)
 	case BTN_TYPE_SUBMIT:
-		amap.SetAttribute("type", "submit", true)
+		amap.SetAttribute("type", "submit")
 	case BTN_TYPE_RESET:
-		amap.SetAttribute("type", "reset", true)
+		amap.SetAttribute("type", "reset")
 	default:
 	}
 
@@ -120,11 +122,9 @@ func (btn *Button) Tag() *Tag {
 		amap.AddClasses("is-loading")
 	}
 	amap.SetDisabled(btn.IsDisabled)
-
-	return &btn.tag
 }
 
-func (btn *Button) WriteBody(out io.Writer) error {
-	_, err := WriteString(out, string(btn.Title))
+func (btn *Button) RenderContent(out io.Writer) error {
+	err := btn.RenderChildSnippet(out, &btn.Title)
 	return err
 }

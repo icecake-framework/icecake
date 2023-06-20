@@ -1,8 +1,10 @@
-package html
+package bulma
 
 import (
 	_ "embed"
 	"io"
+
+	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 /******************************************************************************
@@ -13,14 +15,14 @@ import (
 var notifycss string
 
 func init() {
-	RegisterComposer("ick-notify", &Notify{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-notify", &Notify{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
 }
 
 type Notify struct {
-	HTMLSnippet
+	html.HTMLSnippet
 
 	// the message to display within the notification
-	Message HTMLString
+	Message html.HTMLString
 
 	// Notify includes a programmable Delete Button.
 	//
@@ -33,20 +35,19 @@ type Notify struct {
 }
 
 // Ensure Notify implements HTMLComposer interface
-var _ HTMLComposer = (*Notify)(nil)
+var _ html.HTMLComposer = (*Notify)(nil)
 
-func (notify *Notify) Tag() *Tag {
-	notify.tag.SetName("div")
-	notify.tag.Attributes().AddClasses("notification")
-	return &notify.tag
+func (notify *Notify) BuildTag(tag *html.Tag) {
+	tag.SetName("div")
+	tag.Attributes().AddClasses("notification")
 }
 
-func (notify *Notify) WriteBody(out io.Writer) error {
+func (notify *Notify) RenderContent(out io.Writer) error {
 	notify.Delete.TargetID = notify.Id()
 
-	notify.WriteChildSnippet(out, &notify.Delete)
+	notify.RenderChildSnippet(out, &notify.Delete)
 
-	WriteString(out, string(notify.Message))
+	notify.RenderChildHTML(out, notify.Message)
 
 	return nil
 }

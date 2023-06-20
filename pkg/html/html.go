@@ -14,16 +14,35 @@ import (
 // Use of this type presents a security risk:
 // the encapsulated content should come from a trusted source,
 // as it will be included verbatim in the output.
-type HTMLString string
+type HTMLString struct {
+	HTMLSnippet
+	Content string
+}
 
-// WriteHTML write the HTMLString to out
-func (strhtml HTMLString) WriteHTML(out io.Writer) {
-	io.WriteString(out, string(strhtml))
+func NewString(s string) *HTMLString {
+	h := new(HTMLString)
+	h.Content = s
+	return h
+}
+
+func String(s string) HTMLString {
+	return HTMLString{Content: s}
 }
 
 // WriteHTML write the HTMLString to out
+func (strhtml HTMLString) RenderContent(out io.Writer) error {
+	_, err := WriteString(out, strhtml.Content)
+	return err
+}
+
+// String returns the content
 func (strhtml HTMLString) String() string {
-	return string(strhtml)
+	return strhtml.Content
+}
+
+// String returns the content
+func (strhtml HTMLString) IsEmpty() bool {
+	return strhtml.Content == ""
 }
 
 type DataState struct {
@@ -34,7 +53,7 @@ type DataState struct {
 }
 
 // WriteStringsIf writes one or many strings to w only if the condition is true.
-// errors comes from the writer.
+// Returns the number of bytes written and errors from the writer.
 func WriteStringsIf(condition bool, w io.Writer, ss ...string) (n int, err error) {
 	if !condition {
 		return 0, nil
@@ -42,9 +61,8 @@ func WriteStringsIf(condition bool, w io.Writer, ss ...string) (n int, err error
 	return WriteStrings(w, ss...)
 }
 
-// WriteStrings writes one or many strings to w
-// Returns the number of bytes written.
-// errors comes from the writer.
+// WriteStrings writes one or many strings to w.
+// Returns the number of bytes written and errors from the writer.
 func WriteStrings(w io.Writer, ss ...string) (n int, err error) {
 	nn := 0
 	for _, s := range ss {
@@ -60,7 +78,7 @@ func WriteStrings(w io.Writer, ss ...string) (n int, err error) {
 // WriteString writes the contents of the string s to w, which accepts a slice of bytes.
 // If w implements StringWriter, its WriteString method is invoked directly.
 // Otherwise, w.Write is called exactly once.
-// // errors comes from the writer.
+// errors comes from the writer.
 func WriteString(out io.Writer, s string) (n int, err error) {
 	return io.WriteString(out, s)
 }

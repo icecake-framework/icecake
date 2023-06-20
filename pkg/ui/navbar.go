@@ -1,14 +1,14 @@
 package ui
 
 import (
+	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
-	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 // Navbar is an UISnippet registered with the ick-tag `ick-navbar`.
 type Navbar struct {
-	html.Navbar
+	bulma.Navbar
 	DOM dom.Element
 }
 

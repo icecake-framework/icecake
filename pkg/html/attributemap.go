@@ -41,16 +41,26 @@ func (amap AttributeMap) Attribute(name string) (value string, found bool) {
 	return value, found
 }
 
+// TrySetAttribute creates an attribute in the map and set its value.
+// If the attribute already exists in the map then does nothing.
+// Returns if the attribute has been created/updated or not.
+func (amap AttributeMap) TrySetAttribute(name string, value string) bool {
+	name = helper.Normalize(name)
+	update, err := amap.setAttribute(name, value, false)
+	verbose.Error("SetAttribute", err)
+	return update
+}
+
 // SetAttribute creates an attribute in the map and set its value.
-// update flag indicates if existing attribute must be updated or not.
+// Id the attribute already exists in themap it is updated.
 // SetAttribute returns the map to allow chainning and so never returns an error.
 // If the name or the value are not valid nothing is created and a log is printed out if verbose mode is on.
 // Use CheckAttribute to check name and value validity.
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
-func (amap AttributeMap) SetAttribute(name string, value string, update bool) AttributeMap {
+func (amap AttributeMap) SetAttribute(name string, value string) AttributeMap {
 	name = helper.Normalize(name)
-	err := amap.setAttribute(name, value, update)
+	_, err := amap.setAttribute(name, value, true)
 	verbose.Error("SetAttribute", err)
 	return amap
 }
@@ -60,31 +70,32 @@ func (amap AttributeMap) SetAttribute(name string, value string, update bool) At
 // setAttribute returns error related about name and value validity.
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
-func (amap AttributeMap) setAttribute(name string, value string, update bool) (err error) {
+func (amap AttributeMap) setAttribute(name string, value string, update bool) (updated bool, err error) {
 	err = checkAttribute(name, value)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	switch name {
 	case "id", "name":
-		value = strings.Trim(value, " ")
-		amap.saveAttribute(name, value, update)
+		updated = amap.saveAttribute(name, value, update)
 	case "class":
+		before := amap["class"]
 		if update {
 			amap.ResetClasses()
 		}
 		c := strings.Fields(value)
 		amap.AddClasses(c...)
+		updated = amap["class"] != before
 	case "tabindex":
 		i, _ := strconv.Atoi(value)
-		amap.saveAttribute(name, strconv.Itoa(i), update)
+		updated = amap.saveAttribute(name, strconv.Itoa(i), update)
 	case "style":
-		amap.saveAttribute("style", value, update)
+		updated = amap.saveAttribute("style", value, update)
 	default:
-		amap.saveAttribute(name, value, update)
+		updated = amap.saveAttribute(name, value, update)
 	}
-	return nil
+	return updated, nil
 }
 
 // SetAttributeIf SetAttribute if the condition is true.
@@ -96,7 +107,7 @@ func (amap AttributeMap) setAttribute(name string, value string, update bool) (e
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
 func (amap AttributeMap) SetAttributeIf(condition bool, name string, value string, update bool) AttributeMap {
 	if condition {
-		amap.SetAttribute(name, value, update)
+		amap.SetAttribute(name, value)
 	}
 	return amap
 }
@@ -108,7 +119,7 @@ func (amap AttributeMap) SetAttributeIf(condition bool, name string, value strin
 // lowercase value equal "false" is considered as a boolean and the attribute is deleted according to overwrite parameter.
 // setting a blank value to attributes id, class, style, name or tabindex will remove the attribute according to overwrite parameter.
 //
-// Returns if the attributes has been overwritten (updated)
+// Returns if the attributes has been created/updated
 func (amap AttributeMap) saveAttribute(name string, value string, overwrite bool) bool {
 
 	_, exists := amap[name]
@@ -127,7 +138,7 @@ func (amap AttributeMap) saveAttribute(name string, value string, overwrite bool
 	} else {
 		amap[name] = value
 	}
-	return exists
+	return true
 }
 
 // RemoveAttribute removes the attribute identified by its name.
@@ -149,7 +160,7 @@ func (amap AttributeMap) ToggleAttribute(name string) AttributeMap {
 	name = helper.Normalize(name)
 	_, found := amap[name]
 	if !found {
-		err := amap.setAttribute(name, "", true)
+		_, err := amap.setAttribute(name, "", true)
 		verbose.Error("ToggleAttribute", err)
 	} else {
 		delete(amap, name)
@@ -169,7 +180,7 @@ func (amap AttributeMap) Id() string {
 // SetId returns the map to allow chainning. SetId never returns an error.
 // If the id is not valid nothing is setted and a log is printed out if verbose mode is on.
 func (amap AttributeMap) SetId(id string) AttributeMap {
-	err := amap.setAttribute("id", id, true)
+	_, err := amap.setAttribute("id", id, true)
 	verbose.Error("SetId", err)
 	return amap
 }
@@ -192,7 +203,7 @@ func (amap AttributeMap) Name() string {
 // SetName returns the map to allow chainning.
 // If the name is not valid nothing is setted and a log is printed out if verbose mode is on.
 func (amap AttributeMap) SetName(name string) AttributeMap {
-	err := amap.setAttribute("name", name, true)
+	_, err := amap.setAttribute("name", name, true)
 	verbose.Error("SetName", err)
 	return amap
 }
@@ -365,7 +376,7 @@ func (amap AttributeMap) SetBool(name string, f bool) AttributeMap {
 	if !f {
 		amap.RemoveAttribute(name)
 	} else {
-		amap.SetAttribute(name, "", true)
+		amap.SetAttribute(name, "")
 	}
 	return amap
 }
@@ -443,8 +454,10 @@ func checkAttribute(name string, value string) (err error) {
 	switch name {
 	case "id", "name":
 		value := strings.Trim(value, " ")
-		if value == "" || !stringpattern.IsValidName(value) {
-			err = fmt.Errorf("%s %q is not valid", name, value)
+		if value != "" {
+			if !stringpattern.IsValidName(value) {
+				err = fmt.Errorf("%s %q is not valid", name, value)
+			}
 		}
 	case "class":
 		for _, c := range strings.Fields(value) {
@@ -529,7 +542,7 @@ func TryParseAttributes(alist string) (amap AttributeMap, err error) {
 		names := strings.Fields(strnames)
 		for i, n := range names {
 			if i < len(names)-1 || !hasval {
-				err = amap.setAttribute(n, "", true)
+				_, err = amap.setAttribute(n, "", true)
 				if err != nil {
 					verbose.Error("ParseAttribute", err)
 					return make(AttributeMap), err
@@ -557,7 +570,7 @@ func TryParseAttributes(alist string) (amap AttributeMap, err error) {
 			istart = 0
 		}
 		value, unparsed, _ = strings.Cut(unparsed[istart:], string(delim))
-		err = amap.setAttribute(name, value, true)
+		_, err = amap.setAttribute(name, value, true)
 		if err != nil {
 			verbose.Error("ParseAttribute", err)
 			return make(AttributeMap), err

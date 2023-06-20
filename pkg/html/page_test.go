@@ -7,9 +7,9 @@ import (
 
 func TestDefaultPage(t *testing.T) {
 
-	dft := NewHtml5Page("en")
+	dft := NewPage("en")
 	out := new(bytes.Buffer)
-	dft.Generate(out)
+	dft.Render(out)
 
 	if out.String() != `<!doctype html><html lang="en"><head><META charset="utf-8"></head><body></body></html>` {
 		t.Fail()

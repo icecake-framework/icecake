@@ -117,8 +117,8 @@ func (_elem *Element) Id() string {
 // TabIndex represents the tab order of the current element.
 //
 // Tab order is as follows:
-//  1. Elements with a positive tabIndex. Elements that have identical tabIndex values should be navigated in the order they appear. Navigation proceeds from the lowest tabIndex to the highest tabIndex.
-//  1. Elements that do not support the tabIndex attribute or support it and assign tabIndex to 0, in the order they appear.
+//  1. Elements with a positive tabindex. Elements that have identical tabindex values should be navigated in the order they appear. Navigation proceeds from the lowest tabindex to the highest tabindex.
+//  1. Elements that do not support the tabindex attribute or support it and assign tabindex to 0, in the order they appear.
 //  1. Elements that are disabled do not participate in the tabbing order.
 //
 // Values don't need to be sequential, nor must they begin with any particular value.
@@ -126,9 +126,9 @@ func (_elem *Element) Id() string {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (_elem *Element) TabIndex() (_idx int) {
-	found := _elem.Call("hasAttribute", "tabIndex").Bool()
+	found := _elem.Call("hasAttribute", "tabindex").Bool()
 	if found {
-		sidx := _elem.Call("getAttribute", "tabIndex").String()
+		sidx := _elem.Call("getAttribute", "tabindex").String()
 		_idx, _ = strconv.Atoi(string(sidx))
 	}
 	return _idx
@@ -199,16 +199,16 @@ func (_elem *Element) SetDisabled(_f bool) {
 	}
 }
 
-func (_elem *Element) SetStyle(_style html.HTMLString) *Element {
-	_elem.Call("setAttribute", "style", string(_style))
+func (_elem *Element) SetStyle(style string) *Element {
+	_elem.Call("setAttribute", "style", style)
 	return _elem
 }
 
 // TabIndex represents the tab order of the current element.
 //
 // Tab order is as follows:
-//  1. Elements with a positive tabIndex. Elements that have identical tabIndex values should be navigated in the order they appear. Navigation proceeds from the lowest tabIndex to the highest tabIndex.
-//  1. Elements that do not support the tabIndex attribute or support it and assign tabIndex to 0, in the order they appear.
+//  1. Elements with a positive tabindex. Elements that have identical tabindex values should be navigated in the order they appear. Navigation proceeds from the lowest tabindex to the highest tabindex.
+//  1. Elements that do not support the tabindex attribute or support it and assign tabindex to 0, in the order they appear.
 //  1. Elements that are disabled do not participate in the tabbing order.
 //
 // Values don't need to be sequential, nor must they begin with any particular value.
@@ -216,17 +216,17 @@ func (_elem *Element) SetStyle(_style html.HTMLString) *Element {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (_elem *Element) SetTabIndex(_index int) *Element {
-	_elem.Call("setAttribute", "tabIndex", strconv.Itoa(_index))
+	_elem.Call("setAttribute", "tabindex", strconv.Itoa(_index))
 	return _elem
 }
 
-func (_elem *Element) ResetClasses(_list html.HTMLString) *Element {
-	_elem.Set("className", string(_list))
+func (_elem *Element) ResetClasses(list string) *Element {
+	_elem.Set("className", list)
 	return _elem
 }
 
-func (_elem *Element) SetClasses(_list html.HTMLString) *Element {
-	listf := strings.Fields(string(_list))
+func (_elem *Element) SetClasses(list string) *Element {
+	listf := strings.Fields(list)
 	callp := make([]any, len(listf))
 	for i, listc := range listf {
 		if listc != "" {
@@ -253,63 +253,58 @@ func (_elem *Element) RemoveClasses(_list string) *Element {
 	return _elem
 }
 
-func (_elem *Element) SwitchClasses(_remove string, _new html.HTMLString) *Element {
-	_elem.RemoveClasses(_remove)
-	_elem.SetClasses(_new)
+func (_elem *Element) SwitchClasses(remove string, new string) *Element {
+	_elem.RemoveClasses(remove)
+	_elem.SetClasses(new)
 	return _elem
 }
 
-func (_elem *Element) HasClass(_class string) bool {
-	_class = strings.Trim(_class, " ")
-	if _class == "" {
+func (_elem *Element) HasClass(class string) bool {
+	class = strings.Trim(class, " ")
+	if class == "" {
 		return false
 	}
-	return _elem.Get("classList").Call("contains", _class).Bool()
+	return _elem.Get("classList").Call("contains", class).Bool()
 }
 
-func (_elem *Element) Attribute(_key string) (string, bool) {
-	_key = strings.Trim(_key, " ")
-	attr := _elem.Call("getAttribute", _key)
+func (_elem *Element) Attribute(key string) (string, bool) {
+	key = strings.Trim(key, " ")
+	attr := _elem.Call("getAttribute", key)
 	if attr.IsDefined() && attr.String() != "" {
 		return attr.String(), true
 	}
 	return "", false
 }
 
-func (_elem *Element) CreateAttribute(_key string, _value any) *Element {
-	_elem.setAttribute(_key, _value, false)
+func (_elem *Element) CreateAttribute(key string, _value any) *Element {
+	_elem.setAttribute(key, _value, false)
 	return _elem
 }
 
-func (_elem *Element) SetAttribute(_key string, _value any) *Element {
-	_elem.setAttribute(_key, _value, true)
+func (_elem *Element) SetAttribute(key string, _value any) *Element {
+	_elem.setAttribute(key, _value, true)
 	return _elem
 }
 
-func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) error {
-	_key = strings.Trim(_key, " ")
-	switch strings.ToLower(_key) {
+func (_elem *Element) setAttribute(key string, value any, overwrite bool) error {
+	key = strings.Trim(key, " ")
+	switch strings.ToLower(key) {
 	case "id":
 		found := _elem.Get("id").Type() == js.TYPE_STRING
 		if !found || overwrite {
-			switch v := _value.(type) {
+			switch v := value.(type) {
 			case string:
 				_elem.SetId(v)
-			case html.HTMLString:
-				_elem.SetId(string(v))
 			default:
 				return errors.New("wrong value type for id")
 			}
 		}
 	case "tabindex":
-		found := _elem.Get("tabIndex").Type() == js.TYPE_STRING
+		found := _elem.Get("tabindex").Type() == js.TYPE_STRING
 		if !found || overwrite {
-			switch v := _value.(type) {
+			switch v := value.(type) {
 			case string:
 				idx, _ := strconv.Atoi(v)
-				_elem.SetTabIndex(idx)
-			case html.HTMLString:
-				idx, _ := strconv.Atoi(string(v))
 				_elem.SetTabIndex(idx)
 			case int:
 				_elem.SetTabIndex(v)
@@ -324,29 +319,25 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 			}
 		}
 	case "class":
-		var lst html.HTMLString
-		switch v := _value.(type) {
+		var lst string
+		switch v := value.(type) {
 		case string:
-			lst = html.HTMLString(v)
-		case html.HTMLString:
 			lst = v
 		default:
 			return errors.New("wrong value type for class")
 		}
 		if overwrite {
 			_elem.ResetClasses(lst)
-		} else if _value != "" {
+		} else if value != "" {
 			_elem.SetClasses(lst)
 		}
 	case "style":
 		// TODO: handle style update to not overwrite
 		found := _elem.Get("style").Type() == js.TYPE_STRING
 		if !found || overwrite {
-			var style html.HTMLString
-			switch v := _value.(type) {
+			var style string
+			switch v := value.(type) {
 			case string:
-				style = html.HTMLString(v)
-			case html.HTMLString:
 				style = v
 			default:
 				return errors.New("wrong value type for class")
@@ -354,27 +345,25 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 			_elem.SetStyle(style)
 		}
 	default:
-		_, err := _elem.Check(_key)
+		_, err := _elem.Check(key)
 		if err != nil || overwrite {
-			var strv html.HTMLString
-			switch v := _value.(type) {
+			var strv string
+			switch v := value.(type) {
 			case string:
-				strv = html.HTMLString(v)
-			case html.HTMLString:
 				strv = v
 			case bool:
 				if v {
 					strv = ""
 				} else {
-					_elem.Call("removeAttribute", _key)
+					_elem.Call("removeAttribute", key)
 					break
 				}
 			case int, uint, float32, float64:
-				strv = html.HTMLString(fmt.Sprintf("%v", v))
+				strv = fmt.Sprintf("%v", v)
 			default:
-				return errors.New("wrong value type for " + _key)
+				return errors.New("wrong value type for " + key)
 			}
-			_elem.Call("setAttribute", _key, string(strv))
+			_elem.Call("setAttribute", key, string(strv))
 		}
 	}
 	return nil
@@ -616,17 +605,17 @@ func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.HTMLStri
 	}
 	switch _where {
 	case INSERT_BEFORE_ME:
-		_me.Call("insertAdjacentHTML", "beforebegin", string(_unsafeHtml))
+		_me.Call("insertAdjacentHTML", "beforebegin", _unsafeHtml.String())
 	case INSERT_FIRST_CHILD:
-		_me.Call("insertAdjacentHTML", "afterbegin", string(_unsafeHtml))
+		_me.Call("insertAdjacentHTML", "afterbegin", _unsafeHtml.String())
 	case INSERT_LAST_CHILD:
-		_me.Call("insertAdjacentHTML", "beforeend", string(_unsafeHtml))
+		_me.Call("insertAdjacentHTML", "beforeend", _unsafeHtml.String())
 	case INSERT_AFTER_ME:
-		_me.Call("insertAdjacentHTML", "afterend", string(_unsafeHtml))
+		_me.Call("insertAdjacentHTML", "afterend", _unsafeHtml.String())
 	case INSERT_OUTER:
-		_me.Set("outerHTML", string(_unsafeHtml))
+		_me.Set("outerHTML", _unsafeHtml.String())
 	case INSERT_BODY:
-		_me.Set("innerHTML", string(_unsafeHtml))
+		_me.Set("innerHTML", _unsafeHtml.String())
 	}
 }
 
@@ -634,18 +623,19 @@ func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.HTMLStri
 // All embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // Returns an error if _elem in not the DOM or if an error occurs during UnfoldHtml or mounting process.
 // HACK: better rendering with a reader ?
-func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.HTMLString, ds *html.DataState) (_err error) {
+func (_elem *Element) InsertHTML(_where INSERT_WHERE, htmltemplate html.HTMLString, ds *html.DataState) (_err error) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
 	}
 
-	var embedded map[string]any
+	temparent := &html.HTMLSnippet{}
 	out := new(bytes.Buffer)
-	embedded, _err = html.UnfoldHTML(out, _html, ds)
+	_err = html.RenderHTML(out, temparent, []byte(htmltemplate.String()))
 	if _err == nil {
 		// insert the html element into the dom and wrapit
-		_elem.InsertRawHTML(_where, html.HTMLString(out.String()))
+		_elem.InsertRawHTML(_where, *html.NewString(out.String()))
 		// mount every embedded components
+		embedded := temparent.Embedded()
 		if embedded != nil {
 			// DEBUG: console.Warnf("scanning %+v", embedded)
 			for subid, sub := range embedded {
@@ -691,15 +681,14 @@ func (_elem *Element) InsertSnippet(where INSERT_WHERE, composer any, ds *html.D
 	}
 
 	out := new(bytes.Buffer)
-	// FIXME noid
-	snippetid, err = html.WriteSnippet(out, snippet, ds, false)
+	err = html.RenderSnippet(out, nil, snippet)
 	if err != nil {
 		console.Errorf(err.Error())
 		return "", err
 	}
 
 	// insert the html element into the dom and wrapit
-	_elem.InsertRawHTML(where, html.HTMLString(out.String()))
+	_elem.InsertRawHTML(where, *html.NewString(out.String()))
 	if newe := Id(snippetid); newe != nil {
 		// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
 		if snippet, ok := composer.(UIComposer); ok {
