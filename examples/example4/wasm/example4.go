@@ -28,9 +28,9 @@ func main() {
 	// ui.RenderSnippet(webapp.ChildById("msg-container"), msg1, nil)
 
 	msg2 := &bulma.Message{}
-	msg2.Header = html.String("2nd message")
+	msg2.Header = html.HTML("2nd message")
 	msg2.CanDelete = true
-	msg2.Message = html.String("This second message use the BULMA <i>is-info</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message.")
+	msg2.Message = html.HTML("This second message use the BULMA <i>is-info</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message.")
 	msg2.Tag().Attributes().AddClasses("is-info")
 	dom.Id("msg-container").InsertSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 

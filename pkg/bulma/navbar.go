@@ -102,6 +102,8 @@ type Navbar struct {
 
 	items []*NavbarItem // list of navbar items
 
+	// TODO: handle Navbar active item
+
 	// Styling
 	IsTransparent bool
 	HasShadow     bool

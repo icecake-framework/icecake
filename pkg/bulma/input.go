@@ -45,50 +45,46 @@ func (inputfield *InputField) BuildTag(tag *html.Tag) {
 	tag.SetName("div").Attributes().AddClasses("field")
 }
 
-func (inputfield *InputField) RenderContent(out io.Writer) error {
+func (cmp *InputField) RenderContent(out io.Writer) error {
 	// <label>
-	inputfield.RenderChildSnippetIf(!inputfield.Label.IsEmpty(), out, html.NewSnippet("label", html.ParseAttributes(`class="label"`)).AddContent(&inputfield.Label))
+	html.RenderHTMLIf(!cmp.Label.IsEmpty(), out, cmp, html.HTML(`<label class="label">`), cmp.Label, html.HTML(`</label>`))
 
 	// <input>
-	subinput := html.NewSnippet("input", nil)
-	inputattr := subinput.Tag().Attributes().
-		AddClasses("input").
-		AddClassesIf(inputfield.IsRounded, "is-rounded").
-		SetAttribute("type", "text").
-		SetAttributeIf(inputfield.PlaceHolder != "", "placeholder", inputfield.PlaceHolder, true)
-	switch inputfield.State {
+	subinput := html.NewSnippet("input", `class="input" type="text"`)
+	subinput.Tag().Attributes().
+		AddClassesIf(cmp.IsRounded, "is-rounded").
+		SetAttributeIf(cmp.PlaceHolder != "", "placeholder", cmp.PlaceHolder)
+	switch cmp.State {
 	case "success":
-		inputattr.AddClasses("is-success")
+		subinput.Tag().Attributes().AddClasses("is-success")
 	case "warning":
-		inputattr.AddClasses("is-warning")
+		subinput.Tag().Attributes().AddClasses("is-warning")
 	case "error":
-		inputattr.AddClasses("is-danger")
+		subinput.Tag().Attributes().AddClasses("is-danger")
 	case "readonly":
-		inputattr.SetAttribute("readonly", "")
+		subinput.Tag().Attributes().SetAttribute("readonly", "")
 	}
-	inputattr.SetAttributeIf(inputfield.Value != "", "value", inputfield.Value, true)
+	subinput.Tag().Attributes().SetAttributeIf(cmp.Value != "", "value", cmp.Value)
 
 	// <div control>
-	subcontrol := html.NewSnippet("div", html.ParseAttributes("class=control"))
+	subcontrol := html.NewSnippet("div", `class="control"`)
 	// subcontrol.SetClassesIf(inputfield.State == INPUT_LOADING, "is-loading")
 
-	// inputfield.subcontrol.SetBodyTemplate(inputfield.RenderChildSnippet(&inputfield.subinput))
-
-	inputfield.RenderChildSnippet(out, subcontrol)
+	cmp.RenderChildSnippet(out, subcontrol)
 
 	// <p help>
-	if !inputfield.Help.IsEmpty() {
-		subhelp := html.NewSnippet("p", nil).AddContent(&inputfield.Help)
-		helpattr := subinput.Tag().Attributes().AddClasses("help")
-		switch inputfield.State {
+	if !cmp.Help.IsEmpty() {
+		subhelp := html.NewSnippet("p", `class="help"`).AddContent(&cmp.Help)
+		subhelpa := subinput.Tag().Attributes()
+		switch cmp.State {
 		case "success":
-			helpattr.AddClasses("is-success")
+			subhelpa.AddClasses("is-success")
 		case "warning":
-			helpattr.AddClasses("is-warning")
+			subhelpa.AddClasses("is-warning")
 		case "error":
-			helpattr.AddClasses("is-danger")
+			subhelpa.AddClasses("is-danger")
 		}
-		inputfield.RenderChildSnippet(out, subhelp)
+		cmp.RenderChildSnippet(out, subhelp)
 	}
 
 	return nil

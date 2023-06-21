@@ -3,12 +3,45 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/sunraylab/verbose"
 )
+
+type MyFooter struct{ html.HTMLSnippet }
+
+func (cmp *MyFooter) BuildTag(tag *html.Tag) { tag.SetName("footer").Attributes().AddClasses("footer") }
+func (cmp *MyFooter) RenderContent(out io.Writer) error {
+
+	hrefMIT := `<a href="https://opensource.org/licenses/mit-license.php" rel="license">MIT</a>`
+	hrefCCBY := `<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>`
+	hrefLinks := []string{
+		`<a href="/">Home</a>`,
+		`<a href="/docs">Docs</a>`}
+
+	html.WriteString(out, `<div class="container"><div class="columns">`)
+
+	// 1st column
+	html.WriteString(out, `<div class="column is-4">`)
+	html.WriteStrings(out, `<h4 class="bd-footer-title">`, `<strong>IceCake</strong> by Lolorenzo`, `</h4>`)
+	html.WriteStrings(out, `<div class="bd-footer-tsp">`, `Source code licences `, hrefMIT, `</div>`)
+	html.WriteStrings(out, `<div class="bd-footer-tsp">`, `Website content licensed `, hrefCCBY, `</div>`)
+	html.WriteString(out, `</div>`)
+
+	// 2nd column
+	html.WriteString(out, `<div class="column is-4">`)
+	html.WriteStrings(out, `<h4 class="bd-footer-title">`, `<strong>Links</strong>`, `</h4>`)
+	for _, hrefLink := range hrefLinks {
+		html.WriteStrings(out, `<p class="bd-footer-link">`, hrefLink, `</p>`)
+	}
+	html.WriteString(out, `</div>`)
+
+	html.WriteString(out, `</div></div>`)
+	return nil
+}
 
 func main() {
 
@@ -19,12 +52,12 @@ func main() {
 	path := html.MustCheckOutputPath(output)
 
 	index := html.NewPage("en").
-		AddHeadMeta("charset=UTF-8").
-		AddHeadMeta(`http-equiv="X-UA-Compatible" content="IE=edge"`).
-		AddHeadMeta(`name="viewport" content="width=device-width, initial-scale=1.0"`).
-		AddHeadLink(`rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"`).
-		AddHeadLink(`rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"`).
-		AddHeadScript(`type="text/javascript" src="icecake.js"`)
+		AddHeadItem("meta", "charset=UTF-8").
+		AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`).
+		AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`).
+		AddHeadItem("link", `rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"`).
+		AddHeadItem("link", `rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"`).
+		AddHeadItem("script", `type="text/javascript" src="icecake.js"`)
 
 	index.Title = "documentation - icecake framework"
 	index.Description = "go wasm framework"
@@ -34,26 +67,25 @@ func main() {
 	navbar.AddItems(
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_BRAND,
-			Content:  html.NewString(`<span class="title pl-2">Icecake</span>`)}).
+			Content:  html.NewHTML(`<span class="title pl-2">Icecake</span>`)}).
 			ParseImageSrc("/assets/icecake-color.svg").
 			ParseHRef("/"),
 
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_START,
-			Content:  html.NewString(`DOCS`)}).
+			Content:  html.NewHTML(`Docs`)}).
 			ParseHRef("/"),
 
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_END,
-			Content:  bulma.NewButtonLink(html.String("GitHub"), "https://github.com/icecake-framework/icecake")}),
+			Content:  bulma.NewButtonLink(html.HTML("GitHub"), "https://github.com/icecake-framework/icecake")}),
 
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_END,
-			Content:  html.NewString("<small>Alpha</small>")}),
+			Content:  html.NewHTML("<small>Alpha</small>")}),
 	)
 
-	body := html.NewSnippet("body", html.ParseAttributes("id=body")).
-		AddContent(navbar)
+	body := html.NewSnippet("body", `id="body"`).AddContent(navbar, &MyFooter{})
 
 	index.Body = body
 

@@ -13,12 +13,12 @@ func init() {
 type Card struct {
 	html.HTMLSnippet
 
-	Title       html.HTMLString // optional title to display on the head of the card
-	Image       *Image          // optional image
-	Content     html.HTMLString // any html content to render within the body of the card
-	FooterItem1 html.HTMLString // optional Footer 1 of 3 items max
-	FooterItem2 html.HTMLString // optional Footer 1 of 3 items max
-	FooterItem3 html.HTMLString // optional Footer 1 of 3 items max
+	Title       html.HTMLString   // optional title to display on the head of the card
+	Image       *Image            // optional image
+	Content     html.HTMLComposer // any html content to render within the body of the card
+	FooterItem1 html.HTMLComposer // optional Footer 1 of 3 items max
+	FooterItem2 html.HTMLComposer // optional Footer 1 of 3 items max
+	FooterItem3 html.HTMLComposer // optional Footer 1 of 3 items max
 }
 
 // Ensure Card implements HTMLComposer interface
@@ -30,22 +30,17 @@ func (card *Card) BuildTag(tag *html.Tag) {
 
 func (card *Card) RenderContent(out io.Writer) error {
 
-	html.WriteStringsIf(!card.Title.IsEmpty(), out, `<header class="card-header">`, `<p class="card-header-title">`, card.Title.String(), `</p>`, `</header>`)
+	html.RenderHTMLIf(!card.Title.IsEmpty(), out, card, html.HTML(`<header class="card-header">`), html.HTML(`<p class="card-header-title">`), card.Title, html.HTML(`</p></header>`))
 
-	if card.Image != nil {
-		// FIXME
-		card.RenderChildSnippet(out, card.Image)
-		//io.WriteString(out, card.RenderChildSnippet(card.Image))
-	}
+	card.RenderChildSnippetIf(card.Image != nil, out, card.Image)
 
-	html.WriteStringsIf(!card.Content.IsEmpty(), out, `<div class="card-content">`, card.Content.String(), `</div>`)
+	card.RenderChildSnippetIf(card.Content != nil, out, html.NewSnippet("div", `class="card-content"`).AddContent(card.Content))
 
-	if !card.FooterItem1.IsEmpty() || !card.FooterItem2.IsEmpty() || !card.FooterItem3.IsEmpty() {
-		// FIXME
+	if card.FooterItem1 != nil || card.FooterItem2 != nil || card.FooterItem3 != nil {
 		html.WriteString(out, `<div class="card-footer">`)
-		html.WriteStringsIf(!card.FooterItem1.IsEmpty(), out, `<span class="card-footer-item">`, card.FooterItem1.String(), `</span>`)
-		html.WriteStringsIf(!card.FooterItem2.IsEmpty(), out, `<span class="card-footer-item">`, card.FooterItem2.String(), `</span>`)
-		html.WriteStringsIf(!card.FooterItem3.IsEmpty(), out, `<span class="card-footer-item">`, card.FooterItem3.String(), `</span>`)
+		card.RenderChildSnippetIf(card.FooterItem1 != nil, out, html.NewSnippet("span", `class="card-footer-item"`).AddContent(card.FooterItem1))
+		card.RenderChildSnippetIf(card.FooterItem2 != nil, out, html.NewSnippet("span", `class="card-footer-item"`).AddContent(card.FooterItem2))
+		card.RenderChildSnippetIf(card.FooterItem3 != nil, out, html.NewSnippet("span", `class="card-footer-item"`).AddContent(card.FooterItem3))
 		html.WriteString(out, `</div>`)
 	}
 	return nil

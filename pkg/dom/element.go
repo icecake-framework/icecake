@@ -332,7 +332,7 @@ func (_elem *Element) setAttribute(key string, value any, overwrite bool) error 
 			_elem.SetClasses(lst)
 		}
 	case "style":
-		// TODO: handle style update to not overwrite
+		// TODO: handle Element style update to not overwrite
 		found := _elem.Get("style").Type() == js.TYPE_STRING
 		if !found || overwrite {
 			var style string
@@ -598,31 +598,31 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 	return CastElements(elems)
 }
 
-// TODO: handle exceptions InsertRawHTML
-func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.HTMLString) {
+// TODO: handle Element.InsertRawHTML exceptions
+func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml string) {
 	if !_me.IsDefined() {
 		return
 	}
 	switch _where {
 	case INSERT_BEFORE_ME:
-		_me.Call("insertAdjacentHTML", "beforebegin", _unsafeHtml.String())
+		_me.Call("insertAdjacentHTML", "beforebegin", _unsafeHtml)
 	case INSERT_FIRST_CHILD:
-		_me.Call("insertAdjacentHTML", "afterbegin", _unsafeHtml.String())
+		_me.Call("insertAdjacentHTML", "afterbegin", _unsafeHtml)
 	case INSERT_LAST_CHILD:
-		_me.Call("insertAdjacentHTML", "beforeend", _unsafeHtml.String())
+		_me.Call("insertAdjacentHTML", "beforeend", _unsafeHtml)
 	case INSERT_AFTER_ME:
-		_me.Call("insertAdjacentHTML", "afterend", _unsafeHtml.String())
+		_me.Call("insertAdjacentHTML", "afterend", _unsafeHtml)
 	case INSERT_OUTER:
-		_me.Set("outerHTML", _unsafeHtml.String())
+		_me.Set("outerHTML", _unsafeHtml)
 	case INSERT_BODY:
-		_me.Set("innerHTML", _unsafeHtml.String())
+		_me.Set("innerHTML", _unsafeHtml)
 	}
 }
 
 // InsertHTML unfolds and renders the html of the _html and write it into the DOM.
 // All embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // Returns an error if _elem in not the DOM or if an error occurs during UnfoldHtml or mounting process.
-// HACK: better rendering with a reader ?
+// FIXME: InsertHTML
 func (_elem *Element) InsertHTML(_where INSERT_WHERE, htmltemplate html.HTMLString, ds *html.DataState) (_err error) {
 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
@@ -630,10 +630,10 @@ func (_elem *Element) InsertHTML(_where INSERT_WHERE, htmltemplate html.HTMLStri
 
 	temparent := &html.HTMLSnippet{}
 	out := new(bytes.Buffer)
-	_err = html.RenderHTML(out, temparent, []byte(htmltemplate.String()))
+	_err = html.RenderHTML(out, temparent, htmltemplate)
 	if _err == nil {
 		// insert the html element into the dom and wrapit
-		_elem.InsertRawHTML(_where, *html.NewString(out.String()))
+		_elem.InsertRawHTML(_where, out.String())
 		// mount every embedded components
 		embedded := temparent.Embedded()
 		if embedded != nil {
@@ -688,7 +688,7 @@ func (_elem *Element) InsertSnippet(where INSERT_WHERE, composer any, ds *html.D
 	}
 
 	// insert the html element into the dom and wrapit
-	_elem.InsertRawHTML(where, *html.NewString(out.String()))
+	_elem.InsertRawHTML(where, out.String())
 	if newe := Id(snippetid); newe != nil {
 		// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
 		if snippet, ok := composer.(UIComposer); ok {

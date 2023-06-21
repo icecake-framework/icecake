@@ -20,9 +20,6 @@ type ComposerMap map[string]any
 
 type HTMLComposer interface {
 
-	// SetDataState links an optional data states to the composer.
-	//SetDataState(ds *DataState)
-
 	// Tag returns a reference to the composer tag.
 	// Must not return nil otherwise rendering process will returns an error and custom code may panic.
 	Tag() *Tag
@@ -194,6 +191,13 @@ func (sw *stepway) closeick(i int) {
 	sw.startfield(i + 2)
 }
 
+func RenderHTMLIf(f bool, out io.Writer, parent HTMLComposer, htmls ...HTMLString) error {
+	if f {
+		return RenderHTML(out, parent, htmls...)
+	}
+	return nil
+}
+
 // RenderHTML lookups for ick-tags in the htmlstring and unfold each of them into out.
 //
 // htmlstring is a string combining usual HTML text and ick-tags. HTML content is transfered to the output without control and without changes.
@@ -207,8 +211,20 @@ func (sw *stepway) closeick(i int) {
 //   - If the HTML string contains ick-tag but the ick-tagname does not correspond to a Registered composer,
 //   - If the HTML string contains ick-tag with attributes but one value of these attribute is of a bad type,
 //
-// TODO implement rendering of ick-tag with content
-func RenderHTML(output io.Writer, parent HTMLComposer, htmlstring []byte) (err error) {
+// TODO: implement rendering of ick-tag with content inside
+func RenderHTML(out io.Writer, parent HTMLComposer, htmls ...HTMLString) error {
+	for _, html := range htmls {
+		err := renderHTML(out, parent, html)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func renderHTML(out io.Writer, parent HTMLComposer, htmlstr HTMLString) (err error) {
+
+	htmlstring := htmlstr.bs
 
 	field := func(s stepway) []byte {
 		return htmlstring[s.fieldat:s.fieldto]
@@ -244,10 +260,10 @@ nextbyte:
 			switch {
 			case i == ilast: // flush processed text field and exit
 				walk.fieldto = ilast + 1
-				output.Write(field(walk))
+				out.Write(field(walk))
 			case bopen_delim: // flush processed text field and start processing an ick-tage
 				walk.fieldto = i
-				output.Write(field(walk))
+				out.Write(field(walk))
 				walk.openick(i)
 				i += 5 - 1
 			default: // extend the text field
@@ -367,7 +383,7 @@ nextbyte:
 		}
 
 		if funfoldick {
-			errunf := unfoldick(parent, output, ickname, attrs, nick)
+			errunf := unfoldick(parent, out, ickname, attrs, nick)
 			if errunf != nil {
 				if errors.Is(errunf, ErrTooManyRecursiveRendering) || errors.Is(errunf, ErrTaglessParent) {
 					verbose.Printf(verbose.ALERT, errunf.Error())
@@ -424,7 +440,7 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, attrs Attribu
 				} else {
 					// this attribute is not a field of the componenent
 					// keep it as is unless it is the class attribute, in this case, add the attribute
-					// TODO TEST CLASS ADD
+					// TODO: test HTMLComposer, setting a class attribute
 					newcmptag.Attributes().SetAttribute(aname, avalue)
 				}
 			}
@@ -454,8 +470,8 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, attrs Attribu
 func updateproperty(prop reflect.Value, value string) (err error) {
 	switch prop.Type().String() {
 	case "html.HTMLString":
-		ps := NewString(value)
-		prop.Set(reflect.ValueOf(*ps))
+		s := string(HTML(value).Bytes())
+		prop.Set(reflect.ValueOf(s))
 	case "time.Duration":
 		var d time.Duration
 		d, err = time.ParseDuration(value)
@@ -493,7 +509,7 @@ func updateproperty(prop reflect.Value, value string) (err error) {
 			}
 			prop.SetBool(f)
 		default:
-			err = fmt.Errorf("unmanaged type %s", prop.Type().String()) // TODO: test prop.Kind().String() ?
+			err = fmt.Errorf("unmanaged type %s", prop.Type().String())
 		}
 	}
 	return err

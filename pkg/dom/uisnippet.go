@@ -73,7 +73,6 @@ func (_s *UISnippet) RemoveListeners() {
 // 	return _html
 // }
 
-// TODO: InsertSnippet within a parent ?
 // InsertSnippet insrets a _snippet within the _parent (according to the _where location) and add _parents lisneters
 // func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
 // 	if _parent == nil || !_parent.DOM.IsDefined() {

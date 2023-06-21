@@ -28,13 +28,13 @@ func (msg *Message) BuildTag(tag *html.Tag) {
 
 func (msg *Message) RenderContent(out io.Writer) error {
 	if !msg.Header.IsEmpty() {
-		var delhtml string
+		var delhtml html.HTMLString
 		if msg.CanDelete {
 			verbose.Printf(verbose.WARNING, "Message can delete TargetId=%s", msg.Id())
-			delhtml = `<ick-delete TargetID='` + msg.Id() + `'/>`
+			delhtml = html.HTML(`<ick-delete TargetID='` + msg.Id() + `'/>`)
 		}
-		html.WriteStrings(out, `<div class="message-header"><p>`, msg.Header.Content, `</p>`, delhtml, `</div>`)
+		html.RenderHTML(out, msg, html.HTML(`<div class="message-header"><p>`), msg.Header, html.HTML(`</p>`), delhtml, html.HTML(`</div>`))
 	}
-	html.WriteStringsIf(!msg.Message.IsEmpty(), out, `<div class="message-body">`, msg.Message.Content, `</div>`)
+	html.RenderHTMLIf(!msg.Message.IsEmpty(), out, msg, html.HTML(`<div class="message-body">`), msg.Message, html.HTML(`</div>`))
 	return nil
 }

@@ -8,13 +8,24 @@ import (
 	"path/filepath"
 )
 
+type HeadItem struct {
+	HTMLSnippet
+}
+
+func NewHeadItem(tagname string) *HeadItem {
+	item := new(HeadItem)
+	item.Tag().SetName(tagname)
+	item.Tag().Attributes().SetBool("noid", true)
+	return item
+}
+
 // An HTML5 file with its content.
 type HtmlPage struct {
-	Lang        string         // the html "lang" value.
-	Title       string         // the html "head/title" value.
-	Description string         // the html "head/meta description" value.
-	HeadItems   []*HTMLSnippet // the list of tags in the section <head>
-	Body        HTMLComposer   // the html snippet used during the content rendering.
+	Lang        string       // the html "lang" value.
+	Title       string       // the html "head/title" value.
+	Description string       // the html "head/meta description" value.
+	HeadItems   []*HeadItem  // the list of tags in the section <head>
+	Body        HTMLComposer // the html snippet used during the content rendering.
 
 	HTMLFileName string // the relative file name of this page. Should finish with the .html extension.
 }
@@ -23,30 +34,17 @@ type HtmlPage struct {
 func NewPage(_lang string) *HtmlPage {
 	f := new(HtmlPage)
 	f.Lang = _lang
-	f.HeadItems = make([]*HTMLSnippet, 0)
+	f.HeadItems = make([]*HeadItem, 0)
 	return f
 }
 
-// AddMeta add a meta tag
-func (f *HtmlPage) AddHeadMeta(attributes string) *HtmlPage {
-	meta := NewSnippet("meta", ParseAttributes(attributes).SetBool("noid", true))
-	f.HeadItems = append(f.HeadItems, meta)
+// AddHeadItem add a line in the <head> section of the page
+func (f *HtmlPage) AddHeadItem(tagname string, attributes string) *HtmlPage {
+	item := NewHeadItem(tagname)
+	item.Tag().ParseAttributes(attributes)
+	f.HeadItems = append(f.HeadItems, item)
 	return f
 }
-
-func (f *HtmlPage) AddHeadLink(attributes string) *HtmlPage {
-	link := NewSnippet("link", ParseAttributes(attributes).SetBool("noid", true))
-	f.HeadItems = append(f.HeadItems, link)
-	return f
-}
-
-func (f *HtmlPage) AddHeadScript(attributes string) *HtmlPage {
-	script := NewSnippet("script", ParseAttributes(attributes).SetBool("noid", true))
-	f.HeadItems = append(f.HeadItems, script)
-	return f
-}
-
-//TODO: AddHeadStyle
 
 // WriteHTMLFile creates or overwrites the file with htmlfilename name, adding the html extension,
 // and feeds it with the page content including the dictypen the header and the body.

@@ -52,8 +52,6 @@ type Button struct {
 
 	IsDisabled bool // Disabled state
 	IsLoading  bool // Loading button state
-
-	// TODO: handles buttons properties for color, size, display
 }
 
 // Ensure Button implements HTMLComposer interface
@@ -104,7 +102,7 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 	}
 	switch btn.ButtonType {
 	case BTN_TYPE_A:
-		amap.SetAttributeIf(href != "", "href", href, true)
+		amap.SetAttributeIf(href != "", "href", href)
 	case BTN_TYPE_SUBMIT:
 		amap.SetAttribute("type", "submit")
 	case BTN_TYPE_RESET:
@@ -125,6 +123,6 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 }
 
 func (btn *Button) RenderContent(out io.Writer) error {
-	err := btn.RenderChildSnippet(out, &btn.Title)
+	err := btn.RenderChildHTML(out, btn.Title)
 	return err
 }

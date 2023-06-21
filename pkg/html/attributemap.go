@@ -109,7 +109,7 @@ func (amap AttributeMap) setAttribute(name string, value string, update bool) (u
 // Use CheckAttribute to check name and value validity.
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
-func (amap AttributeMap) SetAttributeIf(condition bool, name string, value string, update bool) AttributeMap {
+func (amap AttributeMap) SetAttributeIf(condition bool, name string, value string) AttributeMap {
 	if condition {
 		amap.SetAttribute(name, value)
 	}
@@ -346,8 +346,8 @@ func (amap AttributeMap) SetStyle(style string) AttributeMap {
 	return amap
 }
 
+// TODO: html.checkstyle
 func checkstyle(style string) error {
-	//TODO check style string
 	return nil
 }
 

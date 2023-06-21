@@ -30,7 +30,7 @@ type Notify struct {
 	// Notify implements AddliSteners interface via the UISnippet embedded.
 	Delete Delete
 
-	// TODO: handle toast style
+	// TODO: handle Notify toast style
 	// Toast bool
 }
 

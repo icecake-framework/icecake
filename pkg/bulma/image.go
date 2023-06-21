@@ -92,13 +92,13 @@ func (_img *Image) RenderContent(out io.Writer) error {
 	if _img.Src != nil {
 		src = _img.Src.String()
 	}
-	// HACK: use NewSnippet
-	html.WriteString(out, `<img `)
-	html.WriteString(out, htmlRounded)
-	html.WriteString(out, `role="img" focusable="false" `)
-	html.WriteStringsIf(src != "", out, `src="`, src, `" `)
-	html.WriteStringsIf(_img.Alt != "", out, `alt="`, _img.Alt, `" `)
-	html.WriteString(out, `>`)
+
+	img := html.NewSnippet("img", `role="img" focusable="false"`, htmlRounded)
+	img.Tag().Attributes().
+		SetAttributeIf(src != "", "src", src).
+		SetAttributeIf(_img.Alt != "", "alt", _img.Alt)
+
+	_img.RenderChildSnippet(out, img)
 	return nil
 }
 

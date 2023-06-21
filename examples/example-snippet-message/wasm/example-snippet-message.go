@@ -17,26 +17,26 @@ func main() {
 
 	dom.MountCSSLinks()
 
-	msg1 := &bulma.Message{Message: html.String("This is a simple message without header.")}
+	msg1 := &bulma.Message{Message: html.HTML("This is a simple message without header.")}
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg1, nil)
 
 	msg2 := &bulma.Message{
-		Header:  html.String("simple message"),
-		Message: html.String("This is a simple message with a header."),
+		Header:  html.HTML("simple message"),
+		Message: html.HTML("This is a simple message with a header."),
 	}
 	msg2.Tag().Attributes().AddClasses("is-info")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 
 	msg3 := &bulma.Message{
-		Header:    html.String("message with delete button"),
+		Header:    html.HTML("message with delete button"),
 		CanDelete: true,
-		Message:   html.String("This message use the BULMA <i>is-warning</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message."),
+		Message:   html.HTML("This message use the BULMA <i>is-warning</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message."),
 	}
 	msg3.Tag().Attributes().AddClasses("is-warning")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg3, nil)
 
 	msg4 := &bulma.Message{
-		Header:    html.String("only header"),
+		Header:    html.HTML("only header"),
 		CanDelete: true,
 	}
 	msg4.Tag().Attributes().AddClasses("is-success")

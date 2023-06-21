@@ -77,16 +77,8 @@ func RegisterComposer(ickname string, composer any, css []string) (entry *regist
 }
 
 // TODO: RegisterHTMLString
-// RegisterHTMLSnippet allows registering a simple HTMLSnippet with a simple line of code.
-// The HTMLSnippet will be rendered every time the auto-closing ick-tag will be met within an html string.
-//
-// The _ickname must start by `ick-` followed by at least one character.
-// An error is returned in the following cases:
-//   - If the _ickname has already been registered
-//   - If the _ickname does not meet tye pattern "ick-*"
-//   - If the _composer does not implement the HTMLComposer interface
-//   - If parsing _template attributes fails
-// func RegisterHTMLSnippet(_ickname string, _template SnippetTemplate) (_err error) {
+// RegisterHTMLString allows registering a simple HTMLString with a simple line of code.
+// func RegisterHTMLString(_ickname string, _template SnippetTemplate) (_err error) {
 // 	s := new(HTMLSnippet)
 // 	s.TagName = _template.TagName
 // 	s.Body = _template.Body

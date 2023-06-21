@@ -4,42 +4,38 @@ import (
 	"io"
 )
 
-// HTMLString encapsulates a known safe string document fragment.
-// It should not be used for string from a third-party, or string with
-// unclosed tags or comments.
-//
-// Use of this type presents a security risk:
-// the encapsulated content should come from a trusted source,
-// as it will be included verbatim in the output.
+// HTMLString represents a string document fragment, mixing standard HTML syntax with ick-tags.
+// This string can be rendered to an output stream with the RenderHTML functions
 type HTMLString struct {
 	HTMLSnippet
-	Content string
+	bs []byte
 }
 
-func NewString(s string) *HTMLString {
+func HTML(s string) HTMLString {
 	h := new(HTMLString)
-	h.Content = s
+	h.bs = []byte(s)
+	return *h
+}
+
+func NewHTML(s string) *HTMLString {
+	h := new(HTMLString)
+	h.bs = []byte(s)
 	return h
 }
 
-func String(s string) HTMLString {
-	return HTMLString{Content: s}
+// String returns a copy of the content
+func (h HTMLString) Bytes() []byte {
+	b := h.bs
+	return b
 }
 
-// WriteHTML write the HTMLString to out
-func (strhtml HTMLString) RenderContent(out io.Writer) error {
-	_, err := WriteString(out, strhtml.Content)
-	return err
-}
-
-// String returns the content
-func (strhtml HTMLString) String() string {
-	return strhtml.Content
+func (h *HTMLString) RenderContent(out io.Writer) error {
+	return RenderHTML(out, h, *h)
 }
 
 // String returns the content
-func (strhtml HTMLString) IsEmpty() bool {
-	return strhtml.Content == ""
+func (s HTMLString) IsEmpty() bool {
+	return s.bs == nil || len(s.bs) == 0
 }
 
 type DataState struct {

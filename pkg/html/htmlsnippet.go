@@ -21,23 +21,19 @@ import (
 // HTMLSnippet can be instantiated by itself or it can be embedded into a struct to define a more customizable html component.
 type HTMLSnippet struct {
 	content []HTMLComposer // HTML composers to render within the enclosed tag.
-
-	tag Tag // HTML Element Tag with its attributes.
-
-	sub map[string]any // instantiated embedded sub-snippet if any.
-
-	ds *DataState // a reference to a datastate that can be used for rendering.
+	tag     Tag            // HTML Element Tag with its attributes.
+	sub     ComposerMap    // instantiated embedded sub-snippet if any.
+	ds      *DataState     // a reference to a datastate that can be used for rendering.
 }
 
 // Ensure HTMLSnippet implements HTMLComposer interface
 var _ HTMLComposer = (*HTMLSnippet)(nil)
 
 // NewSnippet returns a new HTMLSnippet with a given tag name, a map of attributes and a content.
-// All parameters are optional nevertheless if none of them are provided you should rather simply instantiate the HTMLSnippet struct.
-func NewSnippet(tagname string, amap AttributeMap) *HTMLSnippet {
+func NewSnippet(tagname string, attrlist ...string) *HTMLSnippet {
 	snippet := new(HTMLSnippet)
 	snippet.tag.SetName(tagname)
-	snippet.tag.attrs = amap
+	snippet.tag.ParseAttributes(attrlist...)
 	return snippet
 }
 
@@ -54,6 +50,16 @@ func (snippet *HTMLSnippet) AddContent(content ...HTMLComposer) *HTMLSnippet {
 	}
 	snippet.content = append(snippet.content, content...)
 	return snippet
+}
+
+// AddContent add one of many HTMLComposer for rendering inside the HTML tag of the snippet
+func (snippet *HTMLSnippet) InsertSnippet(tagname string, attrlist ...string) *HTMLSnippet {
+	if snippet.content == nil {
+		snippet.content = make([]HTMLComposer, 0)
+	}
+	s := NewSnippet(tagname, attrlist...)
+	snippet.content = append(snippet.content, s)
+	return s
 }
 
 // Tag returns a reference to the snippet tag.
@@ -90,7 +96,7 @@ func (parent *HTMLSnippet) RenderChildSnippetIf(condition bool, out io.Writer, c
 
 // RenderChildHTML renders an HTML template string into out.
 func (parent *HTMLSnippet) RenderChildHTML(out io.Writer, html HTMLString) error {
-	return RenderHTML(out, parent, []byte(html.Content))
+	return RenderHTML(out, parent, html)
 }
 
 // RenderContent writes the HTML string corresponing to the content of the HTML element.
@@ -122,5 +128,8 @@ func (s *HTMLSnippet) Embed(id string, subcmp HTMLComposer) {
 
 // Embedded returns the map of embedded components, keyed by their id.
 func (s HTMLSnippet) Embedded() ComposerMap {
+	if s.sub == nil {
+		s.sub = make(ComposerMap, 1)
+	}
 	return s.sub
 }

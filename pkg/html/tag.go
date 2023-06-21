@@ -65,13 +65,15 @@ func (tag *Tag) Attributes() AttributeMap {
 // ParseAttributes tries to parse attributes to the tag and ignore errors.
 // alist will be added or will update existing tag attributes.
 // errors are logged out if verbose mode is on.
-func (tag *Tag) ParseAttributes(alist string) AttributeMap {
+func (tag *Tag) ParseAttributes(alists ...string) AttributeMap {
 	if tag.attrs == nil {
 		tag.attrs = make(AttributeMap)
 	}
-	amap := ParseAttributes(alist)
-	for k, v := range amap {
-		tag.attrs[k] = v
+	for _, alist := range alists {
+		amap := ParseAttributes(alist)
+		for k, v := range amap {
+			tag.attrs[k] = v
+		}
 	}
 	return tag.attrs
 }
