@@ -101,6 +101,7 @@ func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (er
 		cmpname = reflect.TypeOf(snippet).Elem().Name()
 		icktagname = "ick-" + cmpname
 	}
+	cmpname = strings.ToLower(cmpname)
 
 	// build the tag with the reference given by tha snippet himself
 	tag := snippet.Tag()
@@ -110,7 +111,6 @@ func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (er
 
 	// Define the id and the virtual id
 	id := tag.Attributes().Id()
-
 	virtualid := parentvirtid + "." + cmpname
 	if parentvirtid == "orphan" {
 		virtualid = registry.GetUniqueId(virtualid)
@@ -118,7 +118,6 @@ func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (er
 		virtualid += "-" + strconv.Itoa(tag.seq)
 	}
 
-	tag.virtualid = virtualid
 	if tag.Attributes().Is("noid") {
 		id = ""
 		tag.Attributes().RemoveAttribute("id")
@@ -126,11 +125,23 @@ func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (er
 		if id == "" || deep > 0 {
 			id = virtualid
 			tag.Attributes().SetId(id)
+		} else {
+			virtualid = id
 		}
 	}
+	tag.virtualid = virtualid
 
 	// verbose information
-	verbose.Printf(verbose.INFO, "writting snippet (%s) vid=%q id=%q deep:%v\n", reflect.TypeOf(snippet).String(), virtualid, id, deep)
+	var strid string
+	if verbose.IsOn {
+		if id == "" {
+			strid = `vid="` + virtualid + `"`
+		} else {
+
+			strid = `id="` + id + `"`
+		}
+		verbose.Printf(verbose.INFO, "rendering snippet %v (%s) %s\n", deep, reflect.TypeOf(snippet).String(), strid)
+	}
 
 	// render openingtag
 	selfclosed, errtag := tag.RenderOpening(out)
@@ -376,7 +387,7 @@ nextbyte:
 //   - If the HTML string contains ick-tag with attributes but one value of these attribute is of a bad type,
 func unfoldick(parent HTMLComposer, out io.Writer, ickname string, attrs AttributeMap, seq int) (err error) {
 
-	verbose.Debug("unfolding component %q\n", ickname)
+	verbose.Debug("unfolding component %q", ickname)
 
 	// does this tag refer to a registered component ?
 	regentry := registry.GetRegistryEntry(ickname)
