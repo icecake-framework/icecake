@@ -392,8 +392,7 @@ func (amap AttributeMap) IsDisabled() bool {
 
 // SetDisabled set the boolean disabled attribute
 func (amap AttributeMap) SetDisabled(f bool) AttributeMap {
-	amap.saveAttribute("disabled", "", true)
-	return amap
+	return amap.SetBool("disabled", f)
 }
 
 // Strings returns the formated list of attributes, ready to use to generate the container element.
