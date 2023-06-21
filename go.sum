@@ -24,6 +24,8 @@ github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/sunraylab/verbose v1.2.4 h1:+SAcM6GONNqYweYWA1zJHCw1XkQBCGqN7TCU6D9YKLY=
 github.com/sunraylab/verbose v1.2.4/go.mod h1:j6ioDGFaZJdXnqaoDO44rbxsFWQvbg/GvqIROFx7Vyc=
+github.com/sunraylab/verbose v1.2.5 h1:92qDgLtqD5o/4okjmXd8yNwhG13ztKyB8APiTP7NYso=
+github.com/sunraylab/verbose v1.2.5/go.mod h1:j6ioDGFaZJdXnqaoDO44rbxsFWQvbg/GvqIROFx7Vyc=
 github.com/yuin/goldmark v1.4.15/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 github.com/yuin/goldmark v1.5.4 h1:2uY/xC0roWy8IBEGLgB1ywIoEJFGmRrX21YQcvGZzjU=
 github.com/yuin/goldmark v1.5.4/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=

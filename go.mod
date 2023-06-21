@@ -9,7 +9,7 @@ require (
 
 require (
 	github.com/stretchr/testify v1.8.2
-	github.com/sunraylab/verbose v1.2.4
+	github.com/sunraylab/verbose v1.2.5
 	github.com/yuin/goldmark v1.5.4
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20220924101305-151362477c87
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1

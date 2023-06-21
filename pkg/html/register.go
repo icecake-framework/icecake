@@ -71,7 +71,7 @@ func RegisterComposer(ickname string, composer any, css []string) (entry *regist
 
 	entry = registry.AddRegistryEntry(ickname, composer, css)
 
-	verbose.Debug("registering composer %s(%s) with success\n", ickname, typ.String())
+	verbose.Debug("registering composer %s(%s) with success", ickname, typ.String())
 
 	return entry, nil
 }
