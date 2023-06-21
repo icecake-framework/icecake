@@ -85,7 +85,21 @@ func main() {
 			Content:  html.NewHTML("<small>Alpha</small>")}),
 	)
 
-	body := html.NewSnippet("body", `id="body"`).AddContent(navbar, &MyFooter{})
+	hero := html.NewHTML(
+		`<section class="hero is-fullheight-with-navbar">
+			<div class="hero-body">
+				<div class="container has-text-centered">
+					<p class="title is-2">
+						Develop Static Websites and SPA only in Go.
+					</p>
+					<p class="subtitle">
+						Go Web Assembly Framework
+					</p>
+				</div>
+			</div>
+		</section>`)
+
+	body := html.NewSnippet("body", `id="body"`).AddContent(navbar, hero, &MyFooter{})
 
 	index.Body = body
 
