@@ -1,7 +1,6 @@
 package html
 
 import (
-	"bytes"
 	"io"
 	"reflect"
 
@@ -23,8 +22,7 @@ import (
 type HTMLSnippet struct {
 	Content HTMLComposer // the HTML composer to render within the enclosed tag.
 
-	// FIXME taggg
-	tagg Tag // HTML Element Tag with its attributes.
+	tag Tag // HTML Element Tag with its attributes.
 
 	sub map[string]any // instantiated embedded sub-snippet if any.
 
@@ -38,8 +36,8 @@ var _ HTMLComposer = (*HTMLSnippet)(nil)
 // All parameters are optional nevertheless if none of them are provided you should rather simply instantiate the HTMLSnippet struct.
 func NewSnippet(tagname string, amap AttributeMap) *HTMLSnippet {
 	snippet := new(HTMLSnippet)
-	snippet.tagg.SetName(tagname)
-	snippet.tagg.attrs = amap
+	snippet.tag.SetName(tagname)
+	snippet.tag.attrs = amap
 	return snippet
 }
 
@@ -57,7 +55,7 @@ func (snippet *HTMLSnippet) SetContent(content HTMLComposer) *HTMLSnippet {
 
 // Tag returns a reference to the snippet tag.
 func (s *HTMLSnippet) Tag() *Tag {
-	return &s.tagg
+	return &s.tag
 }
 
 // This default implementation of BuildTag does nothing.
@@ -68,20 +66,7 @@ func (s *HTMLSnippet) BuildTag(tag *Tag) {
 // Id Returns the id of the Snippet.
 // Can be empty.
 func (s HTMLSnippet) Id() string {
-	return s.tagg.Attributes().Id()
-}
-
-// String renders the snippet and returns its corresponding HTML string.
-// errors are logged out if verbose mode is turned on.
-// Returns an empty string if an error occurs.
-func (s *HTMLSnippet) String() string {
-	out := new(bytes.Buffer)
-	err := RenderSnippet(out, nil, s)
-	if err != nil {
-		verbose.Error("RenderSnippet", err)
-		return ""
-	}
-	return out.String()
+	return s.tag.Attributes().Id()
 }
 
 // RenderSnippet writes the HTML string the tag element and the content of the composer to the writer.
@@ -102,7 +87,6 @@ func (parent *HTMLSnippet) RenderChildSnippetIf(condition bool, out io.Writer, c
 
 // RenderChildHTML renders an HTML template string into out.
 func (parent *HTMLSnippet) RenderChildHTML(out io.Writer, html HTMLString) error {
-	// FIXME call child, and call render html at a very low level within html
 	return RenderHTML(out, parent, []byte(html.Content))
 }
 
@@ -122,13 +106,13 @@ func (s *HTMLSnippet) RenderContent(out io.Writer) (err error) {
 func (s *HTMLSnippet) Embed(id string, subcmp HTMLComposer) {
 	strid := helper.Normalize(id)
 	if s.sub == nil {
-		s.sub = make(map[string]any, 1)
+		s.sub = make(ComposerMap, 1)
 	}
 	s.sub[strid] = subcmp
 	verbose.Debug("embedding (%v) %q\n", reflect.TypeOf(subcmp).String(), strid)
 }
 
 // Embedded returns the map of embedded components, keyed by their id.
-func (s HTMLSnippet) Embedded() map[string]any {
+func (s HTMLSnippet) Embedded() ComposerMap {
 	return s.sub
 }

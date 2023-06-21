@@ -72,18 +72,6 @@ func TestComposeBasics(t *testing.T) {
 	require.Equal(t, `<div id="tst" name="ick-testsnippet2" class="ts2a ts2b" a2 a4 style="display=test;" tabindex=2></div>`, out.String())
 }
 
-func TestComposeDataState(t *testing.T) {
-	// out := new(bytes.Buffer)
-	// s3 := new(testsnippet3)
-	// ds := &DataState{
-	// 	App: "hello world",
-	// }
-	// s3.SetDataState(ds)
-	// err := RenderSnippet(out, nil, s3)
-	// require.NoError(t, err)
-	// require.Equal(t, `data.app=hello world`, out.String())
-}
-
 func TestUnfoldBody1(t *testing.T) {
 
 	registry.ResetRegistry()
@@ -112,7 +100,7 @@ func TestUnfoldBody1(t *testing.T) {
 	out.Reset()
 	err = RenderHTML(out, nil, []byte("<ick-testsnippet4 Content='test'/>"))
 	require.NoError(t, err)
-	require.Equal(t, `<!--ick-testsnippet4 attribute Content: unmanaged type html.HTMLComposer-->`, out.String())
+	require.Equal(t, `<!--ick-testsnippet4: "Content" attribute: unmanaged type html.HTMLComposer-->`, out.String())
 
 	out.Reset()
 	err = RenderHTML(out, nil, []byte("<ick-testsnippet4 IsOk=true/>"))
@@ -128,6 +116,26 @@ func TestUnfoldBody1(t *testing.T) {
 	err = RenderHTML(out, nil, []byte(`<ick-testsnippet4 HTML="<strong>STRONG</strong>"/>`))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-5" name="ick-testsnippet4"><strong>STRONG</strong></div>`, out.String())
+
+	out.Reset()
+	err = RenderHTML(out, nil, []byte(`<ick-testsnippet4 I=777/>`))
+	require.NoError(t, err)
+	require.Equal(t, `<div id="orphan.testsnippet4-6" name="ick-testsnippet4">777</div>`, out.String())
+
+	out.Reset()
+	err = RenderHTML(out, nil, []byte(`<ick-testsnippet4 F=777.777/>`))
+	require.NoError(t, err)
+	require.Equal(t, `<div id="orphan.testsnippet4-7" name="ick-testsnippet4">777.777</div>`, out.String())
+
+	out.Reset()
+	err = RenderHTML(out, nil, []byte(`<ick-testsnippet4 D=5h30m40s/>`))
+	require.NoError(t, err)
+	require.Equal(t, `<div id="orphan.testsnippet4-8" name="ick-testsnippet4">6h30m40s</div>`, out.String())
+
+	out.Reset()
+	err = RenderHTML(out, nil, []byte(`<ick-testsnippet4 U="/icecake.dev"/>`))
+	require.NoError(t, err)
+	require.Equal(t, `<div id="orphan.testsnippet4-9" name="ick-testsnippet4"><a href='/icecake.dev'></a></div>`, out.String())
 }
 
 func TestUnfoldBody2(t *testing.T) {
@@ -393,22 +401,6 @@ func TestComposeEmbedded(t *testing.T) {
 	}
 }
 
-func TestUnfoldbody3(t *testing.T) {
-
-	html := `<ick-button class="m-2 is-primary is-light" data-example=6 Title="Embedded" IsOutlined/>`
-
-	out := new(bytes.Buffer)
-	err := RenderHTML(out, nil, []byte(html))
-	require.NoError(t, err)
-	// require.NotNil(t, embedded)
-
-	// for _, sub := range embedded {
-	// 	_, ok := sub.(HTMLComposer)
-	// 	assert.True(t, ok)
-	// }
-}
-
-// TODO: TestSnippetId
 func TestSnippetId(t *testing.T) {
 
 	registry.ResetRegistry()
@@ -418,46 +410,80 @@ func TestSnippetId(t *testing.T) {
 
 	// A> setup an ID upfront, before rendering
 	cmpA := &testsnippet0{}
-	// A.1> withid = false
-	cmpA.Tag().Attributes().SetId("idA1").SetAttribute("noid", "")
+	// A.1> with no id
+	cmpA.Tag().Attributes().SetId("idA1").SetBool("noid", true)
 	err := RenderSnippet(out, nil, cmpA)
-	if err != nil {
-		t.Error(err)
-	}
-	if cmpA.Id() != "" {
-		t.Errorf("id must be empty: %s", cmpA.Id())
-	}
+	require.NoError(t, err)
+	require.Empty(t, cmpA.Id())
+	require.NotContains(t, out.String(), `id=`)
 
-	// A.2> withid = true
+	// A.2> with forced id
 	out.Reset()
-	cmpA.Tag().Attributes().SetId("IdA2")
+	cmpA.Tag().Attributes().SetId("IdA2").SetBool("noid", false)
 	err = RenderSnippet(out, nil, cmpA)
-	if err != nil {
-		t.Error(err)
-	}
-	if cmpA.Id() != "IdA2" {
-		t.Errorf(`wrong snippet Id. Get %q, want:"IdA2"`, cmpA.Id())
-	}
+	require.NoError(t, err)
+	require.Equal(t, "IdA2", cmpA.Id())
+	require.Contains(t, out.String(), `id="IdA2"`)
 
-	// B> setup an ID into the template, during rendering
+	// B> setup an ID into the tagbuilder
 	cmpB := new(testsnippetid)
-	// B.1> withid = false
+	// B.1> withid noid
 	out.Reset()
+	cmpB.Tag().Attributes().SetBool("noid", true)
 	err = RenderSnippet(out, nil, cmpB)
-	if err != nil {
-		t.Error(err)
-	}
-	if cmpB.Id() != "" {
-		t.Errorf("id must be empty: %s", cmpB.Id())
-	}
+	require.NoError(t, err)
+	require.Empty(t, cmpB.Id())
+	require.NotContains(t, out.String(), `id=`)
 
-	// B.2> withid = true
+	// B.2> with forced id
 	out.Reset()
+	cmpB.Tag().Attributes().SetBool("noid", false)
 	err = RenderSnippet(out, nil, cmpB)
-	if err != nil {
-		t.Error(err)
-	}
-	if cmpB.Id() != "ick-1" {
-		t.Errorf(`wrong snippet Id. Get %q, want:"ick-1"`, cmpB.Id())
-	}
+	require.NoError(t, err)
+	require.Equal(t, "IdTemplate1", cmpB.Id())
+	require.Contains(t, out.String(), `id="IdTemplate1"`)
+
+	// C> setup an ID into the icktag
+	registry.AddRegistryEntry("ick-testsnippetid", &testsnippetid{}, nil)
+	// C.1> without parent
+	out.Reset()
+	err = RenderHTML(out, nil, []byte(`<ick-testsnippetid/>`))
+	require.NoError(t, err)
+	require.Equal(t, `<span id="IdTemplate1" name="ick-testsnippetid"></span>`, out.String())
+
+	// C.2> with a parent
+	out.Reset()
+	err = RenderHTML(out, cmpA, []byte(`<ick-testsnippetid/>`))
+	require.NoError(t, err)
+	require.Equal(t, `<span id="orphan.testsnippet0-2.testsnippetid-0" name="ick-testsnippetid"></span>`, out.String())
+
+	// C.2> with a parent and noid
+	out.Reset()
+	err = RenderHTML(out, cmpA, []byte(`<ick-testsnippetid noid/>`))
+	require.NoError(t, err)
+	require.Equal(t, `<span name="ick-testsnippetid" noid></span>`, out.String())
+
+}
+
+func TestHTMLSnippetContent(t *testing.T) {
+
+	out := new(bytes.Buffer)
+
+	s := NewSnippet("div", ParseAttributes("noid"))
+	s.Content = &HTMLString{Content: "<i>test</i>"}
+	err := RenderSnippet(out, nil, s)
+	require.NoError(t, err)
+	require.Equal(t, `<div name="ick-HTMLSnippet" noid><i>test</i></div>`, out.String())
+}
+
+func TestComposeDataState(t *testing.T) {
+	// out := new(bytes.Buffer)
+	// s3 := new(testsnippet3)
+	// ds := &DataState{
+	// 	App: "hello world",
+	// }
+	// s3.SetDataState(ds)
+	// err := RenderSnippet(out, nil, s3)
+	// require.NoError(t, err)
+	// require.Equal(t, `data.app=hello world`, out.String())
 }

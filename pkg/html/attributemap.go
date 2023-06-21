@@ -23,6 +23,10 @@ import (
 // HTML Attributes name are case insensitive: https://www.w3.org/TR/2010/WD-html-markup-20101019/documents.html
 type AttributeMap map[string]string // map of HTML tag attributes
 
+func MakeAttributeMap() AttributeMap {
+	return make(AttributeMap)
+}
+
 // Reset deletes all attributes in the map.
 func (amap AttributeMap) Reset() AttributeMap {
 	for k := range amap {

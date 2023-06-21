@@ -1,7 +1,10 @@
 package html
 
 import (
+	"fmt"
 	"io"
+	"net/url"
+	"time"
 )
 
 // testsnippet0
@@ -35,6 +38,11 @@ func (testsnippet2) BuildTag(tag *Tag) {
 	tag.ParseAttributes(`class="ts2a ts2b" tabindex=2 style="display=test;" a2`)
 }
 
+func (tst *testsnippet2) RenderContent(out io.Writer) error {
+	err := tst.RenderChildHTML(out, tst.Html)
+	return err
+}
+
 // testsnippet3
 // type testsnippet3 struct{ HTMLSnippet }
 
@@ -49,6 +57,10 @@ type testsnippet4 struct {
 	IsOk bool
 	Text string
 	HTML HTMLString
+	I    int
+	F    float64
+	D    time.Duration
+	U    *url.URL
 }
 
 func (s *testsnippet4) BuildTag(tag *Tag) {
@@ -59,6 +71,10 @@ func (s *testsnippet4) BuildTag(tag *Tag) {
 func (s *testsnippet4) RenderContent(out io.Writer) error {
 	WriteStringsIf(s.Text != "", out, s.Text)
 	s.RenderChildHTML(out, s.HTML)
+	WriteStringsIf(s.I != 0, out, fmt.Sprintf("%v", s.I))
+	WriteStringsIf(s.F != 0, out, fmt.Sprintf("%v", s.F))
+	WriteStringsIf(s.D != 0, out, fmt.Sprintf("%v", s.D+(time.Hour*1)))
+	WriteStringsIf(s.U != nil, out, fmt.Sprintf("<a href='%v'></a>", s.U))
 	return nil
 }
 
@@ -68,3 +84,12 @@ type testsnippetinfinite struct{ HTMLSnippet }
 func (s *testsnippetinfinite) RenderContent(out io.Writer) error {
 	return s.RenderChildHTML(out, *NewString("<ick-testinfinite/>"))
 }
+
+// testsnippetinfinite
+type testcustomcomposer struct{}
+
+func (s *testcustomcomposer) Tag() *Tag                            { return nil }
+func (s *testcustomcomposer) BuildTag(tag *Tag)                    {}
+func (s *testcustomcomposer) RenderContent(out io.Writer) error    { return nil }
+func (s *testcustomcomposer) Embedded() ComposerMap                { return nil }
+func (s *testcustomcomposer) Embed(id string, subcmp HTMLComposer) {}

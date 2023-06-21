@@ -1,10 +1,7 @@
 package html
 
 import (
-	"fmt"
 	"io"
-	"net/url"
-	"reflect"
 )
 
 // HTMLString encapsulates a known safe string document fragment.
@@ -92,31 +89,31 @@ func mini(a int, b int) int {
 	}
 }
 
-func debugValue(_v reflect.Value) {
-	fmt.Printf("Type: %s\n", _v.Type().String())
+// func debugValue(_v reflect.Value) {
+// 	fmt.Printf("Type: %s\n", _v.Type().String())
 
-	n := _v.Type().NumMethod()
-	fmt.Printf("Nb Method: %v\n", n)
-	for i := 0; i < n; i++ {
-		m := _v.Method(i)
-		name := _v.Type().Method(i).Name
-		fmt.Printf("Method %v: %s %s '%v'\n", i, name, m.String(), m)
-	}
+// 	n := _v.Type().NumMethod()
+// 	fmt.Printf("Nb Method: %v\n", n)
+// 	for i := 0; i < n; i++ {
+// 		m := _v.Method(i)
+// 		name := _v.Type().Method(i).Name
+// 		fmt.Printf("Method %v: %s %s '%v'\n", i, name, m.String(), m)
+// 	}
 
-	n = _v.NumField()
-	fmt.Printf("Nb Field: %v\n", n)
-	for i := 0; i < n; i++ {
-		m := _v.Field(i)
-		name := _v.Type().Field(i).Name
-		fmt.Printf("Field %v: %v %v '%v'\n", i, name, m.Type().String(), m)
-	}
-}
+// 	n = _v.NumField()
+// 	fmt.Printf("Nb Field: %v\n", n)
+// 	for i := 0; i < n; i++ {
+// 		m := _v.Field(i)
+// 		name := _v.Type().Field(i).Name
+// 		fmt.Printf("Field %v: %v %v '%v'\n", i, name, m.Type().String(), m)
+// 	}
+// }
 
-func debugAny(_v any) {
-	fmt.Printf("Type: %v\n", reflect.TypeOf(_v).String())
-	fmt.Printf("Type: %v\n", reflect.ValueOf(_v).Interface())
+// func debugAny(_v any) {
+// 	fmt.Printf("Type: %v\n", reflect.TypeOf(_v).String())
+// 	fmt.Printf("Type: %v\n", reflect.ValueOf(_v).Interface())
 
-	_, ok := _v.(*url.URL)
-	fmt.Printf("Type url.URL: %v\n", ok)
+// 	_, ok := _v.(*url.URL)
+// 	fmt.Printf("Type url.URL: %v\n", ok)
 
-}
+// }

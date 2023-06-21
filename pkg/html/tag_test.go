@@ -8,23 +8,28 @@ import (
 
 func ExampleTag() {
 
-	tag := NewTag("div", ParseAttributes(`class="example"`))
+	render := func(w io.Writer, tag Tag, s string) {
+		tag.RenderOpening(w)
+		io.WriteString(w, s)
+		tag.RenderClosing(w)
+	}
+
+	// create a new div tag
+	tag := NewTag("div", ParseAttributes(`class="example dark"`))
 
 	out := new(bytes.Buffer)
-	tag.RenderOpening(out)
-	io.WriteString(out, "content")
-	tag.RenderClosing(out)
+	render(out, *tag, "example1")
 	fmt.Println(out.String())
 
-	highlight := true
-	tag.Attributes().SwitchClass("example", "example2").SetName("ex").AddClassesIf(highlight, "lightcolor")
+	// update div tag
+	active := true
+	tag.Attributes().SwitchClass("dark", "light").AddClassesIf(active, "is-active")
+
 	out.Reset()
-	tag.RenderOpening(out)
-	io.WriteString(out, "content")
-	tag.RenderClosing(out)
+	render(out, *tag, "example2")
 	fmt.Println(out.String())
 
 	// output:
-	// <div class="example">content</div>
-	// <div name="ex" class="example2 lightcolor">content</div>
+	// <div class="example dark">example1</div>
+	// <div class="example light is-active">example2</div>
 }

@@ -27,14 +27,14 @@ import (
 func RegisterComposer(ickname string, composer any, css []string) (entry *registry.RegistryEntry, err error) {
 	typ := reflect.TypeOf(composer)
 	if typ.Kind() != reflect.Pointer {
-		err = fmt.Errorf("registering composer %q failed: must register a pointer to a component not a component", typ.String())
+		err = fmt.Errorf("registering composer %q failed: must register by reference not by value", typ.String())
 		log.Println(err.Error())
 		return nil, err
 	}
 
 	cmp, ok := composer.(HTMLComposer)
 	if !ok {
-		err = fmt.Errorf("registering composer %q failed: must be an HTMLComposer", typ.String())
+		err = fmt.Errorf("registering composer %q failed: must implement HTMLComposer interface", typ.String())
 		log.Println(err.Error())
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func RegisterComposer(ickname string, composer any, css []string) (entry *regist
 		return nil, err
 	}
 
-	if len(ickname) == 0 {
+	if len(ickname) <= 4 {
 		err = fmt.Errorf("registering composer %q failed: name missing", typ.String())
 		log.Println(err.Error())
 		return nil, err
@@ -76,7 +76,7 @@ func RegisterComposer(ickname string, composer any, css []string) (entry *regist
 	return entry, nil
 }
 
-// TODO: RegisterHTMLSnippet
+// TODO: RegisterHTMLString
 // RegisterHTMLSnippet allows registering a simple HTMLSnippet with a simple line of code.
 // The HTMLSnippet will be rendered every time the auto-closing ick-tag will be met within an html string.
 //

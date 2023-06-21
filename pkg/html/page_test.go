@@ -3,16 +3,17 @@ package html
 import (
 	"bytes"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestDefaultPage(t *testing.T) {
+func TestEmptyPage(t *testing.T) {
 
 	dft := NewPage("en")
 	out := new(bytes.Buffer)
-	dft.Render(out)
-
-	if out.String() != `<!doctype html><html lang="en"><head><META charset="utf-8"></head><body></body></html>` {
-		t.Fail()
-	}
+	err := dft.Render(out)
+	require.NoError(t, err)
+	assert.Equal(t, `<!doctype html><html lang="en"><head></head></html>`, out.String())
 
 }

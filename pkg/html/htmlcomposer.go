@@ -16,20 +16,7 @@ import (
 	"github.com/sunraylab/verbose"
 )
 
-var (
-	ErrTaglessParent             = errors.New("tagless parent")
-	ErrTooManyRecursiveRendering = errors.New("too many recursive rendering")
-	ErrIckTagNameMissing         = errors.New("'opening <ick-' tag found without name")
-)
-
-type IckTagNameError struct {
-	TagName string
-	Message string
-}
-
-func (e *IckTagNameError) Error() string {
-	return fmt.Sprintf("%s: %s", e.TagName, e.Message)
-}
+type ComposerMap map[string]any
 
 type HTMLComposer interface {
 
@@ -50,7 +37,7 @@ type HTMLComposer interface {
 	RenderContent(out io.Writer) error
 
 	// Embedded returns all sub-composers
-	Embedded() map[string]any
+	Embedded() ComposerMap
 
 	// Embed embeds sub-composers
 	Embed(id string, subcmp HTMLComposer)
@@ -420,7 +407,7 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, attrs Attribu
 					// feed data struct with the value
 					field := newref.Elem().FieldByName(aname)
 					if erru := updateproperty(field, avalue); erru != nil {
-						err = &IckTagNameError{TagName: ickname, Message: fmt.Sprintf("attr %s: %s", aname, erru.Error())}
+						err = &IckTagNameError{TagName: ickname, Message: fmt.Sprintf("%q attribute: %s", aname, erru)}
 						break
 					}
 				} else {
@@ -476,7 +463,7 @@ func updateproperty(prop reflect.Value, value string) (err error) {
 		switch prop.Kind() {
 		case reflect.String:
 			prop.SetString(value)
-		case reflect.Int64:
+		case reflect.Int:
 			var i int
 			i, err = strconv.Atoi(value)
 			if err == nil {
@@ -495,7 +482,7 @@ func updateproperty(prop reflect.Value, value string) (err error) {
 			}
 			prop.SetBool(f)
 		default:
-			return fmt.Errorf("unmanaged type %s", prop.Type().String()) // TODO: test prop.Kind().String() ?
+			err = fmt.Errorf("unmanaged type %s", prop.Type().String()) // TODO: test prop.Kind().String() ?
 		}
 	}
 	return err

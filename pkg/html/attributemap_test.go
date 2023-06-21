@@ -12,7 +12,7 @@ func TestAttribute(t *testing.T) {
 	amap.SetAttribute("a", "1")
 	assert.Equal(t, AttributeMap{"a": "1"}, amap)
 
-	amap.SetAttribute("a", "2")
+	amap.TrySetAttribute("a", "2")
 	assert.Equal(t, AttributeMap{"a": "1"}, amap)
 
 	amap.SetAttribute("a", "3")
@@ -61,6 +61,23 @@ func TestAttribute(t *testing.T) {
 
 	amap.SetBool("disabled", true)
 	assert.True(t, amap.Is("disabled"))
+
+	amap.Reset()
+	amap.SetName("icecake")
+	assert.Equal(t, AttributeMap{"name": "icecake"}, amap)
+
+	amap.SetId("Icecake")
+	assert.Equal(t, AttributeMap{"id": "Icecake", "name": "icecake"}, amap)
+
+	amap.SetUniqueId("Icecake")
+	assert.Equal(t, AttributeMap{"id": "icecake-1", "name": "icecake"}, amap)
+
+	v, f := amap.Attribute("ID")
+	assert.True(t, f)
+	assert.Equal(t, "icecake-1", v)
+
+	assert.False(t, amap.Is("missing"))
+
 }
 
 func TestCheckAttribute(t *testing.T) {

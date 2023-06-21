@@ -13,10 +13,11 @@ var theRegistry registry
 
 // RegistryEntry defines a component
 type RegistryEntry struct {
-	mu             sync.Mutex
-	tagname        string   // unique name of the component
-	cmp            any      // The component type that must be instantiated. This must be a pointer.
-	count          int      // number of time this object has already been instantiated
+	mu         sync.Mutex
+	icktagname string // unique name of the component
+	cmp        any    // The component type that must be instantiated. This must be a reference.
+	count      int    // number of time this cmp has already been instantiated
+
 	csslinkref     []string // slice of required stylesheet link ref for this component. will be added once into the head of the page
 	csslinkmounted bool
 }
@@ -31,7 +32,7 @@ func (_r *RegistryEntry) Count() int {
 
 // Name returns the unique name of the component
 func (_r RegistryEntry) TagName() string {
-	return _r.tagname
+	return _r.icktagname
 }
 
 // Component returns the component type that must be instantiated
@@ -90,9 +91,9 @@ func AddRegistryEntry(name string, cmp any, css []string) *RegistryEntry {
 	name = helper.Normalize(name)
 
 	entry := RegistryEntry{
-		tagname: name,
-		cmp:     cmp,
-		count:   0,
+		icktagname: name,
+		cmp:        cmp,
+		count:      0,
 	}
 	if css != nil {
 		entry.csslinkref = make([]string, len(css))
@@ -115,7 +116,7 @@ func GetRegistryEntry(_name string) *RegistryEntry {
 	}
 	regentry, found := theRegistry.entries[_name]
 	if !found {
-		regentry = &RegistryEntry{tagname: _name}
+		regentry = &RegistryEntry{icktagname: _name}
 	}
 	return regentry
 }
@@ -135,14 +136,15 @@ func LookupRegistryEntry(_cmp any) *RegistryEntry {
 	return nil
 }
 
-// GetUniqueId returns a unique id starting with _prefix.
-// if _prefix is empty "ick-" is used to prefix the returned id.
+// GetUniqueId returns a unique id starting with prefix.
+// if prefix is empty "ick-" is used to prefix the returned id.
+// The returned id is always lowercase.
 // GetUniqueId is thread safe.
-func GetUniqueId(_prefix string) string {
-	regentry := GetRegistryEntry(_prefix)
+func GetUniqueId(prefix string) string {
+	regentry := GetRegistryEntry(prefix)
 	idx := regentry.Count()
-	theRegistry.entries[regentry.tagname] = regentry
-	return regentry.tagname + "-" + strconv.Itoa(idx)
+	theRegistry.entries[regentry.icktagname] = regentry
+	return regentry.icktagname + "-" + strconv.Itoa(idx)
 }
 
 // ResetRegistry is only used for testing

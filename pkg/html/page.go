@@ -98,7 +98,7 @@ func (page *HtmlPage) WriteHTMLFile(path string) (err error) {
 // RenderContent turns HtmlPage into a valid HTML syntax and write it to out
 func (page *HtmlPage) Render(out io.Writer) (err error) {
 
-	WriteStrings(out, `<!doctype html><html lang="`, page.Lang, `">)`)
+	WriteStrings(out, `<!doctype html><html lang="`, page.Lang, `">`)
 
 	WriteStrings(out, `<head>`)
 	WriteStringsIf(page.Title != "", out, "<title>", page.Title, "</title>")
