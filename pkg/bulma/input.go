@@ -47,7 +47,7 @@ func (inputfield *InputField) BuildTag(tag *html.Tag) {
 
 func (inputfield *InputField) RenderContent(out io.Writer) error {
 	// <label>
-	inputfield.RenderChildSnippetIf(!inputfield.Label.IsEmpty(), out, html.NewSnippet("label", html.ParseAttributes(`class="label"`)).SetContent(&inputfield.Label))
+	inputfield.RenderChildSnippetIf(!inputfield.Label.IsEmpty(), out, html.NewSnippet("label", html.ParseAttributes(`class="label"`)).AddContent(&inputfield.Label))
 
 	// <input>
 	subinput := html.NewSnippet("input", nil)
@@ -78,7 +78,7 @@ func (inputfield *InputField) RenderContent(out io.Writer) error {
 
 	// <p help>
 	if !inputfield.Help.IsEmpty() {
-		subhelp := html.NewSnippet("p", nil).SetContent(&inputfield.Help)
+		subhelp := html.NewSnippet("p", nil).AddContent(&inputfield.Help)
 		helpattr := subinput.Tag().Attributes().AddClasses("help")
 		switch inputfield.State {
 		case "success":

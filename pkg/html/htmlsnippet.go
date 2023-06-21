@@ -20,7 +20,7 @@ import (
 // content can be empty. If tagname is empty only the content is rendered.
 // HTMLSnippet can be instantiated by itself or it can be embedded into a struct to define a more customizable html component.
 type HTMLSnippet struct {
-	Content HTMLComposer // the HTML composer to render within the enclosed tag.
+	content []HTMLComposer // HTML composers to render within the enclosed tag.
 
 	tag Tag // HTML Element Tag with its attributes.
 
@@ -47,9 +47,12 @@ func (snippet *HTMLSnippet) SetDataState(ds *DataState) *HTMLSnippet {
 	return snippet
 }
 
-// SetDataState
-func (snippet *HTMLSnippet) SetContent(content HTMLComposer) *HTMLSnippet {
-	snippet.Content = content
+// AddContent add one of many HTMLComposer for rendering inside the HTML tag of the snippet
+func (snippet *HTMLSnippet) AddContent(content ...HTMLComposer) *HTMLSnippet {
+	if snippet.content == nil {
+		snippet.content = make([]HTMLComposer, 0)
+	}
+	snippet.content = append(snippet.content, content...)
 	return snippet
 }
 
@@ -90,14 +93,19 @@ func (parent *HTMLSnippet) RenderChildHTML(out io.Writer, html HTMLString) error
 	return RenderHTML(out, parent, []byte(html.Content))
 }
 
-// RenderContent writes the HTML string corresponing to the body of the HTML element
-// Default Snippet unfolds body property if an, and write it.
+// RenderContent writes the HTML string corresponing to the content of the HTML element.
+// Default Snippet renders composers added with AddContent.
 // Can be overloaded by a custom snippet embedding HTMLSnippet.
 func (s *HTMLSnippet) RenderContent(out io.Writer) (err error) {
-	if s.Content != nil {
-		err = s.RenderChildSnippet(out, s.Content)
+	if s.content != nil {
+		for _, c := range s.content {
+			err = s.RenderChildSnippet(out, c)
+			if err != nil {
+				return err
+			}
+		}
 	}
-	return
+	return nil
 }
 
 // Embed adds subcmp to the map of embedded components within the _parent.
@@ -109,7 +117,7 @@ func (s *HTMLSnippet) Embed(id string, subcmp HTMLComposer) {
 		s.sub = make(ComposerMap, 1)
 	}
 	s.sub[strid] = subcmp
-	verbose.Debug("embedding (%v) %q\n", reflect.TypeOf(subcmp).String(), strid)
+	verbose.Debug("embedding (%v) %q", reflect.TypeOf(subcmp).String(), strid)
 }
 
 // Embedded returns the map of embedded components, keyed by their id.

@@ -52,7 +52,8 @@ func main() {
 			Content:  html.NewString("<small>Alpha</small>")}),
 	)
 
-	body := html.NewSnippet("body", nil)
+	body := html.NewSnippet("body", html.ParseAttributes("id=body")).
+		AddContent(navbar)
 
 	index.Body = body
 

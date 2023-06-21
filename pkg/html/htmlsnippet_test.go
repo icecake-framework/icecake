@@ -98,9 +98,9 @@ func TestUnfoldBody1(t *testing.T) {
 	require.Equal(t, `<div id="orphan.testsnippet4-2" name="ick-testsnippet4" test></div>`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, []byte("<ick-testsnippet4 Content='test'/>"))
+	err = RenderHTML(out, nil, []byte("<ick-testsnippet4 content='test'/>"))
 	require.NoError(t, err)
-	require.Equal(t, `<!--ick-testsnippet4: "Content" attribute: unmanaged type html.HTMLComposer-->`, out.String())
+	require.Equal(t, `<!--ick-testsnippet4: "content" attribute: unmanaged type []html.HTMLComposer-->`, out.String())
 
 	out.Reset()
 	err = RenderHTML(out, nil, []byte("<ick-testsnippet4 IsOk=true/>"))
@@ -455,7 +455,7 @@ func TestSnippetId(t *testing.T) {
 	out.Reset()
 	err = RenderHTML(out, cmpA, []byte(`<ick-testsnippetid/>`))
 	require.NoError(t, err)
-	require.Equal(t, `<span id="orphan.testsnippet0-2.testsnippetid-0" name="ick-testsnippetid"></span>`, out.String())
+	require.Equal(t, `<span id="IdA2.testsnippetid-0" name="ick-testsnippetid"></span>`, out.String())
 
 	// C.2> with a parent and noid
 	out.Reset()
@@ -469,8 +469,7 @@ func TestHTMLSnippetContent(t *testing.T) {
 
 	out := new(bytes.Buffer)
 
-	s := NewSnippet("div", ParseAttributes("noid"))
-	s.Content = &HTMLString{Content: "<i>test</i>"}
+	s := NewSnippet("div", ParseAttributes("noid")).AddContent(&HTMLString{Content: "<i>test</i>"})
 	err := RenderSnippet(out, nil, s)
 	require.NoError(t, err)
 	require.Equal(t, `<div name="ick-HTMLSnippet" noid><i>test</i></div>`, out.String())
