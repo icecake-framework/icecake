@@ -33,7 +33,7 @@ func main() {
 	dom.MountCSSLinks()
 
 	// register a tiny html snippet
-	tiny := html.NewSnippet("a", `class="brand" href="https://icecake.net"`).AddContent(html.NewHTML("<strong>Icecake</strong>"))
+	tiny := html.NewSnippet("a", `class="brand" href="https://icecake.net"`).StackContent(html.NewHTML("<strong>Icecake</strong>"))
 	html.RegisterComposer("ick-icecake-brand", tiny, nil)
 
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive

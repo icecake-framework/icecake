@@ -93,7 +93,7 @@ func (page *HtmlPage) WriteHTMLFile(path string) (err error) {
 	return err
 }
 
-// RenderContent turns HtmlPage into a valid HTML syntax and write it to out
+// Render turns HtmlPage into a valid HTML syntax and write it to the output stream.
 func (page *HtmlPage) Render(out io.Writer) (err error) {
 
 	WriteStrings(out, `<!doctype html><html lang="`, page.Lang, `">`)

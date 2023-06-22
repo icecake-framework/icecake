@@ -22,10 +22,12 @@ type Message struct {
 // Ensure Message implements HTMLComposer interface
 var _ html.HTMLComposer = (*Message)(nil)
 
+// Tag Builder used by the rendering functions.
 func (msg *Message) BuildTag(tag *html.Tag) {
 	tag.SetName("div").Attributes().AddClasses("message")
 }
 
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (msg *Message) RenderContent(out io.Writer) error {
 	if !msg.Header.IsEmpty() {
 		var delhtml html.HTMLString

@@ -71,6 +71,7 @@ func (_img *Image) ParseSrcURL(_rawUrl string) (_err error) {
 	return
 }
 
+// BuildTag builds the tag used to render the html element.
 func (img *Image) BuildTag(tag *html.Tag) {
 	tag.SetName("figure")
 
@@ -81,7 +82,7 @@ func (img *Image) BuildTag(tag *html.Tag) {
 	tag.Attributes().AddClasses("image " + imgsize)
 }
 
-// Body returns any HTML string to unfold inside the html element
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (_img *Image) RenderContent(out io.Writer) error {
 	// func (_img *Image) BodyTemplate() (body HTMLString) {
 	var htmlRounded string

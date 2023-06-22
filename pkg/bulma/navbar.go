@@ -44,6 +44,7 @@ type NavbarItem struct {
 // Ensure NavbarItem implements HTMLComposer interface
 var _ html.HTMLComposer = (*NavbarItem)(nil)
 
+// BuildTag builds the tag used to render the html element.
 func (item *NavbarItem) BuildTag(tag *html.Tag) {
 	if item.ItemType == NAVBARIT_DIVIDER {
 		tag.SetName("hr")
@@ -68,6 +69,7 @@ func (item *NavbarItem) BuildTag(tag *html.Tag) {
 	}
 }
 
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (item *NavbarItem) RenderContent(out io.Writer) error {
 	if item.ItemType != NAVBARIT_DIVIDER {
 		if item.ImageSrc != nil {
@@ -118,7 +120,7 @@ func (_nav *Navbar) AddItems(items ...*NavbarItem) *Navbar {
 	return _nav
 }
 
-// BuildTag sets navbar tag
+// BuildTag builds the tag used to render the html element.
 func (nav *Navbar) BuildTag(tag *html.Tag) {
 	tag.SetName("nav").Attributes().
 		AddClasses("navbar").SetAttribute("role", "navigation").
@@ -126,6 +128,7 @@ func (nav *Navbar) BuildTag(tag *html.Tag) {
 		AddClassesIf(nav.HasShadow, "has-shadow")
 }
 
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (nav *Navbar) RenderContent(out io.Writer) error {
 	// brand area
 	html.WriteString(out, `<div class="navbar-brand">`)

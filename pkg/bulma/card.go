@@ -24,23 +24,25 @@ type Card struct {
 // Ensure Card implements HTMLComposer interface
 var _ html.HTMLComposer = (*Card)(nil)
 
+// BuildTag builds the tag used to render the html element.
 func (card *Card) BuildTag(tag *html.Tag) {
 	tag.SetName("div").Attributes().AddClasses("card")
 }
 
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (card *Card) RenderContent(out io.Writer) error {
 
 	html.RenderHTMLIf(!card.Title.IsEmpty(), out, card, html.HTML(`<header class="card-header">`), html.HTML(`<p class="card-header-title">`), card.Title, html.HTML(`</p></header>`))
 
 	card.RenderChildSnippetIf(card.Image != nil, out, card.Image)
 
-	card.RenderChildSnippetIf(card.Content != nil, out, html.NewSnippet("div", `class="card-content"`).AddContent(card.Content))
+	card.RenderChildSnippetIf(card.Content != nil, out, html.NewSnippet("div", `class="card-content"`).StackContent(card.Content))
 
 	if card.FooterItem1 != nil || card.FooterItem2 != nil || card.FooterItem3 != nil {
 		html.WriteString(out, `<div class="card-footer">`)
-		card.RenderChildSnippetIf(card.FooterItem1 != nil, out, html.NewSnippet("span", `class="card-footer-item"`).AddContent(card.FooterItem1))
-		card.RenderChildSnippetIf(card.FooterItem2 != nil, out, html.NewSnippet("span", `class="card-footer-item"`).AddContent(card.FooterItem2))
-		card.RenderChildSnippetIf(card.FooterItem3 != nil, out, html.NewSnippet("span", `class="card-footer-item"`).AddContent(card.FooterItem3))
+		card.RenderChildSnippetIf(card.FooterItem1 != nil, out, html.NewSnippet("span", `class="card-footer-item"`).StackContent(card.FooterItem1))
+		card.RenderChildSnippetIf(card.FooterItem2 != nil, out, html.NewSnippet("span", `class="card-footer-item"`).StackContent(card.FooterItem2))
+		card.RenderChildSnippetIf(card.FooterItem3 != nil, out, html.NewSnippet("span", `class="card-footer-item"`).StackContent(card.FooterItem3))
 		html.WriteString(out, `</div>`)
 	}
 	return nil

@@ -469,7 +469,7 @@ func TestHTMLSnippetContent(t *testing.T) {
 
 	out := new(bytes.Buffer)
 
-	s := NewSnippet("div", "noid").AddContent(NewHTML("<i>test</i>"))
+	s := NewSnippet("div", "noid").StackContent(NewHTML("<i>test</i>"))
 	err := RenderSnippet(out, nil, s)
 	require.NoError(t, err)
 	require.Equal(t, `<div name="ick-HTMLSnippet" noid><i>test</i></div>`, out.String())

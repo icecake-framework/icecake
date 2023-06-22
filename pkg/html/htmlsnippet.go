@@ -43,8 +43,9 @@ func (snippet *HTMLSnippet) SetDataState(ds *DataState) *HTMLSnippet {
 	return snippet
 }
 
-// AddContent add one of many HTMLComposer for rendering inside the HTML tag of the snippet
-func (snippet *HTMLSnippet) AddContent(content ...HTMLComposer) *HTMLSnippet {
+// StackContent add one of many HTMLComposer for rendering inside the HTML tag of the snippet
+// Returns the snippet to allow call chaining.
+func (snippet *HTMLSnippet) StackContent(content ...HTMLComposer) *HTMLSnippet {
 	if snippet.content == nil {
 		snippet.content = make([]HTMLComposer, 0)
 	}
@@ -52,7 +53,8 @@ func (snippet *HTMLSnippet) AddContent(content ...HTMLComposer) *HTMLSnippet {
 	return snippet
 }
 
-// AddContent add one of many HTMLComposer for rendering inside the HTML tag of the snippet
+// InsertSnippet builds and add a single snippet at the end of the content stack.
+// InsertSnippet returns the new snippet created and added to the stack.
 func (snippet *HTMLSnippet) InsertSnippet(tagname string, attrlist ...string) *HTMLSnippet {
 	if snippet.content == nil {
 		snippet.content = make([]HTMLComposer, 0)
@@ -67,6 +69,7 @@ func (s *HTMLSnippet) Tag() *Tag {
 	return &s.tag
 }
 
+// BuildTag builds the tag used to render the html element.
 // This default implementation of BuildTag does nothing.
 // So as the tag may have been preset before rendering.
 func (s *HTMLSnippet) BuildTag(tag *Tag) {
@@ -99,9 +102,9 @@ func (parent *HTMLSnippet) RenderChildHTML(out io.Writer, html HTMLString) error
 	return RenderHTML(out, parent, html)
 }
 
-// RenderContent writes the HTML string corresponing to the content of the HTML element.
-// Default Snippet renders composers added with AddContent.
-// Can be overloaded by a custom snippet embedding HTMLSnippet.
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
+// The default implementation for an HTMLSnippet snippet is to render all the internal stack of composers.
+// Use an HTMLString snippet to renders (unfold and generate HTML output) a simple string without enclosed tag.
 func (s *HTMLSnippet) RenderContent(out io.Writer) (err error) {
 	if s.content != nil {
 		for _, c := range s.content {

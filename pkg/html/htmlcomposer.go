@@ -25,12 +25,13 @@ type HTMLComposer interface {
 	Tag() *Tag
 
 	// BuildTag builds the tag used to render the html element.
-	// Composer rendering processes call BuildTag once with the reference of the composer tag itself.
+	// This tag builder can update the given tag or overwrite its properties.
+	// The composer rendering processes call BuildTag once.
 	// If the implementer builds an empty tag, only the body will be rendered.
 	BuildTag(tag *Tag)
 
-	// RenderContent writes the HTML string corresponing to the content of the HTML element.
-	// Returns an error stops the rendering process.
+	// RenderContent writes the HTML string corresponding to the content of the HTML element.
+	// Return an error to stops the rendering process.
 	RenderContent(out io.Writer) error
 
 	// Embedded returns all sub-composers

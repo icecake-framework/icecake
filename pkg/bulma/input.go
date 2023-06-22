@@ -41,10 +41,12 @@ type InputField struct {
 // Ensure inputfield implements HTMLComposer interface
 var _ html.HTMLComposer = (*InputField)(nil)
 
+// BuildTag builds the tag used to render the html element.
 func (inputfield *InputField) BuildTag(tag *html.Tag) {
 	tag.SetName("div").Attributes().AddClasses("field")
 }
 
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (cmp *InputField) RenderContent(out io.Writer) error {
 	// <label>
 	html.RenderHTMLIf(!cmp.Label.IsEmpty(), out, cmp, html.HTML(`<label class="label">`), cmp.Label, html.HTML(`</label>`))
@@ -74,7 +76,7 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
-		subhelp := html.NewSnippet("p", `class="help"`).AddContent(&cmp.Help)
+		subhelp := html.NewSnippet("p", `class="help"`).StackContent(&cmp.Help)
 		subhelpa := subinput.Tag().Attributes()
 		switch cmp.State {
 		case "success":

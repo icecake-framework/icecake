@@ -11,38 +11,6 @@ import (
 	"github.com/sunraylab/verbose"
 )
 
-type MyFooter struct{ html.HTMLSnippet }
-
-func (cmp *MyFooter) BuildTag(tag *html.Tag) { tag.SetName("footer").Attributes().AddClasses("footer") }
-func (cmp *MyFooter) RenderContent(out io.Writer) error {
-
-	hrefMIT := `<a href="https://opensource.org/licenses/mit-license.php" rel="license">MIT</a>`
-	hrefCCBY := `<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>`
-	hrefLinks := []string{
-		`<a href="/">Home</a>`,
-		`<a href="/docs">Docs</a>`}
-
-	html.WriteString(out, `<div class="container"><div class="columns">`)
-
-	// 1st column
-	html.WriteString(out, `<div class="column is-4">`)
-	html.WriteStrings(out, `<h4 class="bd-footer-title">`, `<strong>IceCake</strong> by Lolorenzo`, `</h4>`)
-	html.WriteStrings(out, `<div class="bd-footer-tsp">`, `Source code licences `, hrefMIT, `</div>`)
-	html.WriteStrings(out, `<div class="bd-footer-tsp">`, `Website content licensed `, hrefCCBY, `</div>`)
-	html.WriteString(out, `</div>`)
-
-	// 2nd column
-	html.WriteString(out, `<div class="column is-4">`)
-	html.WriteStrings(out, `<h4 class="bd-footer-title">`, `<strong>Links</strong>`, `</h4>`)
-	for _, hrefLink := range hrefLinks {
-		html.WriteStrings(out, `<p class="bd-footer-link">`, hrefLink, `</p>`)
-	}
-	html.WriteString(out, `</div>`)
-
-	html.WriteString(out, `</div></div>`)
-	return nil
-}
-
 func main() {
 
 	output := flag.String("output", "", "output path where generated html files will be saved")
@@ -99,7 +67,7 @@ func main() {
 			</div>
 		</section>`)
 
-	body := html.NewSnippet("body", `id="body"`).AddContent(navbar, hero, &MyFooter{})
+	body := html.NewSnippet("body", `id="body"`).StackContent(navbar, hero, &myFooter{})
 
 	index.Body = body
 
@@ -112,4 +80,40 @@ func main() {
 		}
 		os.Exit(1)
 	}
+}
+
+/******************************************************************************
+/* myFooter
+******************************************************************************/
+
+type myFooter struct{ html.HTMLSnippet }
+
+func (cmp *myFooter) BuildTag(tag *html.Tag) { tag.SetName("footer").Attributes().AddClasses("footer") }
+func (cmp *myFooter) RenderContent(out io.Writer) error {
+
+	hrefMIT := `<a href="https://opensource.org/licenses/mit-license.php" rel="license">MIT</a>`
+	hrefCCBY := `<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>`
+	hrefLinks := []string{
+		`<a href="/">Home</a>`,
+		`<a href="/docs">Docs</a>`}
+
+	html.WriteString(out, `<div class="container"><div class="columns">`)
+
+	// 1st column
+	html.WriteString(out, `<div class="column is-4">`)
+	html.WriteStrings(out, `<h4 class="bd-footer-title">`, `<strong>IceCake</strong> by Lolorenzo`, `</h4>`)
+	html.WriteStrings(out, `<div class="bd-footer-tsp">`, `Source code licences `, hrefMIT, `</div>`)
+	html.WriteStrings(out, `<div class="bd-footer-tsp">`, `Website content licensed `, hrefCCBY, `</div>`)
+	html.WriteString(out, `</div>`)
+
+	// 2nd column
+	html.WriteString(out, `<div class="column is-4">`)
+	html.WriteStrings(out, `<h4 class="bd-footer-title">`, `<strong>Links</strong>`, `</h4>`)
+	for _, hrefLink := range hrefLinks {
+		html.WriteStrings(out, `<p class="bd-footer-link">`, hrefLink, `</p>`)
+	}
+	html.WriteString(out, `</div>`)
+
+	html.WriteString(out, `</div></div>`)
+	return nil
 }

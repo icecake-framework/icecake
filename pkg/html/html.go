@@ -29,6 +29,9 @@ func (h HTMLString) Bytes() []byte {
 	return b
 }
 
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
+// For an HTMLString snippet, RenderContent renders (unfold and generate HTML output) the internal string without enclosed tag.
+// Use an HTMLSnippet snippet to renders the string inside an enclosed tag.
 func (h *HTMLString) RenderContent(out io.Writer) error {
 	return RenderHTML(out, h, *h)
 }

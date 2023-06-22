@@ -78,6 +78,7 @@ func (btn *Button) ParseAnchor(rawUrl string) (err error) {
 	return
 }
 
+// BuildTag builds the tag used to render the html element.
 func (btn *Button) BuildTag(tag *html.Tag) {
 
 	if btn.HRef != nil && btn.HRef.String() != "" {
@@ -122,6 +123,7 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 	amap.SetDisabled(btn.IsDisabled)
 }
 
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (btn *Button) RenderContent(out io.Writer) error {
 	err := btn.RenderChildHTML(out, btn.Title)
 	return err
