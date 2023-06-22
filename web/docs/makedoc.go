@@ -53,19 +53,14 @@ func main() {
 			Content:  html.NewHTML("<small>Alpha</small>")}),
 	)
 
-	hero := html.NewHTML(
-		`<section class="hero is-fullheight-with-navbar">
-			<div class="hero-body">
-				<div class="container has-text-centered">
-					<p class="title is-2">
-						Develop Static Websites and SPA only in Go.
-					</p>
-					<p class="subtitle">
-						Go Web Assembly Framework
-					</p>
-				</div>
-			</div>
-		</section>`)
+	hero := &bulma.Hero{
+		Height:    bulma.HH_FULLFHEIGHT_WITH_NAVBAR,
+		Title:     html.HTML("Develop SPA and Static Websites in Go."),
+		TitleSize: 2,
+		Subtitle:  html.HTML("Pure Go Web Assembly Framework"),
+	}
+	hero.Container = &bulma.Container{FullWidth: bulma.CFW_MAXDESKTOP}
+	hero.Container.Tag().AddClasses("has-text-centered")
 
 	body := html.NewSnippet("body", `id="body"`).StackContent(navbar, hero, &myFooter{})
 
