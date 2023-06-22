@@ -147,7 +147,7 @@ func mountDeepSnippet(_snippet UIComposer, _elem *Element) (_err error) {
 	return _err
 }
 
-// FIXME: must call unmount somewhere
+// TODO: must call unmount somewhere
 // unmountDeepSnippet remove listeners anc all Unmount recusrively for every embedded components
 func unmountDeepSnippet(_snippet UIComposer) {
 	_snippet.RemoveListeners()

@@ -64,11 +64,11 @@ func NewButton(title html.HTMLString) *Button {
 	return btn
 }
 
-func NewButtonLink(title html.HTMLString, _rawUrl string) *Button {
+func NewButtonLink(title html.HTMLString, rawUrl string) *Button {
 	btn := new(Button)
 	btn.ButtonType = BTN_TYPE_A
 	btn.Title = title
-	btn.ParseAnchor(_rawUrl)
+	btn.ParseAnchor(rawUrl)
 	return btn
 }
 
@@ -79,6 +79,7 @@ func (btn *Button) ParseAnchor(rawUrl string) (err error) {
 }
 
 // BuildTag builds the tag used to render the html element.
+// The tagname depends on the button type.
 func (btn *Button) BuildTag(tag *html.Tag) {
 
 	if btn.HRef != nil && btn.HRef.String() != "" {
@@ -95,7 +96,10 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 		tag.SetTagName("button")
 	}
 
-	amap := tag.AddClasses("button")
+	tag.AddClasses("button").
+		AddClassesIf(btn.IsOutlined, "is-outlined").
+		AddClassesIf(btn.IsRounded, "is-rounded").
+		AddClassesIf(btn.IsLoading, "is-loading")
 
 	href := ""
 	if btn.HRef != nil {
@@ -103,27 +107,19 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 	}
 	switch btn.ButtonType {
 	case BTN_TYPE_A:
-		amap.SetAttributeIf(href != "", "href", href)
+		tag.SetAttributeIf(href != "", "href", href)
 	case BTN_TYPE_SUBMIT:
-		amap.SetAttribute("type", "submit")
+		tag.SetAttribute("type", "submit")
 	case BTN_TYPE_RESET:
-		amap.SetAttribute("type", "reset")
+		tag.SetAttribute("type", "reset")
 	default:
 	}
 
-	if btn.IsOutlined {
-		amap.AddClasses("is-outlined")
-	}
-	if btn.IsRounded {
-		amap.AddClasses("is-rounded")
-	}
-	if btn.IsLoading {
-		amap.AddClasses("is-loading")
-	}
-	amap.SetDisabled(btn.IsDisabled)
+	tag.SetDisabled(btn.IsDisabled)
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
+// Button rendering unfold the Title
 func (btn *Button) RenderContent(out io.Writer) error {
 	err := btn.RenderChildHTML(out, btn.Title)
 	return err

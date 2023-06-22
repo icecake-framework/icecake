@@ -23,9 +23,9 @@ func NewButton(_title html.HTMLString) *Button {
 	return btn
 }
 
-func NewButtonLink(_title html.HTMLString, _rawUrl string) *Button {
+func NewButtonLink(_title html.HTMLString, rawUrl string) *Button {
 	btn := new(Button)
-	btn.Button = bulma.NewButtonLink(_title, _rawUrl)
+	btn.Button = bulma.NewButtonLink(_title, rawUrl)
 	return btn
 }
 

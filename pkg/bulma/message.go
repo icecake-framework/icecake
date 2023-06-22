@@ -29,14 +29,22 @@ func (msg *Message) BuildTag(tag *html.Tag) {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (msg *Message) RenderContent(out io.Writer) error {
+
 	if !msg.Header.IsEmpty() {
-		var delhtml html.HTMLString
+
+		html.WriteString(out, `<div class="message-header">`)
+		html.WriteStrings(out, `<p>`)
+		html.RenderHTML(out, nil, msg.Header)
+		html.WriteString(out, `</p>`)
+
 		if msg.CanDelete {
 			verbose.Printf(verbose.WARNING, "Message can delete TargetId=%s", msg.Id())
-			delhtml = html.HTML(`<ick-delete TargetID='` + msg.Id() + `'/>`)
+			html.RenderHTML(out, nil, html.HTML(`<ick-delete TargetID='`+msg.Id()+`'/>`))
 		}
-		html.RenderHTML(out, msg, html.HTML(`<div class="message-header"><p>`), msg.Header, html.HTML(`</p>`), delhtml, html.HTML(`</div>`))
+		html.WriteString(out, `</div>`)
 	}
+
 	html.RenderHTMLIf(!msg.Message.IsEmpty(), out, msg, html.HTML(`<div class="message-body">`), msg.Message, html.HTML(`</div>`))
+
 	return nil
 }

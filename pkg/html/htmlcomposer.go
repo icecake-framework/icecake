@@ -444,7 +444,6 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, attrs Attribu
 				} else {
 					// this attribute is not a field of the componenent
 					// keep it as is unless it is the class attribute, in this case, add the attribute
-					// TODO: test HTMLComposer, setting a class attribute
 					newcmptag.SetAttribute(aname, avalue)
 				}
 			}

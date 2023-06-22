@@ -44,7 +44,7 @@ const (
 	IMG_1by3   IMG_SIZE = "1by3"
 )
 
-// Image is a typical img element embedded into a figure container specifying the image size
+// Bulma Image is a typical img element embedded into a figure container specifying the image size
 type Image struct {
 	html.HTMLSnippet
 
@@ -57,68 +57,35 @@ type Image struct {
 // Ensure Image implements HTMLComposer interface
 var _ html.HTMLComposer = (*Image)(nil)
 
-func NewImage(_rawUrl string, _size IMG_SIZE) *Image {
+func NewImage(rawUrl string, size IMG_SIZE) *Image {
 	img := new(Image)
-	img.Size = _size
-	img.ParseSrcURL(_rawUrl)
+	img.Size = size
+	img.ParseSrcURL(rawUrl)
 	return img
 }
 
-// TryParseSrc parses _rawurl to _img.Src and returns _img to allow chaining.
+// TryParseSrc parses rawurl to _img.Src and returns _img to allow chaining.
 // Parsing errors are ignored and if any Src may stay nil.
-func (_img *Image) ParseSrcURL(_rawUrl string) (_err error) {
-	_img.Src, _err = url.Parse(_rawUrl)
+func (image *Image) ParseSrcURL(rawUrl string) (_err error) {
+	image.Src, _err = url.Parse(rawUrl)
 	return
 }
 
 // BuildTag builds the tag used to render the html element.
-func (img *Image) BuildTag(tag *html.Tag) {
-	tag.SetTagName("figure")
-
-	var imgsize string
-	if img.Size != "" {
-		imgsize = "is-" + string(img.Size)
-	}
-	tag.AddClasses("image " + imgsize)
+func (fig *Image) BuildTag(tag *html.Tag) {
+	tag.SetTagName("figure").
+		AddClasses("image").
+		AddClassesIf(fig.Size != "", "is-"+string(fig.Size))
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (_img *Image) RenderContent(out io.Writer) error {
-	// func (_img *Image) BodyTemplate() (body HTMLString) {
-	var htmlRounded string
-	if _img.IsRounded {
-		htmlRounded = `class="is-rounded" `
-	}
-	var src string
-	if _img.Src != nil {
-		src = _img.Src.String()
-	}
-
-	img := html.NewSnippet("img", `role="img" focusable="false"`, htmlRounded)
+func (image *Image) RenderContent(out io.Writer) error {
+	img := html.NewSnippet("img", `role="img" focusable="false"`)
 	img.Tag().
-		SetAttributeIf(src != "", "src", src).
-		SetAttributeIf(_img.Alt != "", "alt", _img.Alt)
+		SetURL("src", image.Src).
+		AddClassesIf(image.IsRounded, "is-rounded").
+		SetAttributeIf(image.Alt != "", "alt", image.Alt)
 
-	_img.RenderChildSnippet(out, img)
+	image.RenderChildSnippet(out, img)
 	return nil
 }
-
-// func (_img *Image) Template(*DataState) (_t SnippetTemplate) {
-// 	_t.TagName = "figure"
-// 	var imgsize String
-// 	if _img.Size != "" {
-// 		imgsize = String("is-" + _img.Size)
-// 	}
-// 	_t.Attributes = `class="image ` + imgsize + `"`
-
-// 	var htmlRounded String
-// 	if _img.IsRounded {
-// 		htmlRounded = `class="is-rounded"`
-// 	}
-// 	var src String
-// 	if _img.Src != nil {
-// 		src = String(_img.Src.String())
-// 	}
-// 	_t.Body = `<img ` + htmlRounded + ` role="img" focusable="false" src="` + src + `" alt="` + src + `">`
-// 	return _t
-// }

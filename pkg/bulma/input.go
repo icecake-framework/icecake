@@ -51,10 +51,15 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	// <label>
 	html.RenderHTMLIf(!cmp.Label.IsEmpty(), out, cmp, html.HTML(`<label class="label">`), cmp.Label, html.HTML(`</label>`))
 
+	// <div control>
+	subcontrol := html.NewSnippet("div", `class="control"`)
+	subcontrol.Tag().AddClassesIf(cmp.State == INPUT_LOADING, "is-loading")
+
 	// <input>
 	subinput := html.NewSnippet("input", `class="input" type="text"`)
 	subinput.Tag().
 		AddClassesIf(cmp.IsRounded, "is-rounded").
+		SetAttributeIf(cmp.Value != "", "value", cmp.Value).
 		SetAttributeIf(cmp.PlaceHolder != "", "placeholder", cmp.PlaceHolder)
 	switch cmp.State {
 	case "success":
@@ -64,28 +69,18 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	case "error":
 		subinput.Tag().AddClasses("is-danger")
 	case "readonly":
-		subinput.Tag().SetAttribute("readonly", "")
+		subinput.Tag().SetBool("readonly", true)
 	}
-	subinput.Tag().SetAttributeIf(cmp.Value != "", "value", cmp.Value)
-
-	// <div control>
-	subcontrol := html.NewSnippet("div", `class="control"`)
-	// subcontrol.SetClassesIf(inputfield.State == INPUT_LOADING, "is-loading")
-
+	subcontrol.StackContent(subinput)
 	cmp.RenderChildSnippet(out, subcontrol)
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
-		subhelp := html.NewSnippet("p", `class="help"`).StackContent(&cmp.Help)
-		subhelpa := subinput.Tag().AttributeMap
-		switch cmp.State {
-		case "success":
-			subhelpa.AddClasses("is-success")
-		case "warning":
-			subhelpa.AddClasses("is-warning")
-		case "error":
-			subhelpa.AddClasses("is-danger")
-		}
+		subhelp := html.NewSnippet("p", `class="help"`).InsertHTML(cmp.Help)
+		subhelp.Tag().
+			AddClassesIf(cmp.State == INPUT_SUCCESS, "is-success").
+			AddClassesIf(cmp.State == INPUT_WARNING, "is-warning").
+			AddClassesIf(cmp.State == INPUT_ERROR, "is-danger")
 		cmp.RenderChildSnippet(out, subhelp)
 	}
 

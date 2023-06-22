@@ -19,12 +19,12 @@ func main() {
 	dom.MountCSSLinks()
 
 	card1 := &ui.Card{Card: bulma.Card{
-		Title:       html.HTML("Hello World"),
-		Content:     html.NewHTML("Nice cake"),
-		FooterItem1: html.NewHTML("<a href='/'>home</a>"),
+		Title:   html.HTML("Hello World"),
+		Image:   bulma.NewImage("/icecake.jpg", bulma.IMG_SQUARE),
+		Content: html.NewHTML("Nice cake"),
 	}}
+	card1.FooterItem = append(card1.FooterItem, html.HTML("<a href='/'>home</a>"))
 	card1.Tag().SetStyle("width: 350px;").AddClasses("mr-5")
-	card1.Image = bulma.NewImage("/icecake.jpg", bulma.IMG_SQUARE)
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card1, nil)
 
 	card2 := &ui.Card{Card: bulma.Card{

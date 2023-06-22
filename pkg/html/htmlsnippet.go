@@ -64,6 +64,16 @@ func (snippet *HTMLSnippet) InsertSnippet(tagname string, attrlist ...string) *H
 	return s
 }
 
+// InsertHTML stacks a simple HTMLString to the snippet content.
+// Returns the snippet to allow call chaining.
+func (snippet *HTMLSnippet) InsertHTML(html HTMLString) *HTMLSnippet {
+	if snippet.content == nil {
+		snippet.content = make([]HTMLComposer, 0)
+	}
+	snippet.content = append(snippet.content, &html)
+	return snippet
+}
+
 // Tag returns a reference to the snippet tag.
 func (s *HTMLSnippet) Tag() *Tag {
 	if s.tag.AttributeMap == nil {

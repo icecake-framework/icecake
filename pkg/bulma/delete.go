@@ -27,7 +27,7 @@ type Delete struct {
 var _ html.HTMLComposer = (*Delete)(nil)
 
 // BuildTag builds the tag used to render the html element.
+// Delete tag is a simple <button class="delete"></delete>
 func (del *Delete) BuildTag(tag *html.Tag) {
-	tag.SetTagName("button")
-	tag.AddClasses("delete").SetAttribute("aria-label", "delete")
+	tag.SetTagName("button").AddClasses("delete").SetAttribute("aria-label", "delete")
 }

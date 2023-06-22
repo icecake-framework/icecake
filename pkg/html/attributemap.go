@@ -3,6 +3,7 @@ package html
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -193,6 +194,21 @@ func (amap AttributeMap) SetId(id string) AttributeMap {
 // "ick-" is used to prefix the returned id if prefix is empty.
 func (amap AttributeMap) SetUniqueId(prefix string) {
 	amap.saveAttribute("id", registry.GetUniqueId(prefix), true)
+}
+
+// SetURL sets a url string as a value of a given attributeName.
+// if url is nil or if its value is an empty string, the attribute name is setup with an "#" value.
+func (amap AttributeMap) SetURL(attributeName string, url *url.URL) AttributeMap {
+	strurl := ""
+	if url != nil {
+		strurl = url.String()
+	}
+	if strurl == "" {
+		strurl = "#"
+	}
+	_, err := amap.setAttribute(attributeName, strurl, true)
+	verbose.Error("SetURL", err)
+	return amap
 }
 
 // NameAttribute returns the name attribute if any

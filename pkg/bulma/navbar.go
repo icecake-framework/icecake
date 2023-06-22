@@ -45,26 +45,19 @@ type NavbarItem struct {
 var _ html.HTMLComposer = (*NavbarItem)(nil)
 
 // BuildTag builds the tag used to render the html element.
+// The Navbar Item tag depends on the item properties:
+//   - it's <hr> for a NAVBARIT_DIVIDER item type, otherwise
+//   - it's <a> when an HRef is provided,
+//   - it's <div> in other cases
 func (item *NavbarItem) BuildTag(tag *html.Tag) {
 	if item.ItemType == NAVBARIT_DIVIDER {
-		tag.SetTagName("hr")
+		tag.SetTagName("hr").AddClasses("navbar-divider")
 	} else {
-		if item.HRef != nil && item.HRef.String() != "" {
-			tag.SetTagName("a")
+		tag.AddClasses("navbar-item")
+		if item.HRef != nil {
+			tag.SetTagName("a").SetURL("href", item.HRef)
 		} else {
 			tag.SetTagName("div")
-		}
-	}
-
-	amap := tag.AttributeMap
-	if item.ItemType == NAVBARIT_DIVIDER {
-		amap.AddClasses("navbar-divider")
-	} else {
-		amap.AddClasses("navbar-item")
-		if item.HRef != nil {
-			if href := item.HRef.String(); href != "" {
-				amap.SetAttribute("href", href)
-			}
 		}
 	}
 }
@@ -73,8 +66,9 @@ func (item *NavbarItem) BuildTag(tag *html.Tag) {
 func (item *NavbarItem) RenderContent(out io.Writer) error {
 	if item.ItemType != NAVBARIT_DIVIDER {
 		if item.ImageSrc != nil {
-			imgsrc := item.ImageSrc.String()
-			html.WriteStringsIf(imgsrc != "", out, `<img src="`, imgsrc, `" width="auto" height="28">`)
+			img := html.NewSnippet("img", `width="auto" height="28"`)
+			img.Tag().SetURL("src", item.ImageSrc)
+			item.RenderChildSnippet(out, img)
 		}
 		item.RenderChildSnippet(out, item.Content)
 	}
