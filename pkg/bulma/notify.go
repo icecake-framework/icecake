@@ -7,15 +7,12 @@ import (
 	"github.com/icecake-framework/icecake/pkg/html"
 )
 
-/******************************************************************************
-* Component
-******************************************************************************/
-
 //go:embed "notify.css"
 var notifycss string
 
 func init() {
-	html.RegisterComposer("ick-notify", &Notify{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-notify", &Notify{})
+	html.RequireCSSStyle("ick-notify", notifycss)
 }
 
 type Notify struct {
@@ -25,7 +22,6 @@ type Notify struct {
 	Message html.HTMLString
 
 	// Notify includes a programmable Delete Button.
-	//
 	// Delete is a local variable rather than an embedded struct to avoid AddliSteners interface conflict.
 	// Notify implements AddliSteners interface via the UISnippet embedded.
 	Delete Delete

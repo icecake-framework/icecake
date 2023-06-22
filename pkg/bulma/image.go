@@ -12,7 +12,7 @@ import (
 ******************************************************************************/
 
 func init() {
-	html.RegisterComposer("ick-image", &Image{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-image", &Image{})
 }
 
 type IMG_SIZE string

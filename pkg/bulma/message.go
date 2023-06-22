@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	html.RegisterComposer("ick-message", &Message{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-message", &Message{})
 }
 
 type Message struct {

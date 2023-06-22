@@ -16,8 +16,6 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	dom.MountCSSLinks()
-
 	card1 := &ui.Card{Card: bulma.Card{
 		Title:   html.HTML("Hello World"),
 		Image:   bulma.NewImage("/icecake.jpg", bulma.IMG_SQUARE),

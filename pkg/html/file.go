@@ -19,41 +19,41 @@ func NewHeadItem(tagname string) *HeadItem {
 }
 
 // An HTML5 file with its content.
-type HtmlPage struct {
+type HtmlFile struct {
 	Lang        string       // the html "lang" value.
 	Title       string       // the html "head/title" value.
 	Description string       // the html "head/meta description" value.
 	HeadItems   []*HeadItem  // the list of tags in the section <head>
 	Body        HTMLComposer // the html snippet used during the content rendering.
 
-	HTMLFileName string // the relative file name of this page. Should finish with the .html extension.
+	HTMLFileName string // the relative file name, should finish with the .html extension.
 }
 
-// NewPage is the HtmlPage factory, seeting up the lang for the doctype tag.
-func NewPage(_lang string) *HtmlPage {
-	f := new(HtmlPage)
+// NewHtmlFile is the HtmlFile factory, seeting up the lang for the doctype tag.
+func NewHtmlFile(_lang string) *HtmlFile {
+	f := new(HtmlFile)
 	f.Lang = _lang
 	f.HeadItems = make([]*HeadItem, 0)
 	return f
 }
 
-// AddHeadItem add a line in the <head> section of the page
-func (f *HtmlPage) AddHeadItem(tagname string, attributes string) *HtmlPage {
+// AddHeadItem add a line in the <head> section of the HtmlFile
+func (f *HtmlFile) AddHeadItem(tagname string, attributes string) *HtmlFile {
 	item := NewHeadItem(tagname)
 	item.Tag().ParseAttributes(attributes)
 	f.HeadItems = append(f.HeadItems, item)
 	return f
 }
 
-// WriteHTMLFile creates or overwrites the file with htmlfilename name, adding the html extension,
-// and feeds it with the page content including the dictypen the header and the body.
+// WriteHTMLFile creates or overwrites the file with htmlfilename name, adding the html extension if missing,
+// and feeds it with the HtmlFile content including the header and the body.
 // If path is provided, htmlfilename is joint to make an absolute path,
 // otherwise htmlfilename is used in the current dir (unless it contains itself an absolute path).
 // returns an error if ther's no filename
-func (page *HtmlPage) WriteHTMLFile(path string) (err error) {
+func (hfile *HtmlFile) WriteHTMLFile(path string) (err error) {
 
 	// make a valid file name with htmlfilename
-	htmlfilename := page.HTMLFileName
+	htmlfilename := hfile.HTMLFileName
 	if htmlfilename == "" {
 		return errors.New("WriteHTMLFile: missing file name")
 	}
@@ -87,33 +87,52 @@ func (page *HtmlPage) WriteHTMLFile(path string) (err error) {
 		}
 	}()
 
-	err = page.Render(f)
+	err = hfile.Render(f)
 
 	return err
 }
 
-// Render turns HtmlPage into a valid HTML syntax and write it to the output stream.
-func (page *HtmlPage) Render(out io.Writer) (err error) {
+// Render turns HtmlFile into a valid HTML syntax and write it to the output stream.
+// Declared required CSS files and styles are automatically added.
+func (hfile *HtmlFile) Render(out io.Writer) (err error) {
 
-	WriteStrings(out, `<!doctype html><html lang="`, page.Lang, `">`)
+	// <!doctype>
+	WriteStrings(out, `<!doctype html><html lang="`, hfile.Lang, `">`)
 
+	// <head>
 	WriteStrings(out, `<head>`)
-	WriteStringsIf(page.Title != "", out, "<title>", page.Title, "</title>")
-	for _, headitem := range page.HeadItems {
+
+	// css files
+
+	rcssfs := RequiredCSSFile()
+	for _, rcssf := range rcssfs {
+		hfile.AddHeadItem("link", `rel="stylesheet" href="`+rcssf.String()+`"`)
+	}
+
+	WriteStringsIf(hfile.Title != "", out, "<title>", hfile.Title, "</title>")
+	for _, headitem := range hfile.HeadItems {
 		if err = RenderSnippet(out, nil, headitem); err != nil {
 			return err
 		}
 	}
+
+	rcssstyle := RequiredCSSStyle()
+	if rcssstyle != "" {
+		WriteStringsIf(rcssstyle != "", out, `<style>`, rcssstyle, `</style>`)
+	}
+
 	WriteString(out, "</head>")
 
-	if page.Body != nil {
-		page.Body.Tag().SetTagName("body")
-		err = RenderSnippet(out, nil, page.Body)
+	// <body>
+	if hfile.Body != nil {
+		hfile.Body.Tag().SetTagName("body")
+		err = RenderSnippet(out, nil, hfile.Body)
 		if err != nil {
 			return err
 		}
 	}
 
+	// <closing>
 	WriteString(out, "</html>")
 
 	return nil

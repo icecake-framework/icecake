@@ -16,8 +16,6 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	dom.MountCSSLinks()
-
 	img1 := &bulma.Image{Size: bulma.IMG_96x96}
 	img1.Tag().AddClasses("mr-4")
 	img1.Src, _ = url.Parse("/icecake.jpg")

@@ -19,8 +19,6 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	dom.MountCSSLinks()
-
 	btn = make([]*ui.Button, 0)
 	content := dom.Id("content")
 

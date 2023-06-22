@@ -30,11 +30,9 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	dom.MountCSSLinks()
-
 	// register a tiny html snippet
 	tiny := html.NewSnippet("a", `class="brand" href="https://icecake.net"`).StackContent(html.NewHTML("<strong>Icecake</strong>"))
-	html.RegisterComposer("ick-icecake-brand", tiny, nil)
+	html.RegisterComposer("ick-icecake-brand", tiny)
 
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.

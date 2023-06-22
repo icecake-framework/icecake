@@ -18,8 +18,8 @@ type RegistryEntry struct {
 	cmp        any    // The component type that must be instantiated. This must be a reference.
 	count      int    // number of time this cmp has already been instantiated
 
-	csslinkref     []string // slice of required stylesheet link ref for this component. will be added once into the head of the page
-	csslinkmounted bool
+	// csslinkref     []string // slice of required stylesheet link ref for this component. will be added once into the head of the page
+	// csslinkmounted bool
 }
 
 func (_r *RegistryEntry) Count() int {
@@ -38,26 +38,6 @@ func (_r RegistryEntry) TagName() string {
 // Component returns the component type that must be instantiated
 func (_r RegistryEntry) Component() any {
 	return _r.cmp
-}
-
-// CSSLinkRefs returns the csslinkref array
-func (_r RegistryEntry) CSSLinkRefs() []string {
-	return _r.csslinkref
-}
-
-// CSSLinkRefs returns the csslinkref array
-func (_r *RegistryEntry) IsCSSLinkMounted() (_is bool) {
-	_r.mu.Lock()
-	_is = _r.csslinkmounted
-	_r.mu.Unlock()
-	return _is
-}
-
-// CSSLinkRefs returns the csslinkref array
-func (_r *RegistryEntry) SetCSSLinkMounted() {
-	_r.mu.Lock()
-	_r.csslinkmounted = true
-	_r.mu.Unlock()
 }
 
 // IsRegistered returns if the _name has already been regystered
@@ -86,7 +66,7 @@ func Map() map[string]*RegistryEntry {
 // AddRegistryEntry create a new RegistryEntry and add it to the global and private registry.
 // No check is done on name. If name is already registered a new registryentry overwrites the existing one.
 // css is optional and can be nil.
-func AddRegistryEntry(name string, cmp any, css []string) *RegistryEntry {
+func AddRegistryEntry(name string, cmp any) *RegistryEntry {
 	theRegistry.init()
 	name = helper.Normalize(name)
 
@@ -94,10 +74,6 @@ func AddRegistryEntry(name string, cmp any, css []string) *RegistryEntry {
 		icktagname: name,
 		cmp:        cmp,
 		count:      0,
-	}
-	if css != nil {
-		entry.csslinkref = make([]string, len(css))
-		entry.csslinkref = append(entry.csslinkref, css...)
 	}
 	theRegistry.entries[name] = &entry
 	return &entry

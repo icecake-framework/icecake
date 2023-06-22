@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	html.RegisterComposer("ick-input", &InputField{}, []string{"https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"})
+	html.RegisterComposer("ick-input", &InputField{})
 }
 
 type INPUT_STATE string

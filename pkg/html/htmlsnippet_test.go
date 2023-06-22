@@ -33,7 +33,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// The same but when registered, with forced id
 	out.Reset()
-	registry.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{}, nil)
+	registry.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
 	RenderSnippet(out, nil, s0)
 	require.Equal(t, `<span id="helloworld" name="ick-testsnippet0" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
@@ -52,7 +52,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// snippet with a tagname and default attributes
 	out.Reset()
-	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{}, nil)
+	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
 	s2 := new(testsnippet2)
 	RenderSnippet(out, nil, s2)
 	require.Equal(t, `<div id="orphan.testsnippet2-1" name="ick-testsnippet2" class="ts2a ts2b" a2 style="display=test;" tabindex=2></div>`, out.String())
@@ -81,13 +81,13 @@ func TestUnfoldBody1(t *testing.T) {
 	// so ick-testsnippet0 is an empty snippet : no tag and no content
 	// the rendering should render nothing
 	out.Reset()
-	registry.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{}, nil)
+	registry.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
 	err := RenderHTML(out, nil, HTML("<ick-testsnippet0/>"))
 	require.NoError(t, err)
 	require.Equal(t, ``, out.String())
 
 	out.Reset()
-	registry.AddRegistryEntry("ick-testsnippet4", &testsnippet4{}, nil)
+	registry.AddRegistryEntry("ick-testsnippet4", &testsnippet4{})
 	err = RenderHTML(out, nil, HTML("<ick-testsnippet4/>"))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-1" name="ick-testsnippet4"></div>`, out.String())
@@ -283,9 +283,9 @@ func TestUnfoldBody2(t *testing.T) {
 
 	// restet the component registrey for tests
 	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-testsnippet0", &testsnippet0{}, nil)
-	registry.AddRegistryEntry("ick-testsnippet1", &testsnippet1{}, nil)
-	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{}, nil)
+	registry.AddRegistryEntry("ick-testsnippet0", &testsnippet0{})
+	registry.AddRegistryEntry("ick-testsnippet1", &testsnippet1{})
+	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
 
 	output := new(bytes.Buffer)
 	for i, tst := range tstset {
@@ -368,10 +368,10 @@ func TestComposeEmbedded(t *testing.T) {
 
 	// restet the component registrey for tests
 	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-testsnippet0", &testsnippet0{}, nil)
-	registry.AddRegistryEntry("ick-testsnippet1", &testsnippet1{}, nil)
-	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{}, nil)
-	registry.AddRegistryEntry("ick-testinfinite", &testsnippetinfinite{}, nil)
+	registry.AddRegistryEntry("ick-testsnippet0", &testsnippet0{})
+	registry.AddRegistryEntry("ick-testsnippet1", &testsnippet1{})
+	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
+	registry.AddRegistryEntry("ick-testinfinite", &testsnippetinfinite{})
 
 	// running tests
 	out := new(bytes.Buffer)
@@ -404,7 +404,7 @@ func TestComposeEmbedded(t *testing.T) {
 func TestSnippetId(t *testing.T) {
 
 	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-testsnippet0", &testsnippet0{}, nil)
+	registry.AddRegistryEntry("ick-testsnippet0", &testsnippet0{})
 
 	out := new(bytes.Buffer)
 
@@ -444,7 +444,7 @@ func TestSnippetId(t *testing.T) {
 	require.Contains(t, out.String(), `id="IdTemplate1"`)
 
 	// C> setup an ID into the icktag
-	registry.AddRegistryEntry("ick-testsnippetid", &testsnippetid{}, nil)
+	registry.AddRegistryEntry("ick-testsnippetid", &testsnippetid{})
 	// C.1> without parent
 	out.Reset()
 	err = RenderHTML(out, nil, HTML(`<ick-testsnippetid/>`))

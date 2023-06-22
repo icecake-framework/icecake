@@ -2,12 +2,10 @@ package dom
 
 import (
 	// "bytes"
-	"fmt"
 
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/js"
-	"github.com/icecake-framework/icecake/pkg/registry"
 )
 
 type UIListener interface {
@@ -87,38 +85,38 @@ func (_s *UISnippet) RemoveListeners() {
 // If a link already exists for a csslinkref nothing is done.
 // MountCSSLinks call is optional if your html head already contains stylesheet links for your css or if you import it in your own js code.
 // MountCSSLinks must be called at the early begining of the wasm code.
-func MountCSSLinks() {
-	reg := registry.Map()
-	for ickname, e := range reg {
-		fmt.Println("Mounting CSSLinks for", ickname)
-		if !e.IsCSSLinkMounted() {
-			links := e.CSSLinkRefs()
-			if links != nil {
-				for _, l := range links {
-					if l == "" {
-						continue
-					}
-					head := Doc().Head()
-					children := head.ChildrenMatching(func(e *Element) bool {
-						if e.TagName() == "LINK" {
-							href, _ := e.Attribute("href")
-							if href == l {
-								return true
-							}
-						}
-						return false
-					})
-					if len(children) == 0 {
-						e := CreateElement("LINK").SetAttribute("href", l).SetAttribute("rel", "stylesheet")
-						head.InsertElement(INSERT_LAST_CHILD, e)
+// func MountCSSLinks() {
+// 	reg := registry.Map()
+// 	for ickname, e := range reg {
+// 		fmt.Println("Mounting CSSLinks for", ickname)
+// 		if !e.IsCSSLinkMounted() {
+// 			links := e.CSSLinkRefs()
+// 			if links != nil {
+// 				for _, l := range links {
+// 					if l == "" {
+// 						continue
+// 					}
+// 					head := Doc().Head()
+// 					children := head.ChildrenMatching(func(e *Element) bool {
+// 						if e.TagName() == "LINK" {
+// 							href, _ := e.Attribute("href")
+// 							if href == l {
+// 								return true
+// 							}
+// 						}
+// 						return false
+// 					})
+// 					if len(children) == 0 {
+// 						e := CreateElement("LINK").SetAttribute("href", l).SetAttribute("rel", "stylesheet")
+// 						head.InsertElement(INSERT_LAST_CHILD, e)
 
-					}
-				}
-			}
-			e.SetCSSLinkMounted()
-		}
-	}
-}
+// 					}
+// 				}
+// 			}
+// 			e.SetCSSLinkMounted()
+// 		}
+// 	}
+// }
 
 /******************************************************************************
 * Private Area

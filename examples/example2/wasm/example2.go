@@ -23,8 +23,6 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	dom.MountCSSLinks()
-
 	// proceed with localstorage
 	gdark := browser.LocalStorage().GetBool("darkmode")
 	updateDarkMode(gdark)

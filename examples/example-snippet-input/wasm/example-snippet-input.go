@@ -20,8 +20,6 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	dom.MountCSSLinks()
-
 	in1 := &ui.InputField{}
 	in1.PlaceHolder = "Very simple"
 	in1.Tag().AddClasses("mr-4")

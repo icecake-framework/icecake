@@ -15,8 +15,6 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	dom.MountCSSLinks()
-
 	msg1 := &bulma.Message{Message: html.HTML("This is a simple message without header.")}
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg1, nil)
 

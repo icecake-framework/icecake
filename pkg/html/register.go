@@ -24,7 +24,7 @@ import (
 //   - If the _ickname has already been registered
 //   - If the _ickname does not meet the pattern "ick-*"
 //   - If the _composer does not implement the HTMLComposer interface
-func RegisterComposer(ickname string, composer any, css []string) (entry *registry.RegistryEntry, err error) {
+func RegisterComposer(ickname string, composer any) (entry *registry.RegistryEntry, err error) {
 	typ := reflect.TypeOf(composer)
 	if typ.Kind() != reflect.Pointer {
 		err = fmt.Errorf("registering composer %q failed: must register by reference not by value", typ.String())
@@ -69,7 +69,7 @@ func RegisterComposer(ickname string, composer any, css []string) (entry *regist
 		return nil, err
 	}
 
-	entry = registry.AddRegistryEntry(ickname, composer, css)
+	entry = registry.AddRegistryEntry(ickname, composer)
 
 	verbose.Debug("registering composer %s(%s) with success", ickname, typ.String())
 
