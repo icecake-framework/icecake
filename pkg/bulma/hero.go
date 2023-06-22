@@ -37,6 +37,8 @@ type Hero struct {
 	Subtitle     html.HTMLString
 	SubtitleSize int // 1 to 6
 
+	CTA html.HTMLComposer // Call To Action
+
 	InsideFoot html.HTMLComposer
 }
 
@@ -71,6 +73,8 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 	subtitle := html.NewSnippet("p", `class="subtitle"`).InsertHTML(msg.Subtitle)
 	subtitle.Tag().AddClassesIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
 	msg.RenderChildSnippet(out, subtitle)
+
+	msg.RenderChildSnippetIf(msg.CTA != nil, out, msg.CTA)
 
 	if msg.Container != nil {
 		msg.Container.Tag().RenderClosing(out)

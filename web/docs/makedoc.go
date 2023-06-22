@@ -61,6 +61,7 @@ func main() {
 	}
 	hero.Container = &bulma.Container{FullWidth: bulma.CFW_MAXDESKTOP}
 	hero.Container.Tag().AddClasses("has-text-centered")
+	hero.CTA = bulma.NewButtonLink(html.HTML("Read doc"), "/docs")
 
 	body := html.NewSnippet("body", `id="body"`).StackContent(navbar, hero, &myFooter{})
 
