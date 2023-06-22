@@ -26,7 +26,7 @@ var _ html.HTMLComposer = (*Card)(nil)
 
 // BuildTag builds the tag used to render the html element.
 func (card *Card) BuildTag(tag *html.Tag) {
-	tag.SetName("div").Attributes().AddClasses("card")
+	tag.SetTagName("div").AddClasses("card")
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.

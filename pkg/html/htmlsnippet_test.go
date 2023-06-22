@@ -27,7 +27,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// force id, setup classes, attributes and style
 	out.Reset()
-	s0.Tag().Attributes().SetTabIndex(1).SetStyle("color=red;").SetId("helloworld").AddClasses("test")
+	s0.Tag().SetTabIndex(1).SetStyle("color=red;").SetId("helloworld").AddClasses("test")
 	RenderSnippet(out, nil, s0)
 	require.Equal(t, `<span id="helloworld" name="ick-HTMLSnippet" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
@@ -39,7 +39,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// The same but when registered, without id
 	out.Reset()
-	s0.Tag().Attributes().SetId("")
+	s0.Tag().SetId("")
 	RenderSnippet(out, nil, s0)
 	require.Equal(t, `<span id="orphan.testsnippet0-2" name="ick-testsnippet0" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
@@ -61,13 +61,13 @@ func TestComposeBasics(t *testing.T) {
 	// the tag builder of testsnippet2 overwrite custom attributes
 	out.Reset()
 	s2 = new(testsnippet2)
-	s2.Tag().Attributes().SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "").SetId("tst").AddClasses("ts2c")
+	s2.Tag().SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "").SetId("tst").AddClasses("ts2c")
 	RenderSnippet(out, nil, s2)
 	require.Equal(t, `<div id="tst" name="ick-testsnippet2" class="ts2a ts2b" a2 a3 style="display=test;" tabindex=2></div>`, out.String())
 
 	// update custom attributes on an existing component
 	out.Reset()
-	s2.Tag().Attributes().SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "").AddClasses("ts2a ts2d").RemoveClasses("ts2c").RemoveAttribute("a3")
+	s2.Tag().SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "").AddClasses("ts2a ts2d").RemoveClasses("ts2c").RemoveAttribute("a3")
 	RenderSnippet(out, nil, s2)
 	require.Equal(t, `<div id="tst" name="ick-testsnippet2" class="ts2a ts2b" a2 a4 style="display=test;" tabindex=2></div>`, out.String())
 }
@@ -411,7 +411,7 @@ func TestSnippetId(t *testing.T) {
 	// A> setup an ID upfront, before rendering
 	cmpA := &testsnippet0{}
 	// A.1> with no id
-	cmpA.Tag().Attributes().SetId("idA1").SetBool("noid", true)
+	cmpA.Tag().SetId("idA1").SetBool("noid", true)
 	err := RenderSnippet(out, nil, cmpA)
 	require.NoError(t, err)
 	require.Empty(t, cmpA.Id())
@@ -419,7 +419,7 @@ func TestSnippetId(t *testing.T) {
 
 	// A.2> with forced id
 	out.Reset()
-	cmpA.Tag().Attributes().SetId("IdA2").SetBool("noid", false)
+	cmpA.Tag().SetId("IdA2").SetBool("noid", false)
 	err = RenderSnippet(out, nil, cmpA)
 	require.NoError(t, err)
 	require.Equal(t, "IdA2", cmpA.Id())
@@ -429,7 +429,7 @@ func TestSnippetId(t *testing.T) {
 	cmpB := new(testsnippetid)
 	// B.1> withid noid
 	out.Reset()
-	cmpB.Tag().Attributes().SetBool("noid", true)
+	cmpB.Tag().SetBool("noid", true)
 	err = RenderSnippet(out, nil, cmpB)
 	require.NoError(t, err)
 	require.Empty(t, cmpB.Id())
@@ -437,7 +437,7 @@ func TestSnippetId(t *testing.T) {
 
 	// B.2> with forced id
 	out.Reset()
-	cmpB.Tag().Attributes().SetBool("noid", false)
+	cmpB.Tag().SetBool("noid", false)
 	err = RenderSnippet(out, nil, cmpB)
 	require.NoError(t, err)
 	require.Equal(t, "IdTemplate1", cmpB.Id())

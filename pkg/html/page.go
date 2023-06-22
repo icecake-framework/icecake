@@ -14,8 +14,7 @@ type HeadItem struct {
 
 func NewHeadItem(tagname string) *HeadItem {
 	item := new(HeadItem)
-	item.Tag().SetName(tagname)
-	item.Tag().Attributes().SetBool("noid", true)
+	item.Tag().SetTagName(tagname).SetBool("noid", true)
 	return item
 }
 
@@ -108,7 +107,7 @@ func (page *HtmlPage) Render(out io.Writer) (err error) {
 	WriteString(out, "</head>")
 
 	if page.Body != nil {
-		page.Body.Tag().SetName("body")
+		page.Body.Tag().SetTagName("body")
 		err = RenderSnippet(out, nil, page.Body)
 		if err != nil {
 			return err

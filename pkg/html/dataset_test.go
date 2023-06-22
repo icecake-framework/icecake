@@ -10,13 +10,13 @@ import (
 // testsnippet0
 type testsnippet0 struct{ HTMLSnippet }
 
-func (s *testsnippet0) BuildTag(tag *Tag) { tag.SetName("span") }
+func (s *testsnippet0) BuildTag(tag *Tag) { tag.SetTagName("span") }
 
 // testsnippetid
 type testsnippetid struct{ HTMLSnippet }
 
 func (s *testsnippetid) BuildTag(tag *Tag) {
-	tag.SetName("span").Attributes().SetId("IdTemplate1")
+	tag.SetTagName("span").SetId("IdTemplate1")
 }
 
 // testsnippet1
@@ -34,7 +34,7 @@ func (tst *testsnippet1) RenderContent(out io.Writer) error {
 type testsnippet2 struct{ testsnippet1 }
 
 func (testsnippet2) BuildTag(tag *Tag) {
-	tag.SetName("div")
+	tag.SetTagName("div")
 	tag.ParseAttributes(`class="ts2a ts2b" tabindex=2 style="display=test;" a2`)
 }
 
@@ -64,8 +64,7 @@ type testsnippet4 struct {
 }
 
 func (s *testsnippet4) BuildTag(tag *Tag) {
-	tag.SetName("div")
-	tag.Attributes().AddClassesIf(s.IsOk, "ok")
+	tag.SetTagName("div").AddClassesIf(s.IsOk, "ok")
 }
 
 func (s *testsnippet4) RenderContent(out io.Writer) error {

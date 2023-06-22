@@ -39,8 +39,7 @@ var _ html.HTMLComposer = (*Notify)(nil)
 
 // BuildTag builds the tag used to render the html element.
 func (notify *Notify) BuildTag(tag *html.Tag) {
-	tag.SetName("div")
-	tag.Attributes().AddClasses("notification")
+	tag.SetTagName("div").AddClasses("notification")
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.

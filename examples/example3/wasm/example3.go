@@ -68,7 +68,7 @@ func OnClickBtn1(event *event.MouseEvent, target *dom.Element) {
 	// instantiate the Notify component and init its data
 	notif := &ui.Notify{}
 	notif.Message = html.HTML(`This is a typical notification message <strong>including html <a href="#">link</a>.</strong> Use the closing button on the right corner to remove this notification.`)
-	notif.Tag().Attributes().AddClasses("is-warning is-light")
+	notif.Tag().AddClasses("is-warning is-light")
 
 	// Insert the component into the DOM
 	dom.Id("notif_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)
@@ -81,7 +81,7 @@ func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 	notif := new(ui.Notify)
 	notif.Message = html.HTML(`This message will be automatically removed in <strong><span id="` + idtimeleft + `"></span> seconds</strong>, unless you close it before. 😀`)
 	notif.Delete.Timeout = time.Second * 7
-	notif.Tag().Attributes().AddClasses("is-danger is-light").SetAttribute("role", "alert")
+	notif.Tag().AddClasses("is-danger is-light").SetAttribute("role", "alert")
 	notif.Delete.Tic = func(clk *clock.Clock) {
 		s := math.Round(notif.Delete.TimeLeft().Seconds())
 		dom.Id(idtimeleft).InsertText(dom.INSERT_BODY, "%v", s)
@@ -97,7 +97,7 @@ func OnClickBtn3(event *event.MouseEvent, target *dom.Element) {
 	notif := &ui.Notify{}
 	notif.Message = html.HTML(`This is a toast notification`)
 	notif.Delete.Clock.Timeout = time.Second * 3
-	notif.Tag().Attributes().AddClasses("is-success toast")
+	notif.Tag().AddClasses("is-success toast")
 
 	// Insert the component into the DOM
 	dom.Id("toast_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)

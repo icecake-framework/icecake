@@ -32,7 +32,7 @@ func main() {
 	notif2 := &ui.Notify{Notify: bulma.Notify{
 		Message: html.HTML("This is another simple notification."),
 	}}
-	notif2.Tag().Attributes().AddClasses("is-success is-light")
+	notif2.Tag().AddClasses("is-success is-light")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, notif2, nil)
 
 	// 3rd notification message
@@ -40,7 +40,7 @@ func main() {
 	notif3 := &ui.Notify{Notify: bulma.Notify{
 		Message: html.HTML(`This message will be automatically removed in few seconds, unless you close it before. 😀`)}}
 	notif3.Delete.Timeout = time.Second * 5
-	notif3.Tag().Attributes().AddClasses("is-danger is-light").SetAttribute("role", "alert")
+	notif3.Tag().AddClasses("is-danger is-light").SetAttribute("role", "alert")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, notif3, nil)
 
 	// 4th notification message
@@ -48,7 +48,7 @@ func main() {
 	idtimeleft := registry.GetUniqueId("timeleft")
 	notif4 := &ui.Notify{}
 	notif4.Message = html.HTML(`This message will be automatically removed in <strong><span id="` + idtimeleft + `"></span> seconds</strong>`)
-	notif4.Tag().Attributes().AddClasses("is-warning is-light")
+	notif4.Tag().AddClasses("is-warning is-light")
 	//notif4.Delete.OnDelete = OnCloseNotif
 	notif4.Delete.Timeout = time.Second * 10
 	notif4.Delete.Tic = func(clk *clock.Clock) {

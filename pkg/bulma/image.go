@@ -73,13 +73,13 @@ func (_img *Image) ParseSrcURL(_rawUrl string) (_err error) {
 
 // BuildTag builds the tag used to render the html element.
 func (img *Image) BuildTag(tag *html.Tag) {
-	tag.SetName("figure")
+	tag.SetTagName("figure")
 
 	var imgsize string
 	if img.Size != "" {
 		imgsize = "is-" + string(img.Size)
 	}
-	tag.Attributes().AddClasses("image " + imgsize)
+	tag.AddClasses("image " + imgsize)
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -95,7 +95,7 @@ func (_img *Image) RenderContent(out io.Writer) error {
 	}
 
 	img := html.NewSnippet("img", `role="img" focusable="false"`, htmlRounded)
-	img.Tag().Attributes().
+	img.Tag().
 		SetAttributeIf(src != "", "src", src).
 		SetAttributeIf(_img.Alt != "", "alt", _img.Alt)
 

@@ -47,16 +47,16 @@ var _ html.HTMLComposer = (*NavbarItem)(nil)
 // BuildTag builds the tag used to render the html element.
 func (item *NavbarItem) BuildTag(tag *html.Tag) {
 	if item.ItemType == NAVBARIT_DIVIDER {
-		tag.SetName("hr")
+		tag.SetTagName("hr")
 	} else {
 		if item.HRef != nil && item.HRef.String() != "" {
-			tag.SetName("a")
+			tag.SetTagName("a")
 		} else {
-			tag.SetName("div")
+			tag.SetTagName("div")
 		}
 	}
 
-	amap := tag.Attributes()
+	amap := tag.AttributeMap
 	if item.ItemType == NAVBARIT_DIVIDER {
 		amap.AddClasses("navbar-divider")
 	} else {
@@ -122,8 +122,9 @@ func (_nav *Navbar) AddItems(items ...*NavbarItem) *Navbar {
 
 // BuildTag builds the tag used to render the html element.
 func (nav *Navbar) BuildTag(tag *html.Tag) {
-	tag.SetName("nav").Attributes().
-		AddClasses("navbar").SetAttribute("role", "navigation").
+	tag.SetTagName("nav").
+		SetAttribute("role", "navigation").
+		AddClasses("navbar").
 		AddClassesIf(nav.IsTransparent, "is-transparent").
 		AddClassesIf(nav.HasShadow, "has-shadow")
 }

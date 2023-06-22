@@ -40,7 +40,7 @@ func RegisterComposer(ickname string, composer any, css []string) (entry *regist
 	}
 
 	tag := cmp.Tag()
-	if tag == nil {
+	if tag == nil || tag.AttributeMap == nil {
 		err = fmt.Errorf("registering composer %q failed: HTMLComposer Tag() must return a valid reference", typ.String())
 		log.Println(err.Error())
 		return nil, err
@@ -60,7 +60,7 @@ func RegisterComposer(ickname string, composer any, css []string) (entry *regist
 	}
 
 	cmp.BuildTag(tag)
-	if !tag.HasName() {
+	if !tag.HasRendering() {
 		log.Printf("registering composer %q warning: HTMLComposer without tag Builder", ickname)
 	}
 

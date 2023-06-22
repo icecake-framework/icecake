@@ -43,7 +43,7 @@ var _ html.HTMLComposer = (*InputField)(nil)
 
 // BuildTag builds the tag used to render the html element.
 func (inputfield *InputField) BuildTag(tag *html.Tag) {
-	tag.SetName("div").Attributes().AddClasses("field")
+	tag.SetTagName("div").AddClasses("field")
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -53,20 +53,20 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 
 	// <input>
 	subinput := html.NewSnippet("input", `class="input" type="text"`)
-	subinput.Tag().Attributes().
+	subinput.Tag().
 		AddClassesIf(cmp.IsRounded, "is-rounded").
 		SetAttributeIf(cmp.PlaceHolder != "", "placeholder", cmp.PlaceHolder)
 	switch cmp.State {
 	case "success":
-		subinput.Tag().Attributes().AddClasses("is-success")
+		subinput.Tag().AddClasses("is-success")
 	case "warning":
-		subinput.Tag().Attributes().AddClasses("is-warning")
+		subinput.Tag().AddClasses("is-warning")
 	case "error":
-		subinput.Tag().Attributes().AddClasses("is-danger")
+		subinput.Tag().AddClasses("is-danger")
 	case "readonly":
-		subinput.Tag().Attributes().SetAttribute("readonly", "")
+		subinput.Tag().SetAttribute("readonly", "")
 	}
-	subinput.Tag().Attributes().SetAttributeIf(cmp.Value != "", "value", cmp.Value)
+	subinput.Tag().SetAttributeIf(cmp.Value != "", "value", cmp.Value)
 
 	// <div control>
 	subcontrol := html.NewSnippet("div", `class="control"`)
@@ -77,7 +77,7 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	// <p help>
 	if !cmp.Help.IsEmpty() {
 		subhelp := html.NewSnippet("p", `class="help"`).StackContent(&cmp.Help)
-		subhelpa := subinput.Tag().Attributes()
+		subhelpa := subinput.Tag().AttributeMap
 		switch cmp.State {
 		case "success":
 			subhelpa.AddClasses("is-success")

@@ -32,7 +32,7 @@ var _ HTMLComposer = (*HTMLSnippet)(nil)
 // NewSnippet returns a new HTMLSnippet with a given tag name, a map of attributes and a content.
 func NewSnippet(tagname string, attrlist ...string) *HTMLSnippet {
 	snippet := new(HTMLSnippet)
-	snippet.tag.SetName(tagname)
+	snippet.tag.SetTagName(tagname)
 	snippet.tag.ParseAttributes(attrlist...)
 	return snippet
 }
@@ -66,6 +66,9 @@ func (snippet *HTMLSnippet) InsertSnippet(tagname string, attrlist ...string) *H
 
 // Tag returns a reference to the snippet tag.
 func (s *HTMLSnippet) Tag() *Tag {
+	if s.tag.AttributeMap == nil {
+		s.tag.AttributeMap = make(AttributeMap)
+	}
 	return &s.tag
 }
 
@@ -78,7 +81,7 @@ func (s *HTMLSnippet) BuildTag(tag *Tag) {
 // Id Returns the id of the Snippet.
 // Can be empty.
 func (s HTMLSnippet) Id() string {
-	return s.tag.Attributes().Id()
+	return s.tag.Id()
 }
 
 // RenderSnippet writes the HTML string the tag element and the content of the composer to the writer.

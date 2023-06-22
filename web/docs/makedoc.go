@@ -88,7 +88,7 @@ func main() {
 
 type myFooter struct{ html.HTMLSnippet }
 
-func (cmp *myFooter) BuildTag(tag *html.Tag) { tag.SetName("footer").Attributes().AddClasses("footer") }
+func (cmp *myFooter) BuildTag(tag *html.Tag) { tag.SetTagName("footer").AddClasses("footer") }
 func (cmp *myFooter) RenderContent(out io.Writer) error {
 
 	hrefMIT := `<a href="https://opensource.org/licenses/mit-license.php" rel="license">MIT</a>`

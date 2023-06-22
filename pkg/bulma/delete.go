@@ -28,6 +28,6 @@ var _ html.HTMLComposer = (*Delete)(nil)
 
 // BuildTag builds the tag used to render the html element.
 func (del *Delete) BuildTag(tag *html.Tag) {
-	tag.SetName("button")
-	tag.Attributes().AddClasses("delete").SetAttribute("aria-label", "delete")
+	tag.SetTagName("button")
+	tag.AddClasses("delete").SetAttribute("aria-label", "delete")
 }

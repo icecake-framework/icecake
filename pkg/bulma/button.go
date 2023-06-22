@@ -86,16 +86,16 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 	}
 	switch btn.ButtonType {
 	case BTN_TYPE_A:
-		tag.SetName("a")
+		tag.SetTagName("a")
 	case BTN_TYPE_SUBMIT:
-		tag.SetName("input")
+		tag.SetTagName("input")
 	case BTN_TYPE_RESET:
-		tag.SetName("input")
+		tag.SetTagName("input")
 	default:
-		tag.SetName("button")
+		tag.SetTagName("button")
 	}
 
-	amap := tag.Attributes().AddClasses("button")
+	amap := tag.AddClasses("button")
 
 	href := ""
 	if btn.HRef != nil {

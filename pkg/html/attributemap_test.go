@@ -36,7 +36,7 @@ func TestAttribute(t *testing.T) {
 	_, err = amap.setAttribute("id", "1id", false)
 	assert.Error(t, err)
 
-	amap.Reset()
+	amap.ResetAttributes()
 	amap.AddClasses("c1", "c2")
 	assert.Equal(t, AttributeMap{"class": "c1 c2"}, amap)
 	assert.True(t, amap.HasClass("c1") && amap.HasClass("c2"))
@@ -56,14 +56,14 @@ func TestAttribute(t *testing.T) {
 	amap.RemoveClasses("c1", " c4 c2")
 	assert.Equal(t, AttributeMap{"class": "c3"}, amap)
 
-	assert.True(t, amap.Is("class"))
-	assert.False(t, amap.Is("disabled"))
+	assert.True(t, amap.BoolAttribute("class"))
+	assert.False(t, amap.BoolAttribute("disabled"))
 
 	amap.SetBool("disabled", true)
-	assert.True(t, amap.Is("disabled"))
+	assert.True(t, amap.BoolAttribute("disabled"))
 
-	amap.Reset()
-	amap.SetName("icecake")
+	amap.ResetAttributes()
+	amap.SetNameAttribute("icecake")
 	assert.Equal(t, AttributeMap{"name": "icecake"}, amap)
 
 	amap.SetId("Icecake")
@@ -76,7 +76,7 @@ func TestAttribute(t *testing.T) {
 	assert.True(t, f)
 	assert.Equal(t, "icecake-1", v)
 
-	assert.False(t, amap.Is("missing"))
+	assert.False(t, amap.BoolAttribute("missing"))
 
 }
 
@@ -219,14 +219,14 @@ func TestTryParseAttributes(t *testing.T) {
 func TestString(t *testing.T) {
 
 	amap := make(AttributeMap)
-	assert.Equal(t, "", amap.String())
-	assert.Equal(t, "a", amap.SetAttribute("A", "").String())
-	assert.Equal(t, "a=1", amap.SetAttribute("A", "1").String())
-	assert.Equal(t, `a=1 b="b"`, amap.SetAttribute("B", "b").String())
-	assert.Equal(t, `a=1 b="b" c="a'b'c"`, amap.SetAttribute("C", `a'b'c`).String())
-	assert.Equal(t, `a=1 b="b" c="a'b'c" d='a"b"c'`, amap.SetAttribute("D", `a"b"c`).String())
+	assert.Equal(t, "", amap.AttributeString())
+	assert.Equal(t, "a", amap.SetAttribute("A", "").AttributeString())
+	assert.Equal(t, "a=1", amap.SetAttribute("A", "1").AttributeString())
+	assert.Equal(t, `a=1 b="b"`, amap.SetAttribute("B", "b").AttributeString())
+	assert.Equal(t, `a=1 b="b" c="a'b'c"`, amap.SetAttribute("C", `a'b'c`).AttributeString())
+	assert.Equal(t, `a=1 b="b" c="a'b'c" d='a"b"c'`, amap.SetAttribute("D", `a"b"c`).AttributeString())
 
-	amap.Reset()
-	assert.Equal(t, `id="ID1" class="c1 c2"`, amap.SetId("ID1").AddClasses("c1 c2").String())
-	assert.Equal(t, `id="ID1" class="c1 c2" disabled`, amap.SetDisabled(true).String())
+	amap.ResetAttributes()
+	assert.Equal(t, `id="ID1" class="c1 c2"`, amap.SetId("ID1").AddClasses("c1 c2").AttributeString())
+	assert.Equal(t, `id="ID1" class="c1 c2" disabled`, amap.SetDisabled(true).AttributeString())
 }

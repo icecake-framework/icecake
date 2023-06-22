@@ -104,11 +104,14 @@ func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (er
 	// build the tag with the reference given by tha snippet himself
 	tag := snippet.Tag()
 	tag.deep = deep
+	if tag.AttributeMap == nil {
+		tag.AttributeMap = make(AttributeMap)
+	}
 	snippet.BuildTag(tag)
-	tag.Attributes().SetAttribute("name", icktagname) // may by empty and so does nothing
+	tag.SetAttribute("name", icktagname) // may by empty and so does nothing
 
 	// Define the id and the virtual id
-	id := tag.Attributes().Id()
+	id := tag.Id()
 	virtualid := parentvirtid + "." + cmpname
 	if parentvirtid == "orphan" {
 		virtualid = registry.GetUniqueId(virtualid)
@@ -116,13 +119,13 @@ func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (er
 		virtualid += "-" + strconv.Itoa(tag.seq)
 	}
 
-	if tag.Attributes().Is("noid") {
+	if tag.BoolAttribute("noid") {
 		id = ""
-		tag.Attributes().RemoveAttribute("id")
+		tag.RemoveAttribute("id")
 	} else {
 		if id == "" || deep > 0 {
 			id = virtualid
-			tag.Attributes().SetId(id)
+			tag.SetId(id)
 		} else {
 			virtualid = id
 		}
@@ -422,7 +425,7 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, attrs Attribu
 
 		newcmptag := newcmp.Tag()
 		if newcmptag == nil {
-			err = ErrTaglessParent
+			err = &IckTagNameError{TagName: ickname, Message: "bad composer implementation, Tag() must return a valid reference"}
 		}
 
 		// process unfolded attributes, set value of ickcomponent field when name of attribute matches field name,
@@ -442,7 +445,7 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, attrs Attribu
 					// this attribute is not a field of the componenent
 					// keep it as is unless it is the class attribute, in this case, add the attribute
 					// TODO: test HTMLComposer, setting a class attribute
-					newcmptag.Attributes().SetAttribute(aname, avalue)
+					newcmptag.SetAttribute(aname, avalue)
 				}
 			}
 		}

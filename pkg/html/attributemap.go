@@ -27,8 +27,8 @@ func MakeAttributeMap() AttributeMap {
 	return make(AttributeMap)
 }
 
-// Reset deletes all attributes in the map.
-func (amap AttributeMap) Reset() AttributeMap {
+// ResetAttributes deletes all attributes in the map.
+func (amap AttributeMap) ResetAttributes() AttributeMap {
 	for k := range amap {
 		delete(amap, k)
 	}
@@ -195,18 +195,18 @@ func (amap AttributeMap) SetUniqueId(prefix string) {
 	amap.saveAttribute("id", registry.GetUniqueId(prefix), true)
 }
 
-// Name returns the name attribute if any
-func (amap AttributeMap) Name() string {
+// NameAttribute returns the name attribute if any
+func (amap AttributeMap) NameAttribute() string {
 	return amap["name"]
 }
 
-// SetName sets or overwrites the name attribute. In HTML5 name is case sensitive.
+// SetNameAttribute sets or overwrites the name attribute. In HTML5 name is case sensitive.
 // blanks at the ends of the id are automatically trimmed.
 // if name is empty, the name attribute is removed.
 //
-// SetName returns the map to allow chainning.
+// SetNameAttribute returns the map to allow chainning.
 // If the name is not valid nothing is setted and a log is printed out if verbose mode is on.
-func (amap AttributeMap) SetName(name string) AttributeMap {
+func (amap AttributeMap) SetNameAttribute(name string) AttributeMap {
 	_, err := amap.setAttribute("name", name, true)
 	verbose.Error("SetName", err)
 	return amap
@@ -351,10 +351,10 @@ func checkstyle(style string) error {
 	return nil
 }
 
-// Is returns true is the attribute exists and if it's value is not false nor 0.
+// BoolAttribute returns true is the attribute exists and if it's value is not false nor 0.
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
-func (amap AttributeMap) Is(name string) bool {
+func (amap AttributeMap) BoolAttribute(name string) bool {
 	name = helper.Normalize(name)
 	value, found := amap[name]
 	if !found {
@@ -387,7 +387,7 @@ func (amap AttributeMap) SetBool(name string, f bool) AttributeMap {
 
 // IsDisabled returns true if the disabled attribute is set
 func (amap AttributeMap) IsDisabled() bool {
-	return amap.Is("disabled")
+	return amap.BoolAttribute("disabled")
 }
 
 // SetDisabled set the boolean disabled attribute
@@ -397,7 +397,7 @@ func (amap AttributeMap) SetDisabled(f bool) AttributeMap {
 
 // Strings returns the formated list of attributes, ready to use to generate the container element.
 // always sorted the same way : 1>id 2>name 3>class 4>others sorted alpha by name
-func (amap AttributeMap) String() string {
+func (amap AttributeMap) AttributeString() string {
 	if len(amap) == 0 {
 		return ""
 	}
