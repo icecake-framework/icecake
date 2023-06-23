@@ -107,7 +107,9 @@ func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (er
 		tag.AttributeMap = make(AttributeMap)
 	}
 	snippet.BuildTag(tag)
-	tag.SetAttribute("name", icktagname) // may by empty and so does nothing
+	if !tag.NoName {
+		tag.SetAttribute("name", icktagname)
+	}
 
 	// Define the id and the virtual id
 	id := tag.Id()

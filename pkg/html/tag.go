@@ -8,7 +8,8 @@ import (
 
 // Tag represents the tag of an HTML element with its attributes.
 type Tag struct {
-	AttributeMap // map of all tag attributes of any type, including the id if there's one.
+	AttributeMap      // map of all tag attributes of any type, including the id if there's one.
+	NoName       bool // does not generate name attribute
 
 	tagname     string // the name of the tag a.k.a "div", "span", "meta"...
 	selfClosing bool   // specifies if this is a selfclosing tag, automatically setup by SetTagName. Use SetSelfClosing to force the value.

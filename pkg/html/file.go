@@ -41,6 +41,7 @@ func NewHtmlFile(_lang string) *HtmlFile {
 func (f *HtmlFile) AddHeadItem(tagname string, attributes string) *HtmlFile {
 	item := NewHeadItem(tagname)
 	item.Tag().ParseAttributes(attributes)
+	item.Tag().NoName = true
 	f.HeadItems = append(f.HeadItems, item)
 	return f
 }
