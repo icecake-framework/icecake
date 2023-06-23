@@ -25,5 +25,5 @@ var _ html.HTMLTagComposer = (*Container)(nil)
 func (c *Container) BuildTag(tag *html.Tag) {
 	tag.SetTagName("div").
 		AddClasses("container").
-		AddClassesIf(c.FullWidth != "", "is-"+string(c.FullWidth))
+		SetClassesIf(c.FullWidth != "", "is-"+string(c.FullWidth))
 }

@@ -83,7 +83,7 @@ func (image *Image) RenderContent(out io.Writer) error {
 	img := html.NewSnippet("img", `role="img" focusable="false"`)
 	img.Tag().
 		SetURL("src", image.Src).
-		AddClassesIf(image.IsRounded, "is-rounded").
+		SetClassesIf(image.IsRounded, "is-rounded").
 		SetAttributeIf(image.Alt != "", "alt", image.Alt)
 
 	image.RenderChilds(out, img)

@@ -3,6 +3,7 @@ package html
 import (
 	"io"
 	"net/url"
+	"strings"
 )
 
 // Page represents a set of stacked HTML elements associated to an url and a set of usual properties.
@@ -15,32 +16,45 @@ type Page struct {
 	Title       string // the html <head><title> value.
 	Description string // the html <head><meta name="description"> value.
 
-	// Optional url of the page.
+	// relative url of the page.
 	url *url.URL
 }
 
 // Ensure Page implements HTMLComposer interface
 var _ HTMLComposer = (*Page)(nil)
 
-func NewPage(rawUrl string) *Page {
+func NewPage(rawHTMLUrl string) *Page {
 	pg := new(Page)
 	pg.stack = make([]HTMLComposer, 0)
-	pg.ParseURL(rawUrl)
+	pg.ParseURL(rawHTMLUrl)
 	return pg
 }
 
-// ParseURL parses _rawUrl to the URL of the page. The page URL stays nil in case of error.
-func (pg *Page) ParseURL(rawUrl string) (err error) {
-	pg.url, err = url.Parse(rawUrl)
+// ParseURL parses rawHTMLUrl to the URL of the page. The page URL stays nil in case of error.
+// Only the relative path will be used.
+// The path extention must be html or nothing, otherwise fails.
+func (pg *Page) ParseURL(rawHTMLUrl string) (err error) {
+	pg.url, err = url.Parse(rawHTMLUrl)
+	if err == nil {
+		extpos := strings.LastIndex(pg.url.Path, ".")
+		if extpos >= 0 {
+			ext := pg.url.Path[extpos:]
+			if ext != ".html" {
+				return ErrBadHtmlFileExtention
+			}
+		} else if pg.url.Path != "" {
+			pg.url.Path += ".html"
+		}
+	}
 	return
 }
 
-// URL returns the URL of the page
-func (pg Page) URL() *url.URL {
+// RelURL returns the relative URL of the page, excluding the query and the fragments if any.
+func (pg Page) RelURL() *url.URL {
 	if pg.url == nil {
 		return &url.URL{}
 	}
-	return pg.url
+	return &url.URL{Path: pg.url.Path}
 }
 
 // Meta provides a reference to the RenderingMeta object associated with this composer.

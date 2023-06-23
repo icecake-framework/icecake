@@ -103,7 +103,7 @@ func (amap AttributeMap) setAttribute(name string, value string, update bool) (u
 	return updated, nil
 }
 
-// SetAttributeIf SetAttribute if the condition is true.
+// SetAttributeIf SetAttribute if the condition is true, otherwise remove the attribute.
 // update flag indicates if existing attribute must be updated or not.
 // SetAttribute returns the map to allow chainning and so never returns an error.
 // If the name or the value are not valid nothing is created and a log is printed out if verbose mode is on.
@@ -113,6 +113,8 @@ func (amap AttributeMap) setAttribute(name string, value string, update bool) (u
 func (amap AttributeMap) SetAttributeIf(condition bool, name string, value string) AttributeMap {
 	if condition {
 		amap.SetAttribute(name, value)
+	} else {
+		amap.RemoveAttribute(name)
 	}
 	return amap
 }
@@ -284,6 +286,18 @@ nextlist:
 func (amap AttributeMap) AddClassesIf(condition bool, addlist ...string) AttributeMap {
 	if condition {
 		amap.AddClasses(addlist...)
+	}
+	return amap
+}
+
+// SetClassesIf adds each c classe to the class attribute if the condition is true
+// otherwise remove them
+// Duplicates are not inserted twice.
+func (amap AttributeMap) SetClassesIf(condition bool, addlist ...string) AttributeMap {
+	if condition {
+		amap.AddClasses(addlist...)
+	} else {
+		amap.RemoveClasses(addlist...)
 	}
 	return amap
 }

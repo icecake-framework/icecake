@@ -97,9 +97,9 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 	}
 
 	tag.AddClasses("button").
-		AddClassesIf(btn.IsOutlined, "is-outlined").
-		AddClassesIf(btn.IsRounded, "is-rounded").
-		AddClassesIf(btn.IsLoading, "is-loading")
+		SetClassesIf(btn.IsOutlined, "is-outlined").
+		SetClassesIf(btn.IsRounded, "is-rounded").
+		SetClassesIf(btn.IsLoading, "is-loading")
 
 	href := ""
 	if btn.HRef != nil {

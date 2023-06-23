@@ -1,7 +1,6 @@
 package html
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -54,22 +53,22 @@ func (f *HtmlFile) AddHeadItem(tagname string, attributes string) *HtmlFile {
 // If path is provided, htmlfilename is joint to make an absolute path,
 // otherwise htmlfilename is used in the current dir (unless it contains itself an absolute path).
 // returns an error if ther's no filename
-func (hfile *HtmlFile) WriteHTMLFile(path string, htmlfilename string) (err error) {
+func (hfile *HtmlFile) WriteHTMLFile(outputpath string, relhtmlfile string) (err error) {
 
 	// make a valid file name with htmlfilename
-	if htmlfilename == "" {
-		return errors.New("WriteHTMLFile: missing file name")
+	if relhtmlfile == "" {
+		return fmt.Errorf("WriteHTMLFile: %w", ErrMissingFileName)
 	}
 
-	ext := filepath.Ext(htmlfilename)
+	ext := filepath.Ext(relhtmlfile)
 	if ext != ".html" {
-		htmlfilename = filepath.Join(htmlfilename, ".html")
+		relhtmlfile = filepath.Join(relhtmlfile, ".html")
 	}
 	var absfilename string
-	if path != "" {
-		absfilename = filepath.Join(path, htmlfilename)
+	if outputpath != "" {
+		absfilename = filepath.Join(outputpath, relhtmlfile)
 	} else {
-		if absfilename, err = filepath.Abs(htmlfilename); err != nil {
+		if absfilename, err = filepath.Abs(relhtmlfile); err != nil {
 			return err
 		}
 	}
@@ -83,7 +82,7 @@ func (hfile *HtmlFile) WriteHTMLFile(path string, htmlfilename string) (err erro
 		if err1 := f.Close(); err1 != nil && err == nil {
 			err = err1
 		}
-		verbose.Error(fmt.Sprintf("WriteHTMLFile %s", path), err)
+		verbose.Error(fmt.Sprintf("WriteHTMLFile %s", outputpath), err)
 		if err == nil {
 			verbose.Println(verbose.INFO, absfilename, "succesfully written")
 		}

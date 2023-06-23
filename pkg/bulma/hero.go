@@ -47,7 +47,7 @@ var _ html.HTMLTagComposer = (*Hero)(nil)
 
 // Tag Builder used by the rendering functions.
 func (msg *Hero) BuildTag(tag *html.Tag) {
-	tag.SetTagName("section").AddClasses("hero").AddClassesIf(msg.Height != "", "is-"+string(msg.Height))
+	tag.SetTagName("section").AddClasses("hero").SetClassesIf(msg.Height != "", "is-"+string(msg.Height))
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -67,11 +67,11 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 	}
 
 	title := html.NewSnippet("p", `class="title"`).Stack(&msg.Title)
-	title.Tag().AddClassesIf(msg.TitleSize > 0 && msg.TitleSize <= 6, "is-"+strconv.Itoa(msg.TitleSize))
+	title.Tag().SetClassesIf(msg.TitleSize > 0 && msg.TitleSize <= 6, "is-"+strconv.Itoa(msg.TitleSize))
 	msg.RenderChilds(out, title)
 
 	subtitle := html.NewSnippet("p", `class="subtitle"`).Stack(&msg.Subtitle)
-	subtitle.Tag().AddClassesIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
+	subtitle.Tag().SetClassesIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
 	msg.RenderChilds(out, subtitle)
 
 	msg.RenderChildsIf(msg.CTA != nil, out, msg.CTA)

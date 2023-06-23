@@ -20,6 +20,11 @@ const (
 	NAVBARIT_END     = "end"     // item stacked at the end (right) of the navbar,
 )
 
+// bulma.NavbarItem is an icecake snippet providing the HTML rendering for a [bulma navbar item].
+//
+// Can't be used for inline rendering.
+//
+// [bulma navbar item]: https://bulma.io/documentation/components/navbar/#navbar-item
 type NavbarItem struct {
 	html.HTMLSnippet
 
@@ -38,6 +43,9 @@ type NavbarItem struct {
 	// Item Content
 	Content html.HTMLComposer
 
+	// Highlight this item
+	IsActive bool
+
 	items []*NavbarItem // list of navbar items
 }
 
@@ -53,7 +61,7 @@ func (item *NavbarItem) BuildTag(tag *html.Tag) {
 	if item.ItemType == NAVBARIT_DIVIDER {
 		tag.SetTagName("hr").AddClasses("navbar-divider")
 	} else {
-		tag.AddClasses("navbar-item")
+		tag.AddClasses("navbar-item").SetClassesIf(item.IsActive, "is-active")
 		if item.HRef != nil {
 			tag.SetTagName("a").SetURL("href", item.HRef)
 		} else {
@@ -98,8 +106,6 @@ type Navbar struct {
 
 	items []*NavbarItem // list of navbar items
 
-	// TODO: handle Navbar active item
-
 	// Styling
 	IsTransparent bool
 	HasShadow     bool
@@ -108,10 +114,17 @@ type Navbar struct {
 // Ensure Navbar implements HTMLTagComposer interface
 var _ html.HTMLTagComposer = (*Navbar)(nil)
 
+func (nav *Navbar) Item(index int) *NavbarItem {
+	if index < 0 || index >= len(nav.items) {
+		return nil
+	}
+	return nav.items[index]
+}
+
 // AddItems adds items to the navbar .
-func (_nav *Navbar) AddItems(items ...*NavbarItem) *Navbar {
-	_nav.items = append(_nav.items, items...)
-	return _nav
+func (nav *Navbar) AddItems(items ...*NavbarItem) *Navbar {
+	nav.items = append(nav.items, items...)
+	return nav
 }
 
 // BuildTag builds the tag used to render the html element.
@@ -119,8 +132,8 @@ func (nav *Navbar) BuildTag(tag *html.Tag) {
 	tag.SetTagName("nav").
 		SetAttribute("role", "navigation").
 		AddClasses("navbar").
-		AddClassesIf(nav.IsTransparent, "is-transparent").
-		AddClassesIf(nav.HasShadow, "has-shadow")
+		SetClassesIf(nav.IsTransparent, "is-transparent").
+		SetClassesIf(nav.HasShadow, "has-shadow")
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -157,22 +170,22 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 	return nil
 }
 
-// func (_nav *Navbar) Template(*DataState) (_t SnippetTemplate) {
+// func (nav *Navbar) Template(*DataState) (_t SnippetTemplate) {
 // 	_t.TagName = "nav"
 // 	_t.Attributes = `class="navbar" role="navigation"`
-// 	if _nav.IsTransparent {
-// 		_nav.SetClasses("is-transparent")
+// 	if nav.IsTransparent {
+// 		nav.SetClasses("is-transparent")
 // 	}
-// 	if _nav.HasShadow {
-// 		_nav.SetClasses("has-shadow")
+// 	if nav.HasShadow {
+// 		nav.SetClasses("has-shadow")
 // 	}
 
 // 	// brand
 // 	_t.Body = `<div class="navbar-brand">`
 
-// 	for _, item := range _nav.items {
+// 	for _, item := range nav.items {
 // 		if item.Brand {
-// 			_t.Body += _nav.RenderChildSnippet(&item)
+// 			_t.Body += nav.RenderChildSnippet(&item)
 // 		}
 // 	}
 
@@ -188,20 +201,20 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 // 	_t.Body += `</div>` //brand
 
 // 	// menu
-// 	_t.Body += `<div class="navbar-menu" id="` + String(_nav.Id()) + `menu">`
+// 	_t.Body += `<div class="navbar-menu" id="` + String(nav.Id()) + `menu">`
 
 // 	_t.Body += `<div class="navbar-start">`
-// 	for _, item := range _nav.items {
+// 	for _, item := range nav.items {
 // 		if !item.Brand && !item.End {
-// 			_t.Body += _nav.RenderChildSnippet(&item)
+// 			_t.Body += nav.RenderChildSnippet(&item)
 // 		}
 // 	}
 // 	_t.Body += `</div>`
 
 // 	_t.Body += `<div class="navbar-end">`
-// 	for _, item := range _nav.items {
+// 	for _, item := range nav.items {
 // 		if !item.Brand && item.End {
-// 			_t.Body += _nav.RenderChildSnippet(&item)
+// 			_t.Body += nav.RenderChildSnippet(&item)
 // 		}
 // 	}
 // 	_t.Body += `</div>`
