@@ -90,16 +90,15 @@ func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (er
 	regentry := registry.LookupRegistryEntry(snippet)
 	if regentry != nil {
 		icktagname = regentry.TagName()
+		cmpname = icktagname
 		if left, has := strings.CutPrefix(icktagname, "ick-"); has {
 			cmpname = left
-		} else {
-			cmpname = icktagname
 		}
 	} else {
 		cmpname = reflect.TypeOf(snippet).Elem().Name()
+		cmpname = strings.ToLower(cmpname)
 		icktagname = "ick-" + cmpname
 	}
-	cmpname = strings.ToLower(cmpname)
 
 	// build the tag with the reference given by tha snippet himself
 	tag := snippet.Tag()
