@@ -102,15 +102,30 @@ func (hfile *HtmlFile) Render(out io.Writer) (err error) {
 
 	// <head>
 	WriteStrings(out, `<head>`)
-
-	// css files
-
-	rcssfs := RequiredCSSFile()
-	for _, rcssf := range rcssfs {
-		hfile.AddHeadItem("link", `rel="stylesheet" href="`+rcssf.String()+`"`)
+	WriteStringsIf(hfile.Title != "", out, "<title>", hfile.Title, "</title>")
+	if hfile.Description != "" {
+		hfile.AddHeadItem("meta", `name="description" content="`+hfile.Description+`"`)
 	}
 
-	WriteStringsIf(hfile.Title != "", out, "<title>", hfile.Title, "</title>")
+	// css files
+	rcssfs := RequiredCSSFile()
+	for _, rcssf := range rcssfs {
+		strrcssf := rcssf.String()
+		duplicate := false
+		for _, hi := range hfile.HeadItems {
+			if hi.tag.tagname == "link" {
+				href, found := hi.tag.Attribute("href")
+				if found && href == strrcssf {
+					duplicate = true
+					break
+				}
+			}
+		}
+		if !duplicate {
+			hfile.AddHeadItem("link", `rel="stylesheet" href="`+strrcssf+`"`)
+		}
+	}
+
 	for _, headitem := range hfile.HeadItems {
 		if err = RenderSnippet(out, nil, headitem); err != nil {
 			return err

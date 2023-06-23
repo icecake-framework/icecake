@@ -1,6 +1,9 @@
 package html
 
-import "net/url"
+import (
+	"net/url"
+	"strings"
+)
 
 var (
 	_cssFiles []url.URL // slice of required stylesheet link ref. will be added once into the head of the page
@@ -14,17 +17,33 @@ func RequireCSSFile(cssURL string) {
 		return
 	}
 	url, err := url.Parse(cssURL)
-	if err == nil {
+	if err != nil {
 		return
 	}
-	_cssFiles = append(_cssFiles, *url)
+
+	// do not add it twice
+	duplicate := false
+	strurl := url.String()
+	for _, cssf := range _cssFiles {
+		if cssf.String() == strurl {
+			duplicate = true
+			break
+		}
+	}
+	if !duplicate {
+		_cssFiles = append(_cssFiles, *url)
+	}
 }
 
 // RequireCSSFile allows to declare a required CSS style string for a specific snippet.
 // This can be call in the init function of a package defining custom snippets.
 func RequireCSSStyle(ickTagName string, cssStyle string) {
-	_cssStyle += `/* ` + ickTagName + " */\n"
-	_cssStyle += cssStyle
+	cmt := `/* ` + ickTagName + " */\n"
+	found := strings.Contains(_cssStyle, cmt)
+	if !found {
+		_cssStyle += cmt
+		_cssStyle += cssStyle
+	}
 }
 
 func RequiredCSSFile() []url.URL {

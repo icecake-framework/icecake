@@ -18,12 +18,12 @@ func main() {
 	flag.Parse()
 	path := html.MustCheckOutputPath(output)
 
+	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css")
+
 	index := html.NewHtmlFile("en").
 		AddHeadItem("meta", "charset=UTF-8").
 		AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`).
 		AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`).
-		AddHeadItem("link", `rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"`).
-		AddHeadItem("link", `rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"`).
 		AddHeadItem("script", `type="text/javascript" src="icecake.js"`)
 
 	index.Title = "documentation - icecake framework"
