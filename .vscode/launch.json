@@ -18,11 +18,11 @@
             ]
         },
         {
-            "name": "Makedoc",
+            "name": "Makedocs",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/web/docs/makedoc.go",
+            "program": "${workspaceFolder}/web/docs/",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "args": [

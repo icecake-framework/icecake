@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/icecake-framework/icecake/pkg/bulma"
@@ -13,26 +12,10 @@ import (
 
 func main() {
 
-	html.RequireCSSStyle("myFooter", `
-	.myfooter-title {
-		color: rgb(122, 122, 122);
-	}
-	
-	.myfooter-info {
-		color: rgb(122, 122, 122);
-		font-size: 0.9rem;
-	}
-	
-	.myfooter-link {
-		color: rgb(122, 122, 122);
-	}
-	
-	`)
-
+	// get the command line parameters
 	output := flag.String("output", "", "output path where generated html files will be saved")
 	flag.BoolVar(&verbose.IsOn, "verbose", false, "print out execution details")
 	flag.Parse()
-
 	path := html.MustCheckOutputPath(output)
 
 	index := html.NewHtmlFile("en").
@@ -79,7 +62,7 @@ func main() {
 	hero.Container.Tag().AddClasses("has-text-centered")
 	hero.CTA = bulma.NewButtonLink(html.HTML("Read doc"), "/docs")
 
-	body := html.NewSnippet("body", `id="body"`).StackContent(navbar, hero, &myFooter{})
+	body := html.NewSnippet("body", `id="body"`).StackContent(navbar, hero, &docsFooter{})
 
 	index.Body = body
 
@@ -92,43 +75,4 @@ func main() {
 		}
 		os.Exit(1)
 	}
-}
-
-/******************************************************************************
-/* myFooter
-******************************************************************************/
-
-type myFooter struct{ html.HTMLSnippet }
-
-func (cmp *myFooter) BuildTag(tag *html.Tag) { tag.SetTagName("footer").AddClasses("footer") }
-
-func (cmp *myFooter) RenderContent(out io.Writer) error {
-
-	hrefMIT := `<a href="https://opensource.org/licenses/mit-license.php" rel="license">MIT</a>`
-	hrefCCBY := `<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>`
-	hrefLinks := []string{
-		`<a href="/">Home</a>`,
-		`<a href="/docs">Docs</a>`,
-		`<a href="https://github.com/icecake-framework/icecake">Contribute</a> on GitHub`,
-	}
-
-	html.WriteString(out, `<div class="container"><div class="columns">`)
-
-	// 1st column
-	html.WriteString(out, `<div class="column is-8">`)
-	html.WriteStrings(out, `<h4 class="myfooter-title">`, `<strong>IceCake</strong> by Lolorenzo`, `</h4>`)
-	html.WriteStrings(out, `<div class="myfooter-info">`, `Source code licences `, hrefMIT, `</div>`)
-	html.WriteStrings(out, `<div class="myfooter-info">`, `Website content licensed `, hrefCCBY, `</div>`)
-	html.WriteString(out, `</div>`)
-
-	// 2nd column
-	html.WriteString(out, `<div class="column is-4">`)
-	html.WriteStrings(out, `<h4 class="myfooter-title">`, `<strong>Links</strong>`, `</h4>`)
-	for _, hrefLink := range hrefLinks {
-		html.WriteStrings(out, `<p class="myfooter-link">`, hrefLink, `</p>`)
-	}
-	html.WriteString(out, `</div>`)
-
-	html.WriteString(out, `</div></div>`)
-	return nil
 }
