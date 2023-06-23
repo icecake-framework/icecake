@@ -32,7 +32,7 @@ func main() {
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, img3, nil)
 
 	img4 := html.HTML(`<ick-image Size="96x96" Src="/icecake.svg"/>`)
-	dom.Id("content").InsertHTML(dom.INSERT_LAST_CHILD, img4, nil)
+	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, img4, nil)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")

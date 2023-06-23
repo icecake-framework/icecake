@@ -30,8 +30,8 @@ type Notify struct {
 	// Toast bool
 }
 
-// Ensure Notify implements HTMLComposer interface
-var _ html.HTMLComposer = (*Notify)(nil)
+// Ensure Notify implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*Notify)(nil)
 
 // BuildTag builds the tag used to render the html element.
 // Notify tag is a simple <div class="notification"></div>
@@ -42,7 +42,7 @@ func (notify *Notify) BuildTag(tag *html.Tag) {
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (notify *Notify) RenderContent(out io.Writer) error {
 	notify.Delete.TargetID = notify.Id()
-	notify.RenderChildSnippet(out, &notify.Delete)
-	notify.RenderChildHTML(out, notify.Message)
+	notify.RenderChilds(out, &notify.Delete)
+	notify.RenderChilds(out, &notify.Message)
 	return nil
 }

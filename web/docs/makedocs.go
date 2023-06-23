@@ -15,6 +15,7 @@ func main() {
 	// get the command line parameters
 	output := flag.String("output", "", "output path where generated html files will be saved")
 	flag.BoolVar(&verbose.IsOn, "verbose", false, "print out execution details")
+	flag.BoolVar(&verbose.IsDebugging, "debug", false, "print out debugging info")
 	flag.Parse()
 	path := html.MustCheckOutputPath(output)
 
@@ -31,38 +32,41 @@ func main() {
 	index.HTMLFileName = "index.html"
 
 	navbar := &bulma.Navbar{HasShadow: true}
+	navbar.Tag().SetId("topnavbar")
 	navbar.AddItems(
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_BRAND,
-			Content:  html.NewHTML(`<span class="title pl-2">Icecake</span>`)}).
+			Content:  html.HTML(`<span class="title pl-2">Icecake</span>`)}).
 			ParseImageSrc("/assets/icecake-color.svg").
 			ParseHRef("/"),
 
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_START,
-			Content:  html.NewHTML(`Docs`)}).
+			Content:  html.HTML(`Docs`)}).
 			ParseHRef("/"),
 
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_END,
-			Content:  bulma.NewButtonLink(html.HTML("GitHub"), "https://github.com/icecake-framework/icecake")}),
+			Content:  bulma.NewButtonLink(*html.HTML("GitHub"), "https://github.com/icecake-framework/icecake")}),
 
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_END,
-			Content:  html.NewHTML("<small>Alpha</small>")}),
+			Content:  html.HTML("<small>Alpha</small>")}),
 	)
 
 	hero := &bulma.Hero{
 		Height:    bulma.HH_FULLFHEIGHT_WITH_NAVBAR,
-		Title:     html.HTML("Develop SPA and Static Websites in Go."),
+		Title:     *html.HTML("Develop SPA and Static Websites in Go."),
 		TitleSize: 2,
-		Subtitle:  html.HTML("Pure Go Web Assembly Framework"),
+		Subtitle:  *html.HTML("Pure Go Web Assembly Framework"),
 	}
 	hero.Container = &bulma.Container{FullWidth: bulma.CFW_MAXDESKTOP}
 	hero.Container.Tag().AddClasses("has-text-centered")
-	hero.CTA = bulma.NewButtonLink(html.HTML("Read doc"), "/docs")
+	btnCTA := bulma.NewButtonLink(*html.HTML("Read doc"), "/docs")
+	btnCTA.Tag().SetId("cta")
+	hero.CTA = btnCTA
 
-	body := html.NewSnippet("body", `id="body"`).StackContent(navbar, hero, &docsFooter{})
+	body := html.NewSnippet("body").StackContent(navbar, hero, &docsFooter{}) // `id="body"`
 
 	index.Body = body
 

@@ -2,10 +2,6 @@ package html
 
 import (
 	"io"
-	"reflect"
-
-	"github.com/icecake-framework/icecake/internal/helper"
-	"github.com/sunraylab/verbose"
 )
 
 // HTMLSnippet enables creation of simple or complex html strings based on
@@ -22,8 +18,9 @@ import (
 type HTMLSnippet struct {
 	content []HTMLComposer // HTML composers to render within the enclosed tag.
 	tag     Tag            // HTML Element Tag with its attributes.
-	sub     ComposerMap    // instantiated embedded sub-snippet if any.
-	ds      *DataState     // a reference to a datastate that can be used for rendering.
+	meta    RenderingMeta  // Rendering MetaData
+
+	ds *DataState // a reference to a datastate that can be used for rendering.
 }
 
 // Ensure HTMLSnippet implements HTMLComposer interface
@@ -35,6 +32,10 @@ func NewSnippet(tagname string, attrlist ...string) *HTMLSnippet {
 	snippet.tag.SetTagName(tagname)
 	snippet.tag.ParseAttributes(attrlist...)
 	return snippet
+}
+
+func (snippet *HTMLSnippet) Meta() *RenderingMeta {
+	return &snippet.meta
 }
 
 // SetDataState
@@ -98,54 +99,35 @@ func (s HTMLSnippet) Id() string {
 // The content is unfolded to look for sub-snippet and every sub-snippet are also written to the writer.
 // If the child request an ID, RenderSnippet generates an ID by prefixing its parent id.
 // In addition the child is appended into the list of sub-components.
-func (parent *HTMLSnippet) RenderChildSnippet(out io.Writer, childsnippet HTMLComposer) error {
-	return RenderSnippet(out, parent, childsnippet)
+func (parent *HTMLSnippet) RenderChilds(out io.Writer, childs ...HTMLComposer) error {
+	for _, child := range childs {
+		err := Render(out, parent, child)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // RenderSnippetIf renders the Snippet only if the condition is true otherwise does nothing.
-func (parent *HTMLSnippet) RenderChildSnippetIf(condition bool, out io.Writer, childsnippet HTMLComposer) error {
+func (parent *HTMLSnippet) RenderChildsIf(condition bool, out io.Writer, childs ...HTMLComposer) error {
 	if !condition {
 		return nil
 	}
-	return parent.RenderChildSnippet(out, childsnippet)
+	return parent.RenderChilds(out, childs...)
 }
 
 // RenderChildHTML renders an HTML template string into out.
-func (parent *HTMLSnippet) RenderChildHTML(out io.Writer, html HTMLString) error {
-	return RenderHTML(out, parent, html)
-}
+// func (parent *HTMLSnippet) RenderChildHTML(out io.Writer, html HTMLString) error {
+// 	return RenderHTML(out, parent, html)
+// }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 // The default implementation for an HTMLSnippet snippet is to render all the internal stack of composers.
 // Use an HTMLString snippet to renders (unfold and generate HTML output) a simple string without enclosed tag.
 func (s *HTMLSnippet) RenderContent(out io.Writer) (err error) {
 	if s.content != nil {
-		for _, c := range s.content {
-			err = s.RenderChildSnippet(out, c)
-			if err != nil {
-				return err
-			}
-		}
+		return s.RenderChilds(out, s.content...)
 	}
 	return nil
-}
-
-// Embed adds subcmp to the map of embedded components within the _parent.
-// If a component with the same _id has already been embedded it's replaced.
-// Usually the _id is the id of the html element.
-func (s *HTMLSnippet) Embed(id string, subcmp HTMLComposer) {
-	strid := helper.Normalize(id)
-	if s.sub == nil {
-		s.sub = make(ComposerMap, 1)
-	}
-	s.sub[strid] = subcmp
-	verbose.Debug("embedding (%v) %q", reflect.TypeOf(subcmp).String(), strid)
-}
-
-// Embedded returns the map of embedded components, keyed by their id.
-func (s HTMLSnippet) Embedded() ComposerMap {
-	if s.sub == nil {
-		s.sub = make(ComposerMap, 1)
-	}
-	return s.sub
 }

@@ -1,50 +1,115 @@
 package html
 
 import (
-	"errors"
-	"fmt"
 	"io"
-	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
-	"unicode/utf8"
 
 	"github.com/icecake-framework/icecake/pkg/registry"
-	"github.com/icecake-framework/icecake/pkg/stringpattern"
 	"github.com/sunraylab/verbose"
 )
-
-type ComposerMap map[string]any
-
-type HTMLComposer interface {
-
-	// Tag returns a reference to the composer tag.
-	// Must not return nil otherwise rendering process will returns an error and custom code may panic.
-	Tag() *Tag
-
-	// BuildTag builds the tag used to render the html element.
-	// This tag builder can update the given tag or overwrite its properties.
-	// The composer rendering processes call BuildTag once.
-	// If the implementer builds an empty tag, only the body will be rendered.
-	BuildTag(tag *Tag)
-
-	// RenderContent writes the HTML string corresponding to the content of the HTML element.
-	// Return an error to stops the rendering process.
-	RenderContent(out io.Writer) error
-
-	// Embedded returns all sub-composers
-	Embedded() ComposerMap
-
-	// Embed embeds sub-composers
-	Embed(id string, subcmp HTMLComposer)
-}
 
 // maxDEEP is the maximum HTML string unfolding levels
 const maxDEEP int = 25
 
-// RenderSnippet renders the HTML string of the snippet to out, including its tag element its properties and its content.
+type ComposerMap map[string]any
+
+type RenderingMeta struct {
+	VirtualId string // virtual id allocated to a composer
+	Deep      int    // deepness of the composer
+	Parent    HTMLComposer
+
+	sub ComposerMap // instantiated embedded sub-snippet if any.
+}
+
+func (rmeta *RenderingMeta) SetParent(parent HTMLComposer) (deep int) {
+	rmeta.Parent = parent
+	rmeta.Deep = 0
+	if parent != nil {
+		rmeta.Deep = parent.Meta().Deep + 1
+	}
+	return rmeta.Deep
+}
+
+// GenerateVirtualId generates a unique id for every rendering composer.
+// The composer may not have a TagBuilder, so the Id is not necessarly the id attribute of the composer. The generated id pattern is:
+//
+//	`{{{parentid|orphan}.[cmpname.index]}|[cmpid]}`
+//
+// rules:
+//   - if the rendering has a rendering parent, the virtual id starts with the parent's virtualid otherwise it's "orphan" followed by the component name
+//   - if the rendering does not have a rendering parent, the virtual id is the given cmpid if not empty, otherwise it's "orphan"
+//   - the dot "-" seperator is added followed by the cmpname if any
+//
+// - the cmpname is added
+func (rmeta *RenderingMeta) GenerateVirtualId(cmpname string, cmpid string) string {
+	prefix := "orphan"
+	if rmeta.Parent != nil {
+		prefix = rmeta.Parent.Meta().VirtualId
+	}
+	prefix += "."
+	toporphan := strings.HasPrefix(prefix, "orphan.")
+
+	body := cmpname
+	if cmpid != "" {
+		body = cmpid
+		if toporphan {
+			prefix = ""
+		}
+	}
+
+	index := 0
+	if rmeta.Parent != nil {
+		index = len(rmeta.Parent.Meta().Embedded())
+	} else {
+		index, _ = registry.GetUniqueId(cmpname)
+	}
+
+	suffix := ""
+	if cmpid == "" || toporphan {
+		suffix = strconv.Itoa(index)
+	}
+
+	rmeta.VirtualId = prefix + body + suffix
+	return rmeta.VirtualId
+}
+
+// Embed adds subcmp to the map of embedded components within the _parent.
+// If a component with the same _id has already been embedded it's replaced.
+// Usually the _id is the id of the html element.
+func (rmeta *RenderingMeta) Embed(id string, subcmp HTMLComposer) {
+	if rmeta.sub == nil {
+		rmeta.sub = make(ComposerMap, 1)
+	}
+	rmeta.sub[id] = subcmp
+	// verbose.Debug("embedded (%v) %q", reflect.TypeOf(subcmp).String(), id)
+}
+
+// Embedded returns the map of embedded components, keyed by their id.
+func (rmeta RenderingMeta) Embedded() ComposerMap {
+	if rmeta.sub == nil {
+		rmeta.sub = make(ComposerMap, 1)
+	}
+	return rmeta.sub
+}
+
+type HTMLComposer interface {
+
+	// Meta returns a reference to a RenderingMeta containing meta data of the rendering
+	Meta() *RenderingMeta
+
+	// RenderContent writes the HTML string corresponding to the content of the HTML element.
+	// Return an error to stops the rendering process.
+	RenderContent(out io.Writer) error
+}
+
+type HTMLTagComposer interface {
+	TagBuilder
+	HTMLComposer
+}
+
+// Render renders the HTML string of the snippet to out, including its tag element its properties and its content.
 // Rendering the content can renders child-snippets recursively. This can be done maxDEEP times max to avoid infinite loop.
 //
 // If the snippet provides a tagname the output looks like this:
@@ -65,29 +130,18 @@ const maxDEEP int = 25
 // If the parent is not nil, the snippet is added to its embedded stack of sub-components.
 //
 // Returns rendering errors, typically with the writer, or if there's too many recursive rendering.
-func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (err error) {
+func Render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
 
 	// look for depth and ensure no infinite loop
-	parentvirtid := ""
-	deep := 0
-	if parent != nil {
-		ptag := parent.Tag()
-		if ptag == nil {
-			return verbose.Error("RenderSnippet", ErrTaglessParent)
-		}
-		deep = ptag.deep + 1
-		if deep > maxDEEP {
-			return verbose.Error("RenderSnippet", ErrTooManyRecursiveRendering)
-		}
-		parentvirtid = ptag.virtualid
-	}
-	if parentvirtid == "" {
-		parentvirtid = "orphan"
+	cmpdeep := cmp.Meta().SetParent(parent)
+	if cmpdeep > maxDEEP {
+		return verbose.Error("RenderSnippet", ErrTooManyRecursiveRendering)
 	}
 
 	// Get a name for the composer and set its name property
+	// TODO: simplify with the tag name automattically generated with reflection
 	var icktagname, cmpname string
-	regentry := registry.LookupRegistryEntry(snippet)
+	regentry := registry.LookupRegistryEntry(cmp)
 	if regentry != nil {
 		icktagname = regentry.TagName()
 		cmpname = icktagname
@@ -95,445 +149,69 @@ func RenderSnippet(out io.Writer, parent HTMLComposer, snippet HTMLComposer) (er
 			cmpname = left
 		}
 	} else {
-		cmpname = reflect.TypeOf(snippet).Elem().Name()
+		cmpname = reflect.TypeOf(cmp).Elem().Name()
 		cmpname = strings.ToLower(cmpname)
 		icktagname = "ick-" + cmpname
 	}
 
-	// build the tag with the reference given by tha snippet himself
-	tag := snippet.Tag()
-	tag.deep = deep
-	if tag.AttributeMap == nil {
-		tag.AttributeMap = make(AttributeMap)
-	}
-	snippet.BuildTag(tag)
-	if !tag.NoName {
-		tag.SetAttribute("name", icktagname)
-	}
+	// build the tag
+	cmptag, istagger := cmp.(TagBuilder)
+	cmpid := ""
+	autoid := false
+	if istagger {
+		tag := cmptag.Tag()
+		if tag.AttributeMap == nil {
+			tag.AttributeMap = make(AttributeMap)
+		}
+		cmptag.BuildTag(tag)
 
-	// Define the id and the virtual id
-	id := tag.Id()
-	virtualid := parentvirtid + "." + cmpname
-	if parentvirtid == "orphan" {
-		virtualid = registry.GetUniqueId(virtualid)
-	} else {
-		virtualid += "-" + strconv.Itoa(tag.seq)
-	}
+		// force property name
+		if !tag.NoName {
+			tag.SetAttribute("name", icktagname)
+		}
 
-	if tag.BoolAttribute("noid") {
-		id = ""
-		tag.RemoveAttribute("id")
-	} else {
-		if id == "" || deep > 0 {
-			id = virtualid
-			tag.SetId(id)
+		// get the id, may be empty
+		if tag.BoolAttribute("autoid") {
+			autoid = true // tag.RemoveAttribute("id")
 		} else {
-			virtualid = id
+			cmpid = tag.Id()
 		}
 	}
-	tag.virtualid = virtualid
+
+	// generate the virtual id
+	virtualid := cmp.Meta().GenerateVirtualId(cmpname, cmpid)
+	if autoid {
+		cmptag.Tag().SetId(virtualid)
+	}
 
 	// verbose information
-	var strid string
 	if verbose.IsOn {
-		if id == "" {
-			strid = `vid="` + virtualid + `"`
-		} else {
-
-			strid = `id="` + id + `"`
-		}
-		verbose.Printf(verbose.INFO, "rendering snippet %v (%s) %s\n", deep, reflect.TypeOf(snippet).String(), strid)
+		verbose.Printf(verbose.INFO, "rendering composer %v (%s) vid=%q --> id=%q\n", cmpdeep, reflect.TypeOf(cmp).String(), virtualid, cmpid)
 	}
 
 	// render openingtag
-	selfclosed, errtag := tag.RenderOpening(out)
-	if selfclosed || errtag != nil {
-		return errtag
+	if cmptag != nil {
+		selfclosed, errtag := cmptag.Tag().RenderOpening(out)
+		if selfclosed || errtag != nil {
+			return errtag
+		}
 	}
 
 	// Render the content
-	err = snippet.RenderContent(out)
+	err = cmp.RenderContent(out)
 	if err != nil {
 		return err
 	}
 
 	// Render closingtag
-	err = tag.RenderClosing(out)
+	if cmptag != nil {
+		err = cmptag.Tag().RenderClosing(out)
+	}
 
 	// add it to the map of embedded components
 	if err == nil && parent != nil {
-		parent.Embed(virtualid, snippet)
+		parent.Meta().Embed(virtualid, cmp)
 	}
 
 	return err
-}
-
-const (
-	processing_NONE int = iota
-	processing_TXT
-	processing_ICKTAG
-	processing_ANAME
-	processing_AVALUE
-)
-
-type stepway struct {
-	processing int // processing operation
-	fieldat    int // starting position of the current processing field
-	fieldto    int // ending position of the current processing field
-}
-
-func (sw *stepway) startfield(i int) {
-	sw.fieldat = i
-	sw.fieldto = sw.fieldat
-}
-func (sw *stepway) openick(i int) {
-	sw.processing = processing_ICKTAG
-	sw.fieldat = i + 1
-	sw.fieldto = i + 4
-}
-func (sw *stepway) closeick(i int) {
-	sw.processing = processing_NONE
-	sw.startfield(i + 2)
-}
-
-func RenderHTMLIf(f bool, out io.Writer, parent HTMLComposer, htmls ...HTMLString) error {
-	if f {
-		return RenderHTML(out, parent, htmls...)
-	}
-	return nil
-}
-
-// RenderHTML lookups for ick-tags in the htmlstring and unfold each of them into out.
-//
-// htmlstring is a string combining usual HTML text and ick-tags. HTML content is transfered to the output without control and without changes.
-// ick-tags are autoclosing tags and should be in the form:
-//
-//	`<ick-{tagname} ...[boolattribute] ...[attribute=[']value[']]/>`
-//
-// If no ick-tags are found, the output is a copy of the htmlstring.
-// An error is returned if the HTML string is not well formatted and the rendering process fails.
-// The rendering process renders an HTML comment in the following cases:
-//   - If the HTML string contains ick-tag but the ick-tagname does not correspond to a Registered composer,
-//   - If the HTML string contains ick-tag with attributes but one value of these attribute is of a bad type,
-//
-// TODO: implement rendering of ick-tag with content inside
-func RenderHTML(out io.Writer, parent HTMLComposer, htmls ...HTMLString) error {
-	for _, html := range htmls {
-		err := renderHTML(out, parent, html)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func renderHTML(out io.Writer, parent HTMLComposer, htmlstr HTMLString) (err error) {
-
-	htmlstring := htmlstr.bs
-
-	field := func(s stepway) []byte {
-		return htmlstring[s.fieldat:s.fieldto]
-	}
-
-	walk := stepway{processing: processing_NONE}
-	var ickname, aname, avalue string
-	var bquote byte
-	attrs := make(AttributeMap, 0)
-
-	nick := 0
-	ilast := len(htmlstring) - 1
-nextbyte:
-	for i := 0; i <= ilast && err == nil; i++ {
-		b := htmlstring[i]
-		bautoclose_delim := string(htmlstring[i:mini(i+2, ilast+1)]) == "/>"
-		bopen_delim := string(htmlstring[i:mini(i+5, ilast+1)]) == "<ick-"
-
-		// decide what to do according to walk.processing and b value _</>*
-		funfoldick := false
-		switch walk.processing {
-		case processing_NONE:
-			switch {
-			case bopen_delim: // start processing an ick-tage
-				walk.openick(i)
-				i += 5 - 1
-			default: // start processing a text field
-				walk.processing = processing_TXT
-				walk.startfield(i)
-			}
-
-		case processing_TXT:
-			switch {
-			case i == ilast: // flush processed text field and exit
-				walk.fieldto = ilast + 1
-				out.Write(field(walk))
-			case bopen_delim: // flush processed text field and start processing an ick-tage
-				walk.fieldto = i
-				out.Write(field(walk))
-				walk.openick(i)
-				i += 5 - 1
-			default: // extend the text field
-				walk.fieldto = i
-			}
-
-		case processing_ICKTAG:
-			if b == ' ' || bautoclose_delim { // record component tagname
-				walk.fieldto = i
-				ickname = string(field(walk))
-				ickname = strings.ToLower(ickname)
-				if ickname == "ick-" {
-					return ErrIckTagNameMissing
-				}
-				aname = ""
-				avalue = ""
-				attrs = make(AttributeMap, 0)
-			}
-			switch {
-			case b == ' ': // look for another aname
-				walk.processing = processing_ANAME
-				walk.startfield(0)
-			case bautoclose_delim: // process a single ick-component
-				walk.closeick(i)
-				i += 2 - 1
-				funfoldick = true
-
-			default: // build component ick-tagname
-				r, size := utf8.DecodeRune(htmlstring[i:mini(ilast+1, i+4)])
-				if size != 0 && stringpattern.IsValidNameRune(r, false) {
-					i += size - 1
-					walk.fieldto = i
-				} else {
-					return &IckTagNameError{TagName: string(htmlstring[walk.fieldat : i+1]), Message: "invalid character found in tagname"}
-				}
-			}
-
-		case processing_ANAME:
-			switch {
-			case (b == ' ' || b == '\n' || b == '\t') && walk.fieldat == 0: // trim left spaces and \n
-				continue nextbyte
-			case (b == ' ' || b == '=' || b == '\n' || b == '\t' || bautoclose_delim) && walk.fieldat > 0: // get and save aname
-				walk.fieldto = i
-				aname = string(field(walk))
-				attrs[aname] = ""
-			}
-
-			switch {
-			case b == ' ': // look for another aname
-				aname = ""
-				walk.processing = processing_ANAME
-				walk.startfield(0)
-			case b == '=': // look for a value
-				if aname == "" {
-					return &IckTagNameError{TagName: ickname, Message: "missing attribute's name before '='"}
-				}
-				walk.processing = processing_AVALUE
-				walk.startfield(0)
-				bquote = 0
-			case bautoclose_delim: // process an ick-component
-				walk.closeick(i)
-				i += 2 - 1
-				funfoldick = true
-
-			default: // build attribute name
-				r, size := utf8.DecodeRune(htmlstring[i:mini(ilast+1, i+4)])
-				if size > 0 && stringpattern.IsValidNameRune(r, walk.fieldat == 0) {
-					if walk.fieldat == 0 {
-						walk.startfield(i)
-					}
-					i += size - 1
-					walk.fieldto = i
-				} else {
-					return &IckTagNameError{TagName: ickname, Message: fmt.Sprintf("invalid attribute's name character %q", string(htmlstring[walk.fieldat:i+1]))}
-				}
-			}
-
-		case processing_AVALUE:
-			if bquote == 0 { // don't know yet if a quoted or unquoted value
-				switch {
-				case b == ' ': // trim left spaces
-				case b == '"' || b == '\'': // start a quoted value
-					bquote = b
-					walk.startfield(i + 1)
-				case bautoclose_delim: // empty value
-					return &IckTagNameError{TagName: ickname, Message: fmt.Sprintf("missing attribute's value %q", string(htmlstring[walk.fieldat:i+1]))}
-				default: // start unquoted value
-					bquote = 1
-					walk.startfield(i)
-				}
-				break
-			}
-
-			switch {
-			case bquote == 1 && (b == ' ' || bautoclose_delim): // process unquoted value
-				walk.fieldto = i
-				avalue = string(field(walk))
-				attrs[aname] = trimfirstvalue(avalue)
-				switch {
-				case bautoclose_delim: // process an ick-tagname
-					walk.closeick(i)
-					i += 2 - 1
-					funfoldick = true
-				default: // look for another aname
-					walk.processing = processing_ANAME
-					walk.startfield(0)
-				}
-			case bquote != 1 && b == bquote: // process a quoted value
-				walk.fieldto = i
-				avalue = string(field(walk))
-				attrs[aname] = avalue
-				walk.processing = processing_ANAME
-				walk.startfield(0)
-			default: // extend field value
-				walk.fieldto = i
-			}
-		}
-
-		if funfoldick {
-			errunf := unfoldick(parent, out, ickname, attrs, nick)
-			if errunf != nil {
-				if errors.Is(errunf, ErrTooManyRecursiveRendering) || errors.Is(errunf, ErrTaglessParent) {
-					verbose.Printf(verbose.ALERT, errunf.Error())
-					return errunf
-				}
-				verbose.Printf(verbose.WARNING, errunf.Error())
-			}
-			nick++
-		}
-	}
-	return err
-}
-
-// unfoldick instanciates and unfolds the ick-component corresponding to ickname.
-// The rendering process renders an HTML comment and return an error in the following cases:
-//   - If the HTML string contains ick-tag but the ick-tagname does not correspond to a Registered composer,
-//   - If the HTML string contains ick-tag with attributes but one value of these attribute is of a bad type,
-func unfoldick(parent HTMLComposer, out io.Writer, ickname string, attrs AttributeMap, seq int) (err error) {
-
-	verbose.Debug("unfolding component %q", ickname)
-
-	// does this tag refer to a registered component ?
-	regentry := registry.GetRegistryEntry(ickname)
-	if regentry.Component() != nil {
-
-		// clone the registered snippet (a composer)
-		newref := reflect.New(reflect.TypeOf(regentry.Component()).Elem())
-
-		// init all values with the one in the template
-		// warning: pointers are copied by ref and not by value
-		// newref.Elem().Set(reflect.ValueOf(regentry.Component()).Elem())
-
-		// get the interface of the new snippet (a composer)
-		newcmp := newref.Interface().(HTMLComposer)
-
-		newcmptag := newcmp.Tag()
-		if newcmptag == nil {
-			err = &IckTagNameError{TagName: ickname, Message: "bad composer implementation, Tag() must return a valid reference"}
-		}
-
-		// process unfolded attributes, set value of ickcomponent field when name of attribute matches field name,
-		// otherwise set unfolded attribute to the attribute of the component.
-		if err == nil {
-			for aname, avalue := range attrs {
-				verbose.Debug(aname, newref.Elem().Type())
-				_, found := newref.Elem().Type().FieldByName(aname)
-				if found {
-					// feed data struct with the value
-					field := newref.Elem().FieldByName(aname)
-					if erru := updateproperty(field, avalue); erru != nil {
-						err = &IckTagNameError{TagName: ickname, Message: fmt.Sprintf("%q attribute: %s", aname, erru)}
-						break
-					}
-				} else {
-					// this attribute is not a field of the componenent
-					// keep it as is unless it is the class attribute, in this case, add the attribute
-					newcmptag.SetAttribute(aname, avalue)
-				}
-			}
-		}
-
-		if err == nil {
-			if parent == nil || parent.Tag().deep >= 0 {
-				// recursively unfold the component snippet
-				newcmptag.seq = seq
-				err = RenderSnippet(out, parent, newcmp)
-			}
-		}
-
-	} else {
-		err = &IckTagNameError{TagName: ickname, Message: "unregistered ick-tagname"}
-	}
-
-	if err != nil {
-		WriteStrings(out, "<!--", err.Error(), "-->")
-	}
-
-	return err
-}
-
-// updateproperty updates prop with the value trying to convert the value to the type of prop.
-// Returns an error if prop's type is unmannaged and its value can't be extracted.
-func updateproperty(prop reflect.Value, value string) (err error) {
-	switch prop.Type().String() {
-	case "html.HTMLString":
-		s := string(HTML(value).Bytes())
-		prop.Set(reflect.ValueOf(s))
-	case "time.Duration":
-		var d time.Duration
-		d, err = time.ParseDuration(value)
-		if err == nil {
-			prop.SetInt(int64(d))
-		}
-	case "*url.URL":
-		pu, erru := url.Parse(value)
-		if erru != nil {
-			err = erru
-			break
-		}
-		prop.Set(reflect.ValueOf(pu))
-
-	default:
-		switch prop.Kind() {
-		case reflect.String:
-			prop.SetString(value)
-		case reflect.Int:
-			var i int
-			i, err = strconv.Atoi(value)
-			if err == nil {
-				prop.SetInt(int64(i))
-			}
-		case reflect.Float64:
-			var f float64
-			f, err = strconv.ParseFloat(value, 64)
-			if err == nil {
-				prop.SetFloat(f)
-			}
-		case reflect.Bool:
-			f := true
-			if s := strings.ToLower(strings.Trim(value, " ")); s == "false" || s == "0" {
-				f = false
-			}
-			prop.SetBool(f)
-		default:
-			err = fmt.Errorf("unmanaged type %s", prop.Type().String())
-		}
-	}
-	return err
-}
-
-// trimfirstvalue returns string with endings blanks trimed but keeping white space inside quotes.
-// If str does not have quotes ( " or ' ) the returned string is truncated at the first white space found.
-func trimfirstvalue(str string) string {
-	trimspaces := strings.Trim(str, " ")
-
-	trimq1 := strings.Trim(trimspaces, "'")
-	if len(trimq1) == len(trimspaces)-2 {
-		return trimq1
-	}
-
-	trimq2 := strings.Trim(trimspaces, "\"")
-	if len(trimq2) == len(trimspaces)-2 {
-		return trimq2
-	}
-
-	s, _, _ := strings.Cut(trimspaces, " ")
-	return s
 }

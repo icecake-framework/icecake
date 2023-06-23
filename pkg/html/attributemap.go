@@ -193,7 +193,8 @@ func (amap AttributeMap) SetId(id string) AttributeMap {
 // SetUniqueId sets or overwrites the id attribute by generating a unique id starting with the prefix.
 // "ick-" is used to prefix the returned id if prefix is empty.
 func (amap AttributeMap) SetUniqueId(prefix string) {
-	amap.saveAttribute("id", registry.GetUniqueId(prefix), true)
+	_, uid := registry.GetUniqueId(prefix)
+	amap.saveAttribute("id", uid, true)
 }
 
 // SetURL sets a url string as a value of a given attributeName.

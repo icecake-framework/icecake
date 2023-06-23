@@ -54,8 +54,8 @@ type Image struct {
 	IsRounded bool     // Rounded image style
 }
 
-// Ensure Image implements HTMLComposer interface
-var _ html.HTMLComposer = (*Image)(nil)
+// Ensure Image implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*Image)(nil)
 
 func NewImage(rawUrl string, size IMG_SIZE) *Image {
 	img := new(Image)
@@ -86,6 +86,6 @@ func (image *Image) RenderContent(out io.Writer) error {
 		AddClassesIf(image.IsRounded, "is-rounded").
 		SetAttributeIf(image.Alt != "", "alt", image.Alt)
 
-	image.RenderChildSnippet(out, img)
+	image.RenderChilds(out, img)
 	return nil
 }

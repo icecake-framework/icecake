@@ -13,9 +13,9 @@ type Tag struct {
 
 	tagname     string // the name of the tag a.k.a "div", "span", "meta"...
 	selfClosing bool   // specifies if this is a selfclosing tag, automatically setup by SetTagName. Use SetSelfClosing to force the value.
-	virtualid   string // used internally by the rendering process but never rendered itself.
-	deep        int    // deepness of the tag in a tag tree
-	seq         int    // sequence of the tag in a tag tree
+	// virtualid   string // used internally by the rendering process but never rendered itself.
+	// deep        int    // deepness of the tag in a tag tree
+	// seq         int    // sequence of the tag in a tag tree
 }
 
 // Tag factory setting the tag named and allowing to assign a map of attibutes.
@@ -94,4 +94,15 @@ func (tag *Tag) RenderClosing(out io.Writer) (err error) {
 		_, err = WriteStrings(out, "</", tag.tagname, ">")
 	}
 	return
+}
+
+type TagBuilder interface {
+	// Tag returns a valid reference to a tag.
+	Tag() *Tag
+
+	// BuildTag builds the tag used to render the html element.
+	// This tag builder can update the given tag or overwrite its properties.
+	// The composer rendering processes call BuildTag once.
+	// If the implementer builds an empty tag, only the body will be rendered.
+	BuildTag(tag *Tag)
 }

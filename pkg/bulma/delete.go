@@ -23,8 +23,8 @@ type Delete struct {
 	OnDelete func(*Delete)
 }
 
-// Ensure Delete implements HTMLComposer interface
-var _ html.HTMLComposer = (*Delete)(nil)
+// Ensure Delete implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*Delete)(nil)
 
 // BuildTag builds the tag used to render the html element.
 // Delete tag is a simple <button class="delete"></delete>

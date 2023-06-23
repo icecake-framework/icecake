@@ -54,8 +54,8 @@ type Button struct {
 	IsLoading  bool // Loading button state
 }
 
-// Ensure Button implements HTMLComposer interface
-var _ html.HTMLComposer = (*Button)(nil)
+// Ensure Button implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*Button)(nil)
 
 func NewButton(title html.HTMLString) *Button {
 	btn := new(Button)
@@ -121,6 +121,6 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 // Button rendering unfold the Title
 func (btn *Button) RenderContent(out io.Writer) error {
-	err := btn.RenderChildHTML(out, btn.Title)
+	err := btn.RenderChilds(out, &btn.Title)
 	return err
 }

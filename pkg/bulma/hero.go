@@ -42,8 +42,8 @@ type Hero struct {
 	InsideFoot html.HTMLComposer
 }
 
-// Ensure Hero implements HTMLComposer interface
-var _ html.HTMLComposer = (*Hero)(nil)
+// Ensure Hero implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*Hero)(nil)
 
 // Tag Builder used by the rendering functions.
 func (msg *Hero) BuildTag(tag *html.Tag) {
@@ -55,7 +55,7 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 
 	if msg.InsideHead != nil {
 		html.WriteString(out, `<div class="hero-head">`)
-		msg.RenderChildSnippet(out, msg.InsideHead)
+		msg.RenderChilds(out, msg.InsideHead)
 		html.WriteString(out, `</div>`)
 	}
 
@@ -68,13 +68,13 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 
 	title := html.NewSnippet("p", `class="title"`).InsertHTML(msg.Title)
 	title.Tag().AddClassesIf(msg.TitleSize > 0 && msg.TitleSize <= 6, "is-"+strconv.Itoa(msg.TitleSize))
-	msg.RenderChildSnippet(out, title)
+	msg.RenderChilds(out, title)
 
 	subtitle := html.NewSnippet("p", `class="subtitle"`).InsertHTML(msg.Subtitle)
 	subtitle.Tag().AddClassesIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
-	msg.RenderChildSnippet(out, subtitle)
+	msg.RenderChilds(out, subtitle)
 
-	msg.RenderChildSnippetIf(msg.CTA != nil, out, msg.CTA)
+	msg.RenderChildsIf(msg.CTA != nil, out, msg.CTA)
 
 	if msg.Container != nil {
 		msg.Container.Tag().RenderClosing(out)
@@ -84,7 +84,7 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 
 	if msg.InsideFoot != nil {
 		html.WriteString(out, `<div class="hero-foot">`)
-		msg.RenderChildSnippet(out, msg.InsideFoot)
+		msg.RenderChilds(out, msg.InsideFoot)
 		html.WriteString(out, `</div>`)
 	}
 

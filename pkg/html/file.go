@@ -14,17 +14,17 @@ type HeadItem struct {
 
 func NewHeadItem(tagname string) *HeadItem {
 	item := new(HeadItem)
-	item.Tag().SetTagName(tagname).SetBool("noid", true)
+	item.Tag().SetTagName(tagname)
 	return item
 }
 
 // An HTML5 file with its content.
 type HtmlFile struct {
-	Lang        string       // the html "lang" value.
-	Title       string       // the html "head/title" value.
-	Description string       // the html "head/meta description" value.
-	HeadItems   []*HeadItem  // the list of tags in the section <head>
-	Body        HTMLComposer // the html snippet used during the content rendering.
+	Lang        string          // the html "lang" value.
+	Title       string          // the html "head/title" value.
+	Description string          // the html "head/meta description" value.
+	HeadItems   []*HeadItem     // the list of tags in the section <head>
+	Body        HTMLTagComposer // the html snippet used during the content rendering.
 
 	HTMLFileName string // the relative file name, should finish with the .html extension.
 }
@@ -127,7 +127,7 @@ func (hfile *HtmlFile) Render(out io.Writer) (err error) {
 	}
 
 	for _, headitem := range hfile.HeadItems {
-		if err = RenderSnippet(out, nil, headitem); err != nil {
+		if err = Render(out, nil, headitem); err != nil {
 			return err
 		}
 	}
@@ -142,7 +142,7 @@ func (hfile *HtmlFile) Render(out io.Writer) (err error) {
 	// <body>
 	if hfile.Body != nil {
 		hfile.Body.Tag().SetTagName("body")
-		err = RenderSnippet(out, nil, hfile.Body)
+		err = Render(out, nil, hfile.Body)
 		if err != nil {
 			return err
 		}

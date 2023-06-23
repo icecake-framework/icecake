@@ -41,8 +41,8 @@ type NavbarItem struct {
 	items []*NavbarItem // list of navbar items
 }
 
-// Ensure NavbarItem implements HTMLComposer interface
-var _ html.HTMLComposer = (*NavbarItem)(nil)
+// Ensure NavbarItem implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*NavbarItem)(nil)
 
 // BuildTag builds the tag used to render the html element.
 // The Navbar Item tag depends on the item properties:
@@ -68,9 +68,9 @@ func (item *NavbarItem) RenderContent(out io.Writer) error {
 		if item.ImageSrc != nil {
 			img := html.NewSnippet("img", `width="auto" height="28"`)
 			img.Tag().SetURL("src", item.ImageSrc)
-			item.RenderChildSnippet(out, img)
+			item.RenderChilds(out, img)
 		}
-		item.RenderChildSnippet(out, item.Content)
+		item.RenderChilds(out, item.Content)
 	}
 	return nil
 }
@@ -105,8 +105,8 @@ type Navbar struct {
 	HasShadow     bool
 }
 
-// Ensure Navbar implements HTMLComposer interface
-var _ html.HTMLComposer = (*Navbar)(nil)
+// Ensure Navbar implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*Navbar)(nil)
 
 // AddItems adds items to the navbar .
 func (_nav *Navbar) AddItems(items ...*NavbarItem) *Navbar {
@@ -130,7 +130,7 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 
 	// brand items
 	for _, item := range nav.items {
-		nav.RenderChildSnippetIf(item.ItemType == NAVBARIT_BRAND, out, item)
+		nav.RenderChildsIf(item.ItemType == NAVBARIT_BRAND, out, item)
 	}
 	// burger
 	html.WriteStrings(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
@@ -142,13 +142,13 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 
 	html.WriteStrings(out, `<div class="navbar-start">`)
 	for _, item := range nav.items {
-		nav.RenderChildSnippetIf(item.ItemType == NAVBARIT_START, out, item)
+		nav.RenderChildsIf(item.ItemType == NAVBARIT_START, out, item)
 	}
 	html.WriteString(out, `</div>`)
 
 	html.WriteStrings(out, `<div class="navbar-end">`)
 	for _, item := range nav.items {
-		nav.RenderChildSnippetIf(item.ItemType == NAVBARIT_END, out, item)
+		nav.RenderChildsIf(item.ItemType == NAVBARIT_END, out, item)
 	}
 	html.WriteString(out, `</div>`)
 

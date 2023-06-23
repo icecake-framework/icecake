@@ -4,50 +4,6 @@ import (
 	"io"
 )
 
-// HTMLString represents a string document fragment, mixing standard HTML syntax with ick-tags.
-// This string can be rendered to an output stream with the RenderHTML functions
-type HTMLString struct {
-	HTMLSnippet
-	bs []byte
-}
-
-func HTML(s string) HTMLString {
-	h := new(HTMLString)
-	h.bs = []byte(s)
-	return *h
-}
-
-func NewHTML(s string) *HTMLString {
-	h := new(HTMLString)
-	h.bs = []byte(s)
-	return h
-}
-
-// String returns a copy of the content
-func (h HTMLString) Bytes() []byte {
-	b := h.bs
-	return b
-}
-
-// RenderContent writes the HTML string corresponding to the content of the HTML element.
-// For an HTMLString snippet, RenderContent renders (unfold and generate HTML output) the internal string without enclosed tag.
-// Use an HTMLSnippet snippet to renders the string inside an enclosed tag.
-func (h *HTMLString) RenderContent(out io.Writer) error {
-	return RenderHTML(out, h, *h)
-}
-
-// String returns the content
-func (s HTMLString) IsEmpty() bool {
-	return s.bs == nil || len(s.bs) == 0
-}
-
-type DataState struct {
-	//Id   string // the id of the current processing component
-	//Me   any    // the current processing component, should embedd an HtmlSnippet
-	Page any // the current ick page, can be nil
-	App  any // the current ick App, can be nil
-}
-
 // WriteStringsIf writes one or many strings to w only if the condition is true.
 // Returns the number of bytes written and errors from the writer.
 func WriteStringsIf(condition bool, w io.Writer, ss ...string) (n int, err error) {

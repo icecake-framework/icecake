@@ -24,7 +24,7 @@ import (
 //   - If the _ickname has already been registered
 //   - If the _ickname does not meet the pattern "ick-*"
 //   - If the _composer does not implement the HTMLComposer interface
-func RegisterComposer(ickname string, composer any) (entry *registry.RegistryEntry, err error) {
+func RegisterComposer(icktagname string, composer any) (entry *registry.RegistryEntry, err error) {
 	// TODO: RegisterComposer should generate ickname automatically (see RenderSnippet)
 	typ := reflect.TypeOf(composer)
 	if typ.Kind() != reflect.Pointer {
@@ -33,46 +33,49 @@ func RegisterComposer(ickname string, composer any) (entry *registry.RegistryEnt
 		return nil, err
 	}
 
-	cmp, ok := composer.(HTMLComposer)
-	if !ok {
+	_, iscmp := composer.(HTMLComposer)
+	if !iscmp {
 		err = fmt.Errorf("registering composer %q failed: must implement HTMLComposer interface", typ.String())
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	tag := cmp.Tag()
-	if tag == nil || tag.AttributeMap == nil {
-		err = fmt.Errorf("registering composer %q failed: HTMLComposer Tag() must return a valid reference", typ.String())
-		log.Println(err.Error())
-		return nil, err
+	cmptag, istagger := composer.(TagBuilder)
+	if istagger {
+		tag := cmptag.Tag()
+		if tag == nil || tag.AttributeMap == nil {
+			err = fmt.Errorf("registering composer %q failed: TagBuilder must return a valid reference to a Tag", typ.String())
+			log.Println(err.Error())
+			return nil, err
+		}
+
+		cmptag.BuildTag(tag)
+		if !tag.HasRendering() {
+			log.Printf("registering composer %q warning: TagBuilder without rendering", icktagname)
+		}
 	}
 
-	ickname = helper.Normalize(ickname)
-	if !strings.HasPrefix(ickname, "ick-") {
+	icktagname = helper.Normalize(icktagname)
+	if !strings.HasPrefix(icktagname, "ick-") {
 		err = fmt.Errorf("registering composer %q failed: name must start by 'ick-'", typ.String())
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	if len(ickname) <= 4 {
+	if len(icktagname) <= 4 {
 		err = fmt.Errorf("registering composer %q failed: name missing", typ.String())
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	cmp.BuildTag(tag)
-	if !tag.HasRendering() {
-		log.Printf("registering composer %q warning: HTMLComposer without tag Builder", ickname)
-	}
-
-	if registry.IsRegistered(ickname) {
-		log.Printf("registering composer %q warning: already registered\n", ickname)
+	if registry.IsRegistered(icktagname) {
+		log.Printf("registering composer %q warning: already registered\n", icktagname)
 		return nil, err
 	}
 
-	entry = registry.AddRegistryEntry(ickname, composer)
+	entry = registry.AddRegistryEntry(icktagname, composer)
 
-	verbose.Debug("registering composer %s(%s) with success", ickname, typ.String())
+	verbose.Debug("registering composer %s(%s) with success", icktagname, typ.String())
 
 	return entry, nil
 }

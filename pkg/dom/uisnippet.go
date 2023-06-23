@@ -130,7 +130,7 @@ func mountDeepSnippet(_snippet UIComposer, _elem *Element) (_err error) {
 	_snippet.AddListeners()
 	_snippet.Mount()
 
-	if embedded := _snippet.Embedded(); embedded != nil {
+	if embedded := _snippet.Meta().Embedded(); embedded != nil {
 		// DEBUG: console.Warnf("scanning %+v", embedded)
 		for subid, sub := range embedded {
 			// look everywhere in the DOM
@@ -151,7 +151,7 @@ func unmountDeepSnippet(_snippet UIComposer) {
 	_snippet.RemoveListeners()
 	_snippet.UnMount()
 
-	if embedded := _snippet.Embedded(); embedded != nil {
+	if embedded := _snippet.Meta().Embedded(); embedded != nil {
 		// DEBUG: console.Warnf("scanning %+v", embedded)
 		for _, sub := range embedded {
 			if cmp, ok := sub.(UIComposer); ok {

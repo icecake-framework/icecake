@@ -38,8 +38,8 @@ type InputField struct {
 	State INPUT_STATE
 }
 
-// Ensure inputfield implements HTMLComposer interface
-var _ html.HTMLComposer = (*InputField)(nil)
+// Ensure inputfield implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*InputField)(nil)
 
 // BuildTag builds the tag used to render the html element.
 func (inputfield *InputField) BuildTag(tag *html.Tag) {
@@ -49,7 +49,11 @@ func (inputfield *InputField) BuildTag(tag *html.Tag) {
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (cmp *InputField) RenderContent(out io.Writer) error {
 	// <label>
-	html.RenderHTMLIf(!cmp.Label.IsEmpty(), out, cmp, html.HTML(`<label class="label">`), cmp.Label, html.HTML(`</label>`))
+	if !cmp.Label.IsEmpty() {
+		html.WriteString(out, `<label class="label">`)
+		html.Render(out, cmp, &cmp.Label)
+		html.WriteString(out, `</label>`)
+	}
 
 	// <div control>
 	subcontrol := html.NewSnippet("div", `class="control"`)
@@ -72,7 +76,7 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 		subinput.Tag().SetBool("readonly", true)
 	}
 	subcontrol.StackContent(subinput)
-	cmp.RenderChildSnippet(out, subcontrol)
+	cmp.RenderChilds(out, subcontrol)
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
@@ -81,7 +85,7 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 			AddClassesIf(cmp.State == INPUT_SUCCESS, "is-success").
 			AddClassesIf(cmp.State == INPUT_WARNING, "is-warning").
 			AddClassesIf(cmp.State == INPUT_ERROR, "is-danger")
-		cmp.RenderChildSnippet(out, subhelp)
+		cmp.RenderChilds(out, subhelp)
 	}
 
 	return nil

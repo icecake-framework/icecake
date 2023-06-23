@@ -14,47 +14,47 @@ func TestComposeBasics(t *testing.T) {
 
 	// empty snippet
 	s00 := new(HTMLSnippet)
-	err := RenderSnippet(out, nil, s00)
+	err := Render(out, nil, s00)
 	require.NoError(t, err)
 	require.Empty(t, out)
 
 	// unregistered snippet with a simple tagname and an empty body
 	registry.ResetRegistry()
 	s0 := NewSnippet("span")
-	err = RenderSnippet(out, nil, s0)
+	err = Render(out, nil, s0)
 	require.NoError(t, err)
 	require.Equal(t, `<span id="orphan.htmlsnippet-1" name="ick-HTMLSnippet"></span>`, out.String())
 
 	// force id, setup classes, attributes and style
 	out.Reset()
 	s0.Tag().SetTabIndex(1).SetStyle("color=red;").SetId("helloworld").AddClasses("test")
-	RenderSnippet(out, nil, s0)
+	Render(out, nil, s0)
 	require.Equal(t, `<span id="helloworld" name="ick-HTMLSnippet" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
 	// The same but when registered, with forced id
 	out.Reset()
 	registry.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
-	RenderSnippet(out, nil, s0)
+	Render(out, nil, s0)
 	require.Equal(t, `<span id="helloworld" name="ick-testsnippet0" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
 	// The same but when registered, without id
 	out.Reset()
 	s0.Tag().SetId("")
-	RenderSnippet(out, nil, s0)
+	Render(out, nil, s0)
 	require.Equal(t, `<span id="orphan.testsnippet0-2" name="ick-testsnippet0" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
 	// unregistered snippet with a simple body and no tagname
 	out.Reset()
 	s1 := new(testsnippet1)
-	s1.Html = HTML(`Hello World`)
-	RenderSnippet(out, nil, s1)
+	s1.Html = *HTML(`Hello World`)
+	Render(out, nil, s1)
 	require.Equal(t, "Hello World", out.String())
 
 	// snippet with a tagname and default attributes
 	out.Reset()
 	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
 	s2 := new(testsnippet2)
-	RenderSnippet(out, nil, s2)
+	Render(out, nil, s2)
 	require.Equal(t, `<div id="orphan.testsnippet2-1" name="ick-testsnippet2" class="ts2a ts2b" a2 style="display=test;" tabindex=2></div>`, out.String())
 
 	// snippet with a tagname, default attributes and custom attributes
@@ -62,13 +62,13 @@ func TestComposeBasics(t *testing.T) {
 	out.Reset()
 	s2 = new(testsnippet2)
 	s2.Tag().SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "").SetId("tst").AddClasses("ts2c")
-	RenderSnippet(out, nil, s2)
+	Render(out, nil, s2)
 	require.Equal(t, `<div id="tst" name="ick-testsnippet2" class="ts2a ts2b" a2 a3 style="display=test;" tabindex=2></div>`, out.String())
 
 	// update custom attributes on an existing component
 	out.Reset()
 	s2.Tag().SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "").AddClasses("ts2a ts2d").RemoveClasses("ts2c").RemoveAttribute("a3")
-	RenderSnippet(out, nil, s2)
+	Render(out, nil, s2)
 	require.Equal(t, `<div id="tst" name="ick-testsnippet2" class="ts2a ts2b" a2 a4 style="display=test;" tabindex=2></div>`, out.String())
 }
 
@@ -82,58 +82,58 @@ func TestUnfoldBody1(t *testing.T) {
 	// the rendering should render nothing
 	out.Reset()
 	registry.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
-	err := RenderHTML(out, nil, HTML("<ick-testsnippet0/>"))
+	err := renderHTML(out, nil, *HTML("<ick-testsnippet0/>"))
 	require.NoError(t, err)
 	require.Equal(t, ``, out.String())
 
 	out.Reset()
 	registry.AddRegistryEntry("ick-testsnippet4", &testsnippet4{})
-	err = RenderHTML(out, nil, HTML("<ick-testsnippet4/>"))
+	err = renderHTML(out, nil, *HTML("<ick-testsnippet4/>"))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-1" name="ick-testsnippet4"></div>`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, HTML("<ick-testsnippet4 test/>"))
+	err = renderHTML(out, nil, *HTML("<ick-testsnippet4 test/>"))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-2" name="ick-testsnippet4" test></div>`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, HTML("<ick-testsnippet4 content='test'/>"))
+	err = renderHTML(out, nil, *HTML("<ick-testsnippet4 content='test'/>"))
 	require.NoError(t, err)
 	require.Equal(t, `<!--ick-testsnippet4: "content" attribute: unmanaged type []html.HTMLComposer-->`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, HTML("<ick-testsnippet4 IsOk=true/>"))
+	err = renderHTML(out, nil, *HTML("<ick-testsnippet4 IsOk=true/>"))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-3" name="ick-testsnippet4" class="ok"></div>`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, HTML("<ick-testsnippet4 Text=success/>"))
+	err = renderHTML(out, nil, *HTML("<ick-testsnippet4 Text=success/>"))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-4" name="ick-testsnippet4">success</div>`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, HTML(`<ick-testsnippet4 HTML="<strong>STRONG</strong>"/>`))
+	err = renderHTML(out, nil, *HTML(`<ick-testsnippet4 HTML="<strong>STRONG</strong>"/>`))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-5" name="ick-testsnippet4"><strong>STRONG</strong></div>`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, HTML(`<ick-testsnippet4 I=777/>`))
+	err = renderHTML(out, nil, *HTML(`<ick-testsnippet4 I=777/>`))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-6" name="ick-testsnippet4">777</div>`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, HTML(`<ick-testsnippet4 F=777.777/>`))
+	err = renderHTML(out, nil, *HTML(`<ick-testsnippet4 F=777.777/>`))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-7" name="ick-testsnippet4">777.777</div>`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, HTML(`<ick-testsnippet4 D=5h30m40s/>`))
+	err = renderHTML(out, nil, *HTML(`<ick-testsnippet4 D=5h30m40s/>`))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-8" name="ick-testsnippet4">6h30m40s</div>`, out.String())
 
 	out.Reset()
-	err = RenderHTML(out, nil, HTML(`<ick-testsnippet4 U="/icecake.dev"/>`))
+	err = renderHTML(out, nil, *HTML(`<ick-testsnippet4 U="/icecake.dev"/>`))
 	require.NoError(t, err)
 	require.Equal(t, `<div id="orphan.testsnippet4-9" name="ick-testsnippet4"><a href='/icecake.dev'></a></div>`, out.String())
 }
@@ -290,7 +290,7 @@ func TestUnfoldBody2(t *testing.T) {
 	output := new(bytes.Buffer)
 	for i, tst := range tstset {
 		output.Reset()
-		err := RenderHTML(output, nil, HTML(tst.in))
+		err := renderHTML(output, nil, *HTML(tst.in))
 		if tst.err {
 			if err == nil {
 				fmt.Printf("T%v) %s\n", i, tst.name)
@@ -377,7 +377,7 @@ func TestComposeEmbedded(t *testing.T) {
 	out := new(bytes.Buffer)
 	for i, tst := range tstset {
 		out.Reset()
-		err := RenderHTML(out, nil, HTML(tst.in))
+		err := renderHTML(out, nil, *HTML(tst.in))
 		if tst.err {
 			if err == nil {
 				fmt.Printf("T%v) %s\n", i, tst.name)
@@ -412,7 +412,7 @@ func TestSnippetId(t *testing.T) {
 	cmpA := &testsnippet0{}
 	// A.1> with no id
 	cmpA.Tag().SetId("idA1").SetBool("noid", true)
-	err := RenderSnippet(out, nil, cmpA)
+	err := Render(out, nil, cmpA)
 	require.NoError(t, err)
 	require.Empty(t, cmpA.Id())
 	require.NotContains(t, out.String(), `id=`)
@@ -420,7 +420,7 @@ func TestSnippetId(t *testing.T) {
 	// A.2> with forced id
 	out.Reset()
 	cmpA.Tag().SetId("IdA2").SetBool("noid", false)
-	err = RenderSnippet(out, nil, cmpA)
+	err = Render(out, nil, cmpA)
 	require.NoError(t, err)
 	require.Equal(t, "IdA2", cmpA.Id())
 	require.Contains(t, out.String(), `id="IdA2"`)
@@ -430,7 +430,7 @@ func TestSnippetId(t *testing.T) {
 	// B.1> withid noid
 	out.Reset()
 	cmpB.Tag().SetBool("noid", true)
-	err = RenderSnippet(out, nil, cmpB)
+	err = Render(out, nil, cmpB)
 	require.NoError(t, err)
 	require.Empty(t, cmpB.Id())
 	require.NotContains(t, out.String(), `id=`)
@@ -438,7 +438,7 @@ func TestSnippetId(t *testing.T) {
 	// B.2> with forced id
 	out.Reset()
 	cmpB.Tag().SetBool("noid", false)
-	err = RenderSnippet(out, nil, cmpB)
+	err = Render(out, nil, cmpB)
 	require.NoError(t, err)
 	require.Equal(t, "IdTemplate1", cmpB.Id())
 	require.Contains(t, out.String(), `id="IdTemplate1"`)
@@ -447,19 +447,19 @@ func TestSnippetId(t *testing.T) {
 	registry.AddRegistryEntry("ick-testsnippetid", &testsnippetid{})
 	// C.1> without parent
 	out.Reset()
-	err = RenderHTML(out, nil, HTML(`<ick-testsnippetid/>`))
+	err = renderHTML(out, nil, *HTML(`<ick-testsnippetid/>`))
 	require.NoError(t, err)
 	require.Equal(t, `<span id="IdTemplate1" name="ick-testsnippetid"></span>`, out.String())
 
 	// C.2> with a parent
 	out.Reset()
-	err = RenderHTML(out, cmpA, HTML(`<ick-testsnippetid/>`))
+	err = renderHTML(out, cmpA, *HTML(`<ick-testsnippetid/>`))
 	require.NoError(t, err)
 	require.Equal(t, `<span id="IdA2.testsnippetid-0" name="ick-testsnippetid"></span>`, out.String())
 
 	// C.2> with a parent and noid
 	out.Reset()
-	err = RenderHTML(out, cmpA, HTML(`<ick-testsnippetid noid/>`))
+	err = renderHTML(out, cmpA, *HTML(`<ick-testsnippetid noid/>`))
 	require.NoError(t, err)
 	require.Equal(t, `<span name="ick-testsnippetid" noid></span>`, out.String())
 
@@ -469,8 +469,8 @@ func TestHTMLSnippetContent(t *testing.T) {
 
 	out := new(bytes.Buffer)
 
-	s := NewSnippet("div", "noid").StackContent(NewHTML("<i>test</i>"))
-	err := RenderSnippet(out, nil, s)
+	s := NewSnippet("div", "noid").InsertHTML(*HTML("<i>test</i>"))
+	err := Render(out, nil, s)
 	require.NoError(t, err)
 	require.Equal(t, `<div name="ick-HTMLSnippet" noid><i>test</i></div>`, out.String())
 }

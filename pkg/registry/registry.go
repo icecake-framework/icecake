@@ -116,11 +116,11 @@ func LookupRegistryEntry(_cmp any) *RegistryEntry {
 // if prefix is empty "ick-" is used to prefix the returned id.
 // The returned id is always lowercase.
 // GetUniqueId is thread safe.
-func GetUniqueId(prefix string) string {
+func GetUniqueId(prefix string) (idx int, uid string) {
 	regentry := GetRegistryEntry(prefix)
-	idx := regentry.Count()
+	idx = regentry.Count()
 	theRegistry.entries[regentry.icktagname] = regentry
-	return regentry.icktagname + "-" + strconv.Itoa(idx)
+	return idx, regentry.icktagname + "-" + strconv.Itoa(idx)
 }
 
 // ResetRegistry is only used for testing

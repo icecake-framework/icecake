@@ -19,6 +19,9 @@ type Container struct {
 	FullWidth CONTAINER_FULLWIDTH
 }
 
+// Ensure Container implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*Container)(nil)
+
 func (c *Container) BuildTag(tag *html.Tag) {
 	tag.SetTagName("div").
 		AddClasses("container").

@@ -28,7 +28,8 @@
             "args": [
                 "--output",
                 "./docs",
-                "--verbose"
+                "--verbose",
+                "--debug",
             ]
         },
         {

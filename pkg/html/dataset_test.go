@@ -26,7 +26,7 @@ type testsnippet1 struct {
 }
 
 func (tst *testsnippet1) RenderContent(out io.Writer) error {
-	err := tst.RenderChildHTML(out, tst.Html)
+	err := tst.RenderChilds(out, &tst.Html)
 	return err
 }
 
@@ -39,7 +39,7 @@ func (testsnippet2) BuildTag(tag *Tag) {
 }
 
 func (tst *testsnippet2) RenderContent(out io.Writer) error {
-	err := tst.RenderChildHTML(out, tst.Html)
+	err := tst.RenderChilds(out, &tst.Html)
 	return err
 }
 
@@ -69,7 +69,7 @@ func (s *testsnippet4) BuildTag(tag *Tag) {
 
 func (s *testsnippet4) RenderContent(out io.Writer) error {
 	WriteStringsIf(s.Text != "", out, s.Text)
-	s.RenderChildHTML(out, s.HTML)
+	s.RenderChilds(out, &s.HTML)
 	WriteStringsIf(s.I != 0, out, fmt.Sprintf("%v", s.I))
 	WriteStringsIf(s.F != 0, out, fmt.Sprintf("%v", s.F))
 	WriteStringsIf(s.D != 0, out, fmt.Sprintf("%v", s.D+(time.Hour*1)))
@@ -81,7 +81,7 @@ func (s *testsnippet4) RenderContent(out io.Writer) error {
 type testsnippetinfinite struct{ HTMLSnippet }
 
 func (s *testsnippetinfinite) RenderContent(out io.Writer) error {
-	return s.RenderChildHTML(out, HTML("<ick-testinfinite/>"))
+	return s.RenderChilds(out, HTML("<ick-testinfinite/>"))
 }
 
 // testsnippetinfinite

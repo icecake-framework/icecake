@@ -17,22 +17,22 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	card1 := &ui.Card{Card: bulma.Card{
-		Title:   html.HTML("Hello World"),
+		Title:   *html.HTML("Hello World"),
 		Image:   bulma.NewImage("/icecake.jpg", bulma.IMG_SQUARE),
-		Content: html.NewHTML("Nice cake"),
+		Content: html.HTML("Nice cake"),
 	}}
-	card1.FooterItem = append(card1.FooterItem, html.HTML("<a href='/'>home</a>"))
+	card1.FooterItem = append(card1.FooterItem, *html.HTML("<a href='/'>home</a>"))
 	card1.Tag().SetStyle("width: 350px;").AddClasses("mr-5")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card1, nil)
 
 	card2 := &ui.Card{Card: bulma.Card{
-		Content: html.NewHTML("Nice cake")}}
+		Content: html.HTML("Nice cake")}}
 	card2.Tag().SetStyle("width: 128px;").AddClasses("mr-5")
 	card2.Image = bulma.NewImage("/icecake.jpg", bulma.IMG_SQUARE)
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card2, nil)
 
 	card3 := &ui.Card{Card: bulma.Card{
-		Content: html.NewHTML("Very Nice cake")}}
+		Content: html.HTML("Very Nice cake")}}
 	card3.Tag().AddClasses("mr-5")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card3, nil)
 
