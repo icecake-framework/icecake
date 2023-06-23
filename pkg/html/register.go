@@ -25,6 +25,7 @@ import (
 //   - If the _ickname does not meet the pattern "ick-*"
 //   - If the _composer does not implement the HTMLComposer interface
 func RegisterComposer(ickname string, composer any) (entry *registry.RegistryEntry, err error) {
+	// TODO: RegisterComposer should generate ickname automatically (see RenderSnippet)
 	typ := reflect.TypeOf(composer)
 	if typ.Kind() != reflect.Pointer {
 		err = fmt.Errorf("registering composer %q failed: must register by reference not by value", typ.String())
