@@ -7,22 +7,24 @@ import (
 )
 
 func init() {
-	html.RequireCSSStyle("myFooter", `
-	.myfooter-title {
-		color: rgb(122, 122, 122);
-	}
-	.myfooter-info {
-		color: rgb(122, 122, 122);
-		font-size: 0.9rem;
-	}
-	.myfooter-link {
-		color: rgb(122, 122, 122);
-	}`)
+	html.RequireCSSStyle("docsFooter", docsFooterStyle)
 }
 
 /******************************************************************************
-/* myFooter
+/* docsFooter
 ******************************************************************************/
+
+const docsFooterStyle string = `.myfooter-title {
+	color: rgb(122, 122, 122);
+}
+.myfooter-info {
+	color: rgb(122, 122, 122);
+	font-size: 0.9rem;
+}
+.myfooter-link {
+	color: rgb(122, 122, 122);
+}
+`
 
 type docsFooter struct{ html.HTMLSnippet }
 
