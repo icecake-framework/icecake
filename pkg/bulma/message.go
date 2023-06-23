@@ -11,6 +11,11 @@ func init() {
 	html.RegisterComposer("ick-message", &Message{})
 }
 
+// bulma.Message is an icecake snippet providing the HTML rendering for a [bulma message].
+//
+//	Use `<ick-message/>` for inline rendering.
+//
+// [bulma message]: https://bulma.io/documentation/components/message/
 type Message struct {
 	html.HTMLSnippet
 

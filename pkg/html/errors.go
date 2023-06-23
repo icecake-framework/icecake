@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	ErrTaglessParent             = errors.New("tagless parent")
+	ErrBodyTagMissing            = errors.New("<body> tag missing")
 	ErrTooManyRecursiveRendering = errors.New("too many recursive rendering")
-	ErrIckTagNameMissing         = errors.New("'opening <ick-' tag found without name")
+	ErrNameMissing               = errors.New("'opening <ick-' tag found without name")
 )
 
 type IckTagNameError struct {

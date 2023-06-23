@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/sunraylab/verbose"
 )
 
 type HeadItem struct {
@@ -20,13 +22,14 @@ func NewHeadItem(tagname string) *HeadItem {
 
 // An HTML5 file with its content.
 type HtmlFile struct {
-	Lang        string          // the html "lang" value.
-	Title       string          // the html "head/title" value.
-	Description string          // the html "head/meta description" value.
-	HeadItems   []*HeadItem     // the list of tags in the section <head>
-	Body        HTMLTagComposer // the html snippet used during the content rendering.
+	Lang        string      // the html "lang" value.
+	Title       string      // the html "head/title" value.
+	Description string      // the html "head/meta description" value.
+	HeadItems   []*HeadItem // the list of tags in the section <head>
 
-	HTMLFileName string // the relative file name, should finish with the .html extension.
+	Body HTMLTagComposer // the html composer used to render the body tag. The tagname must be "body" otherwise will not render.
+
+	//HTMLFileName string // the relative file name, should finish with the .html extension.
 }
 
 // NewHtmlFile is the HtmlFile factory, seeting up the lang for the doctype tag.
@@ -51,10 +54,9 @@ func (f *HtmlFile) AddHeadItem(tagname string, attributes string) *HtmlFile {
 // If path is provided, htmlfilename is joint to make an absolute path,
 // otherwise htmlfilename is used in the current dir (unless it contains itself an absolute path).
 // returns an error if ther's no filename
-func (hfile *HtmlFile) WriteHTMLFile(path string) (err error) {
+func (hfile *HtmlFile) WriteHTMLFile(path string, htmlfilename string) (err error) {
 
 	// make a valid file name with htmlfilename
-	htmlfilename := hfile.HTMLFileName
 	if htmlfilename == "" {
 		return errors.New("WriteHTMLFile: missing file name")
 	}
@@ -81,10 +83,9 @@ func (hfile *HtmlFile) WriteHTMLFile(path string) (err error) {
 		if err1 := f.Close(); err1 != nil && err == nil {
 			err = err1
 		}
-		if err != nil {
-			fmt.Println("WriteHTMLFile fails:", err)
-		} else {
-			fmt.Println(absfilename, "succesfully written")
+		verbose.Error(fmt.Sprintf("WriteHTMLFile %s", path), err)
+		if err == nil {
+			verbose.Println(verbose.INFO, absfilename, "succesfully written")
 		}
 	}()
 
@@ -141,8 +142,13 @@ func (hfile *HtmlFile) Render(out io.Writer) (err error) {
 
 	// <body>
 	if hfile.Body != nil {
-		hfile.Body.Tag().SetTagName("body")
-		err = Render(out, nil, hfile.Body)
+		tg, _ := hfile.Body.Tag().TagName()
+		if tg != "body" {
+			err = ErrBodyTagMissing
+			WriteStrings(out, "<!-- ", err.Error(), " -->")
+		} else {
+			err = Render(out, nil, hfile.Body)
+		}
 		if err != nil {
 			return err
 		}

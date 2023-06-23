@@ -66,11 +66,11 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 		msg.Container.Tag().RenderOpening(out)
 	}
 
-	title := html.NewSnippet("p", `class="title"`).InsertHTML(msg.Title)
+	title := html.NewSnippet("p", `class="title"`).Stack(&msg.Title)
 	title.Tag().AddClassesIf(msg.TitleSize > 0 && msg.TitleSize <= 6, "is-"+strconv.Itoa(msg.TitleSize))
 	msg.RenderChilds(out, title)
 
-	subtitle := html.NewSnippet("p", `class="subtitle"`).InsertHTML(msg.Subtitle)
+	subtitle := html.NewSnippet("p", `class="subtitle"`).Stack(&msg.Subtitle)
 	subtitle.Tag().AddClassesIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
 	msg.RenderChilds(out, subtitle)
 

@@ -21,15 +21,11 @@ func main() {
 
 	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css")
 
-	index := html.NewHtmlFile("en").
+	dfthtmlfile := html.NewHtmlFile("en").
 		AddHeadItem("meta", "charset=UTF-8").
 		AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`).
 		AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`).
 		AddHeadItem("script", `type="text/javascript" src="icecake.js"`)
-
-	index.Title = "documentation - icecake framework"
-	index.Description = "go wasm framework"
-	index.HTMLFileName = "index.html"
 
 	navbar := &bulma.Navbar{HasShadow: true}
 	navbar.Tag().SetId("topnavbar")
@@ -43,7 +39,7 @@ func main() {
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_START,
 			Content:  html.HTML(`Docs`)}).
-			ParseHRef("/"),
+			ParseHRef("/docs"),
 
 		(&bulma.NavbarItem{
 			ItemType: bulma.NAVBARIT_END,
@@ -66,17 +62,32 @@ func main() {
 	btnCTA.Tag().SetId("cta")
 	hero.CTA = btnCTA
 
-	body := html.NewSnippet("body").StackContent(navbar, hero, &docsFooter{}) // `id="body"`
+	var pages []*html.Page
+	pgindex := html.NewPage("index.html").Stack(navbar, hero, &docsFooter{})
+	pgindex.Title = "icecake framework"
+	pgindex.Description = "Develop SPA and Static Websites in with a pure Go Web Assembly Framework"
+	pages = append(pages, pgindex)
 
-	index.Body = body
+	pgdocs := html.NewPage("docs.html").Stack(navbar, &docsFooter{})
+	pgdocs.Title = "documentation - icecake framework"
+	pgdocs.Description = "go Web Assembly Framework documentation"
+	pages = append(pages, pgdocs)
 
-	err := index.WriteHTMLFile(path)
-	if err != nil {
-		verbose.Error("makedoc", err)
-		fmt.Println("makedoc fails")
-		if !verbose.IsOn {
-			fmt.Println("use the verbose flag to get more info")
+	n := 0
+	for _, pg := range pages {
+		dfthtmlfile.Title = pg.Title
+		dfthtmlfile.Description = pg.Description
+		dfthtmlfile.Body = html.NewSnippet("body").Stack(pg)
+		// FIXME, convert url in file name ?!!
+		err := dfthtmlfile.WriteHTMLFile(path, pg.URL().String())
+		if err != nil {
+			fmt.Println("makedoc fails")
+			if !verbose.IsOn {
+				fmt.Println("use the verbose flag to get more info")
+			}
+			os.Exit(1)
 		}
-		os.Exit(1)
+		n++
 	}
+	fmt.Println(n, "files generated")
 }

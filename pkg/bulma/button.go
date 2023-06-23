@@ -68,12 +68,12 @@ func NewButtonLink(title html.HTMLString, rawUrl string) *Button {
 	btn := new(Button)
 	btn.ButtonType = BTN_TYPE_A
 	btn.Title = title
-	btn.ParseAnchor(rawUrl)
+	btn.ParseHRef(rawUrl)
 	return btn
 }
 
-// ParseAnchor parses _rawUrl to HRef. HRef stays nil in case of error.
-func (btn *Button) ParseAnchor(rawUrl string) (err error) {
+// ParseHRef parses _rawUrl to HRef. HRef stays nil in case of error.
+func (btn *Button) ParseHRef(rawUrl string) (err error) {
 	btn.HRef, err = url.Parse(rawUrl)
 	return
 }

@@ -75,12 +75,12 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	case "readonly":
 		subinput.Tag().SetBool("readonly", true)
 	}
-	subcontrol.StackContent(subinput)
+	subcontrol.Stack(subinput)
 	cmp.RenderChilds(out, subcontrol)
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
-		subhelp := html.NewSnippet("p", `class="help"`).InsertHTML(cmp.Help)
+		subhelp := html.NewSnippet("p", `class="help"`).Stack(&cmp.Help)
 		subhelp.Tag().
 			AddClassesIf(cmp.State == INPUT_SUCCESS, "is-success").
 			AddClassesIf(cmp.State == INPUT_WARNING, "is-warning").

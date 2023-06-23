@@ -469,20 +469,8 @@ func TestHTMLSnippetContent(t *testing.T) {
 
 	out := new(bytes.Buffer)
 
-	s := NewSnippet("div", "noid").InsertHTML(*HTML("<i>test</i>"))
+	s := NewSnippet("div", "noid").Stack(HTML("<i>test</i>"))
 	err := Render(out, nil, s)
 	require.NoError(t, err)
 	require.Equal(t, `<div name="ick-HTMLSnippet" noid><i>test</i></div>`, out.String())
-}
-
-func TestComposeDataState(t *testing.T) {
-	// out := new(bytes.Buffer)
-	// s3 := new(testsnippet3)
-	// ds := &DataState{
-	// 	App: "hello world",
-	// }
-	// s3.SetDataState(ds)
-	// err := RenderSnippet(out, nil, s3)
-	// require.NoError(t, err)
-	// require.Equal(t, `data.app=hello world`, out.String())
 }

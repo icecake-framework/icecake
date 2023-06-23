@@ -16,8 +16,9 @@ import (
 	"github.com/sunraylab/verbose"
 )
 
-// HTMLString represents a string document fragment, mixing standard HTML syntax with ick-tags.
-// This string can be rendered to an output stream with the RenderHTML functions
+// HTMLString represents a string document fragment, mixing standard HTML syntax with <ick-tags/> inline components.
+// HTMLString implements HTMLcomposer interfaces and the string is rendered to an output stream with the icecake Rendering functions.
+// It is part of the core icecake snippets.
 type HTMLString struct {
 	meta  RenderingMeta // Rendering MetaData
 	bytes []byte
@@ -26,20 +27,18 @@ type HTMLString struct {
 // Ensure HTMLString implements HTMLTagComposer interface
 var _ HTMLComposer = (*HTMLString)(nil)
 
+// HTML is the HTMLString factory allowing to convert a string into a new HTMLString reday for rendering.
+// The string must contains safe string and can include icecake tags.
 func HTML(s string) *HTMLString {
 	h := new(HTMLString)
 	h.bytes = []byte(s)
 	return h
 }
 
-// func NewHTML(s string) *HTMLString {
-// 	h := new(HTMLString)
-// 	h.bytes = []byte(s)
-// 	return h
-// }
-
-func (snippet *HTMLString) Meta() *RenderingMeta {
-	return &snippet.meta
+// Meta provides a reference to the RenderingMeta object associated with this composer.
+// This is required by the icecake rendering process.
+func (h *HTMLString) Meta() *RenderingMeta {
+	return &h.meta
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -156,7 +155,7 @@ nextbyte:
 				ickname = string(field(walk))
 				ickname = strings.ToLower(ickname)
 				if ickname == "ick-" {
-					return ErrIckTagNameMissing
+					return ErrNameMissing
 				}
 				aname = ""
 				avalue = ""
@@ -265,7 +264,7 @@ nextbyte:
 		if funfoldick {
 			errunf := unfoldick(parent, out, ickname, attrs, nick)
 			if errunf != nil {
-				if errors.Is(errunf, ErrTooManyRecursiveRendering) || errors.Is(errunf, ErrTaglessParent) {
+				if errors.Is(errunf, ErrTooManyRecursiveRendering) {
 					verbose.Printf(verbose.ALERT, errunf.Error())
 					return errunf
 				}
