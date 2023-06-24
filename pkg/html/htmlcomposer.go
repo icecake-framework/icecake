@@ -23,8 +23,7 @@ type RenderingMeta struct {
 	sub ComposerMap // instantiated embedded sub-snippet if any.
 }
 
-// XXX
-func (rmeta *RenderingMeta) SetParent(parent HTMLComposer) (deep int) {
+func (rmeta *RenderingMeta) LinkParent(parent HTMLComposer) (deep int) {
 	rmeta.Parent = parent
 	rmeta.Deep = 0
 	if parent != nil {
@@ -134,7 +133,7 @@ type HTMLTagComposer interface {
 func Render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
 
 	// look for depth and ensure no infinite loop
-	cmpdeep := cmp.Meta().SetParent(parent)
+	cmpdeep := cmp.Meta().LinkParent(parent)
 	if cmpdeep > maxDEEP {
 		return verbose.Error("RenderSnippet", ErrTooManyRecursiveRendering)
 	}

@@ -122,7 +122,7 @@ func (navi *NavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html
 	itm.Key = key
 	itm.ItemType = itmtyp
 	itm.Content = content
-	itm.Meta().SetParent(navi)
+	itm.Meta().LinkParent(navi)
 	navi.items = append(navi.items, itm)
 	return itm
 }
@@ -194,7 +194,7 @@ func (nav *Navbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTML
 	itm.Key = key
 	itm.ItemType = itmtyp
 	itm.Content = content
-	itm.Meta().SetParent(nav)
+	itm.Meta().LinkParent(nav)
 	nav.items = append(nav.items, itm)
 	return itm
 }
