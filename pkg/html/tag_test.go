@@ -23,7 +23,7 @@ func ExampleTag() {
 
 	// update div tag
 	active := true
-	tag.SwitchClass("dark", "light").AddClassesIf(active, "is-active")
+	tag.SwitchClass("dark", "light").SetClassesIf(active, "is-active")
 
 	out.Reset()
 	render(out, *tag, "example2")

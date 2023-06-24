@@ -14,10 +14,10 @@ func init() {
 type NAVBARITEM_TYPE string
 
 const (
-	NAVBARIT_DIVIDER = "divider" // creates a divider between two navbar items. other navbar properties are ignored.
-	NAVBARIT_BRAND   = "brand"   // item stacked in the brand area of the navbar.
-	NAVBARIT_START   = "start"   // item stacked at the start (left) of the navbar, this is the default behaviour
-	NAVBARIT_END     = "end"     // item stacked at the end (right) of the navbar,
+	NAVBARIT_DIVIDER NAVBARITEM_TYPE = "divider" // creates a divider between two navbar items. other navbar properties are ignored.
+	NAVBARIT_BRAND   NAVBARITEM_TYPE = "brand"   // item stacked in the brand area of the navbar.
+	NAVBARIT_START   NAVBARITEM_TYPE = "start"   // item stacked at the start (left) of the navbar, this is the default behaviour
+	NAVBARIT_END     NAVBARITEM_TYPE = "end"     // item stacked at the end (right) of the navbar,
 )
 
 // bulma.NavbarItem is an icecake snippet providing the HTML rendering for a [bulma navbar item].
@@ -32,6 +32,9 @@ type NavbarItem struct {
 	// If ItemType is empty, NAVBARIT_START is used for rendering.
 	ItemType NAVBARITEM_TYPE
 
+	// Item Content
+	Content html.HTMLComposer
+
 	// HRef defines the optional associated url link.
 	// If HRef is defined the item become an anchor link <a>, otherwise it's a <div>
 	// HRef can be nil. Usually it's created calling NavbarItem.TryParseHRef
@@ -39,9 +42,6 @@ type NavbarItem struct {
 
 	// ImageSrc defines an optional image to display at the begining of the Item
 	ImageSrc *url.URL // the url for the source of the image
-
-	// Item Content
-	Content html.HTMLComposer
 
 	// Highlight this item
 	IsActive bool
@@ -59,13 +59,14 @@ var _ html.HTMLTagComposer = (*NavbarItem)(nil)
 //   - it's <div> in other cases
 func (item *NavbarItem) BuildTag(tag *html.Tag) {
 	if item.ItemType == NAVBARIT_DIVIDER {
-		tag.SetTagName("hr").AddClasses("navbar-divider")
+		tag.SetTagName("hr")
+		tag.PickClass("navbar-divider navbar-item", "navbar-divider")
 	} else {
-		tag.AddClasses("navbar-item").SetClassesIf(item.IsActive, "is-active")
+		tag.PickClass("navbar-divider navbar-item", "navbar-item").SetClassesIf(item.IsActive, "is-active")
 		if item.HRef != nil {
 			tag.SetTagName("a").SetURL("href", item.HRef)
 		} else {
-			tag.SetTagName("div")
+			tag.SetTagName("div").RemoveAttribute("href")
 		}
 	}
 }

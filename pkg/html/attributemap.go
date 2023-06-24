@@ -291,13 +291,23 @@ func (amap AttributeMap) AddClassesIf(condition bool, addlist ...string) Attribu
 }
 
 // SetClassesIf adds each c classe to the class attribute if the condition is true
-// otherwise remove them
+// otherwise remove them.
 // Duplicates are not inserted twice.
 func (amap AttributeMap) SetClassesIf(condition bool, addlist ...string) AttributeMap {
 	if condition {
 		amap.AddClasses(addlist...)
 	} else {
 		amap.RemoveClasses(addlist...)
+	}
+	return amap
+}
+
+// PickClass set the picked class and only that one, removing all others in the classlist.
+// If picked is empty or not in the classlist then it's not added.
+func (amap AttributeMap) PickClass(classlist string, picked string) AttributeMap {
+	amap.RemoveClasses(classlist)
+	if strings.Contains(classlist, picked) {
+		amap.AddClasses(picked)
 	}
 	return amap
 }

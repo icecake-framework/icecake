@@ -107,10 +107,13 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 	}
 	switch btn.ButtonType {
 	case BTN_TYPE_A:
+		tag.RemoveAttribute("type")
 		tag.SetAttributeIf(href != "", "href", href)
 	case BTN_TYPE_SUBMIT:
+		tag.RemoveAttribute("href")
 		tag.SetAttribute("type", "submit")
 	case BTN_TYPE_RESET:
+		tag.RemoveAttribute("href")
 		tag.SetAttribute("type", "reset")
 	default:
 	}

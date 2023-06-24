@@ -22,6 +22,7 @@ const (
 	HH_HALFHEIGHT              HERO_HEIGHT = "halfheight"
 	HH_FULLFHEIGHT             HERO_HEIGHT = "fullheight"
 	HH_FULLFHEIGHT_WITH_NAVBAR HERO_HEIGHT = "fullheight-with-navbar"
+	HH_OPTIONS                 string      = string(HH_SMALL + " " + HH_MEDIUM + " " + HH_LARGE + " " + HH_HALFHEIGHT + " " + HH_FULLFHEIGHT + " " + HH_FULLFHEIGHT_WITH_NAVBAR)
 )
 
 type Hero struct {
@@ -47,7 +48,7 @@ var _ html.HTMLTagComposer = (*Hero)(nil)
 
 // Tag Builder used by the rendering functions.
 func (msg *Hero) BuildTag(tag *html.Tag) {
-	tag.SetTagName("section").AddClasses("hero").SetClassesIf(msg.Height != "", "is-"+string(msg.Height))
+	tag.SetTagName("section").AddClasses("hero").PickClass(HH_OPTIONS, "is-"+string(msg.Height))
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
