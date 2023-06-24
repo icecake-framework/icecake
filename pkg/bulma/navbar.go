@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/url"
 
+	"github.com/huandu/go-clone"
 	"github.com/icecake-framework/icecake/pkg/html"
 )
 
@@ -27,6 +28,9 @@ const (
 // [bulma navbar item]: https://bulma.io/documentation/components/navbar/#navbar-item
 type NavbarItem struct {
 	html.HTMLSnippet
+
+	// Optional Key allows to access a specific navbaritem, whatever it's level in the hierarchy, directly from the navbar.
+	Key string
 
 	// The Item Type defines the location of the item in the navbar or if it's a simple divider.
 	// If ItemType is empty, NAVBARIT_START is used for rendering.
@@ -52,19 +56,47 @@ type NavbarItem struct {
 // Ensure NavbarItem implements HTMLTagComposer interface
 var _ html.HTMLTagComposer = (*NavbarItem)(nil)
 
+// Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
+func (navi NavbarItem) Clone() *NavbarItem {
+	c := new(NavbarItem)
+	c.Key = navi.Key
+	c.ItemType = navi.ItemType
+
+	if navi.Content != nil {
+		copy := clone.Clone(navi.Content)
+		c.Content = copy.(html.HTMLComposer)
+	}
+
+	if navi.HRef != nil {
+		c.HRef = new(url.URL)
+		*c.HRef = *navi.HRef
+	}
+	if navi.ImageSrc != nil {
+		c.ImageSrc = new(url.URL)
+		*c.ImageSrc = *navi.ImageSrc
+	}
+	c.IsActive = navi.IsActive
+
+	c.items = make([]*NavbarItem, len(navi.items))
+	for i, itm := range navi.items {
+		c.items[i] = itm.Clone()
+	}
+	return c
+}
+
 // BuildTag builds the tag used to render the html element.
 // The Navbar Item tag depends on the item properties:
 //   - it's <hr> for a NAVBARIT_DIVIDER item type, otherwise
 //   - it's <a> when an HRef is provided,
 //   - it's <div> in other cases
-func (item *NavbarItem) BuildTag(tag *html.Tag) {
-	if item.ItemType == NAVBARIT_DIVIDER {
+func (navi *NavbarItem) BuildTag(tag *html.Tag) {
+	if navi.ItemType == NAVBARIT_DIVIDER {
 		tag.SetTagName("hr")
 		tag.PickClass("navbar-divider navbar-item", "navbar-divider")
 	} else {
-		tag.PickClass("navbar-divider navbar-item", "navbar-item").SetClassesIf(item.IsActive, "is-active")
-		if item.HRef != nil {
-			tag.SetTagName("a").SetURL("href", item.HRef)
+		tag.PickClass("navbar-divider navbar-item", "navbar-item").SetClassesIf(navi.IsActive, "is-active")
+		if navi.HRef != nil {
+			tag.SetTagName("a").SetURL("href", navi.HRef)
 		} else {
 			tag.SetTagName("div").RemoveAttribute("href")
 		}
@@ -72,33 +104,62 @@ func (item *NavbarItem) BuildTag(tag *html.Tag) {
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (item *NavbarItem) RenderContent(out io.Writer) error {
-	if item.ItemType != NAVBARIT_DIVIDER {
-		if item.ImageSrc != nil {
+func (navi *NavbarItem) RenderContent(out io.Writer) error {
+	if navi.ItemType != NAVBARIT_DIVIDER {
+		if navi.ImageSrc != nil {
 			img := html.NewSnippet("img", `width="auto" height="28"`)
-			img.Tag().SetURL("src", item.ImageSrc)
-			item.RenderChilds(out, img)
+			img.Tag().SetURL("src", navi.ImageSrc)
+			navi.RenderChilds(out, img)
 		}
-		item.RenderChilds(out, item.Content)
+		navi.RenderChilds(out, navi.Content)
 	}
 	return nil
 }
 
-func (item *NavbarItem) AddItems(items ...*NavbarItem) *NavbarItem {
-	item.items = append(item.items, items...)
-	return item
+// AddItem adds the item as a subitem within the navbar item
+func (navi *NavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLComposer) *NavbarItem {
+	itm := new(NavbarItem)
+	itm.Key = key
+	itm.ItemType = itmtyp
+	itm.Content = content
+	itm.Meta().SetParent(navi)
+	navi.items = append(navi.items, itm)
+	return itm
+}
+
+// At returns the item at a given index.
+// returns nil if index is out of range.
+func (navi *NavbarItem) At(index int) *NavbarItem {
+	if index < 0 || index >= len(navi.items) {
+		return nil
+	}
+	return navi.items[index]
+}
+
+// Item returns the first item found with the given key, walking through all levels.
+// returns nil if key is not found
+func (navi *NavbarItem) Item(key string) *NavbarItem {
+	for _, itm := range navi.items {
+		if itm.Key == key {
+			return itm
+		}
+		if found := itm.Item(key); found != nil {
+			return found
+		}
+	}
+	return nil
 }
 
 // ParseHRef tries to parse rawUrl to HRef ignoring error.
-func (item *NavbarItem) ParseHRef(rawUrl string) *NavbarItem {
-	item.HRef, _ = url.Parse(rawUrl)
-	return item
+func (navi *NavbarItem) ParseHRef(rawUrl string) *NavbarItem {
+	navi.HRef, _ = url.Parse(rawUrl)
+	return navi
 }
 
 // ParseImageSrc tries to parse rawUrl to image src ignoring error.
-func (item *NavbarItem) ParseImageSrc(rawUrl string) *NavbarItem {
-	item.ImageSrc, _ = url.Parse(rawUrl)
-	return item
+func (navi *NavbarItem) ParseImageSrc(rawUrl string) *NavbarItem {
+	navi.ImageSrc, _ = url.Parse(rawUrl)
+	return navi
 }
 
 // Navbar is an UISnippet registered with the ick-tag `ick-navbar`.
@@ -115,17 +176,50 @@ type Navbar struct {
 // Ensure Navbar implements HTMLTagComposer interface
 var _ html.HTMLTagComposer = (*Navbar)(nil)
 
-func (nav *Navbar) Item(index int) *NavbarItem {
+// Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
+func (nav Navbar) Clone() *Navbar {
+	clone := new(Navbar)
+	clone.IsTransparent = nav.IsTransparent
+	clone.HasShadow = nav.HasShadow
+	clone.items = make([]*NavbarItem, len(nav.items))
+	for i, itm := range nav.items {
+		clone.items[i] = itm.Clone()
+	}
+	return clone
+}
+
+// AddItem adds the item to the navbar
+func (nav *Navbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLComposer) *NavbarItem {
+	itm := new(NavbarItem)
+	itm.Key = key
+	itm.ItemType = itmtyp
+	itm.Content = content
+	itm.Meta().SetParent(nav)
+	nav.items = append(nav.items, itm)
+	return itm
+}
+
+// At returns the item at a given index.
+// returns nil if index is out of range.
+func (nav *Navbar) At(index int) *NavbarItem {
 	if index < 0 || index >= len(nav.items) {
 		return nil
 	}
 	return nav.items[index]
 }
 
-// AddItems adds items to the navbar .
-func (nav *Navbar) AddItems(items ...*NavbarItem) *Navbar {
-	nav.items = append(nav.items, items...)
-	return nav
+// Item returns the first item found with the given key, walking through all levels.
+// returns nil if key is not found
+func (nav *Navbar) Item(key string) *NavbarItem {
+	for _, itm := range nav.items {
+		if itm.Key == key {
+			return itm
+		}
+		if found := itm.Item(key); found != nil {
+			return found
+		}
+	}
+	return nil
 }
 
 // BuildTag builds the tag used to render the html element.
@@ -151,6 +245,7 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 	html.WriteString(out, `</div>`)
 
 	// menu area
+	// the menu id is required for flipping it
 	menuid := nav.Id() + `menu`
 	html.WriteStrings(out, `<div class="navbar-menu" id="`, menuid, `">`)
 
@@ -170,57 +265,3 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 
 	return nil
 }
-
-// func (nav *Navbar) Template(*DataState) (_t SnippetTemplate) {
-// 	_t.TagName = "nav"
-// 	_t.Attributes = `class="navbar" role="navigation"`
-// 	if nav.IsTransparent {
-// 		nav.SetClasses("is-transparent")
-// 	}
-// 	if nav.HasShadow {
-// 		nav.SetClasses("has-shadow")
-// 	}
-
-// 	// brand
-// 	_t.Body = `<div class="navbar-brand">`
-
-// 	for _, item := range nav.items {
-// 		if item.Brand {
-// 			_t.Body += nav.RenderChildSnippet(&item)
-// 		}
-// 	}
-
-// 	// _t.Body += `<a class="navbar-item" href="https://bulma.io">
-// 	// 			<img src="https://bulma.io/images/bulma-logo.png" width="112" height="28">
-// 	// 			</a>`
-
-// 	// burger
-// 	_t.Body += `<a class="navbar-burger" role="button">`
-// 	_t.Body += `<span></span><span></span><span></span>`
-// 	_t.Body += `</a>`
-
-// 	_t.Body += `</div>` //brand
-
-// 	// menu
-// 	_t.Body += `<div class="navbar-menu" id="` + String(nav.Id()) + `menu">`
-
-// 	_t.Body += `<div class="navbar-start">`
-// 	for _, item := range nav.items {
-// 		if !item.Brand && !item.End {
-// 			_t.Body += nav.RenderChildSnippet(&item)
-// 		}
-// 	}
-// 	_t.Body += `</div>`
-
-// 	_t.Body += `<div class="navbar-end">`
-// 	for _, item := range nav.items {
-// 		if !item.Brand && item.End {
-// 			_t.Body += nav.RenderChildSnippet(&item)
-// 		}
-// 	}
-// 	_t.Body += `</div>`
-
-// 	_t.Body += `</div>` // navbar-menu
-
-// 	return _t
-// }

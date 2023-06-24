@@ -34,32 +34,11 @@ func main() {
 	// setup the common navbar
 	navbar := bulma.Navbar{HasShadow: true}
 	navbar.Tag().SetId("topnavbar")
-
-	navbari0 := bulma.NavbarItem{
-		ItemType: bulma.NAVBARIT_BRAND,
-		Content:  html.HTML(`<span class="title pl-2">Icecake</span>`)}
-	navbari0.ParseHRef("/")
-	navbari0.ParseImageSrc("/assets/icecake-color.svg")
-
-	navbarihome := bulma.NavbarItem{
-		ItemType: bulma.NAVBARIT_START,
-		Content:  html.HTML(`Home`),
-		HRef:     pgindex.RelURL()}
-
-	navbaridocs := bulma.NavbarItem{
-		ItemType: bulma.NAVBARIT_START,
-		Content:  html.HTML(`Docs`),
-		HRef:     pgdocs.RelURL()}
-
-	navbari3 := bulma.NavbarItem{
-		ItemType: bulma.NAVBARIT_END,
-		Content:  bulma.NewButtonLink(*html.HTML("GitHub"), "https://github.com/icecake-framework/icecake")}
-
-	navbari4 := bulma.NavbarItem{
-		ItemType: bulma.NAVBARIT_END,
-		Content:  html.HTML("<small>Alpha</small>")}
-
-	navbar.AddItems(&navbari0, &navbarihome, &navbaridocs, &navbari3, &navbari4)
+	navbar.AddItem("", bulma.NAVBARIT_BRAND, html.HTML(`<span class="title pl-2">Icecake</span>`)).ParseHRef("/").ParseImageSrc("/assets/icecake-color.svg")
+	navbar.AddItem("home", bulma.NAVBARIT_START, html.HTML(`Home`)).HRef = pgindex.RelURL()
+	navbar.AddItem("docs", bulma.NAVBARIT_START, html.HTML(`Docs`)).HRef = pgdocs.RelURL()
+	navbar.AddItem("", bulma.NAVBARIT_END, bulma.NewButtonLink(*html.HTML("GitHub"), "https://github.com/icecake-framework/icecake"))
+	navbar.AddItem("", bulma.NAVBARIT_END, html.HTML("<small>Alpha</small>"))
 
 	// Build the pgindex content
 	hero := &bulma.Hero{
@@ -73,33 +52,31 @@ func main() {
 	btnCTA := bulma.NewButtonLink(*html.HTML("Read doc"), "/docs")
 	btnCTA.Tag().SetId("cta")
 	hero.CTA = btnCTA
-	pages[0].Stack(&navbar, hero, &docsFooter{})
+	navbar0 := navbar.Clone()
+	navbar0.Item("home").IsActive = true
+	pages[0].Stack(navbar0, hero, &docsFooter{})
 
 	// build the pgdocs content
-	pages[1].Stack(&navbar, &docsFooter{})
+	navbar1 := navbar.Clone()
+	navbar1.Item("docs").IsActive = true
+	pages[1].Stack(navbar1, &docsFooter{})
 
 	// writing files
-	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css")
 
+	// set default header for all files
 	dfthtmlfile := html.NewHtmlFile("en").
 		AddHeadItem("meta", "charset=UTF-8").
 		AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`).
 		AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`).
 		AddHeadItem("script", `type="text/javascript" src="icecake.js"`)
 
+	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css")
+
 	n := 0
-	for i, pg := range pages {
+	for _, pg := range pages {
 		dfthtmlfile.Title = pg.Title
 		dfthtmlfile.Description = pg.Description
 		dfthtmlfile.Body = html.NewSnippet("body").Stack(&pg)
-		switch i {
-		case 0:
-			navbarihome.IsActive = true
-			navbaridocs.IsActive = false
-		case 1:
-			navbarihome.IsActive = false
-			navbaridocs.IsActive = true
-		}
 		err := dfthtmlfile.WriteHTMLFile(outpath, pg.RelURL().String())
 		if err != nil {
 			fmt.Println("makedoc fails")

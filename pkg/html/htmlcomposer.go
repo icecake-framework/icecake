@@ -23,6 +23,7 @@ type RenderingMeta struct {
 	sub ComposerMap // instantiated embedded sub-snippet if any.
 }
 
+// XXX
 func (rmeta *RenderingMeta) SetParent(parent HTMLComposer) (deep int) {
 	rmeta.Parent = parent
 	rmeta.Deep = 0
