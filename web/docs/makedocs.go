@@ -59,7 +59,7 @@ func main() {
 
 	// build the pgdocs menu
 	menu := bulma.Menu{TagName: "nav"}
-	menu.Tag().SetId("docsmenu").AddClasses("px-2").SetStyle("background-color:#fafafa;font-size:0.8rem;")
+	menu.Tag().SetId("docsmenu").AddClasses("p-2").SetStyle("background-color:#fdfdfd;font-size:0.8rem;")
 	menu.AddItem("", bulma.MENUIT_LABEL, "General")
 	menu.AddItem("OVERVIEW", bulma.MENUIT_LINK, "Overview").ParseHRef("/docs")
 	menu.AddItem("", bulma.MENUIT_LABEL, "Core Snippets")
