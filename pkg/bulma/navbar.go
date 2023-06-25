@@ -8,9 +8,9 @@ import (
 	"github.com/icecake-framework/icecake/pkg/html"
 )
 
-func init() {
-	html.RegisterComposer("ick-navbar", &Navbar{})
-}
+// func init() {
+// 	html.RegisterComposer("ick-navbar", &Navbar{})
+// }
 
 type NAVBARITEM_TYPE string
 
@@ -33,8 +33,8 @@ type NavbarItem struct {
 	Key string
 
 	// The Item Type defines the location of the item in the navbar or if it's a simple divider.
-	// If ItemType is empty, NAVBARIT_START is used for rendering.
-	ItemType NAVBARITEM_TYPE
+	// If Type is empty, NAVBARIT_START is used for rendering.
+	Type NAVBARITEM_TYPE
 
 	// Item Content
 	Content html.HTMLComposer
@@ -60,7 +60,7 @@ var _ html.HTMLTagComposer = (*NavbarItem)(nil)
 func (navi NavbarItem) Clone() *NavbarItem {
 	c := new(NavbarItem)
 	c.Key = navi.Key
-	c.ItemType = navi.ItemType
+	c.Type = navi.Type
 
 	if navi.Content != nil {
 		copy := clone.Clone(navi.Content)
@@ -90,7 +90,7 @@ func (navi NavbarItem) Clone() *NavbarItem {
 //   - it's <a> when an HRef is provided,
 //   - it's <div> in other cases
 func (navi *NavbarItem) BuildTag(tag *html.Tag) {
-	if navi.ItemType == NAVBARIT_DIVIDER {
+	if navi.Type == NAVBARIT_DIVIDER {
 		tag.SetTagName("hr")
 		tag.PickClass("navbar-divider navbar-item", "navbar-divider")
 	} else {
@@ -105,7 +105,7 @@ func (navi *NavbarItem) BuildTag(tag *html.Tag) {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (navi *NavbarItem) RenderContent(out io.Writer) error {
-	if navi.ItemType != NAVBARIT_DIVIDER {
+	if navi.Type != NAVBARIT_DIVIDER {
 		if navi.ImageSrc != nil {
 			img := html.NewSnippet("img", `width="auto" height="28"`)
 			img.Tag().SetURL("src", navi.ImageSrc)
@@ -120,7 +120,7 @@ func (navi *NavbarItem) RenderContent(out io.Writer) error {
 func (navi *NavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLComposer) *NavbarItem {
 	itm := new(NavbarItem)
 	itm.Key = key
-	itm.ItemType = itmtyp
+	itm.Type = itmtyp
 	itm.Content = content
 	itm.Meta().LinkParent(navi)
 	navi.items = append(navi.items, itm)
@@ -162,7 +162,11 @@ func (navi *NavbarItem) ParseImageSrc(rawUrl string) *NavbarItem {
 	return navi
 }
 
-// Navbar is an UISnippet registered with the ick-tag `ick-navbar`.
+// bulma.Navbar is an icecake snippet providing the HTML rendering for a [bulma navbar].
+//
+// Can't be used for inline rendering.
+//
+// [bulma navbar]: https://bulma.io/documentation/components/navbar
 type Navbar struct {
 	html.HTMLSnippet
 
@@ -192,7 +196,7 @@ func (nav Navbar) Clone() *Navbar {
 func (nav *Navbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLComposer) *NavbarItem {
 	itm := new(NavbarItem)
 	itm.Key = key
-	itm.ItemType = itmtyp
+	itm.Type = itmtyp
 	itm.Content = content
 	itm.Meta().LinkParent(nav)
 	nav.items = append(nav.items, itm)
@@ -238,7 +242,7 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 
 	// brand items
 	for _, item := range nav.items {
-		nav.RenderChildsIf(item.ItemType == NAVBARIT_BRAND, out, item)
+		nav.RenderChildsIf(item.Type == NAVBARIT_BRAND, out, item)
 	}
 	// burger
 	html.WriteStrings(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
@@ -251,13 +255,13 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 
 	html.WriteStrings(out, `<div class="navbar-start">`)
 	for _, item := range nav.items {
-		nav.RenderChildsIf(item.ItemType == NAVBARIT_START, out, item)
+		nav.RenderChildsIf(item.Type == NAVBARIT_START, out, item)
 	}
 	html.WriteString(out, `</div>`)
 
 	html.WriteStrings(out, `<div class="navbar-end">`)
 	for _, item := range nav.items {
-		nav.RenderChildsIf(item.ItemType == NAVBARIT_END, out, item)
+		nav.RenderChildsIf(item.Type == NAVBARIT_END, out, item)
 	}
 	html.WriteString(out, `</div>`)
 
