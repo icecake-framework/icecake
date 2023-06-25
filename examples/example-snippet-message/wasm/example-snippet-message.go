@@ -15,26 +15,26 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	msg1 := &bulma.Message{Msg: *html.HTML("This is a simple message without header.")}
+	msg1 := &bulma.Message{Msg: *html.ToHTML("This is a simple message without header.")}
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg1, nil)
 
 	msg2 := &bulma.Message{
-		Header: *html.HTML("simple message"),
-		Msg:    *html.HTML("This is a simple message with a header."),
+		Header: *html.ToHTML("simple message"),
+		Msg:    *html.ToHTML("This is a simple message with a header."),
 	}
 	msg2.Tag().AddClasses("is-info")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 
 	msg3 := &bulma.Message{
-		Header:    *html.HTML("message with delete button"),
+		Header:    *html.ToHTML("message with delete button"),
 		CanDelete: true,
-		Msg:       *html.HTML("This message use the BULMA <i>is-warning</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message."),
+		Msg:       *html.ToHTML("This message use the BULMA <i>is-warning</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message."),
 	}
 	msg3.Tag().AddClasses("is-warning")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg3, nil)
 
 	msg4 := &bulma.Message{
-		Header:    *html.HTML("only header"),
+		Header:    *html.ToHTML("only header"),
 		CanDelete: true,
 	}
 	msg4.Tag().AddClasses("is-success")

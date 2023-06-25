@@ -81,7 +81,7 @@ func (s *testsnippet4) RenderContent(out io.Writer) error {
 type testsnippetinfinite struct{ HTMLSnippet }
 
 func (s *testsnippetinfinite) RenderContent(out io.Writer) error {
-	return s.RenderChilds(out, HTML("<ick-testinfinite/>"))
+	return s.RenderChilds(out, ToHTML("<ick-testinfinite/>"))
 }
 
 // testsnippetinfinite

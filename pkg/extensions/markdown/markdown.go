@@ -24,6 +24,6 @@ func RenderIn(_elem *dom.Element, _mdtxt string, _data *html.DataState, _options
 		console.Warnf("RenderMarkdown has error: %s", err.Error())
 		return err
 	}
-	_elem.InsertSnippet(dom.INSERT_BODY, html.HTML(buf.String()), _data)
+	_elem.InsertSnippet(dom.INSERT_BODY, html.ToHTML(buf.String()), _data)
 	return nil
 }

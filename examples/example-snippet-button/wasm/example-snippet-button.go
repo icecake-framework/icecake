@@ -22,46 +22,46 @@ func main() {
 	btn = make([]*ui.Button, 0)
 	content := dom.Id("content")
 
-	b0 := ui.NewButton(*html.HTML("Click here"))
+	b0 := ui.NewButton(*html.ToHTML("Click here"))
 	b0.Tag().AddClasses("m-2 is-link")
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b0, nil)
 	b0.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClick)
 	btn = append(btn, b0)
 
-	b1 := ui.NewButton(*html.HTML("Toggle Rounded"))
+	b1 := ui.NewButton(*html.ToHTML("Toggle Rounded"))
 	b1.Tag().AddClasses("m-2 is-link").SetAttribute("data-example", "1")
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b1, nil)
 	b1.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClickExample)
 	btn = append(btn, b1)
 
-	b2 := ui.NewButton(*html.HTML("Toggle Outlined"))
+	b2 := ui.NewButton(*html.ToHTML("Toggle Outlined"))
 	b2.Tag().AddClasses("m-2 is-link").SetAttribute("data-example", "2")
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b2, nil)
 	b2.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClickExample)
 	btn = append(btn, b2)
 
-	b3 := ui.NewButton(*html.HTML("Toggle Loading"))
+	b3 := ui.NewButton(*html.ToHTML("Toggle Loading"))
 	b3.Tag().AddClasses("m-2 is-link").SetAttribute("data-example", "3")
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b3, nil)
 	b3.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClickExample)
 	btn = append(btn, b3)
 
-	b4 := ui.NewButton(*html.HTML("Toggle Disabled"))
+	b4 := ui.NewButton(*html.ToHTML("Toggle Disabled"))
 	b4.Tag().AddClasses("m-2 is-link").SetAttribute("data-example", "4")
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b4, nil)
 	b4.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnClickExample)
 	btn = append(btn, b4)
 
-	b5 := ui.NewButtonLink(*html.HTML("Go To Home"), "/")
+	b5 := ui.NewButtonLink(*html.ToHTML("Go To Home"), "/")
 	b5.SetOutlined(true)
 	b5.Tag().AddClasses("m-2 is-info").SetAttribute("data-example", "5")
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, b5, nil)
 
-	html1 := html.HTML(`<ick-button Id="btne1" class="m-2 is-primary is-light" data-example=6 Title="Embedded with event" IsOutlined/>`)
+	html1 := html.ToHTML(`<ick-button Id="btne1" class="m-2 is-primary is-light" data-example=6 Title="Embedded with event" IsOutlined/>`)
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, html1, nil)
 	dom.Id("btne1").AddMouseEvent(event.MOUSE_ONCLICK, OnClick)
 
-	html2 := html.HTML(`<ick-button class="m-2 is-primary is-light" data-example=7 Title="Embedded with URL" IsOutlined HRef='/'/>`)
+	html2 := html.ToHTML(`<ick-button class="m-2 is-primary is-light" data-example=7 Title="Embedded with URL" IsOutlined HRef='/'/>`)
 	content.InsertSnippet(dom.INSERT_LAST_CHILD, html2, nil)
 
 	// let's go

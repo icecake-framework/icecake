@@ -44,7 +44,7 @@ func (msg *Message) RenderContent(out io.Writer) error {
 
 		if msg.CanDelete {
 			verbose.Printf(verbose.WARNING, "Message can delete TargetId=%s", msg.Id())
-			html.Render(out, nil, html.HTML(`<ick-delete TargetID='`+msg.Id()+`'/>`))
+			html.Render(out, nil, html.ToHTML(`<ick-delete TargetID='`+msg.Id()+`'/>`))
 		}
 		html.WriteString(out, `</div>`)
 	}

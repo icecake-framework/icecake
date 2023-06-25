@@ -27,9 +27,9 @@ type HTMLString struct {
 // Ensure HTMLString implements HTMLTagComposer interface
 var _ HTMLComposer = (*HTMLString)(nil)
 
-// HTML is the HTMLString factory allowing to convert a string into a new HTMLString reday for rendering.
+// ToHTML is the HTMLString factory allowing to convert a string into a new HTMLString reday for rendering.
 // The string must contains safe string and can include icecake tags.
-func HTML(s string) *HTMLString {
+func ToHTML(s string) *HTMLString {
 	h := new(HTMLString)
 	h.bytes = []byte(s)
 	return h
@@ -343,7 +343,7 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, ickattrs Attr
 func updateproperty(prop reflect.Value, value string) (err error) {
 	switch prop.Type().String() {
 	case "html.HTMLString":
-		s := string(HTML(value).Bytes())
+		s := string(ToHTML(value).Bytes())
 		prop.Set(reflect.ValueOf(s))
 	case "time.Duration":
 		var d time.Duration
