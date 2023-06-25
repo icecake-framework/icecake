@@ -34,32 +34,52 @@ func main() {
 	// setup the common navbar
 	navbar := bulma.Navbar{HasShadow: true}
 	navbar.Tag().SetId("topnavbar")
-	navbar.AddItem("", bulma.NAVBARIT_BRAND, html.HTML(`<span class="title pl-2">Icecake</span>`)).ParseHRef("/").ParseImageSrc("/assets/icecake-color.svg")
-	navbar.AddItem("home", bulma.NAVBARIT_START, html.HTML(`Home`)).HRef = pgindex.RelURL()
-	navbar.AddItem("docs", bulma.NAVBARIT_START, html.HTML(`Docs`)).HRef = pgdocs.RelURL()
-	navbar.AddItem("", bulma.NAVBARIT_END, bulma.NewButtonLink(*html.HTML("GitHub"), "https://github.com/icecake-framework/icecake"))
-	navbar.AddItem("", bulma.NAVBARIT_END, html.HTML("<small>Alpha</small>"))
+	navbar.AddItem("", bulma.NAVBARIT_BRAND, html.ToHTML(`<span class="title pl-2">Icecake</span>`)).ParseHRef("/").ParseImageSrc("/assets/icecake-color.svg")
+	navbar.AddItem("home", bulma.NAVBARIT_START, html.ToHTML(`Home`)).HRef = pgindex.RelURL()
+	navbar.AddItem("docs", bulma.NAVBARIT_START, html.ToHTML(`Docs`)).HRef = pgdocs.RelURL()
+	navbar.AddItem("", bulma.NAVBARIT_END, bulma.NewButtonLink(*html.ToHTML("GitHub"), "https://github.com/icecake-framework/icecake"))
+	navbar.AddItem("", bulma.NAVBARIT_END, html.ToHTML("<small>Alpha</small>"))
 
 	// Build the pgindex content
 	hero := &bulma.Hero{
 		Height:    bulma.HH_FULLFHEIGHT_WITH_NAVBAR,
-		Title:     *html.HTML("Develop SPA and Static Websites in Go."),
+		Title:     *html.ToHTML("Develop SPA and Static Websites in Go."),
 		TitleSize: 2,
-		Subtitle:  *html.HTML("Pure Go Web Assembly Framework"),
+		Subtitle:  *html.ToHTML("Pure Go Web Assembly Framework"),
 		Container: &bulma.Container{FullWidth: bulma.CFW_MAXDESKTOP},
 	}
 	hero.Container.Tag().AddClasses("has-text-centered")
-	btnCTA := bulma.NewButtonLink(*html.HTML("Read doc"), "/docs")
+	btnCTA := bulma.NewButtonLink(*html.ToHTML("Read doc"), "/docs")
 	btnCTA.Tag().SetId("cta")
 	hero.CTA = btnCTA
+
 	navbar0 := navbar.Clone()
 	navbar0.Item("home").IsActive = true
 	pages[0].Stack(navbar0, hero, &docsFooter{})
 
-	// build the pgdocs content
+	// build the pgdocs menu
+	menu := bulma.Menu{TagName: "nav"}
+	menu.Tag().SetId("docsmenu").AddClasses("px-2").SetStyle("background-color:#fafafa;font-size:0.8rem;")
+	menu.AddItem("", bulma.MENUIT_LABEL, "General")
+	menu.AddItem("OVERVIEW", bulma.MENUIT_LINK, "Overview").ParseHRef("/docs")
+	menu.AddItem("", bulma.MENUIT_LABEL, "Core Snippets")
+	menu.AddItem("", bulma.MENUIT_LINK, "HTMLString")
+	menu.AddItem("", bulma.MENUIT_LINK, "HTMLSnippet")
+	menu.AddItem("", bulma.MENUIT_LINK, "HTMLPage")
+	menu.AddItem("", bulma.MENUIT_LABEL, "Bulma Snippets")
+	menu.AddItem("", bulma.MENUIT_LINK, "Button")
+	menu.AddItem("", bulma.MENUIT_LINK, "Message")
+	menu.AddItem("", bulma.MENUIT_LINK, "Navbar")
+	menu.Item("OVERVIEW").IsActive = true
+
 	navbar1 := navbar.Clone()
 	navbar1.Item("docs").IsActive = true
-	pages[1].Stack(navbar1, &docsFooter{})
+
+	p1bodyc := html.NewSnippet("div", `class="columns is-mobile mb-0 pb-0"`)
+	p1bodyc.InsertSnippet("div", `class="column is-narrow mb-0 pb-0"`).Stack(&menu)
+	p1bodyc.InsertSnippet("div", `class="column mb-0 pb-0"`).Stack(&docOverview{})
+
+	pages[1].Stack(navbar1, p1bodyc, &docsFooter{})
 
 	// writing files
 

@@ -11,10 +11,20 @@ func init() {
 }
 
 /******************************************************************************
-/* docsPageIndex
+/* docOverview
 ******************************************************************************/
 
-// type docsPageIndex struct{ html.HTMLSnippet }
+type docOverview struct{ html.HTMLSnippet }
+
+func (doc *docOverview) BuildTag(tag *html.Tag) { tag.SetTagName("div").AddClasses("block") }
+
+func (doc *docOverview) RenderContent(out io.Writer) error {
+	html.WriteString(out, `
+	<h2 class="title is-2">Overview</h2>
+	<p>welcome</p>
+	`)
+	return nil
+}
 
 /******************************************************************************
 /* docsFooter
