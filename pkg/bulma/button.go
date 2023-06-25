@@ -101,14 +101,12 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 		SetClassesIf(btn.IsRounded, "is-rounded").
 		SetClassesIf(btn.IsLoading, "is-loading")
 
-	href := ""
-	if btn.HRef != nil {
-		href = btn.HRef.String()
-	}
 	switch btn.ButtonType {
 	case BTN_TYPE_A:
 		tag.RemoveAttribute("type")
-		tag.SetAttributeIf(href != "", "href", href)
+		if btn.HRef != nil {
+			tag.SetAttribute("href", btn.HRef.String())
+		}
 	case BTN_TYPE_SUBMIT:
 		tag.RemoveAttribute("href")
 		tag.SetAttribute("type", "submit")
