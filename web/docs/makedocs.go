@@ -47,7 +47,7 @@ func main() {
 
 	// setup the common navbar
 	navbar := bulma.Navbar{HasShadow: true}
-	navbar.Tag().SetId("topnavbar")
+	navbar.Tag().SetId("topbar")
 	navbar.AddItem("", bulma.NAVBARIT_BRAND, html.ToHTML(`<span class="title pl-2">Icecake</span>`)).ParseHRef("/").ParseImageSrc("/assets/icecake-color.svg")
 	navbar.AddItem("home", bulma.NAVBARIT_START, html.ToHTML(`Home`)).HRef = pgindex.RelURL()
 	navbar.AddItem("docs", bulma.NAVBARIT_START, html.ToHTML(`Docs`)).HRef = pgdocs.RelURL()
@@ -73,7 +73,7 @@ func main() {
 
 	// build the pgdocs menu
 	menu := bulma.Menu{TagName: "nav"}
-	menu.Tag().SetId("docsmenu").AddClasses("p-2").SetStyle("background-color:#fdfdfd;font-size:0.8rem;")
+	menu.Tag().SetId("docmenu").AddClasses("p-2").SetStyle("background-color:#fdfdfd;font-size:0.8rem;")
 	menu.AddItem("", bulma.MENUIT_LABEL, "General")
 	menu.AddItem("OVERVIEW", bulma.MENUIT_LINK, "Overview").ParseHRef("/docs")
 	menu.AddItem("", bulma.MENUIT_LABEL, "Core Snippets")
