@@ -49,7 +49,9 @@ func (s *HTMLSnippet) Tag() *Tag {
 // BuildTag builds the tag used to render the html element.
 // This default implementation of BuildTag does nothing.
 // So as the tag may have been preset before rendering.
-func (s *HTMLSnippet) BuildTag(tag *Tag) {}
+func (s *HTMLSnippet) BuildTag(tag *Tag) {
+	tag.NoName = true
+}
 
 // Id Returns the id of the Snippet.
 // Can be empty.
