@@ -4,9 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/otiai10/copy"
 	"github.com/sunraylab/verbose"
 )
 
@@ -18,6 +20,18 @@ func main() {
 	flag.BoolVar(&verbose.IsDebugging, "debug", false, "print out debugging info")
 	flag.Parse()
 	outpath := html.MustCheckOutputPath(outpathparam)
+
+	// copy all assets
+	outassets := filepath.Join(outpath, "/assets/")
+	os.RemoveAll(outassets)
+	err := copy.Copy("./web/docs/assets/", outassets)
+	if err != nil {
+		fmt.Println("makedoc fails")
+		if !verbose.IsOn {
+			fmt.Println("use the verbose flag to get more info")
+		}
+		os.Exit(1)
+	}
 
 	// init pages
 	var pages []html.Page
@@ -81,17 +95,18 @@ func main() {
 
 	pages[1].Stack(navbar1, p1bodyc, &docsFooter{})
 
-	// writing files
+	// files
 
 	// set default header for all files
 	dfthtmlfile := html.NewHtmlFile("en").
 		AddHeadItem("meta", "charset=UTF-8").
 		AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`).
 		AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`).
-		AddHeadItem("script", `type="text/javascript" src="icecake.js"`)
+		AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
 
 	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css")
 
+	// writing files
 	n := 0
 	for _, pg := range pages {
 		dfthtmlfile.Title = pg.Title

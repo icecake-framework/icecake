@@ -15,7 +15,7 @@ type Tag struct {
 	selfClosing bool   // specifies if this is a selfclosing tag, automatically setup by SetTagName. Use SetSelfClosing to force the value.
 }
 
-// Tag factory setting the tag named and allowing to assign a map of attibutes.
+// Tag factory setting the tag named and allowing to assign an existing map of attibutes.
 func NewTag(name string, amap AttributeMap) *Tag {
 	tag := new(Tag)
 	tag.SetTagName(name)
@@ -25,6 +25,16 @@ func NewTag(name string, amap AttributeMap) *Tag {
 		tag.AttributeMap = amap
 	}
 	return tag
+}
+
+// clone clones the tag
+func (src Tag) Clone() *Tag {
+	to := new(Tag)
+	to.AttributeMap = src.AttributeMap.Clone()
+	to.NoName = src.NoName
+	to.tagname = src.tagname
+	to.selfClosing = to.selfClosing
+	return to
 }
 
 // HasRendering returns if the tag can be rendered or not.

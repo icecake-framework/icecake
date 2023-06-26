@@ -28,6 +28,15 @@ func MakeAttributeMap() AttributeMap {
 	return make(AttributeMap)
 }
 
+// Clone clones the attribute map
+func (src AttributeMap) Clone() AttributeMap {
+	to := make(AttributeMap, len(src))
+	for k, v := range src {
+		to[k] = v
+	}
+	return src
+}
+
 // ResetAttributes deletes all attributes in the map.
 func (amap AttributeMap) ResetAttributes() AttributeMap {
 	for k := range amap {

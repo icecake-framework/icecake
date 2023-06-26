@@ -2,6 +2,8 @@ package html
 
 import (
 	"io"
+
+	"github.com/huandu/go-clone"
 )
 
 // HTMLSnippet enables creation of simple or complex html strings based on
@@ -32,6 +34,17 @@ func NewSnippet(tagname string, attrlist ...string) *HTMLSnippet {
 	snippet.tag.SetTagName(tagname)
 	snippet.tag.ParseAttributes(attrlist...)
 	return snippet
+}
+
+// Clone clones the snippet, without the rendering metadata
+func (src *HTMLSnippet) Clone() *HTMLSnippet {
+	to := new(HTMLSnippet)
+	to.tag = *src.tag.Clone()
+	if len(src.stack) > 0 {
+		copy := clone.Clone(src.stack)
+		to.stack = copy.([]HTMLComposer)
+	}
+	return to
 }
 
 func (snippet *HTMLSnippet) Meta() *RenderingMeta {
