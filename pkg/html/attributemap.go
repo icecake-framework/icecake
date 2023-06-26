@@ -344,7 +344,11 @@ nextexist:
 		new += " " + existc
 	}
 	new = strings.TrimLeft(new, " ")
-	amap["class"] = new
+	if new == "" {
+		delete(amap, "class")
+	} else {
+		amap["class"] = new
+	}
 	return amap
 }
 
