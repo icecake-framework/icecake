@@ -25,11 +25,14 @@ func main() {
 	outassets := filepath.Join(outpath, "/assets/")
 	os.RemoveAll(outassets)
 	err := copy.Copy("./web/docs/assets/", outassets)
+	if err == nil {
+		err = copy.Copy("./web/docs/sass/docs.css", filepath.Join(outassets, "/docs.css"))
+	}
+	if err == nil {
+		err = copy.Copy("./web/docs/sass/docs.css.map", filepath.Join(outassets, "/docs.css.map"))
+	}
 	if err != nil {
-		fmt.Println("makedoc fails")
-		if !verbose.IsOn {
-			fmt.Println("use the verbose flag to get more info")
-		}
+		fmt.Println("makedoc fails: ", err.Error())
 		os.Exit(1)
 	}
 
@@ -51,7 +54,12 @@ func main() {
 	navbar.AddItem("", bulma.NAVBARIT_BRAND, html.ToHTML(`<span class="title pl-2">Icecake</span>`)).ParseHRef("/").ParseImageSrc("/assets/icecake-color.svg")
 	navbar.AddItem("home", bulma.NAVBARIT_START, html.ToHTML(`Home`)).HRef = pgindex.RelURL()
 	navbar.AddItem("docs", bulma.NAVBARIT_START, html.ToHTML(`Docs`)).HRef = pgdocs.RelURL()
-	navbar.AddItem("", bulma.NAVBARIT_END, bulma.NewButtonLink(*html.ToHTML("GitHub"), "https://github.com/icecake-framework/icecake"))
+
+	btngit := &bulma.Button{Title: *html.ToHTML("GitHub")}
+	btngit.ParseHRef("https://github.com/icecake-framework/icecake")
+	btngit.SetColor(bulma.COLOR_PRIMARY).SetOutlined(true)
+
+	navbar.AddItem("", bulma.NAVBARIT_END, btngit)
 	navbar.AddItem("", bulma.NAVBARIT_END, html.ToHTML("<small>Alpha</small>"))
 
 	// Build the pgindex content
@@ -63,8 +71,12 @@ func main() {
 		Container: &bulma.Container{FullWidth: bulma.CFW_MAXDESKTOP},
 	}
 	hero.Container.Tag().AddClasses("has-text-centered")
-	btnCTA := bulma.NewButtonLink(*html.ToHTML("Read doc"), "/docs")
+
+	btnCTA := &bulma.Button{Title: *html.ToHTML("Read doc")}
+	btnCTA.HRef = pgdocs.RelURL()
+	btnCTA.SetColor(bulma.COLOR_PRIMARY)
 	btnCTA.Tag().SetId("cta")
+
 	hero.CTA = btnCTA
 
 	navbar0 := navbar.Clone()
@@ -105,6 +117,7 @@ func main() {
 		AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
 
 	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css")
+	html.RequireCSSFile("/assets/docs.css")
 
 	// writing files
 	n := 0

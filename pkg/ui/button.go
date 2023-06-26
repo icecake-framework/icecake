@@ -17,15 +17,9 @@ type Button struct {
 	DOM dom.Element
 }
 
-func NewButton(_title html.HTMLString) *Button {
+func NewButton(title html.HTMLString, id string, rawURL string, attrs ...string) *Button {
 	btn := new(Button)
-	btn.Button = bulma.NewButton(_title)
-	return btn
-}
-
-func NewButtonLink(_title html.HTMLString, rawUrl string) *Button {
-	btn := new(Button)
-	btn.Button = bulma.NewButtonLink(_title, rawUrl)
+	btn.Button = bulma.NewButton(title, id, rawURL, attrs...)
 	return btn
 }
 

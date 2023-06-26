@@ -47,35 +47,64 @@ type Button struct {
 	// The title of the Button. Can be a simple text or a more complex html string.
 	Title html.HTMLString
 
-	IsOutlined bool // Outlined button style
-	IsRounded  bool // Rounded button style
-
-	IsDisabled bool // Disabled state
-	IsLoading  bool // Loading button state
+	IsOutlined bool  // Outlined button style
+	IsRounded  bool  // Rounded button style
+	IsDisabled bool  // Disabled state
+	IsLoading  bool  // Loading button state
+	Color      COLOR // rendering color
 }
 
 // Ensure Button implements HTMLTagComposer interface
 var _ html.HTMLTagComposer = (*Button)(nil)
 
-func NewButton(title html.HTMLString) *Button {
+func NewButton(title html.HTMLString, id string, rawURL string, attrs ...string) *Button {
 	btn := new(Button)
-	btn.ButtonType = BTN_TYPE_BUTTON
+	btn.Tag().SetId(id)
+	if rawURL == "" {
+		btn.ButtonType = BTN_TYPE_BUTTON
+	} else {
+		btn.ButtonType = BTN_TYPE_A
+		btn.ParseHRef(rawURL)
+	}
 	btn.Title = title
+	btn.Tag().ParseAttributes(attrs...)
 	return btn
 }
 
-func NewButtonLink(title html.HTMLString, rawUrl string) *Button {
-	btn := new(Button)
-	btn.ButtonType = BTN_TYPE_A
-	btn.Title = title
-	btn.ParseHRef(rawUrl)
-	return btn
-}
+// func NewButtonLink(title html.HTMLString, href *url.URL) *Button {
+// 	btn := new(Button)
+// 	btn.ButtonType = BTN_TYPE_A
+// 	btn.Title = title
+// 	btn.HRef = href
+// 	return btn
+// }
 
 // ParseHRef parses _rawUrl to HRef. HRef stays nil in case of error.
 func (btn *Button) ParseHRef(rawUrl string) (err error) {
 	btn.HRef, err = url.Parse(rawUrl)
 	return
+}
+
+func (btn *Button) SetOutlined(f bool) *Button {
+	btn.IsOutlined = f
+	return btn
+}
+func (btn *Button) SetRounded(f bool) *Button {
+	btn.IsRounded = f
+	return btn
+}
+func (btn *Button) SetDisabled(f bool) *Button {
+	btn.IsDisabled = f
+	btn.Tag().SetDisabled(f)
+	return btn
+}
+func (btn *Button) SetLoading(f bool) *Button {
+	btn.IsLoading = f
+	return btn
+}
+func (btn *Button) SetColor(c COLOR) *Button {
+	btn.Color = c
+	return btn
 }
 
 // BuildTag builds the tag used to render the html element.
@@ -99,7 +128,8 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 	tag.AddClasses("button").
 		SetClassesIf(btn.IsOutlined, "is-outlined").
 		SetClassesIf(btn.IsRounded, "is-rounded").
-		SetClassesIf(btn.IsLoading, "is-loading")
+		SetClassesIf(btn.IsLoading, "is-loading").
+		PickClass(COLOR_OPTIONS, string(btn.Color))
 
 	switch btn.ButtonType {
 	case BTN_TYPE_A:
