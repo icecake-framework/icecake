@@ -1,4 +1,4 @@
-package main
+package docs
 
 import (
 	"io"
@@ -26,11 +26,15 @@ const docsFooterStyle string = `.myfooter-title {
 }
 `
 
-type docsFooter struct{ html.HTMLSnippet }
+type Footer struct{ html.HTMLSnippet }
 
-func (footer *docsFooter) BuildTag(tag *html.Tag) { tag.SetTagName("footer").AddClasses("footer") }
+func MyFooter() *Footer {
+	return new(Footer)
+}
 
-func (footer *docsFooter) RenderContent(out io.Writer) error {
+func (footer *Footer) BuildTag(tag *html.Tag) { tag.SetTagName("footer").AddClasses("footer") }
+
+func (footer *Footer) RenderContent(out io.Writer) error {
 
 	hrefMIT := `<a href="https://opensource.org/licenses/mit-license.php" rel="license">MIT</a>`
 	hrefCCBY := `<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>`

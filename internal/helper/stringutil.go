@@ -1,6 +1,8 @@
 package helper
 
-import "strings"
+import (
+	"strings"
+)
 
 func Normalize(s string) string {
 	return strings.ToLower(strings.Trim(s, " "))

@@ -213,6 +213,16 @@ func (nav *Navbar) At(index int) *NavbarItem {
 	return nav.items[index]
 }
 
+// SetActiveItem look for the key item (or subitem) and sets its IsActive flag.
+// warning: does not unset other actve items if any.
+func (nav *Navbar) SetActiveItem(key string) *Navbar {
+	itm := nav.Item(key)
+	if itm != nil {
+		itm.IsActive = true
+	}
+	return nav
+}
+
 // Item returns the first item found with the given key, walking through all levels.
 // returns nil if key is not found
 func (nav *Navbar) Item(key string) *NavbarItem {

@@ -1,33 +1,75 @@
 package html
 
 import (
+	"fmt"
 	"io"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
+
+	"github.com/sunraylab/verbose"
 )
 
-// Page represents a set of stacked HTML elements associated to an url and a set of usual properties.
-// Page implements HTMLcomposer interfaces and is rendered to an output stream with the icecake Rendering functions.
-// It is part of the core icecake snippets.
-type Page struct {
-	meta  RenderingMeta  // Rendering MetaData.
-	stack []HTMLComposer // HTML composers to render without enclosed tag.
-
-	Title       string // the html <head><title> value.
-	Description string // the html <head><meta name="description"> value.
-
-	// relative url of the page.
-	url *url.URL
+type HeadItem struct {
+	HTMLSnippet
 }
 
-// Ensure Page implements HTMLComposer interface
-var _ HTMLComposer = (*Page)(nil)
+func NewHeadItem(tagname string) *HeadItem {
+	item := new(HeadItem)
+	item.Tag().SetTagName(tagname)
+	return item
+}
 
-func NewPage(rawHTMLUrl string) *Page {
+// An HTML5 file with its content.
+type Page struct {
+	meta RenderingMeta // Rendering MetaData.
+
+	Lang        string      // the html "lang" value.
+	Title       string      // the html "head/title" value.
+	Description string      // the html "head/meta description" value.
+	HeadItems   []*HeadItem // the list of tags in the section <head>
+
+	Body HTMLTagComposer // the html composer used to render the body tag. The tagname must be "body" otherwise will not render.
+
+	url  *url.URL // relative url of the html page.
+	wasm *url.URL // relative url of the html page.
+}
+
+// NewPage is the Page factory, seeting up the lang for the doctype tag, and the url of the page.
+// Return nil if unable to parse the url of the page.
+func NewPage(lang string, rawUrl string) *Page {
 	pg := new(Page)
-	pg.stack = make([]HTMLComposer, 0)
-	pg.ParseURL(rawHTMLUrl)
+	pg.Lang = lang
+	pg.HeadItems = make([]*HeadItem, 0)
+	err := pg.ParseURL(rawUrl)
+	if err != nil {
+		verbose.Error("NewPage", err)
+		return nil
+	}
 	return pg
+}
+
+// Meta provides a reference to the RenderingMeta object associated with this composer.
+// This is required by the icecake rendering process.
+func (pg *Page) Meta() *RenderingMeta {
+	return &pg.meta
+}
+
+// WasmScript returns the wasm script to be added ad the end of the page to enable loading of a wasm code
+func (pg *Page) WasmScript() *HTMLString {
+	if pg.wasm == nil || pg.wasm.Path == "" {
+		return nil
+	}
+	s := ToHTML(`<script src="/assets/wasm_exec.js"></script>
+		<script>
+			const goWasm = new Go()
+			WebAssembly.instantiateStreaming(fetch("` + pg.wasm.Path + `"), goWasm.importObject)
+				.then((result) => {
+					goWasm.run(result.instance)
+				})
+		</script>`)
+	return s
 }
 
 // ParseURL parses rawHTMLUrl to the URL of the page. The page URL stays nil in case of error.
@@ -42,8 +84,11 @@ func (pg *Page) ParseURL(rawHTMLUrl string) (err error) {
 			if ext != ".html" {
 				return ErrBadHtmlFileExtention
 			}
-		} else if pg.url.Path != "" {
+			pg.url.Path = pg.url.Path[:extpos]
+		}
+		if pg.url.Path != "" {
 			pg.url.Path += ".html"
+			pg.wasm, _ = url.Parse(pg.url.Path + ".wasm")
 		}
 	}
 	return
@@ -57,31 +102,121 @@ func (pg Page) RelURL() *url.URL {
 	return &url.URL{Path: pg.url.Path}
 }
 
-// Meta provides a reference to the RenderingMeta object associated with this composer.
-// This is required by the icecake rendering process.
-func (pg *Page) Meta() *RenderingMeta {
-	return &pg.meta
+// AddHeadItem add a line in the <head> section of the HtmlFile
+func (f *Page) AddHeadItem(tagname string, attributes string) *Page {
+	item := NewHeadItem(tagname)
+	item.Tag().ParseAttributes(attributes)
+	item.Tag().NoName = true
+	f.HeadItems = append(f.HeadItems, item)
+	return f
 }
 
-// RenderContent writes the HTML string corresponding to the content of the HTML element.
-// The default implementation for an Page snippet is to render the internal stack of composers.
-// This can be overloaded by a custom page.
-func (pg *Page) RenderContent(out io.Writer) error {
-	for _, cmp := range pg.stack {
-		err := Render(out, pg, cmp)
+// WriteHTMLFile creates or overwrites the file with htmlfilename name, adding the html extension if missing,
+// and feeds it with the HtmlFile content including the header and the body.
+// If path is provided, htmlfilename is joint to make an absolute path,
+// otherwise htmlfilename is used in the current dir (unless it contains itself an absolute path).
+// returns an error if ther's no filename
+func (pg Page) WriteFile(outputpath string) (err error) {
+
+	relhtmlfile := pg.url.Path
+
+	// make a valid file name with htmlfilename
+	if relhtmlfile == "" {
+		return fmt.Errorf("WriteFile: %w", ErrMissingFileName)
+	}
+
+	ext := filepath.Ext(relhtmlfile)
+	if ext != ".html" {
+		relhtmlfile = filepath.Join(relhtmlfile, ".html")
+	}
+	var absfilename string
+	if outputpath != "" {
+		absfilename = filepath.Join(outputpath, relhtmlfile)
+	} else {
+		if absfilename, err = filepath.Abs(relhtmlfile); err != nil {
+			return err
+		}
+	}
+
+	// write it to the disk
+	f, erro := os.OpenFile(absfilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if erro != nil {
+		return erro
+	}
+	defer func() {
+		if err1 := f.Close(); err1 != nil && err == nil {
+			err = err1
+		}
+		verbose.Error(fmt.Sprintf("WriteFile %s", outputpath), err)
+		if err == nil {
+			verbose.Println(verbose.INFO, absfilename, "succesfully written")
+		}
+	}()
+
+	err = pg.RenderContent(f)
+
+	return err
+}
+
+// Render turns HtmlFile into a valid HTML syntax and write it to the output stream.
+// Declared required CSS files and styles are automatically added.
+func (pg *Page) RenderContent(out io.Writer) (err error) {
+
+	// <!doctype>
+	WriteStrings(out, `<!doctype html><html lang="`, pg.Lang, `">`)
+
+	// <head>
+	WriteStrings(out, `<head>`)
+	WriteStringsIf(pg.Title != "", out, "<title>", pg.Title, "</title>")
+	WriteStringsIf(pg.Description != "", out, `<meta name="description" content="`+pg.Description+`">`)
+	for _, headitem := range pg.HeadItems {
+		if err = Render(out, pg, headitem); err != nil {
+			return err
+		}
+	}
+
+	// required css files, checking for duplicate
+	rcssfs := RequiredCSSFile()
+	for _, rcssf := range rcssfs {
+		strrcssf := rcssf.String()
+		duplicate := false
+		for _, hi := range pg.HeadItems {
+			if hi.tag.tagname == "link" {
+				href, found := hi.tag.Attribute("href")
+				if found && href == strrcssf {
+					duplicate = true
+					break
+				}
+			}
+		}
+		WriteStringsIf(!duplicate, out, `<link rel="stylesheet" href="`+strrcssf+`">`)
+	}
+
+	// required css styles
+	rcssstyle := RequiredCSSStyle()
+	WriteStringsIf(rcssstyle != "", out, `<style>`, rcssstyle, `</style>`)
+
+	// // wasm script, if any
+	// Render(out, pg, pg.WasmScript())
+
+	WriteString(out, "</head>")
+
+	// <body>
+	if pg.Body != nil {
+		tg, _ := pg.Body.Tag().TagName()
+		if tg != "body" {
+			err = ErrBodyTagMissing
+			WriteStrings(out, "<!-- ", err.Error(), " -->")
+		} else {
+			err = Render(out, pg, pg.Body)
+		}
 		if err != nil {
 			return err
 		}
 	}
-	return nil
-}
 
-// Stack adds one or many HTMLComposer to the rendering stack of this composer.
-// Returns the page to allow chaining calls.
-func (pg *Page) Stack(content ...HTMLComposer) *Page {
-	if pg.stack == nil {
-		pg.stack = make([]HTMLComposer, 0)
-	}
-	pg.stack = append(pg.stack, content...)
-	return pg
+	// <closing>
+	WriteString(out, "</html>")
+
+	return nil
 }

@@ -132,6 +132,15 @@ type HTMLTagComposer interface {
 // Returns rendering errors, typically with the writer, or if there's too many recursive rendering.
 func Render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
 
+	// nothing to render
+	if cmp == nil {
+		return nil
+	}
+	if reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {
+		verbose.Printf(verbose.WARNING, "Render: empty composer %s\n", reflect.TypeOf(cmp).String())
+		return nil
+	}
+
 	// look for depth and ensure no infinite loop
 	cmpdeep := cmp.Meta().LinkParent(parent)
 	if cmpdeep > maxDEEP {

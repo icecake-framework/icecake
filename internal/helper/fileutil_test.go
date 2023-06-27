@@ -1,4 +1,4 @@
-package html
+package helper
 
 import (
 	"os"
