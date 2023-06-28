@@ -41,7 +41,7 @@ func main() {
 		TitleSize: 2,
 		Subtitle:  *html.ToHTML("Pure Go Web Assembly Framework"),
 		Container: &bulma.Container{FullWidth: bulma.CFW_MAXDESKTOP},
-		CTA:       bulma.NewButton(*html.ToHTML("Read doc"), "cta", "/docs.html").SetColor(bulma.COLOR_PRIMARY),
+		CTA:       bulma.NewButton(*html.ToHTML("Read doc"), "cta", "/overview.html").SetColor(bulma.COLOR_PRIMARY),
 	}
 	hero.Container.Tag().AddClasses("has-text-centered")
 
@@ -51,7 +51,7 @@ func main() {
 		docs.MyFooter())
 
 	// page docs
-	pgdocs := web.AddPage("en", "docs")
+	pgdocs := web.AddPage("en", "overview")
 	pgdocs.Title = "documentation - icecake framework"
 	pgdocs.Description = "go Web Assembly Framework documentation"
 	pgdocs.AddHeadItem("meta", "charset=UTF-8")
@@ -63,7 +63,7 @@ func main() {
 	menu := bulma.Menu{TagName: "nav"}
 	menu.Tag().SetId("docmenu").AddClasses("p-2").SetStyle("background-color:#fdfdfd;font-size:0.8rem;")
 	menu.AddItem("", bulma.MENUIT_LABEL, "General")
-	menu.AddItem("OVERVIEW", bulma.MENUIT_LINK, "Overview").ParseHRef("/docs.html")
+	menu.AddItem("overview", bulma.MENUIT_LINK, "Overview").ParseHRef("/overview.html")
 	menu.AddItem("", bulma.MENUIT_LABEL, "Core Snippets")
 	menu.AddItem("", bulma.MENUIT_LINK, "HTMLString")
 	menu.AddItem("", bulma.MENUIT_LINK, "HTMLSnippet")
@@ -72,7 +72,7 @@ func main() {
 	menu.AddItem("", bulma.MENUIT_LINK, "Button")
 	menu.AddItem("", bulma.MENUIT_LINK, "Message")
 	menu.AddItem("", bulma.MENUIT_LINK, "Navbar")
-	menu.Item("OVERVIEW").IsActive = true
+	menu.Item("overview").IsActive = true
 
 	p1bodyc := html.NewSnippet("div", `class="columns is-mobile mb-0 pb-0"`)
 	p1bodyc.InsertSnippet("div", `class="column is-narrow mb-0 pb-0"`).Stack(&menu)

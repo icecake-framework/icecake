@@ -58,13 +58,16 @@ func (w WebSite) WriteFiles() (n int, err error) {
 		return 0, nil
 	}
 
+	var warn error
 	n = 0
 	for _, p := range w.pages {
+
+		// write file with its rendered content
 		err = p.WriteFile(w.OutPath)
 		if err != nil {
 			return n, err
 		}
 		n++
 	}
-	return n, nil
+	return n, warn
 }

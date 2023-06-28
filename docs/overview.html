@@ -28,7 +28,7 @@
 	<p>welcome</p></section></div></div><footer name="ick-footer" class="footer"><div class="container"><div class="columns"><div class="column is-8"><h4 class="myfooter-title"><strong>IceCake</strong> by Lolorenzo</h4><div class="myfooter-info">Source code licences <a href="https://opensource.org/licenses/mit-license.php" rel="license">MIT</a></div><div class="myfooter-info">Website content licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></div><br><div class="myfooter-info">Wasm code: <span id="icecake-status"></span></div></div><div class="column is-4"><h4 class="myfooter-title"><strong>Links</strong></h4><p class="myfooter-link"><a href="/">Home</a></p><p class="myfooter-link"><a href="/docs">Docs</a></p><p class="myfooter-link"><a href="https://github.com/icecake-framework/icecake">Contribute</a> on GitHub</p></div></div></div></footer></body><script src="/assets/wasm_exec.js"></script>
 		<script>
 			const goWasm = new Go()
-			WebAssembly.instantiateStreaming(fetch("docs.wasm"), goWasm.importObject)
+			WebAssembly.instantiateStreaming(fetch("overview.wasm"), goWasm.importObject)
 				.then((result) => {
 					goWasm.run(result.instance)
 				})

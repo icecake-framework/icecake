@@ -40,7 +40,7 @@ func (footer *Footer) RenderContent(out io.Writer) error {
 	hrefCCBY := `<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>`
 	hrefLinks := []string{
 		`<a href="/">Home</a>`,
-		`<a href="/docs">Docs</a>`,
+		`<a href="/overview">Docs</a>`,
 		`<a href="https://github.com/icecake-framework/icecake">Contribute</a> on GitHub`,
 	}
 
@@ -51,6 +51,7 @@ func (footer *Footer) RenderContent(out io.Writer) error {
 	html.WriteStrings(out, `<h4 class="myfooter-title">`, `<strong>IceCake</strong> by Lolorenzo`, `</h4>`)
 	html.WriteStrings(out, `<div class="myfooter-info">`, `Source code licences `, hrefMIT, `</div>`)
 	html.WriteStrings(out, `<div class="myfooter-info">`, `Website content licensed `, hrefCCBY, `</div>`)
+	html.WriteStrings(out, `<br><div class="myfooter-info">Wasm code: <span id="icecake-status"></span></div>`)
 	html.WriteString(out, `</div>`)
 
 	// 2nd column

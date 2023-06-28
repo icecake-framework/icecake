@@ -78,17 +78,18 @@ func (pg *Page) WasmScript() *HTMLString {
 func (pg *Page) ParseURL(rawHTMLUrl string) (err error) {
 	pg.url, err = url.Parse(rawHTMLUrl)
 	if err == nil {
-		extpos := strings.LastIndex(pg.url.Path, ".")
+		relpath := pg.url.Path
+		extpos := strings.LastIndex(relpath, ".")
 		if extpos >= 0 {
-			ext := pg.url.Path[extpos:]
+			ext := relpath[extpos:]
 			if ext != ".html" {
 				return ErrBadHtmlFileExtention
 			}
-			pg.url.Path = pg.url.Path[:extpos]
+			relpath = relpath[:extpos]
 		}
-		if pg.url.Path != "" {
+		if relpath != "" {
 			pg.url.Path += ".html"
-			pg.wasm, _ = url.Parse(pg.url.Path + ".wasm")
+			pg.wasm, _ = url.Parse(relpath + ".wasm")
 		}
 	}
 	return
@@ -170,7 +171,7 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 	WriteStringsIf(pg.Title != "", out, "<title>", pg.Title, "</title>")
 	WriteStringsIf(pg.Description != "", out, `<meta name="description" content="`+pg.Description+`">`)
 	for _, headitem := range pg.HeadItems {
-		if err = Render(out, pg, headitem); err != nil {
+		if err = Render(out, nil, headitem); err != nil {
 			return err
 		}
 	}
@@ -196,9 +197,6 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 	rcssstyle := RequiredCSSStyle()
 	WriteStringsIf(rcssstyle != "", out, `<style>`, rcssstyle, `</style>`)
 
-	// // wasm script, if any
-	// Render(out, pg, pg.WasmScript())
-
 	WriteString(out, "</head>")
 
 	// <body>
@@ -214,6 +212,10 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 			return err
 		}
 	}
+
+	// wasm script, if any
+	// must be loaded at the end of the page because the wasm code interacts with the loading/loaded )DOM
+	Render(out, nil, pg.WasmScript())
 
 	// <closing>
 	WriteString(out, "</html>")

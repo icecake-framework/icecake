@@ -46,7 +46,9 @@ func (rmeta *RenderingMeta) LinkParent(parent HTMLComposer) (deep int) {
 func (rmeta *RenderingMeta) GenerateVirtualId(cmpname string, cmpid string) string {
 	prefix := "orphan"
 	if rmeta.Parent != nil {
-		prefix = rmeta.Parent.Meta().VirtualId
+		if pvid := rmeta.Parent.Meta().VirtualId; pvid != "" {
+			prefix = pvid
+		}
 	}
 	prefix += "."
 	toporphan := strings.HasPrefix(prefix, "orphan.")

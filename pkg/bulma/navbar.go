@@ -261,8 +261,7 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 
 	// menu area
 	// the burger id is required for flipping it
-	burgerid := nav.Id() + `burger`
-	html.WriteStrings(out, `<div class="navbar-menu" id="`, burgerid, `">`)
+	html.WriteStrings(out, `<div class="navbar-menu">`)
 
 	html.WriteStrings(out, `<div class="navbar-start">`)
 	for _, item := range nav.items {

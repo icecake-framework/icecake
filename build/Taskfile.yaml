@@ -31,6 +31,13 @@ tasks:
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/
 
+  # task -t ./build/Taskfile.yaml doc_wasm
+  doc_wasm:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds: 
+      - GOARCH=wasm GOOS=js go build -o ./docs/index.wasm ./web/docs/pages/index/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/overview.wasm ./web/docs/pages/overview/wasm/
+
   # task -t ./build/Taskfile.yaml dev_framework
   dev_framework:
     dir: '{{.USER_WORKING_DIR}}'
