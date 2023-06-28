@@ -13,13 +13,13 @@ import (
 
 	_ "embed"
 
+	"github.com/icecake-framework/icecake/pkg/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/clock"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/extensions/markdown"
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/registry"
-	"github.com/icecake-framework/icecake/pkg/ui"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	mdhtml "github.com/yuin/goldmark/renderer/html"
@@ -66,7 +66,7 @@ func main() {
 func OnClickBtn1(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
-	notif := &ui.Notify{}
+	notif := &bulmaui.Notify{}
 	notif.Message = *html.ToHTML(`This is a typical notification message <strong>including html <a href="#">link</a>.</strong> Use the closing button on the right corner to remove this notification.`)
 	notif.Tag().AddClasses("is-warning is-light")
 
@@ -78,7 +78,7 @@ func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
 	_, idtimeleft := registry.GetUniqueId("timeleft")
-	notif := new(ui.Notify)
+	notif := new(bulmaui.Notify)
 	notif.Message = *html.ToHTML(`This message will be automatically removed in <strong><span id="` + idtimeleft + `"></span> seconds</strong>, unless you close it before. 😀`)
 	notif.Delete.Timeout = time.Second * 7
 	notif.Tag().AddClasses("is-danger is-light").SetAttribute("role", "alert")
@@ -94,7 +94,7 @@ func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 func OnClickBtn3(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
-	notif := &ui.Notify{}
+	notif := &bulmaui.Notify{}
 	notif.Message = *html.ToHTML(`This is a toast notification`)
 	notif.Delete.Clock.Timeout = time.Second * 3
 	notif.Tag().AddClasses("is-success toast")

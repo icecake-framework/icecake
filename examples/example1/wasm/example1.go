@@ -11,7 +11,7 @@ import (
 
 	_ "embed"
 
-	_ "github.com/icecake-framework/icecake/pkg/ui" // automatic registering of the ui components
+	_ "github.com/icecake-framework/icecake/pkg/bulmaui" // automatic registering of the ui components
 
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/extensions/markdown"

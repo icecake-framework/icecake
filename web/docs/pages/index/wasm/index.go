@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/icecake-framework/icecake/pkg/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/dom"
-	"github.com/icecake-framework/icecake/pkg/ui"
 )
 
 // This main package contains the web assembly source code for makedocs
@@ -21,7 +21,7 @@ func main() {
 
 	// burger := dom.Id("topbar")
 	// burger.AddMouseEvent(event.MOUSE_ONCLICK, OnClickBurger)
-	ui.WrapNavbar("topbar")
+	bulmaui.WrapNavbar("topbar")
 
 	// let's go
 	fmt.Println("Icecake initialized. Listening browser events")

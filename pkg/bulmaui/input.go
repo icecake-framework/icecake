@@ -1,4 +1,4 @@
-package ui
+package bulmaui
 
 import (
 	// "github.com/icecake-framework/icecake/pkg/console"
