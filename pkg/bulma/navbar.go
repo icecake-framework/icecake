@@ -182,15 +182,15 @@ var _ html.HTMLTagComposer = (*Navbar)(nil)
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
 func (src Navbar) Clone() *Navbar {
-	to := new(Navbar)
-	to.HTMLSnippet = *src.HTMLSnippet.Clone()
-	to.IsTransparent = src.IsTransparent
-	to.HasShadow = src.HasShadow
-	to.items = make([]*NavbarItem, len(src.items))
+	clone := new(Navbar)
+	clone.HTMLSnippet = *src.HTMLSnippet.Clone()
+	clone.IsTransparent = src.IsTransparent
+	clone.HasShadow = src.HasShadow
+	clone.items = make([]*NavbarItem, len(src.items))
 	for i, itm := range src.items {
-		to.items[i] = itm.Clone()
+		clone.items[i] = itm.Clone()
 	}
-	return to
+	return clone
 }
 
 // AddItem adds the item to the navbar

@@ -9,7 +9,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/web/docs"
-	docoverview "github.com/icecake-framework/icecake/web/docs/pages/overview"
+	webdocs "github.com/icecake-framework/icecake/web/docs/pages"
 	"github.com/sunraylab/verbose"
 )
 
@@ -50,16 +50,7 @@ func main() {
 		hero,
 		docs.MyFooter())
 
-	// page docs
-	pgdocs := web.AddPage("en", "overview")
-	pgdocs.Title = "documentation - icecake framework"
-	pgdocs.Description = "go Web Assembly Framework documentation"
-	pgdocs.AddHeadItem("meta", "charset=UTF-8")
-	pgdocs.AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`)
-	pgdocs.AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`)
-	pgdocs.AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
-
-	// ... with a menu
+	// menu for each pages unless home
 	menu := bulma.Menu{TagName: "nav"}
 	menu.Tag().SetId("docmenu").AddClasses("p-2").SetStyle("background-color:#fdfdfd;font-size:0.8rem;")
 	menu.AddItem("", bulma.MENUIT_LABEL, "General")
@@ -69,22 +60,29 @@ func main() {
 	menu.AddItem("", bulma.MENUIT_LINK, "HTMLSnippet")
 	menu.AddItem("", bulma.MENUIT_LINK, "HTMLPage")
 	menu.AddItem("", bulma.MENUIT_LABEL, "Bulma Snippets")
-	menu.AddItem("", bulma.MENUIT_LINK, "Button")
-	menu.AddItem("", bulma.MENUIT_LINK, "Message")
-	menu.AddItem("", bulma.MENUIT_LINK, "Navbar")
-	menu.Item("overview").IsActive = true
+	menu.AddItem("bulmabutton", bulma.MENUIT_LINK, "Button").ParseHRef("/bulmabutton.html")
+	menu.AddItem("bulmacard", bulma.MENUIT_LINK, "Card").ParseHRef("/bulmacard.html")
+	menu.AddItem("bulmadelete", bulma.MENUIT_LINK, "Delete").ParseHRef("/bulmadelete.html")
+	menu.AddItem("bulmahero", bulma.MENUIT_LINK, "Hero").ParseHRef("/bulmahero.html")
+	menu.AddItem("bulmaimage", bulma.MENUIT_LINK, "Image").ParseHRef("/bulmaimage.html")
+	menu.AddItem("bulmamenu", bulma.MENUIT_LINK, "Menu").ParseHRef("/bulmamenu.html")
+	menu.AddItem("bulmamessage", bulma.MENUIT_LINK, "Message").ParseHRef("/bulmamessage.html")
+	menu.AddItem("bulmanavbar", bulma.MENUIT_LINK, "Navbar").ParseHRef("/bulmanavbar.html")
+	menu.AddItem("bulmanotify", bulma.MENUIT_LINK, "Notify").ParseHRef("/bulmanotify.html")
 
-	p1bodyc := html.NewSnippet("div", `class="columns is-mobile mb-0 pb-0"`)
-	p1bodyc.InsertSnippet("div", `class="column is-narrow mb-0 pb-0"`).Stack(&menu)
-	p1bodyc.InsertSnippet("div", `class="column mb-0 pb-0"`).Stack(&docoverview.Section{})
+	// page docs
+	addPageDoc(web, menu.Clone(), "overview")
+	addPageDoc(web, menu.Clone(), "bulmabutton")
+	addPageDoc(web, menu.Clone(), "bulmacard")
+	addPageDoc(web, menu.Clone(), "bulmadelete")
+	addPageDoc(web, menu.Clone(), "bulmahero")
+	addPageDoc(web, menu.Clone(), "bulmaimage")
+	addPageDoc(web, menu.Clone(), "bulmamenu")
+	addPageDoc(web, menu.Clone(), "bulmamessage")
+	addPageDoc(web, menu.Clone(), "bulmanavbar")
+	addPageDoc(web, menu.Clone(), "bulmanotify")
 
-	pgdocs.Body = html.NewSnippet("body").Stack(
-		docs.MyNavbar().SetActiveItem("docs"),
-		p1bodyc,
-		docs.MyFooter())
-
-	// files
-
+	// required files
 	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css")
 	html.RequireCSSFile("/assets/docs.css")
 
@@ -105,4 +103,22 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println(n, "website pages generated")
+}
+
+func addPageDoc(web *html.WebSite, menu *bulma.Menu, pgkey string) {
+	pg := web.AddPage("en", pgkey)
+	pg.AddHeadItem("meta", "charset=UTF-8")
+	pg.AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`)
+	pg.AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`)
+	pg.AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
+
+	pgc := html.NewSnippet("div", `class="columns is-mobile mb-0 pb-0"`)
+	pgc.InsertSnippet("div", `class="column is-narrow mb-0 pb-0"`).Stack(menu.SetActiveItem(pgkey))
+	pgc.InsertSnippet("div", `class="column mb-0 pb-0"`).Stack(webdocs.NewSectionIcecakeDoc(pgkey))
+
+	pg.Body = html.NewSnippet("body").Stack(
+		docs.MyNavbar().SetActiveItem("docs"),
+		pgc,
+		docs.MyFooter())
+
 }

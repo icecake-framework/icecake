@@ -112,39 +112,51 @@ type Menu struct {
 var _ html.HTMLTagComposer = (*Menu)(nil)
 
 // Clone clones this Menu and all its items and subitem, keeping their attributes their item index and their key.
-func (nav Menu) Clone() *Menu {
+func (src Menu) Clone() *Menu {
 	clone := new(Menu)
-	clone.items = make([]*MenuItem, len(nav.items))
-	for i, itm := range nav.items {
+	clone.HTMLSnippet = *src.HTMLSnippet.Clone()
+	clone.TagName = src.TagName
+	clone.items = make([]*MenuItem, len(src.items))
+	for i, itm := range src.items {
 		clone.items[i] = itm.Clone()
 	}
 	return clone
 }
 
+// SetActiveItem look for the key item (or subitem) and sets its IsActive flag.
+// warning: does not unset other actve items if any.
+func (mnu *Menu) SetActiveItem(key string) *Menu {
+	itm := mnu.Item(key)
+	if itm != nil {
+		itm.IsActive = true
+	}
+	return mnu
+}
+
 // AddItem adds the item to the Menu
-func (nav *Menu) AddItem(key string, itmtyp MENUITEM_TYPE, txt string) *MenuItem {
+func (mnu *Menu) AddItem(key string, itmtyp MENUITEM_TYPE, txt string) *MenuItem {
 	itm := new(MenuItem)
 	itm.Key = key
 	itm.Type = itmtyp
 	itm.Text = txt
-	itm.Meta().LinkParent(nav)
-	nav.items = append(nav.items, itm)
+	itm.Meta().LinkParent(mnu)
+	mnu.items = append(mnu.items, itm)
 	return itm
 }
 
 // At returns the item at a given index.
 // returns nil if index is out of range.
-func (nav *Menu) At(index int) *MenuItem {
-	if index < 0 || index >= len(nav.items) {
+func (mnu *Menu) At(index int) *MenuItem {
+	if index < 0 || index >= len(mnu.items) {
 		return nil
 	}
-	return nav.items[index]
+	return mnu.items[index]
 }
 
 // Item returns the first item found with the given key, walking through all levels.
 // returns nil if key is not found
-func (nav *Menu) Item(key string) *MenuItem {
-	for _, itm := range nav.items {
+func (mnu *Menu) Item(key string) *MenuItem {
+	for _, itm := range mnu.items {
 		if itm.Key == key {
 			return itm
 		}
@@ -153,11 +165,11 @@ func (nav *Menu) Item(key string) *MenuItem {
 }
 
 // BuildTag builds the tag used to render the html element.
-func (nav *Menu) BuildTag(tag *html.Tag) {
-	if nav.TagName == "" {
+func (mnu *Menu) BuildTag(tag *html.Tag) {
+	if mnu.TagName == "" {
 		tag.SetTagName("menu")
 	} else {
-		tag.SetTagName(nav.TagName)
+		tag.SetTagName(mnu.TagName)
 	}
 	tag.SetAttribute("role", "navigation").
 		AddClasses("menu")
