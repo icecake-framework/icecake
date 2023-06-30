@@ -37,6 +37,16 @@ tasks:
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./docs/index.wasm ./web/docs/pages/index/wasm/
       - GOARCH=wasm GOOS=js go build -o ./docs/overview.wasm ./web/docs/pages/overview/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmabutton.wasm ./web/docs/pages/bulmabutton/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmacard.wasm ./web/docs/pages/bulmacard/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmamenu.wasm ./web/docs/pages/bulmamenu/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmamessage.wasm ./web/docs/pages/bulmamessage/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmanavbar.wasm ./web/docs/pages/bulmanavbar/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmanotify.wasm ./web/docs/pages/bulmanotify/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmaimage.wasm ./web/docs/pages/bulmaimage/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmainput.wasm ./web/docs/pages/bulmainput/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmahero.wasm ./web/docs/pages/bulmahero/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmadelete.wasm ./web/docs/pages/bulmadelete/wasm/
 
   # task -t ./build/Taskfile.yaml dev_framework
   dev_framework:
