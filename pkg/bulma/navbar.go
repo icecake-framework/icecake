@@ -172,9 +172,9 @@ type Navbar struct {
 
 	items []*NavbarItem // list of navbar items
 
-	// Styling
-	IsTransparent bool
-	HasShadow     bool
+	// Styling properties
+	IsTransparent bool // renders a transparent navbar
+	HasShadow     bool // renders a shadow below the navbar
 }
 
 // Ensure Navbar implements HTMLTagComposer interface
