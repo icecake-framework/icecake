@@ -84,7 +84,7 @@ func OnClickExample(_evt *event.MouseEvent, _elem *dom.Element) {
 				b.SetOutlined(!b.IsOutlined)
 			case "3":
 				if i != 3 {
-					b.SetLoading(!b.IsLoading)
+					//					b.SetLoading(!b.IsLoading)
 				}
 			case "4":
 				if i != 4 {

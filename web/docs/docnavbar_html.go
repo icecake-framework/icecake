@@ -5,7 +5,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/html"
 )
 
-func MyNavbar() *bulma.Navbar {
+func DocNavbar() *bulma.Navbar {
 	nav := &bulma.Navbar{HasShadow: true}
 	nav.Tag().SetId("topbar")
 	nav.AddItem("", bulma.NAVBARIT_BRAND, html.ToHTML(`<span class="title pl-2">Icecake</span>`)).ParseHRef("/").ParseImageSrc("/assets/icecake-color.svg")

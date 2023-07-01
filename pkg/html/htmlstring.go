@@ -324,7 +324,7 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, ickattrs Attr
 
 		// recursively unfold the component snippet
 		if err == nil {
-			err = Render(out, parent, newcmp)
+			err = render(out, parent, newcmp)
 		}
 
 	} else {

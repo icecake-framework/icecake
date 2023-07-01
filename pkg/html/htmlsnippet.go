@@ -104,13 +104,8 @@ func (snippet *HTMLSnippet) InsertSnippet(tagname string, attrlist ...string) *H
 // If the child request an ID, RenderSnippet generates an ID by prefixing its parent id.
 // In addition the child is appended into the list of sub-components.
 func (parent *HTMLSnippet) RenderChilds(out io.Writer, childs ...HTMLComposer) error {
-	for _, child := range childs {
-		err := Render(out, parent, child)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	err := Render(out, parent, childs...)
+	return err
 }
 
 // RenderSnippetIf renders the Snippet only if the condition is true otherwise does nothing.

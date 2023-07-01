@@ -24,7 +24,7 @@ func NewButton(title html.HTMLString, id string, rawURL string, attrs ...string)
 }
 
 func (btn *Button) SetLoading(_f bool) *Button {
-	btn.IsLoading = _f
+	btn.Button.SetLoading(_f)
 	if _f {
 		btn.DOM.SetClasses("is-loading")
 	} else {
@@ -54,8 +54,6 @@ func (btn *Button) SetOutlined(_f bool) *Button {
 }
 
 func (btn *Button) SetDisabled(disabled bool) {
-	btn.IsDisabled = disabled
-	if btn.DOM.IsDefined() && btn.DOM.IsInDOM() {
-		btn.DOM.SetDisabled(disabled)
-	}
+	btn.Button.SetDisabled(disabled)
+	btn.DOM.SetDisabled(disabled)
 }

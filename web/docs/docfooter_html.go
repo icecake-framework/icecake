@@ -28,7 +28,7 @@ const docsFooterStyle string = `.myfooter-title {
 
 type Footer struct{ html.HTMLSnippet }
 
-func MyFooter() *Footer {
+func DocFooter() *Footer {
 	return new(Footer)
 }
 

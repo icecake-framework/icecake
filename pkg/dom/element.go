@@ -191,11 +191,13 @@ func (_elem *Element) SetId(_id string) *Element {
 	return _elem
 }
 
-func (_elem *Element) SetDisabled(_f bool) {
-	if _f {
-		_elem.Call("setAttribute", "disabled", "")
-	} else {
-		_elem.Call("removeAttribute", "disabled")
+func (elem *Element) SetDisabled(f bool) {
+	if elem.IsDefined() && elem.IsInDOM() {
+		if f {
+			elem.Call("setAttribute", "disabled", "")
+		} else {
+			elem.Call("removeAttribute", "disabled")
+		}
 	}
 }
 
@@ -663,7 +665,7 @@ func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml string) {
 // _snippet can be either an HTMLComposer or an UIComposer.
 // Returns an error if _elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
 // Returns an error if WriteSnippet or mounting process fail.
-func (_elem *Element) InsertSnippet(where INSERT_WHERE, cmp html.HTMLComposer, ds *html.DataState) (snippetid string, err error) {
+func (_elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...html.HTMLComposer) (snippetid string, err error) {
 	if !_elem.IsDefined() {
 		return "", console.Errorf("Element:InsertSnippet failed on undefined element")
 	}
@@ -674,16 +676,18 @@ func (_elem *Element) InsertSnippet(where INSERT_WHERE, cmp html.HTMLComposer, d
 	// }
 
 	// check that no elements are already into the DOM with this the composer id.
-	if tagger, istagger := cmp.(html.TagBuilder); istagger {
-		if id := tagger.Tag().Id(); id != "" {
-			if _, err := Doc().CheckId(id); err == nil {
-				return "", console.Errorf("Element:InsertSnippet failed. snippet's ID %q is already in the DOM.", id)
+	for _, cmp := range cmps {
+		if tagger, istagger := cmp.(html.TagBuilder); istagger {
+			if id := tagger.Tag().Id(); id != "" {
+				if _, err := Doc().CheckId(id); err == nil {
+					return "", console.Errorf("Element:InsertSnippet failed. snippet's ID %q is already in the DOM.", id)
+				}
 			}
 		}
 	}
 
 	out := new(bytes.Buffer)
-	err = html.Render(out, nil, cmp)
+	err = html.Render(out, nil, cmps...)
 	if err != nil {
 		console.Errorf(err.Error())
 		return "", err
@@ -693,13 +697,15 @@ func (_elem *Element) InsertSnippet(where INSERT_WHERE, cmp html.HTMLComposer, d
 	_elem.InsertRawHTML(where, out.String())
 	if newe := Id(snippetid); newe != nil {
 		// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
-		if snippet, ok := cmp.(UIComposer); ok {
-			err = mountDeepSnippet(snippet, newe)
-		} else {
-			err = console.Warnf("snippet %q(%v) not mounted, it's not an UIComposer", snippetid, reflect.TypeOf(cmp).String())
+		for _, cmp := range cmps {
+			if snippet, ok := cmp.(UIComposer); ok {
+				err = mountDeepSnippet(snippet, newe)
+			} else {
+				err = console.Warnf("snippet %q(%v) not mounted, it's not an UIComposer", snippetid, reflect.TypeOf(cmps).String())
+			}
 		}
 	} else {
-		err = console.Warnf("snippet %q(%v) not mounted: id not found in the DOM", snippetid, reflect.TypeOf(cmp).String())
+		err = console.Warnf("snippet %q(%v) not mounted: id not found in the DOM", snippetid, reflect.TypeOf(cmps).String())
 	}
 	return snippetid, nil
 }

@@ -25,10 +25,10 @@ func NewHeadItem(tagname string) *HeadItem {
 type Page struct {
 	meta RenderingMeta // Rendering MetaData.
 
-	Lang        string      // the html "lang" value.
-	Title       string      // the html "head/title" value.
-	Description string      // the html "head/meta description" value.
-	HeadItems   []*HeadItem // the list of tags in the section <head>
+	Lang        string     // the html "lang" value.
+	Title       string     // the html "head/title" value.
+	Description string     // the html "head/meta description" value.
+	HeadItems   []HeadItem // the list of tags in the section <head>
 
 	Body HTMLTagComposer // the html composer used to render the body tag. The tagname must be "body" otherwise will not render.
 
@@ -41,7 +41,7 @@ type Page struct {
 func NewPage(lang string, rawUrl string) *Page {
 	pg := new(Page)
 	pg.Lang = lang
-	pg.HeadItems = make([]*HeadItem, 0)
+	pg.HeadItems = make([]HeadItem, 0)
 	err := pg.ParseURL(rawUrl)
 	if err != nil {
 		verbose.Error("NewPage", err)
@@ -108,7 +108,7 @@ func (f *Page) AddHeadItem(tagname string, attributes string) *Page {
 	item := NewHeadItem(tagname)
 	item.Tag().ParseAttributes(attributes)
 	item.Tag().NoName = true
-	f.HeadItems = append(f.HeadItems, item)
+	f.HeadItems = append(f.HeadItems, *item)
 	return f
 }
 
@@ -170,8 +170,8 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 	WriteStrings(out, `<head>`)
 	WriteStringsIf(pg.Title != "", out, "<title>", pg.Title, "</title>")
 	WriteStringsIf(pg.Description != "", out, `<meta name="description" content="`+pg.Description+`">`)
-	for _, headitem := range pg.HeadItems {
-		if err = Render(out, nil, headitem); err != nil {
+	for _, item := range pg.HeadItems {
+		if err = Render(out, nil, &item); err != nil {
 			return err
 		}
 	}

@@ -132,7 +132,17 @@ type HTMLTagComposer interface {
 // If the parent is not nil, the snippet is added to its embedded stack of sub-components.
 //
 // Returns rendering errors, typically with the writer, or if there's too many recursive rendering.
-func Render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
+func Render(out io.Writer, parent HTMLComposer, cmps ...HTMLComposer) error {
+	for _, cmp := range cmps {
+		err := render(out, parent, cmp)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
 
 	// nothing to render
 	if cmp == nil {

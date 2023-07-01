@@ -37,21 +37,25 @@ type Button struct {
 
 	// The button type.
 	// If nothing is specified, the default ButtonType is BTN_TYPE_BUTTON.
+	// TODO: ButtonType may be private and automatically setup according to the context of use
 	ButtonType BUTTON_TYPE
+
+	// The title of the Button. Can be a simple text or a more complex html string.
+	Title html.HTMLString
 
 	// If the ButtonType is BTN_TYPE_A then HRef defines the associated url link. HRef has no effect on other ButtonType.
 	// If HRef is defined then the button type is automatically set to BTN_TYPE_A.
 	// HRef can be nil. Usually it's created calling Button.TryParseHRef
 	HRef *url.URL
 
-	// The title of the Button. Can be a simple text or a more complex html string.
-	Title html.HTMLString
+	IsOutlined bool // Outlined button style
+	IsRounded  bool // Rounded button style
 
-	IsOutlined bool  // Outlined button style
-	IsRounded  bool  // Rounded button style
-	IsDisabled bool  // Disabled state
-	IsLoading  bool  // Loading button state
-	Color      COLOR // rendering color
+	IsDisabled bool // Disabled state
+
+	Color COLOR // rendering color
+
+	isLoading bool // Loading button state
 }
 
 // Ensure Button implements HTMLTagComposer interface
@@ -70,14 +74,6 @@ func NewButton(title html.HTMLString, id string, rawURL string, attrs ...string)
 	btn.Tag().ParseAttributes(attrs...)
 	return btn
 }
-
-// func NewButtonLink(title html.HTMLString, href *url.URL) *Button {
-// 	btn := new(Button)
-// 	btn.ButtonType = BTN_TYPE_A
-// 	btn.Title = title
-// 	btn.HRef = href
-// 	return btn
-// }
 
 // ParseHRef parses _rawUrl to HRef. HRef stays nil in case of error.
 func (btn *Button) ParseHRef(rawUrl string) (err error) {
@@ -99,7 +95,7 @@ func (btn *Button) SetDisabled(f bool) *Button {
 	return btn
 }
 func (btn *Button) SetLoading(f bool) *Button {
-	btn.IsLoading = f
+	btn.isLoading = f
 	return btn
 }
 func (btn *Button) SetColor(c COLOR) *Button {
@@ -128,7 +124,7 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 	tag.AddClasses("button").
 		SetClassesIf(btn.IsOutlined, "is-outlined").
 		SetClassesIf(btn.IsRounded, "is-rounded").
-		SetClassesIf(btn.IsLoading, "is-loading").
+		SetClassesIf(btn.isLoading, "is-loading").
 		PickClass(COLOR_OPTIONS, string(btn.Color))
 
 	switch btn.ButtonType {

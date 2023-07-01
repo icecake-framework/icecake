@@ -46,9 +46,9 @@ func main() {
 	hero.Container.Tag().AddClasses("has-text-centered")
 
 	pgindex.Body = html.NewSnippet("body").Stack(
-		docs.MyNavbar().SetActiveItem("home"),
+		docs.DocNavbar().SetActiveItem("home"),
 		hero,
-		docs.MyFooter())
+		docs.DocFooter())
 
 	// menu for each pages unless home
 	menu := bulma.Menu{TagName: "nav"}
@@ -117,8 +117,8 @@ func addPageDoc(web *html.WebSite, menu *bulma.Menu, pgkey string) {
 	pgc.InsertSnippet("div", `class="column mb-0 pb-0"`).Stack(webdocs.NewSectionIcecakeDoc(pgkey))
 
 	pg.Body = html.NewSnippet("body").Stack(
-		docs.MyNavbar().SetActiveItem("docs"),
+		docs.DocNavbar().SetActiveItem("docs"),
 		pgc,
-		docs.MyFooter())
+		docs.DocFooter())
 
 }
