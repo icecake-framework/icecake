@@ -31,6 +31,23 @@ tasks:
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/
 
+  # task -t ./build/Taskfile.yaml doc_wasm
+  doc_wasm:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds: 
+      - GOARCH=wasm GOOS=js go build -o ./docs/index.wasm ./web/docs/pages/wasm/index/
+      - GOARCH=wasm GOOS=js go build -o ./docs/overview.wasm ./web/docs/pages/wasm/overview/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmabutton.wasm ./web/docs/pages/wasm/bulmabutton/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmacard.wasm ./web/docs/pages/wasm/bulmacard/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmamenu.wasm ./web/docs/pages/wasm/bulmamenu/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmamessage.wasm ./web/docs/pages/wasm/bulmamessage/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmanavbar.wasm ./web/docs/pages/wasm/bulmanavbar/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmanotify.wasm ./web/docs/pages/wasm/bulmanotify/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmaimage.wasm ./web/docs/pages/wasm/bulmaimage/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmainput.wasm ./web/docs/pages/wasm/bulmainput/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmahero.wasm ./web/docs/pages/wasm/bulmahero/
+      - GOARCH=wasm GOOS=js go build -o ./docs/bulmadelete.wasm ./web/docs/pages/wasm/bulmadelete/
+
   # task -t ./build/Taskfile.yaml dev_framework
   dev_framework:
     dir: '{{.USER_WORKING_DIR}}'

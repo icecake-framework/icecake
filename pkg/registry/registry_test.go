@@ -10,10 +10,10 @@ func TestRegistry(t *testing.T) {
 
 	ResetRegistry()
 
-	e := GetRegistryEntry("ick-test-snippet1")
+	e := GetRegistryEntry("ickTEST")
 	assert.NotNil(t, e)
 
-	id := GetUniqueId("ick-test-snippet1")
-	assert.Equal(t, "ick-test-snippet1-1", id)
-	assert.Equal(t, 1, theRegistry.entries["ick-test-snippet1"].count)
+	_, id := GetUniqueId("ickTEST")
+	assert.Equal(t, "icktest-1", id)
+	assert.Equal(t, 1, theRegistry.entries["icktest"].count)
 }

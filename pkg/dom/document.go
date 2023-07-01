@@ -174,7 +174,7 @@ func (_doc *Document) SetCookie(value string) *Document {
 
 // LastModified returns a string containing the date and time on which the current document was last modified.
 //
-// TODO: test LastModified
+// TODO: test Document.LastModified
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/lastModified
 func (_doc Document) LastModified() time.Time {

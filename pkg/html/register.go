@@ -8,6 +8,7 @@ import (
 
 	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/registry"
+	"github.com/sunraylab/verbose"
 )
 
 // RegisterComposer registers a _composer with the unique _ickname.
@@ -23,60 +24,70 @@ import (
 //   - If the _ickname has already been registered
 //   - If the _ickname does not meet the pattern "ick-*"
 //   - If the _composer does not implement the HTMLComposer interface
-func RegisterComposer(_ickname string, _composer any, _css []string) (_err error) {
-	typ := reflect.TypeOf(_composer)
+func RegisterComposer(icktagname string, composer any) (entry *registry.RegistryEntry, err error) {
+	// TODO: RegisterComposer should generate ickname automatically (see RenderSnippet)
+	typ := reflect.TypeOf(composer)
 	if typ.Kind() != reflect.Pointer {
-		_err = fmt.Errorf("register composering %q failed: must register a pointer to a component not a component", typ.String())
-		log.Println(_err.Error())
-		return _err
+		err = fmt.Errorf("registering composer %q failed: must register by reference not by value", typ.String())
+		log.Println(err.Error())
+		return nil, err
 	}
 
-	_, ok := _composer.(HTMLComposer)
-	if !ok {
-		_err = fmt.Errorf("registering composer %q failed: must be an HTMLComposer", typ.String())
-		log.Println(_err.Error())
-		return _err
+	_, iscmp := composer.(HTMLComposer)
+	if !iscmp {
+		err = fmt.Errorf("registering composer %q failed: must implement HTMLComposer interface", typ.String())
+		log.Println(err.Error())
+		return nil, err
 	}
 
-	_ickname = helper.Normalize(_ickname)
-	if !strings.HasPrefix(_ickname, "ick-") {
-		_err = fmt.Errorf("registering composer %q failed: name must start by 'ick-'", typ.String())
-		log.Println(_err.Error())
-		return _err
-	}
-	if len(_ickname) == 0 {
-		_err = fmt.Errorf("registering composer %q failed: name missing", typ.String())
-		log.Println(_err.Error())
-		return _err
-	}
+	cmptag, istagger := composer.(TagBuilder)
+	if istagger {
+		tag := cmptag.Tag()
+		if tag == nil || tag.AttributeMap == nil {
+			err = fmt.Errorf("registering composer %q failed: TagBuilder must return a valid reference to a Tag", typ.String())
+			log.Println(err.Error())
+			return nil, err
+		}
 
-	if registry.IsRegistered(_ickname) {
-		log.Printf("registering composer %q warning: already registered", _ickname)
-		return _err
+		cmptag.BuildTag(tag)
+		if !tag.HasRendering() {
+			log.Printf("registering composer %q warning: TagBuilder without rendering", icktagname)
+		}
 	}
 
-	registry.AddRegistryEntry(_ickname, _composer, _css)
+	icktagname = helper.Normalize(icktagname)
+	if !strings.HasPrefix(icktagname, "ick-") {
+		err = fmt.Errorf("registering composer %q failed: name must start by 'ick-'", typ.String())
+		log.Println(err.Error())
+		return nil, err
+	}
 
-	// DEBUG:
-	fmt.Printf("registering composer %s(%s) with success\n", _ickname, typ.String())
-	return nil
+	if len(icktagname) <= 4 {
+		err = fmt.Errorf("registering composer %q failed: name missing", typ.String())
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	if registry.IsRegistered(icktagname) {
+		log.Printf("registering composer %q warning: already registered\n", icktagname)
+		return nil, err
+	}
+
+	entry = registry.AddRegistryEntry(icktagname, composer)
+
+	verbose.Debug("registering composer %s(%s) with success", icktagname, typ.String())
+
+	return entry, nil
 }
 
-// RegisterHTMLSnippet allows registering a simple HTMLSnippet with a simple line of code.
-// The HTMLSnippet will be rendered every time the auto-closing ick-tag will be met within an html string.
-//
-// The _ickname must start by `ick-` followed by at least one character.
-// An error is returned in the following cases:
-//   - If the _ickname has already been registered
-//   - If the _ickname does not meet tye pattern "ick-*"
-//   - If the _composer does not implement the HTMLComposer interface
-//   - If parsing _template attributes fails
-func RegisterHTMLSnippet(_ickname string, _template SnippetTemplate) (_err error) {
-	s := new(HTMLSnippet)
-	s.TagName = _template.TagName
-	s.Body = _template.Body
-	if _err = ParseAttributes(string(_template.Attributes), s); _err != nil {
-		return _err
-	}
-	return RegisterComposer(_ickname, s, nil)
-}
+// TODO: RegisterHTMLString
+// RegisterHTMLString allows registering a simple HTMLString with a simple line of code.
+// func RegisterHTMLString(_ickname string, _template SnippetTemplate) (_err error) {
+// 	s := new(HTMLSnippet)
+// 	s.TagName = _template.TagName
+// 	s.Body = _template.Body
+// 	if _err = ParseAttributes(string(_template.Attributes), s); _err != nil {
+// 		return _err
+// 	}
+// 	return RegisterComposer(_ickname, s, nil)
+// }

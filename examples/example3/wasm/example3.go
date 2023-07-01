@@ -13,13 +13,13 @@ import (
 
 	_ "embed"
 
+	"github.com/icecake-framework/icecake/pkg/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/clock"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/extensions/markdown"
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/registry"
-	"github.com/icecake-framework/icecake/pkg/ui"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	mdhtml "github.com/yuin/goldmark/renderer/html"
@@ -66,10 +66,9 @@ func main() {
 func OnClickBtn1(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
-	notif := &ui.Notify{
-		Message: `This is a typical notification message <strong>including html <a href="#">link</a>.</strong> Use the closing button on the right corner to remove this notification.`,
-	}
-	notif.SetClasses("is-warning is-light")
+	notif := &bulmaui.Notify{}
+	notif.Message = *html.ToHTML(`This is a typical notification message <strong>including html <a href="#">link</a>.</strong> Use the closing button on the right corner to remove this notification.`)
+	notif.Tag().AddClasses("is-warning is-light")
 
 	// Insert the component into the DOM
 	dom.Id("notif_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)
@@ -78,11 +77,11 @@ func OnClickBtn1(event *event.MouseEvent, target *dom.Element) {
 func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
-	idtimeleft := registry.GetUniqueId("timeleft")
-	notif := new(ui.Notify)
-	notif.Message = `This message will be automatically removed in <strong><span id="` + html.String(idtimeleft) + `"></span> seconds</strong>, unless you close it before. 😀`
+	_, idtimeleft := registry.GetUniqueId("timeleft")
+	notif := new(bulmaui.Notify)
+	notif.Message = *html.ToHTML(`This message will be automatically removed in <strong><span id="` + idtimeleft + `"></span> seconds</strong>, unless you close it before. 😀`)
 	notif.Delete.Timeout = time.Second * 7
-	notif.SetClasses("is-danger is-light").SetAttribute("role", "alert")
+	notif.Tag().AddClasses("is-danger is-light").SetAttribute("role", "alert")
 	notif.Delete.Tic = func(clk *clock.Clock) {
 		s := math.Round(notif.Delete.TimeLeft().Seconds())
 		dom.Id(idtimeleft).InsertText(dom.INSERT_BODY, "%v", s)
@@ -95,11 +94,10 @@ func OnClickBtn2(event *event.MouseEvent, target *dom.Element) {
 func OnClickBtn3(event *event.MouseEvent, target *dom.Element) {
 
 	// instantiate the Notify component and init its data
-	notif := &ui.Notify{
-		Message: `This is a toast notification`,
-	}
+	notif := &bulmaui.Notify{}
+	notif.Message = *html.ToHTML(`This is a toast notification`)
 	notif.Delete.Clock.Timeout = time.Second * 3
-	notif.SetClasses("is-success toast")
+	notif.Tag().AddClasses("is-success toast")
 
 	// Insert the component into the DOM
 	dom.Id("toast_container").InsertSnippet(dom.INSERT_LAST_CHILD, notif, nil)
@@ -118,5 +116,5 @@ func OnClickBtn4(event *event.MouseEvent, target *dom.Element) {
 	</box>`
 
 	// Insert the component into the DOM
-	dom.Id("ex3_container").InsertHTML(dom.INSERT_LAST_CHILD, html.String(h), nil)
+	dom.Id("ex3_container").InsertSnippet(dom.INSERT_LAST_CHILD, html.ToHTML(h), nil)
 }

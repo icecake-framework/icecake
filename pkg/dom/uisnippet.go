@@ -1,26 +1,26 @@
 package dom
 
 import (
-	"bytes"
-	"fmt"
+	// "bytes"
 
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/js"
-	"github.com/icecake-framework/icecake/pkg/registry"
 )
 
-// type Listener interface {
-// 	AddListeners()
-// 	RemoveListeners()
-// }
+type UIListener interface {
+	AddListeners()
+	RemoveListeners()
+}
 
 type UIComposer interface {
 	html.HTMLComposer
+
 	js.JSValueWrapper
+
+	UIListener
+
 	Mount()
-	AddListeners()
-	RemoveListeners()
 	UnMount()
 }
 
@@ -61,17 +61,16 @@ func (_s *UISnippet) RemoveListeners() {
 
 // RenderHTML builds and unfolds the UIcomposer and returns its html string.
 // RenderHTML does not mount the component into the DOM.
-func (_parent *UISnippet) RenderHTML(_snippet UIComposer) (_html html.String) {
-	out := new(bytes.Buffer)
-	id, err := html.WriteHTMLSnippet(out, _snippet, nil)
-	if err == nil {
-		_parent.Embed(id, _snippet) // need to embed the snippet itself
-		_html = html.String(out.String())
-	}
-	return _html
-}
+// func (_parent *UISnippet) RenderHTML(_snippet UIComposer) (_html html.String) {
+// 	out := new(bytes.Buffer)
+// 	id, err := html.WriteSnippet(out, _snippet, nil)
+// 	if err == nil {
+// 		_parent.Embed(id, _snippet) // need to embed the snippet itself
+// 		_html = html.String(out.String())
+// 	}
+// 	return _html
+// }
 
-// TODO: InsertSnippet within a parent ?
 // InsertSnippet insrets a _snippet within the _parent (according to the _where location) and add _parents lisneters
 // func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
 // 	if _parent == nil || !_parent.DOM.IsDefined() {
@@ -82,51 +81,42 @@ func (_parent *UISnippet) RenderHTML(_snippet UIComposer) (_html html.String) {
 // 	return _id, nil
 // }
 
-// SetDisabled set the disable state of the _s snippet.
-// If the snippet is already in the the DOM, then SetDisable updates the disable attribute of the html element in the DOM.
-func (_s *UISnippet) SetDisabled(_disable bool) {
-	_s.HTMLSnippet.SetDisabled(_disable)
-	if _s.DOM.IsDefined() && _s.DOM.IsInDOM() {
-		_s.DOM.SetDisabled(_disable)
-	}
-}
-
 // MountCSSLinks inserts links elements to the Head section of the Document for every csslinkref found in TheRegistry of components.
 // If a link already exists for a csslinkref nothing is done.
 // MountCSSLinks call is optional if your html head already contains stylesheet links for your css or if you import it in your own js code.
 // MountCSSLinks must be called at the early begining of the wasm code.
-func MountCSSLinks() {
-	reg := registry.Map()
-	for ickname, e := range reg {
-		fmt.Println("Mounting CSSLinks for", ickname)
-		if !e.IsCSSLinkMounted() {
-			links := e.CSSLinkRefs()
-			if links != nil {
-				for _, l := range links {
-					if l == "" {
-						continue
-					}
-					head := Doc().Head()
-					children := head.ChildrenMatching(func(e *Element) bool {
-						if e.TagName() == "LINK" {
-							href, _ := e.Attribute("href")
-							if href == l {
-								return true
-							}
-						}
-						return false
-					})
-					if len(children) == 0 {
-						e := CreateElement("LINK").SetAttribute("href", l).SetAttribute("rel", "stylesheet")
-						head.InsertElement(INSERT_LAST_CHILD, e)
+// func MountCSSLinks() {
+// 	reg := registry.Map()
+// 	for ickname, e := range reg {
+// 		fmt.Println("Mounting CSSLinks for", ickname)
+// 		if !e.IsCSSLinkMounted() {
+// 			links := e.CSSLinkRefs()
+// 			if links != nil {
+// 				for _, l := range links {
+// 					if l == "" {
+// 						continue
+// 					}
+// 					head := Doc().Head()
+// 					children := head.ChildrenMatching(func(e *Element) bool {
+// 						if e.TagName() == "LINK" {
+// 							href, _ := e.Attribute("href")
+// 							if href == l {
+// 								return true
+// 							}
+// 						}
+// 						return false
+// 					})
+// 					if len(children) == 0 {
+// 						e := CreateElement("LINK").SetAttribute("href", l).SetAttribute("rel", "stylesheet")
+// 						head.InsertElement(INSERT_LAST_CHILD, e)
 
-					}
-				}
-			}
-			e.SetCSSLinkMounted()
-		}
-	}
-}
+// 					}
+// 				}
+// 			}
+// 			e.SetCSSLinkMounted()
+// 		}
+// 	}
+// }
 
 /******************************************************************************
 * Private Area
@@ -140,7 +130,7 @@ func mountDeepSnippet(_snippet UIComposer, _elem *Element) (_err error) {
 	_snippet.AddListeners()
 	_snippet.Mount()
 
-	if embedded := _snippet.Embedded(); embedded != nil {
+	if embedded := _snippet.Meta().Embedded(); embedded != nil {
 		// DEBUG: console.Warnf("scanning %+v", embedded)
 		for subid, sub := range embedded {
 			// look everywhere in the DOM
@@ -155,13 +145,13 @@ func mountDeepSnippet(_snippet UIComposer, _elem *Element) (_err error) {
 	return _err
 }
 
-// FIXME: must call unmount somewhere
+// TODO: must call unmount somewhere
 // unmountDeepSnippet remove listeners anc all Unmount recusrively for every embedded components
 func unmountDeepSnippet(_snippet UIComposer) {
 	_snippet.RemoveListeners()
 	_snippet.UnMount()
 
-	if embedded := _snippet.Embedded(); embedded != nil {
+	if embedded := _snippet.Meta().Embedded(); embedded != nil {
 		// DEBUG: console.Warnf("scanning %+v", embedded)
 		for _, sub := range embedded {
 			if cmp, ok := sub.(UIComposer); ok {

@@ -13,12 +13,13 @@ var theRegistry registry
 
 // RegistryEntry defines a component
 type RegistryEntry struct {
-	mu             sync.Mutex
-	name           string   // unique name of the component
-	cmp            any      // The component type that must be instantiated. This must be a pointer.
-	count          int      // number of time this object has already been instantiated
-	csslinkref     []string // slice of required stylesheet link ref for this component. will be added once into the head of the page
-	csslinkmounted bool
+	mu         sync.Mutex
+	icktagname string // unique name of the component
+	cmp        any    // The component type that must be instantiated. This must be a reference.
+	count      int    // number of time this cmp has already been instantiated
+
+	// csslinkref     []string // slice of required stylesheet link ref for this component. will be added once into the head of the page
+	// csslinkmounted bool
 }
 
 func (_r *RegistryEntry) Count() int {
@@ -30,8 +31,8 @@ func (_r *RegistryEntry) Count() int {
 }
 
 // Name returns the unique name of the component
-func (_r RegistryEntry) Name() string {
-	return _r.name
+func (_r RegistryEntry) TagName() string {
+	return _r.icktagname
 }
 
 // Component returns the component type that must be instantiated
@@ -39,31 +40,17 @@ func (_r RegistryEntry) Component() any {
 	return _r.cmp
 }
 
-// CSSLinkRefs returns the csslinkref array
-func (_r RegistryEntry) CSSLinkRefs() []string {
-	return _r.csslinkref
-}
-
-// CSSLinkRefs returns the csslinkref array
-func (_r *RegistryEntry) IsCSSLinkMounted() (_is bool) {
-	_r.mu.Lock()
-	_is = _r.csslinkmounted
-	_r.mu.Unlock()
-	return _is
-}
-
-// CSSLinkRefs returns the csslinkref array
-func (_r *RegistryEntry) SetCSSLinkMounted() {
-	_r.mu.Lock()
-	_r.csslinkmounted = true
-	_r.mu.Unlock()
-}
-
 // IsRegistered returns if the _name has already been regystered
 func IsRegistered(_name string) bool {
 	theRegistry.init()
 	_, found := theRegistry.entries[_name]
 	return found
+}
+
+func (_reg *registry) init() {
+	if _reg.entries == nil {
+		_reg.entries = make(map[string]*RegistryEntry, 0)
+	}
 }
 
 // Registry stores definition of components in a map, by unique name
@@ -77,22 +64,19 @@ func Map() map[string]*RegistryEntry {
 }
 
 // AddRegistryEntry create a new RegistryEntry and add it to the global and private registry.
-// No check is done on _name. If _name is already registered a new registryentry overwrites the existing one.
-// _css is optional and can be nil.
-func AddRegistryEntry(_name string, _cmp any, _css []string) {
+// No check is done on name. If name is already registered a new registryentry overwrites the existing one.
+// css is optional and can be nil.
+func AddRegistryEntry(name string, cmp any) *RegistryEntry {
 	theRegistry.init()
-	_name = helper.Normalize(_name)
+	name = helper.Normalize(name)
 
 	entry := RegistryEntry{
-		name:  _name,
-		cmp:   _cmp,
-		count: 0,
+		icktagname: name,
+		cmp:        cmp,
+		count:      0,
 	}
-	if _css != nil {
-		entry.csslinkref = make([]string, len(_css))
-		entry.csslinkref = append(entry.csslinkref, _css...)
-	}
-	theRegistry.entries[_name] = &entry
+	theRegistry.entries[name] = &entry
+	return &entry
 }
 
 // GetRegistryEntry returns the RegistryEntry corresponding to the _name.
@@ -108,7 +92,7 @@ func GetRegistryEntry(_name string) *RegistryEntry {
 	}
 	regentry, found := theRegistry.entries[_name]
 	if !found {
-		regentry = &RegistryEntry{name: _name}
+		regentry = &RegistryEntry{icktagname: _name}
 	}
 	return regentry
 }
@@ -128,27 +112,18 @@ func LookupRegistryEntry(_cmp any) *RegistryEntry {
 	return nil
 }
 
-// GetUniqueId returns a unique id starting with _prefix.
-// if _prefix is empty "ick-" is used to prefix the returned id.
+// GetUniqueId returns a unique id starting with prefix.
+// if prefix is empty "ick-" is used to prefix the returned id.
+// The returned id is always lowercase.
 // GetUniqueId is thread safe.
-func GetUniqueId(_prefix string) string {
-	regentry := GetRegistryEntry(_prefix)
-	idx := regentry.Count()
-	theRegistry.entries[regentry.name] = regentry
-	return regentry.name + "-" + strconv.Itoa(idx)
+func GetUniqueId(prefix string) (idx int, uid string) {
+	regentry := GetRegistryEntry(prefix)
+	idx = regentry.Count()
+	theRegistry.entries[regentry.icktagname] = regentry
+	return idx, regentry.icktagname + "-" + strconv.Itoa(idx)
 }
 
 // ResetRegistry is only used for testing
 func ResetRegistry() {
 	theRegistry.entries = make(map[string]*RegistryEntry, 1)
-}
-
-/******************************************************************************
-* Private
-******************************************************************************/
-
-func (_reg *registry) init() {
-	if _reg.entries == nil {
-		_reg.entries = make(map[string]*RegistryEntry, 0)
-	}
 }

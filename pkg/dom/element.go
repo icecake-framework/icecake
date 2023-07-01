@@ -117,8 +117,8 @@ func (_elem *Element) Id() string {
 // TabIndex represents the tab order of the current element.
 //
 // Tab order is as follows:
-//  1. Elements with a positive tabIndex. Elements that have identical tabIndex values should be navigated in the order they appear. Navigation proceeds from the lowest tabIndex to the highest tabIndex.
-//  1. Elements that do not support the tabIndex attribute or support it and assign tabIndex to 0, in the order they appear.
+//  1. Elements with a positive tabindex. Elements that have identical tabindex values should be navigated in the order they appear. Navigation proceeds from the lowest tabindex to the highest tabindex.
+//  1. Elements that do not support the tabindex attribute or support it and assign tabindex to 0, in the order they appear.
 //  1. Elements that are disabled do not participate in the tabbing order.
 //
 // Values don't need to be sequential, nor must they begin with any particular value.
@@ -126,9 +126,9 @@ func (_elem *Element) Id() string {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (_elem *Element) TabIndex() (_idx int) {
-	found := _elem.Call("hasAttribute", "tabIndex").Bool()
+	found := _elem.Call("hasAttribute", "tabindex").Bool()
 	if found {
-		sidx := _elem.Call("getAttribute", "tabIndex").String()
+		sidx := _elem.Call("getAttribute", "tabindex").String()
 		_idx, _ = strconv.Atoi(string(sidx))
 	}
 	return _idx
@@ -191,24 +191,26 @@ func (_elem *Element) SetId(_id string) *Element {
 	return _elem
 }
 
-func (_elem *Element) SetDisabled(_f bool) {
-	if _f {
-		_elem.Call("setAttribute", "disabled", "")
-	} else {
-		_elem.Call("removeAttribute", "disabled")
+func (elem *Element) SetDisabled(f bool) {
+	if elem.IsDefined() && elem.IsInDOM() {
+		if f {
+			elem.Call("setAttribute", "disabled", "")
+		} else {
+			elem.Call("removeAttribute", "disabled")
+		}
 	}
 }
 
-func (_elem *Element) SetStyle(_style html.String) *Element {
-	_elem.Call("setAttribute", "style", string(_style))
+func (_elem *Element) SetStyle(style string) *Element {
+	_elem.Call("setAttribute", "style", style)
 	return _elem
 }
 
 // TabIndex represents the tab order of the current element.
 //
 // Tab order is as follows:
-//  1. Elements with a positive tabIndex. Elements that have identical tabIndex values should be navigated in the order they appear. Navigation proceeds from the lowest tabIndex to the highest tabIndex.
-//  1. Elements that do not support the tabIndex attribute or support it and assign tabIndex to 0, in the order they appear.
+//  1. Elements with a positive tabindex. Elements that have identical tabindex values should be navigated in the order they appear. Navigation proceeds from the lowest tabindex to the highest tabindex.
+//  1. Elements that do not support the tabindex attribute or support it and assign tabindex to 0, in the order they appear.
 //  1. Elements that are disabled do not participate in the tabbing order.
 //
 // Values don't need to be sequential, nor must they begin with any particular value.
@@ -216,17 +218,17 @@ func (_elem *Element) SetStyle(_style html.String) *Element {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (_elem *Element) SetTabIndex(_index int) *Element {
-	_elem.Call("setAttribute", "tabIndex", strconv.Itoa(_index))
+	_elem.Call("setAttribute", "tabindex", strconv.Itoa(_index))
 	return _elem
 }
 
-func (_elem *Element) ResetClasses(_list html.String) *Element {
-	_elem.Set("className", string(_list))
+func (_elem *Element) ResetClasses(list string) *Element {
+	_elem.Set("className", list)
 	return _elem
 }
 
-func (_elem *Element) SetClasses(_list html.String) *Element {
-	listf := strings.Fields(string(_list))
+func (_elem *Element) SetClasses(list string) *Element {
+	listf := strings.Fields(list)
 	callp := make([]any, len(listf))
 	for i, listc := range listf {
 		if listc != "" {
@@ -253,63 +255,58 @@ func (_elem *Element) RemoveClasses(_list string) *Element {
 	return _elem
 }
 
-func (_elem *Element) SwitchClasses(_remove string, _new html.String) *Element {
-	_elem.RemoveClasses(_remove)
-	_elem.SetClasses(_new)
+func (_elem *Element) SwitchClasses(remove string, new string) *Element {
+	_elem.RemoveClasses(remove)
+	_elem.SetClasses(new)
 	return _elem
 }
 
-func (_elem *Element) HasClass(_class string) bool {
-	_class = strings.Trim(_class, " ")
-	if _class == "" {
+func (_elem *Element) HasClass(class string) bool {
+	class = strings.Trim(class, " ")
+	if class == "" {
 		return false
 	}
-	return _elem.Get("classList").Call("contains", _class).Bool()
+	return _elem.Get("classList").Call("contains", class).Bool()
 }
 
-func (_elem *Element) Attribute(_key string) (string, bool) {
-	_key = strings.Trim(_key, " ")
-	attr := _elem.Call("getAttribute", _key)
+func (_elem *Element) Attribute(key string) (string, bool) {
+	key = strings.Trim(key, " ")
+	attr := _elem.Call("getAttribute", key)
 	if attr.IsDefined() && attr.String() != "" {
 		return attr.String(), true
 	}
 	return "", false
 }
 
-func (_elem *Element) CreateAttribute(_key string, _value any) *Element {
-	_elem.setAttribute(_key, _value, false)
+func (_elem *Element) CreateAttribute(key string, _value any) *Element {
+	_elem.setAttribute(key, _value, false)
 	return _elem
 }
 
-func (_elem *Element) SetAttribute(_key string, _value any) *Element {
-	_elem.setAttribute(_key, _value, true)
+func (_elem *Element) SetAttribute(key string, _value any) *Element {
+	_elem.setAttribute(key, _value, true)
 	return _elem
 }
 
-func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) error {
-	_key = strings.Trim(_key, " ")
-	switch strings.ToLower(_key) {
+func (_elem *Element) setAttribute(key string, value any, overwrite bool) error {
+	key = strings.Trim(key, " ")
+	switch strings.ToLower(key) {
 	case "id":
 		found := _elem.Get("id").Type() == js.TYPE_STRING
 		if !found || overwrite {
-			switch v := _value.(type) {
+			switch v := value.(type) {
 			case string:
 				_elem.SetId(v)
-			case html.String:
-				_elem.SetId(string(v))
 			default:
 				return errors.New("wrong value type for id")
 			}
 		}
 	case "tabindex":
-		found := _elem.Get("tabIndex").Type() == js.TYPE_STRING
+		found := _elem.Get("tabindex").Type() == js.TYPE_STRING
 		if !found || overwrite {
-			switch v := _value.(type) {
+			switch v := value.(type) {
 			case string:
 				idx, _ := strconv.Atoi(v)
-				_elem.SetTabIndex(idx)
-			case html.String:
-				idx, _ := strconv.Atoi(string(v))
 				_elem.SetTabIndex(idx)
 			case int:
 				_elem.SetTabIndex(v)
@@ -324,29 +321,25 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 			}
 		}
 	case "class":
-		var lst html.String
-		switch v := _value.(type) {
+		var lst string
+		switch v := value.(type) {
 		case string:
-			lst = html.String(v)
-		case html.String:
 			lst = v
 		default:
 			return errors.New("wrong value type for class")
 		}
 		if overwrite {
 			_elem.ResetClasses(lst)
-		} else if _value != "" {
+		} else if value != "" {
 			_elem.SetClasses(lst)
 		}
 	case "style":
-		// TODO: handle style update to not overwrite
+		// TODO: handle Element style update to not overwrite
 		found := _elem.Get("style").Type() == js.TYPE_STRING
 		if !found || overwrite {
-			var style html.String
-			switch v := _value.(type) {
+			var style string
+			switch v := value.(type) {
 			case string:
-				style = html.String(v)
-			case html.String:
 				style = v
 			default:
 				return errors.New("wrong value type for class")
@@ -354,27 +347,25 @@ func (_elem *Element) setAttribute(_key string, _value any, overwrite bool) erro
 			_elem.SetStyle(style)
 		}
 	default:
-		_, err := _elem.Check(_key)
+		_, err := _elem.Check(key)
 		if err != nil || overwrite {
-			var strv html.String
-			switch v := _value.(type) {
+			var strv string
+			switch v := value.(type) {
 			case string:
-				strv = html.String(v)
-			case html.String:
 				strv = v
 			case bool:
 				if v {
 					strv = ""
 				} else {
-					_elem.Call("removeAttribute", _key)
+					_elem.Call("removeAttribute", key)
 					break
 				}
 			case int, uint, float32, float64:
-				strv = html.String(fmt.Sprintf("%v", v))
+				strv = fmt.Sprintf("%v", v)
 			default:
-				return errors.New("wrong value type for " + _key)
+				return errors.New("wrong value type for " + key)
 			}
-			_elem.Call("setAttribute", _key, string(strv))
+			_elem.Call("setAttribute", key, string(strv))
 		}
 	}
 	return nil
@@ -609,103 +600,114 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 	return CastElements(elems)
 }
 
-// TODO: handle exceptions InsertRawHTML
-func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml html.String) {
+// TODO: handle Element.InsertRawHTML exceptions
+func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml string) {
 	if !_me.IsDefined() {
 		return
 	}
 	switch _where {
 	case INSERT_BEFORE_ME:
-		_me.Call("insertAdjacentHTML", "beforebegin", string(_unsafeHtml))
+		_me.Call("insertAdjacentHTML", "beforebegin", _unsafeHtml)
 	case INSERT_FIRST_CHILD:
-		_me.Call("insertAdjacentHTML", "afterbegin", string(_unsafeHtml))
+		_me.Call("insertAdjacentHTML", "afterbegin", _unsafeHtml)
 	case INSERT_LAST_CHILD:
-		_me.Call("insertAdjacentHTML", "beforeend", string(_unsafeHtml))
+		_me.Call("insertAdjacentHTML", "beforeend", _unsafeHtml)
 	case INSERT_AFTER_ME:
-		_me.Call("insertAdjacentHTML", "afterend", string(_unsafeHtml))
+		_me.Call("insertAdjacentHTML", "afterend", _unsafeHtml)
 	case INSERT_OUTER:
-		_me.Set("outerHTML", string(_unsafeHtml))
+		_me.Set("outerHTML", _unsafeHtml)
 	case INSERT_BODY:
-		_me.Set("innerHTML", string(_unsafeHtml))
+		_me.Set("innerHTML", _unsafeHtml)
 	}
 }
 
 // InsertHTML unfolds and renders the html of the _html and write it into the DOM.
 // All embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // Returns an error if _elem in not the DOM or if an error occurs during UnfoldHtml or mounting process.
-// HACK: better rendering with a reader ?
-func (_elem *Element) InsertHTML(_where INSERT_WHERE, _html html.String, _data *html.DataState) (_err error) {
-	if !_elem.IsDefined() || !_elem.IsInDOM() {
-		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
-	}
+// FIXME: InsertHTML
+// func (_elem *Element) InsertHTML(_where INSERT_WHERE, htmltemplate html.HTMLString, ds *html.DataState) (_err error) {
+// 	if !_elem.IsDefined() || !_elem.IsInDOM() {
+// 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
+// 	}
 
-	var embedded map[string]any
-	out := new(bytes.Buffer)
-	embedded, _err = html.UnfoldHtml(out, _html, _data)
-	if _err == nil {
-		// insert the html element into the dom and wrapit
-		_elem.InsertRawHTML(_where, html.String(out.String()))
-		// mount every embedded components
-		if embedded != nil {
-			// DEBUG: console.Warnf("scanning %+v", embedded)
-			for subid, sub := range embedded {
-				// look everywhere in the DOM
-				if sube := Id(subid); sube != nil {
-					if cmp, ok := sub.(UIComposer); ok {
-						// DEBUG: console.Warnf("wrapping %+v", w)
-						_err = mountDeepSnippet(cmp, sube)
-					}
-				}
-			}
-		} else {
-			_err = console.Errorf("html string does not have any embedded components")
-		}
-	} else {
-		console.Errorf(_err.Error())
-	}
-	return _err
-}
+// 	// temparent := &html.HTMLSnippet{}
+// 	out := new(bytes.Buffer)
+// 	_err = html.RenderHTML(out, nil, htmltemplate)
+// 	// _err = html.RenderHTML(out, temparent, htmltemplate)
+// 	if _err == nil {
+// 		// insert the html element into the dom and wrapit
+// 		_elem.InsertRawHTML(_where, out.String())
+// 		// mount every embedded components
+// 		embedded := html.ComposerMap{}
+// 		// embedded := temparent.Embedded()
+// 		if embedded != nil {
+// 			// DEBUG: console.Warnf("scanning %+v", embedded)
+// 			for subid, sub := range embedded {
+// 				// look everywhere in the DOM
+// 				if sube := Id(subid); sube != nil {
+// 					if cmp, ok := sub.(UIComposer); ok {
+// 						// DEBUG: console.Warnf("wrapping %+v", w)
+// 						_err = mountDeepSnippet(cmp, sube)
+// 					}
+// 				}
+// 			}
+// 		} else {
+// 			_err = console.Errorf("html string does not have any embedded components")
+// 		}
+// 	} else {
+// 		console.Errorf(_err.Error())
+// 	}
+// 	return _err
+// }
 
 // InsertSnippet unfolds and renders the html of the _snippet and write it into the DOM.
 // The _snippet and all its embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // _snippet can be either an HTMLComposer or an UIComposer.
 // Returns an error if _elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
-// Returns an error if WriteHTMLSnippet or mounting process fail.
-func (_elem *Element) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
+// Returns an error if WriteSnippet or mounting process fail.
+func (_elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...html.HTMLComposer) (snippetid string, err error) {
 	if !_elem.IsDefined() {
 		return "", console.Errorf("Element:InsertSnippet failed on undefined element")
 	}
 
-	snippet, ok := _snippet.(html.HTMLComposer)
-	if !ok {
-		return "", console.Errorf("Element:InsertSnippet failed. snippet must implement HTMLComposer interface or UIComposer interface")
-	}
-	snippetid := snippet.Id()
-	if snippetid != "" {
-		if _, err := Doc().CheckId(snippet.Id()); err == nil {
-			return "", console.Errorf("Element:InsertSnippet failed. snippet's ID %q is already in the DOM.", snippetid)
+	// snippet, ok := composer.(html.HTMLComposer)
+	// if !ok {
+	// 	return "", console.Errorf("Element:InsertSnippet failed. snippet must implement HTMLComposer interface or UIComposer interface")
+	// }
+
+	// check that no elements are already into the DOM with this the composer id.
+	for _, cmp := range cmps {
+		if tagger, istagger := cmp.(html.TagBuilder); istagger {
+			if id := tagger.Tag().Id(); id != "" {
+				if _, err := Doc().CheckId(id); err == nil {
+					return "", console.Errorf("Element:InsertSnippet failed. snippet's ID %q is already in the DOM.", id)
+				}
+			}
 		}
 	}
 
 	out := new(bytes.Buffer)
-	_id, _err = html.WriteHTMLSnippet(out, snippet, _data)
-	if _err == nil {
-		// insert the html element into the dom and wrapit
-		_elem.InsertRawHTML(_where, html.String(out.String()))
-		if newe := Id(_id); newe != nil {
-			// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
-			if snippet, ok := _snippet.(UIComposer); ok {
-				_err = mountDeepSnippet(snippet, newe)
+	err = html.Render(out, nil, cmps...)
+	if err != nil {
+		console.Errorf(err.Error())
+		return "", err
+	}
+
+	// insert the html element into the dom and wrapit
+	_elem.InsertRawHTML(where, out.String())
+	if newe := Id(snippetid); newe != nil {
+		// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
+		for _, cmp := range cmps {
+			if snippet, ok := cmp.(UIComposer); ok {
+				err = mountDeepSnippet(snippet, newe)
 			} else {
-				_err = console.Warnf("snippet %q(%v) not mounted, it's not an UIComposer", _id, reflect.TypeOf(_snippet).String())
+				err = console.Warnf("snippet %q(%v) not mounted, it's not an UIComposer", snippetid, reflect.TypeOf(cmps).String())
 			}
-		} else {
-			_err = console.Warnf("snippet %q(%v) not mounted: id not found in the DOM", _id, reflect.TypeOf(_snippet).String())
 		}
 	} else {
-		console.Errorf(_err.Error())
+		err = console.Warnf("snippet %q(%v) not mounted: id not found in the DOM", snippetid, reflect.TypeOf(cmps).String())
 	}
-	return _id, nil
+	return snippetid, nil
 }
 
 // InsertText insert the formated _value as a simple text (not an HTML string) at the _where position.

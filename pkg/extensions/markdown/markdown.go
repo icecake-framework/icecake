@@ -13,7 +13,7 @@ import (
 // then use it as an HTML template to render it with data and components.
 //
 // Returns an error if the markdown processor fails.
-func RenderIn(_elem *dom.Element, _mdtxt string, _data *html.DataState, _options ...goldmark.Option) error {
+func RenderIn(_elem *dom.Element, _mdtxt string, _options ...goldmark.Option) error {
 	if !_elem.IsDefined() {
 		return nil
 	}
@@ -24,6 +24,6 @@ func RenderIn(_elem *dom.Element, _mdtxt string, _data *html.DataState, _options
 		console.Warnf("RenderMarkdown has error: %s", err.Error())
 		return err
 	}
-	_elem.InsertHTML(dom.INSERT_BODY, html.String(buf.String()), _data)
+	_elem.InsertSnippet(dom.INSERT_BODY, html.ToHTML(buf.String()))
 	return nil
 }

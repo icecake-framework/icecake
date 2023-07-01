@@ -5,12 +5,12 @@ import (
 	"math"
 	"time"
 
+	"github.com/icecake-framework/icecake/pkg/bulma"
+	"github.com/icecake-framework/icecake/pkg/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/clock"
-	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/registry"
-	"github.com/icecake-framework/icecake/pkg/ui"
 )
 
 // This main package contains the web assembly source code for the icecake example.
@@ -22,33 +22,34 @@ func main() {
 
 	// 1st notification example
 	// simplest
-	notif1 := &ui.Notify{
-		Message: "This is a simple notification message. Use the closing button on the right corner to remove this notification.",
-	}
+	notif1 := &bulmaui.Notify{Notify: bulma.Notify{
+		Message: *html.ToHTML("This is a simple notification message. Use the closing button on the right corner to remove this notification."),
+	}}
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, notif1, nil)
 
 	// 2nd notification example
 	// simple wuth custom classes
-	notif2 := &ui.Notify{
-		Message: "This is another simple notification.",
-	}
-	notif2.SetClasses("is-success is-light")
+	notif2 := &bulmaui.Notify{Notify: bulma.Notify{
+		Message: *html.ToHTML("This is another simple notification."),
+	}}
+	notif2.Tag().AddClasses("is-success is-light")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, notif2, nil)
 
 	// 3rd notification message
 	// autoclosing with a timeout
-	notif3 := &ui.Notify{Message: `This message will be automatically removed in few seconds, unless you close it before. 😀`}
+	notif3 := &bulmaui.Notify{Notify: bulma.Notify{
+		Message: *html.ToHTML(`This message will be automatically removed in few seconds, unless you close it before. 😀`)}}
 	notif3.Delete.Timeout = time.Second * 5
-	notif3.SetClasses("is-danger is-light").SetAttribute("role", "alert")
+	notif3.Tag().AddClasses("is-danger is-light").SetAttribute("role", "alert")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, notif3, nil)
 
 	// 4th notification message
 	// autoclosing anf display the ticker
-	idtimeleft := registry.GetUniqueId("timeleft")
-	notif4 := &ui.Notify{}
-	notif4.Message = `This message will be automatically removed in <strong><span id="` + html.String(idtimeleft) + `"></span> seconds</strong>`
-	notif4.SetClasses("is-warning is-light")
-	notif4.Delete.OnDelete = OnCloseNotif
+	_, idtimeleft := registry.GetUniqueId("timeleft")
+	notif4 := &bulmaui.Notify{}
+	notif4.Message = *html.ToHTML(`This message will be automatically removed in <strong><span id="` + idtimeleft + `"></span> seconds</strong>`)
+	notif4.Tag().AddClasses("is-warning is-light")
+	//notif4.Delete.OnDelete = OnCloseNotif
 	notif4.Delete.Timeout = time.Second * 10
 	notif4.Delete.Tic = func(clk *clock.Clock) {
 		s := math.Round(notif4.Delete.TimeLeft().Seconds())
@@ -59,13 +60,13 @@ func main() {
 	// 5th notification message
 	// embedded into another html
 	h := `<ick-notify Message="This notify component is <strong>embedded into an html string</strong>." class="is-info is-light" role="success"/>`
-	dom.Id("content").InsertHTML(dom.INSERT_LAST_CHILD, html.String(h), nil)
+	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, html.ToHTML(h), nil)
 
 	// let's go
 	fmt.Println("Go/WASM listening browser events")
 	<-c
 }
 
-func OnCloseNotif(*ui.Delete) {
-	console.Warnf("OnCloseNotif called")
-}
+// func OnCloseNotif(*bulmaui.Delete) {
+// 	console.Warnf("OnCloseNotif called")
+// }

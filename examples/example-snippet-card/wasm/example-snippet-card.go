@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 
+	"github.com/icecake-framework/icecake/pkg/bulma"
+	"github.com/icecake-framework/icecake/pkg/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/dom"
-	"github.com/icecake-framework/icecake/pkg/ui"
+	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 // This main package contains the web assembly source code for the icecake example.
@@ -14,24 +16,24 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	dom.MountCSSLinks()
-
-	card1 := &ui.Card{
-		Title:       "Hello World",
-		Content:     "Nice cake",
-		FooterItem1: "<a href='/'>home</a>",
-	}
-	card1.SetStyle("width: 350px;").SetClasses("mr-5")
-	card1.Image = ui.NewImage("/icecake.jpg", ui.IMG_SQUARE)
+	card1 := &bulmaui.Card{Card: bulma.Card{
+		Title:   *html.ToHTML("Hello World"),
+		Image:   bulma.NewImage("/icecake.jpg", bulma.IMG_SQUARE),
+		Content: html.ToHTML("Nice cake"),
+	}}
+	card1.FooterItem = append(card1.FooterItem, *html.ToHTML("<a href='/'>home</a>"))
+	card1.Tag().SetStyle("width: 350px;").AddClasses("mr-5")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card1, nil)
 
-	card2 := &ui.Card{Content: "Nice cake"}
-	card2.SetStyle("width: 128px;").SetClasses("mr-5")
-	card2.Image = ui.NewImage("/icecake.jpg", ui.IMG_SQUARE)
+	card2 := &bulmaui.Card{Card: bulma.Card{
+		Content: html.ToHTML("Nice cake")}}
+	card2.Tag().SetStyle("width: 128px;").AddClasses("mr-5")
+	card2.Image = bulma.NewImage("/icecake.jpg", bulma.IMG_SQUARE)
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card2, nil)
 
-	card3 := &ui.Card{Content: "Very Nice cake"}
-	card3.SetClasses("mr-5")
+	card3 := &bulmaui.Card{Card: bulma.Card{
+		Content: html.ToHTML("Very Nice cake")}}
+	card3.Tag().AddClasses("mr-5")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card3, nil)
 
 	// let's go

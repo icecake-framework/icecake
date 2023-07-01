@@ -7,37 +7,49 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// type testsnippet1 struct {
-// 	html.HTMLSnippet
-// 	Html html.String
-// }
+func TestLookupRegistryEntry(t *testing.T) {
 
-// func (tst testsnippet1) Template(*DataState) (_t SnippetTemplate) {
-// 	_t.Body = tst.Html
-// 	return
-// }
+	registry.ResetRegistry()
+	registry.AddRegistryEntry("ick-snippet", &HTMLSnippet{})
 
-func TestRegisterB(t *testing.T) {
+	r := registry.LookupRegistryEntry(&HTMLSnippet{})
+	assert.NotNil(t, r)
+
+	r = registry.LookupRegistryEntry(HTMLSnippet{})
+	assert.Nil(t, r)
+}
+
+func TestRegisterComposer(t *testing.T) {
 
 	registry.ResetRegistry()
 
-	r := registry.LookupRegistryEntry(&testsnippet1{})
-	assert.NotNil(t, r)
-
-	r = registry.LookupRegistryEntry(testsnippet1{})
-	assert.Nil(t, r)
-
+	// by reference
 	c1 := new(HTMLSnippet)
-	err := RegisterComposer("snippet", *c1, nil)
-	assert.ErrorContains(t, err, "not a component")
+	_, err := RegisterComposer("snippet", *c1)
+	assert.ErrorContains(t, err, "not by value")
 
+	// HTMLcomposer implementation
 	i := new(int)
-	err = RegisterComposer("snippet", i, nil)
-	assert.ErrorContains(t, err, "must be an HtmlComposer")
+	_, err = RegisterComposer("snippet", i)
+	assert.ErrorContains(t, err, "must implement HTMLComposer interface")
 
-	err = RegisterComposer("ick-test-snippet1", &testsnippet1{}, nil)
+	// empty tag
+	_, err = RegisterComposer("ick-testsnippet1", &testcustomcomposer{})
+	assert.ErrorContains(t, err, "Tag() must return a valid reference")
+
+	// naming prefix
+	_, err = RegisterComposer("snippet", &testsnippet1{})
+	assert.ErrorContains(t, err, "name must start by 'ick-'")
+
+	// name
+	_, err = RegisterComposer("ick-", &testsnippet1{})
+	assert.ErrorContains(t, err, "name missing")
+
+	// log tag builder
+	_, err = RegisterComposer("ick-testsnippet1", &testsnippet1{})
 	assert.NoError(t, err)
 
-	err = RegisterComposer("ick-test-snippet1", &testsnippet1{}, nil)
-	assert.NoError(t, err) // only log "already registered"
+	// log "already registered"
+	_, err = RegisterComposer("ick-testsnippet1", &testsnippet1{})
+	assert.NoError(t, err)
 }

@@ -1,0 +1,9 @@
+@charset "utf-8";
+
+$primary: #48acf0;
+
+@import "../../../pkg/bulma/bulma-0.9.4/bulma.sass";
+
+a.navbar-item.is-active {
+    border-bottom: 2px solid $link;
+}

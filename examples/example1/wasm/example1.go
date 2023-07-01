@@ -11,7 +11,7 @@ import (
 
 	_ "embed"
 
-	_ "github.com/icecake-framework/icecake/pkg/ui" // automatic registering of the ui components
+	_ "github.com/icecake-framework/icecake/pkg/bulmaui" // automatic registering of the ui components
 
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/extensions/markdown"
@@ -30,10 +30,9 @@ func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded.")
 
-	dom.MountCSSLinks()
-
 	// register a tiny html snippet
-	html.RegisterHTMLSnippet("ick-icecake-brand", html.SnippetTemplate{Body: "<strong><a class='brand' href='https://icecake.net'>Icecake</a></strong>"})
+	tiny := html.NewSnippet("a", `class="brand" href="https://icecake.net"`).Stack(html.ToHTML("<strong>Icecake</strong>"))
+	html.RegisterComposer("ick-icecake-brand", tiny)
 
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive
 	// 2. demonstrate how to generate HTML content from a markdown source, directly on the front-side.

@@ -8,9 +8,13 @@ require (
 )
 
 require (
+	github.com/huandu/go-clone v1.6.0
+	github.com/otiai10/copy v1.12.0
 	github.com/stretchr/testify v1.8.2
+	github.com/sunraylab/verbose v1.2.5
 	github.com/yuin/goldmark v1.5.4
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20220924101305-151362477c87
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 )
 
 require (
@@ -18,5 +22,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
