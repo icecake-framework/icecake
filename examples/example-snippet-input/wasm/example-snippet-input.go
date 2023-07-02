@@ -22,14 +22,14 @@ func main() {
 
 	in1 := &bulmaui.InputField{}
 	in1.PlaceHolder = "Very simple"
-	in1.Tag().AddClasses("mr-4")
+	in1.Tag().AddClass("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in1, nil)
 
 	in2 := &bulmaui.InputField{}
 	in2.Label = *html.ToHTML("Name")
 	in2.PlaceHolder = "Text input"
 	in2.Help = *html.ToHTML("With a label, a placeholder, and a help")
-	in2.Tag().AddClasses("mr-4")
+	in2.Tag().AddClass("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in2, nil)
 
 	in3 := &bulmaui.InputField{}
@@ -38,7 +38,7 @@ func main() {
 	in3.Help = *html.ToHTML("Rounded style")
 	in3.Value = "my name"
 	in3.IsRounded = true
-	in3.Tag().AddClasses("mr-4")
+	in3.Tag().AddClass("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in3, nil)
 
 	in4 := &bulmaui.InputField{}
@@ -46,14 +46,14 @@ func main() {
 	in4.PlaceHolder = "Text input"
 	in4.State = bulma.INPUT_LOADING
 	in4.Help = *html.ToHTML("With loading state")
-	in4.Tag().AddClasses("mr-4")
+	in4.Tag().AddClass("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in4, nil)
 
 	in5 = &bulmaui.InputField{}
 	in5.Label = *html.ToHTML("eMail")
 	in5.PlaceHolder = "email address"
 	in5.Help = *html.ToHTML("Enter a valid email address")
-	in5.Tag().AddClasses("mr-4")
+	in5.Tag().AddClass("mr-4")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, in5, nil)
 	in5.DOM.AddInputEvent(event.INPUT_ONINPUT, OnInput)
 

@@ -22,18 +22,18 @@ func main() {
 		Content: html.ToHTML("Nice cake"),
 	}}
 	card1.FooterItem = append(card1.FooterItem, *html.ToHTML("<a href='/'>home</a>"))
-	card1.Tag().SetStyle("width: 350px;").AddClasses("mr-5")
+	card1.Tag().SetStyle("width: 350px;").AddClass("mr-5")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card1, nil)
 
 	card2 := &bulmaui.Card{Card: bulma.Card{
 		Content: html.ToHTML("Nice cake")}}
-	card2.Tag().SetStyle("width: 128px;").AddClasses("mr-5")
+	card2.Tag().SetStyle("width: 128px;").AddClass("mr-5")
 	card2.Image = bulma.NewImage("/icecake.jpg", bulma.IMG_SQUARE)
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card2, nil)
 
 	card3 := &bulmaui.Card{Card: bulma.Card{
 		Content: html.ToHTML("Very Nice cake")}}
-	card3.Tag().AddClasses("mr-5")
+	card3.Tag().AddClass("mr-5")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, card3, nil)
 
 	// let's go

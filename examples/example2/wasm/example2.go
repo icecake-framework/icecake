@@ -74,9 +74,9 @@ func updateUI() {
 
 func updateDarkMode(dark bool) {
 	if dark {
-		dom.Doc().Body().SetClasses("dark")
+		dom.Doc().Body().AddClass("dark")
 	} else {
-		dom.Doc().Body().RemoveClasses("dark")
+		dom.Doc().Body().RemoveClass("dark")
 	}
 	sdark := "false"
 	if dark {

@@ -22,7 +22,7 @@ func main() {
 		Header: *html.ToHTML("simple message"),
 		Msg:    *html.ToHTML("This is a simple message with a header."),
 	}
-	msg2.Tag().AddClasses("is-info")
+	msg2.Tag().AddClass("is-info")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 
 	msg3 := &bulma.Message{
@@ -30,20 +30,20 @@ func main() {
 		CanDelete: true,
 		Msg:       *html.ToHTML("This message use the BULMA <i>is-warning</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message."),
 	}
-	msg3.Tag().AddClasses("is-warning")
+	msg3.Tag().AddClass("is-warning")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg3, nil)
 
 	msg4 := &bulma.Message{
 		Header:    *html.ToHTML("only header"),
 		CanDelete: true,
 	}
-	msg4.Tag().AddClasses("is-success")
+	msg4.Tag().AddClass("is-success")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg4, nil)
 	msg4.Tag().SwitchClass("is-success", "is-danger")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg4, nil)
 
 	msg5 := &bulma.Message{}
-	msg5.Tag().AddClasses("is-danger")
+	msg5.Tag().AddClass("is-danger")
 	dom.Id("content").InsertSnippet(dom.INSERT_LAST_CHILD, msg5, nil)
 
 	// let's go

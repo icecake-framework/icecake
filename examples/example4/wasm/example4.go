@@ -31,7 +31,7 @@ func main() {
 	msg2.Header = *html.ToHTML("2nd message")
 	msg2.CanDelete = true
 	msg2.Msg = *html.ToHTML("This second message use the BULMA <i>is-info</i> color class. The <i>CanDelete</i> property is set to true so the user can delete the message.")
-	msg2.Tag().AddClasses("is-info")
+	msg2.Tag().AddClass("is-info")
 	dom.Id("msg-container").InsertSnippet(dom.INSERT_LAST_CHILD, msg2, nil)
 
 	// msg3 := &ui.Message{
