@@ -32,7 +32,7 @@ func DocFooter() *Footer {
 	return new(Footer)
 }
 
-func (footer *Footer) BuildTag(tag *html.Tag) { tag.SetTagName("footer").AddClasses("footer") }
+func (footer *Footer) BuildTag(tag *html.Tag) { tag.SetTagName("footer").AddClass("footer") }
 
 func (footer *Footer) RenderContent(out io.Writer) error {
 
@@ -48,17 +48,17 @@ func (footer *Footer) RenderContent(out io.Writer) error {
 
 	// 1st column
 	html.WriteString(out, `<div class="column is-8">`)
-	html.WriteStrings(out, `<h4 class="myfooter-title">`, `<strong>IceCake</strong> by Lolorenzo`, `</h4>`)
-	html.WriteStrings(out, `<div class="myfooter-info">`, `Source code licences `, hrefMIT, `</div>`)
-	html.WriteStrings(out, `<div class="myfooter-info">`, `Website content licensed `, hrefCCBY, `</div>`)
-	html.WriteStrings(out, `<br><div class="myfooter-info">Wasm code: <span id="icecake-status"></span></div>`)
+	html.WriteString(out, `<h4 class="myfooter-title">`, `<strong>IceCake</strong> by Lolorenzo`, `</h4>`)
+	html.WriteString(out, `<div class="myfooter-info">`, `Source code licences `, hrefMIT, `</div>`)
+	html.WriteString(out, `<div class="myfooter-info">`, `Website content licensed `, hrefCCBY, `</div>`)
+	html.WriteString(out, `<br><div class="myfooter-info">Wasm code: <span id="icecake-status"></span></div>`)
 	html.WriteString(out, `</div>`)
 
 	// 2nd column
 	html.WriteString(out, `<div class="column is-4">`)
-	html.WriteStrings(out, `<h4 class="myfooter-title">`, `<strong>Links</strong>`, `</h4>`)
+	html.WriteString(out, `<h4 class="myfooter-title">`, `<strong>Links</strong>`, `</h4>`)
 	for _, hrefLink := range hrefLinks {
-		html.WriteStrings(out, `<p class="myfooter-link">`, hrefLink, `</p>`)
+		html.WriteString(out, `<p class="myfooter-link">`, hrefLink, `</p>`)
 	}
 	html.WriteString(out, `</div>`)
 

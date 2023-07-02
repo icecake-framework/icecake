@@ -26,7 +26,7 @@ var _ html.HTMLTagComposer = (*Card)(nil)
 // BuildTag builds the tag used to render the html element.
 // Card Tag is a simple <div class="card"></div>
 func (card *Card) BuildTag(tag *html.Tag) {
-	tag.SetTagName("div").AddClasses("card")
+	tag.SetTagName("div").AddClass("card")
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -34,7 +34,7 @@ func (card *Card) BuildTag(tag *html.Tag) {
 func (card *Card) RenderContent(out io.Writer) error {
 
 	if !card.Title.IsEmpty() {
-		html.WriteStrings(out, `<header class="card-header">`, `<p class="card-header-title">`)
+		html.WriteString(out, `<header class="card-header">`, `<p class="card-header-title">`)
 		card.RenderChilds(out, &card.Title)
 		html.WriteString(out, `</p></header>`)
 	}

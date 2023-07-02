@@ -332,7 +332,7 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, ickattrs Attr
 	}
 
 	if err != nil {
-		WriteStrings(out, "<!--", err.Error(), "-->")
+		WriteString(out, "<!--", err.Error(), "-->")
 	}
 
 	return err

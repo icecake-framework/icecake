@@ -7,7 +7,6 @@ import (
 
 	syscalljs "syscall/js"
 
-	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/js"
@@ -57,8 +56,28 @@ func Doc() Document {
 
 // Id returns the Element found in the doc with the _elementId attribute.
 // returns an undefined Element if the id is not found.
-func Id(_elementId string) (_result *Element) {
-	return Doc().ChildById(_elementId)
+func Id(elementId string) *Element {
+	return Doc().ChildById(elementId)
+}
+
+// RenderedId returns the Element found in the doc with the elementId attribute and .
+// returns an undefined Element if the id is not found or if it's not an icecake rendered snippet.
+func RenderedId(elementId string, ickname string) (result *Element) {
+	e := Doc().ChildById(elementId)
+	if e == nil {
+		console.Warnf("RenderedElement: unable to found Id %q", elementId)
+		return nil
+	}
+	name, has := e.Attribute("name")
+	if !has {
+		console.Warnf("RenderedElement: Id %q is not an iceckahe snippet", elementId)
+		return nil
+	}
+	if name != ickname {
+		console.Warnf("RenderedElement: Id %q is not an %s snippet: %s", elementId, ickname, name)
+		return nil
+	}
+	return e
 }
 
 // CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
@@ -349,31 +368,29 @@ func (_doc Document) ChildrenByName(elementName string) []*Element {
 // Since element IDs are required to be unique if specified, they're a useful way to get access to a specific element quickly.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
-func (_doc Document) ChildById(_elementId string) (_result *Element) {
-	_elementId = helper.Normalize(_elementId)
-	if _elementId == "" {
+func (doc Document) ChildById(elementId string) *Element {
+	if elementId == "" {
 		return new(Element)
 	}
-	elem := _doc.Call("getElementById", _elementId)
+	elem := doc.Call("getElementById", elementId)
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
 		//DEBUG: console.Warnf("ChildById success: %q \n", _elementId)
 		return CastElement(elem)
 	}
-	console.Warnf("ChildById failed: %q not found, or not an <Element>\n", _elementId)
+	console.Warnf("ChildById failed: %q not found, or not an <Element>\n", elementId)
 	return new(Element)
 }
 
-func (_doc Document) CheckId(_elementId string) (_result *Element, _err error) {
-	_elementId = helper.Normalize(_elementId)
-	if _elementId == "" {
+func (doc Document) CheckId(elementId string) (*Element, error) {
+	if elementId == "" {
 		return new(Element), fmt.Errorf("CheckId called with an empty id")
 	}
-	elem := _doc.Call("getElementById", _elementId)
+	elem := doc.Call("getElementById", elementId)
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
 		//DEBUG: console.Warnf("ChildById success: %q \n", _elementId)
 		return CastElement(elem), nil
 	}
-	return new(Element), fmt.Errorf("CheckId %q not found, or not an <Element>", _elementId)
+	return new(Element), fmt.Errorf("CheckId %q not found, or not an <Element>", elementId)
 }
 
 // QuerySelector returns the first Element within the document that matches the specified selector, or group of selectors.

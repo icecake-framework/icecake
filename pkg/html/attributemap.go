@@ -24,10 +24,6 @@ import (
 // HTML Attributes name are case insensitive: https://www.w3.org/TR/2010/WD-html-markup-20101019/documents.html
 type AttributeMap map[string]string // map of HTML tag attributes
 
-func MakeAttributeMap() AttributeMap {
-	return make(AttributeMap)
-}
-
 // Clone clones the attribute map
 func (src AttributeMap) Clone() AttributeMap {
 	to := make(AttributeMap, len(src))
@@ -37,21 +33,57 @@ func (src AttributeMap) Clone() AttributeMap {
 	return src
 }
 
-// ResetAttributes deletes all attributes in the map.
-func (amap AttributeMap) ResetAttributes() AttributeMap {
-	for k := range amap {
-		delete(amap, k)
+// AttributeString returns the formated list of attributes, ready to use to generate the tag element.
+// always sorted the same way : 1>id 2>name 3>class 4>others sorted alpha by name
+func (amap AttributeMap) AttributeString() string {
+	if len(amap) == 0 {
+		return ""
 	}
-	return amap
+
+	attrsortindex := map[string]int{"id": 0, "name": 1, "class": 2}
+
+	strhtml := ""
+	sorted := make([]string, 0, len(amap))
+	for k := range amap {
+		sorted = append(sorted, k)
+	}
+	sort.SliceStable(sorted, func(i, j int) bool {
+		ii, foundi := attrsortindex[sorted[i]]
+		if !foundi {
+			ii = 9
+		}
+		jj, foundj := attrsortindex[sorted[j]]
+		if !foundj {
+			jj = 9
+		}
+		if ii == jj {
+			return sorted[i] < sorted[j]
+		}
+		return ii < jj
+	})
+
+	for _, k := range sorted {
+		v := amap[k]
+		strhtml += k
+		sv, err := StringifyAttributeValue(v)
+		if err != nil {
+			strhtml += "='" + err.Error() + "'"
+		} else if len(sv) > 0 {
+			strhtml += "=" + sv
+		}
+		strhtml += " "
+	}
+	strhtml = strings.TrimRight(strhtml, " ")
+	return strhtml
 }
 
 // Attribute returns the value of the attribute identified by its name.
 // Returns false if the attribute does not exist.
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
-func (amap AttributeMap) Attribute(name string) (value string, found bool) {
-	name = helper.Normalize(name)
-	value, found = amap[name]
+func (amap AttributeMap) Attribute(aname string) (value string, found bool) {
+	aname = helper.Normalize(aname)
+	value, found = amap[aname]
 	return value, found
 }
 
@@ -66,7 +98,7 @@ func (amap AttributeMap) TrySetAttribute(name string, value string) bool {
 }
 
 // SetAttribute creates an attribute in the map and set its value.
-// Id the attribute already exists in themap it is updated.
+// If the attribute already exists in the map it is updated.
 // SetAttribute returns the map to allow chainning and so never returns an error.
 // If the name or the value are not valid nothing is created and a log is printed out if verbose mode is on.
 // Use CheckAttribute to check name and value validity.
@@ -96,10 +128,10 @@ func (amap AttributeMap) setAttribute(name string, value string, update bool) (u
 	case "class":
 		before := amap["class"]
 		if update {
-			amap.ResetClasses()
+			amap.ResetClass()
 		}
 		c := strings.Fields(value)
-		amap.AddClasses(c...)
+		amap.AddClass(c...)
 		updated = amap["class"] != before
 	case "tabindex":
 		i, _ := strconv.Atoi(value)
@@ -113,10 +145,6 @@ func (amap AttributeMap) setAttribute(name string, value string, update bool) (u
 }
 
 // SetAttributeIf SetAttribute if the condition is true, otherwise remove the attribute.
-// update flag indicates if existing attribute must be updated or not.
-// SetAttribute returns the map to allow chainning and so never returns an error.
-// If the name or the value are not valid nothing is created and a log is printed out if verbose mode is on.
-// Use CheckAttribute to check name and value validity.
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
 func (amap AttributeMap) SetAttributeIf(condition bool, name string, value string) AttributeMap {
@@ -137,7 +165,6 @@ func (amap AttributeMap) SetAttributeIf(condition bool, name string, value strin
 //
 // Returns if the attributes has been created/updated
 func (amap AttributeMap) saveAttribute(name string, value string, overwrite bool) bool {
-
 	_, exists := amap[name]
 	if !overwrite && exists {
 		return false
@@ -157,8 +184,17 @@ func (amap AttributeMap) saveAttribute(name string, value string, overwrite bool
 	return true
 }
 
+// ResetAttributes deletes all attributes in the map.
+func (amap AttributeMap) ResetAttributes() AttributeMap {
+	for k := range amap {
+		delete(amap, k)
+	}
+	return amap
+}
+
 // RemoveAttribute removes the attribute identified by its name.
 // Does nothing if the name is not in the map.
+//
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
 func (amap AttributeMap) RemoveAttribute(name string) AttributeMap {
 	name = helper.Normalize(name)
@@ -167,7 +203,7 @@ func (amap AttributeMap) RemoveAttribute(name string) AttributeMap {
 }
 
 // ToggleAttribute toggles an attribute like a boolean.
-// if the attribute exists it's removed, if it does not exists it's created without value.
+// If the attribute exists it's removed, if it does not exists it's created without value.
 // id, tabindex, name, class and style can't be setup with this method.
 // In verbose mode ToggleAttribute can log an error if the name is not valid.
 //
@@ -223,18 +259,18 @@ func (amap AttributeMap) SetURL(attributeName string, url *url.URL) AttributeMap
 	return amap
 }
 
-// NameAttribute returns the name attribute if any
-func (amap AttributeMap) NameAttribute() string {
+// Name returns the name attribute if any
+func (amap AttributeMap) Name() string {
 	return amap["name"]
 }
 
-// SetNameAttribute sets or overwrites the name attribute. In HTML5 name is case sensitive.
+// SetName sets or overwrites the name attribute. In HTML5 name is case sensitive.
 // blanks at the ends of the id are automatically trimmed.
 // if name is empty, the name attribute is removed.
 //
-// SetNameAttribute returns the map to allow chainning.
+// SetName returns the map to allow chainning.
 // If the name is not valid nothing is setted and a log is printed out if verbose mode is on.
-func (amap AttributeMap) SetNameAttribute(name string) AttributeMap {
+func (amap AttributeMap) SetName(name string) AttributeMap {
 	_, err := amap.setAttribute("name", name, true)
 	verbose.Error("SetName", err)
 	return amap
@@ -261,10 +297,10 @@ func (amap AttributeMap) HasClass(class string) bool {
 	return false
 }
 
-// AddClasses adds each class in lists strings to the class attribute.
+// AddClass adds each class in lists strings to the class attribute.
 // Each lists class string can be either a single class or a string of multiple classes separated by spaces.
 // Duplicates are not inserted twice.
-func (amap AttributeMap) AddClasses(lists ...string) AttributeMap {
+func (amap AttributeMap) AddClass(lists ...string) AttributeMap {
 	existstr := amap["class"]
 	new := existstr
 	existcs := strings.Fields(existstr)
@@ -290,23 +326,23 @@ nextlist:
 	return amap
 }
 
-// AddClassesIf adds each c classe to the class attribute if the condition is true
+// AddClassIf adds each c classe to the class attribute if the condition is true.
+// Does nothing if the condition is false. See SetClassIf to also remove the class if the condition is false.
 // Duplicates are not inserted twice.
-func (amap AttributeMap) AddClassesIf(condition bool, addlist ...string) AttributeMap {
+func (amap AttributeMap) AddClassIf(condition bool, addlist ...string) AttributeMap {
 	if condition {
-		amap.AddClasses(addlist...)
+		amap.AddClass(addlist...)
 	}
 	return amap
 }
 
-// SetClassesIf adds each c classe to the class attribute if the condition is true
-// otherwise remove them.
+// SetClassIf adds each c classe to the class attribute if the condition is true, otherwise remove them.
 // Duplicates are not inserted twice.
-func (amap AttributeMap) SetClassesIf(condition bool, addlist ...string) AttributeMap {
+func (amap AttributeMap) SetClassIf(condition bool, lists ...string) AttributeMap {
 	if condition {
-		amap.AddClasses(addlist...)
+		amap.AddClass(lists...)
 	} else {
-		amap.RemoveClasses(addlist...)
+		amap.RemoveClass(lists...)
 	}
 	return amap
 }
@@ -314,9 +350,9 @@ func (amap AttributeMap) SetClassesIf(condition bool, addlist ...string) Attribu
 // PickClass set the picked class and only that one, removing all others in the classlist.
 // If picked is empty or not in the classlist then it's not added.
 func (amap AttributeMap) PickClass(classlist string, picked string) AttributeMap {
-	amap.RemoveClasses(classlist)
+	amap.RemoveClass(classlist)
 	if strings.Contains(classlist, picked) {
-		amap.AddClasses(picked)
+		amap.AddClass(picked)
 	}
 	return amap
 }
@@ -328,15 +364,15 @@ func checkclass(class string) error {
 	return nil
 }
 
-// ResetClasses removes all classes by removing the class attribute?
-func (amap AttributeMap) ResetClasses() AttributeMap {
+// ResetClass removes all classes by removing the class attribute
+func (amap AttributeMap) ResetClass() AttributeMap {
 	delete(amap, "class")
 	return amap
 }
 
-// RemoveClasses removes each class in lists strings from the class attribute.
+// RemoveClass removes each class in lists strings from the class attribute.
 // Each lists class string can be either a single class or a string of multiple classes separated by spaces.
-func (amap AttributeMap) RemoveClasses(lists ...string) AttributeMap {
+func (amap AttributeMap) RemoveClass(lists ...string) AttributeMap {
 	existstr := amap["class"]
 	new := ""
 	existcs := strings.Fields(existstr)
@@ -363,8 +399,8 @@ nextexist:
 
 // SwitchClass removes one class and set a new one
 func (amap AttributeMap) SwitchClass(removec string, addc string) AttributeMap {
-	amap.RemoveClasses(removec)
-	amap.AddClasses(addc)
+	amap.RemoveClass(removec)
+	amap.AddClass(addc)
 	return amap
 }
 
@@ -405,12 +441,12 @@ func checkstyle(style string) error {
 	return nil
 }
 
-// BoolAttribute returns true is the attribute exists and if it's value is not false nor 0.
+// IsTrue returns true if the attribute exists and if it's value is not false nor 0.
 //
-// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
-func (amap AttributeMap) BoolAttribute(name string) bool {
-	name = helper.Normalize(name)
-	value, found := amap[name]
+// Blanks at the ends of the name are automatically trimmed. Attribute's name is case sensitive.
+func (amap AttributeMap) IsTrue(aname string) bool {
+	aname = helper.Normalize(aname)
+	value, found := amap[aname]
 	if !found {
 		return false
 	}
@@ -428,69 +464,25 @@ func (amap AttributeMap) BoolAttribute(name string) bool {
 	return true
 }
 
-// SetBool set or overwrite a boolean attribute and returns the map to allow chainning.
+// SetBool sets or overwrites a boolean attribute and returns the map to allow chainning.
 // SetBool does nothing if trying to set id, style, name or class attribute to true.
-func (amap AttributeMap) SetBool(name string, f bool) AttributeMap {
+func (amap AttributeMap) SetBool(aname string, f bool) AttributeMap {
 	if !f {
-		amap.RemoveAttribute(name)
+		amap.RemoveAttribute(aname)
 	} else {
-		amap.SetAttribute(name, "")
+		amap.SetAttribute(aname, "")
 	}
 	return amap
 }
 
 // IsDisabled returns true if the disabled attribute is set
 func (amap AttributeMap) IsDisabled() bool {
-	return amap.BoolAttribute("disabled")
+	return amap.IsTrue("disabled")
 }
 
-// SetDisabled set the boolean disabled attribute
+// SetDisabled sets the boolean disabled attribute
 func (amap AttributeMap) SetDisabled(f bool) AttributeMap {
 	return amap.SetBool("disabled", f)
-}
-
-// Strings returns the formated list of attributes, ready to use to generate the container element.
-// always sorted the same way : 1>id 2>name 3>class 4>others sorted alpha by name
-func (amap AttributeMap) AttributeString() string {
-	if len(amap) == 0 {
-		return ""
-	}
-
-	attrsortindex := map[string]int{"id": 0, "name": 1, "class": 2}
-
-	strhtml := ""
-	sorted := make([]string, 0, len(amap))
-	for k := range amap {
-		sorted = append(sorted, k)
-	}
-	sort.SliceStable(sorted, func(i, j int) bool {
-		ii, foundi := attrsortindex[sorted[i]]
-		if !foundi {
-			ii = 9
-		}
-		jj, foundj := attrsortindex[sorted[j]]
-		if !foundj {
-			jj = 9
-		}
-		if ii == jj {
-			return sorted[i] < sorted[j]
-		}
-		return ii < jj
-	})
-
-	for _, k := range sorted {
-		v := amap[k]
-		strhtml += k
-		sv, err := StringifyAttributeValue(v)
-		if err != nil {
-			strhtml += "='" + err.Error() + "'"
-		} else if len(sv) > 0 {
-			strhtml += "=" + sv
-		}
-		strhtml += " "
-	}
-	strhtml = strings.TrimRight(strhtml, " ")
-	return strhtml
 }
 
 // CheckAttribute returns an error if the attribute name or its value are not valid.

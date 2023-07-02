@@ -27,7 +27,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// force id, setup classes, attributes and style
 	out.Reset()
-	s0.Tag().SetTabIndex(1).SetStyle("color=red;").SetId("helloworld").AddClasses("test")
+	s0.Tag().SetTabIndex(1).SetStyle("color=red;").SetId("helloworld").AddClass("test")
 	render(out, nil, s0)
 	require.Equal(t, `<span id="helloworld" name="ick-HTMLSnippet" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
@@ -61,13 +61,13 @@ func TestComposeBasics(t *testing.T) {
 	// the tag builder of testsnippet2 overwrite custom attributes
 	out.Reset()
 	s2 = new(testsnippet2)
-	s2.Tag().SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "").SetId("tst").AddClasses("ts2c")
+	s2.Tag().SetTabIndex(1).SetStyle("color=red;").SetAttribute("a3", "").SetId("tst").AddClass("ts2c")
 	render(out, nil, s2)
 	require.Equal(t, `<div id="tst" name="ick-testsnippet2" class="ts2a ts2b" a2 a3 style="display=test;" tabindex=2></div>`, out.String())
 
 	// update custom attributes on an existing component
 	out.Reset()
-	s2.Tag().SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "").AddClasses("ts2a ts2d").RemoveClasses("ts2c").RemoveAttribute("a3")
+	s2.Tag().SetTabIndex(3).SetStyle("color=blue;").SetAttribute("a4", "").AddClass("ts2a ts2d").RemoveClass("ts2c").RemoveAttribute("a3")
 	render(out, nil, s2)
 	require.Equal(t, `<div id="tst" name="ick-testsnippet2" class="ts2a ts2b" a2 a4 style="display=test;" tabindex=2></div>`, out.String())
 }
@@ -469,7 +469,7 @@ func TestHTMLSnippetContent(t *testing.T) {
 
 	out := new(bytes.Buffer)
 
-	s := NewSnippet("div", "noid").Stack(ToHTML("<i>test</i>"))
+	s := NewSnippet("div", "noid").SetBody(ToHTML("<i>test</i>"))
 	err := render(out, nil, s)
 	require.NoError(t, err)
 	require.Equal(t, `<div name="ick-HTMLSnippet" noid><i>test</i></div>`, out.String())

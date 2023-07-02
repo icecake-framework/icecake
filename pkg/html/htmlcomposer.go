@@ -192,7 +192,7 @@ func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
 		}
 
 		// get the id, may be empty
-		if tag.BoolAttribute("autoid") {
+		if tag.IsTrue("autoid") {
 			autoid = true // tag.RemoveAttribute("id")
 		} else {
 			cmpid = tag.Id()

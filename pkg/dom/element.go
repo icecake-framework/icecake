@@ -2,7 +2,6 @@ package dom
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -97,75 +96,17 @@ func (_elem *Element) Remove() {
 // Always in Uppercase for HTML element.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/tagName
-func (_elem *Element) TagName() string {
-	if !_elem.IsDefined() {
+func (elem *Element) TagName() string {
+	if !elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _elem.GetString("tagName")
+	return elem.GetString("tagName")
 }
 
-// Id rrepresents the element's identifier, reflecting the id global attribute.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/id
-func (_elem *Element) Id() string {
-	if !_elem.IsDefined() {
-		return UNDEFINED_NODE
-	}
-	return _elem.GetString("id")
-}
-
-// TabIndex represents the tab order of the current element.
-//
-// Tab order is as follows:
-//  1. Elements with a positive tabindex. Elements that have identical tabindex values should be navigated in the order they appear. Navigation proceeds from the lowest tabindex to the highest tabindex.
-//  1. Elements that do not support the tabindex attribute or support it and assign tabindex to 0, in the order they appear.
-//  1. Elements that are disabled do not participate in the tabbing order.
-//
-// Values don't need to be sequential, nor must they begin with any particular value.
-// They may even be negative, though each browser trims very large values.
-//
-// https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
-func (_elem *Element) TabIndex() (_idx int) {
-	found := _elem.Call("hasAttribute", "tabindex").Bool()
-	if found {
-		sidx := _elem.Call("getAttribute", "tabindex").String()
-		_idx, _ = strconv.Atoi(string(sidx))
-	}
-	return _idx
-}
-
-// Classes returns the class object related to _elem.
-// If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-func (_elem *Element) Classes() string {
-	return _elem.Get("className").String()
-}
-
-// Style returns the style attribute
-func (_elem *Element) Style() (_style string) {
-	found := _elem.Call("hasAttribute", "style").Bool()
-	if found {
-		_style = _elem.Call("getAttribute", "style").String()
-	}
-	return _style
-}
-
-// Style returns the style attribute
-func (_elem *Element) IsDisabled() bool {
-	found := _elem.Call("hasAttribute", "disabled").Bool()
-	if found {
-		str := _elem.Call("getAttribute", "disabled").String()
-		if strings.ToLower(str) != "false" && str != "0" {
-			return true
-		}
-	}
-	return false
-}
-
-func (_elem *Element) Attributes() string {
+// AttributeString returns the formated list of attributes, ready to use to generate the tag element.
+func (elem *Element) AttributeString() string {
 	str := ""
-	jsa := _elem.Get("attributes")
+	jsa := elem.Get("attributes")
 	len := jsa.GetInt("length")
 	for i := 0; i < len; i++ {
 		jsi := jsa.Call("item", i)
@@ -183,27 +124,239 @@ func (_elem *Element) Attributes() string {
 	return strings.TrimRight(str, " ")
 }
 
+// Attribute returns the value of the attribute identified by its name.
+// Returns false if the attribute does not exist.
+//
+// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
+func (elem *Element) Attribute(aname string) (string, bool) {
+	aname = strings.Trim(aname, " ")
+	attr := elem.Call("getAttribute", aname)
+	if attr.IsDefined() && attr.String() != "" {
+		return attr.String(), true
+	}
+	return "", false
+}
+
+// func (_elem *Element) CreateAttribute(key string, _value any) *Element {
+// 	_elem.setAttribute(key, _value, false)
+// 	return _elem
+// }
+
+// SetAttribute creates an attribute in the map and set its value.
+// If the attribute already exists in the map it is updated.
+//
+// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
+func (elem *Element) SetAttribute(key string, value string) *Element {
+	elem.setAttribute(key, value, true)
+	return elem
+}
+
+func (elem *Element) setAttribute(key string, value string, update bool) error {
+	key = strings.Trim(key, " ")
+	switch strings.ToLower(key) {
+	case "id":
+		found := elem.Get("id").Type() == js.TYPE_STRING
+		if !found || update {
+			elem.SetId(value)
+		}
+	case "class":
+		if update {
+			elem.ResetClass()
+		}
+		if value != "" {
+			elem.AddClass(value)
+		}
+	case "tabindex":
+		found := elem.Get("tabindex").Type() == js.TYPE_STRING
+		if !found || update {
+			idx, _ := strconv.Atoi(value)
+			elem.SetTabIndex(idx)
+		}
+	case "style":
+		found := elem.Get("style").Type() == js.TYPE_STRING
+		if !found || update {
+			elem.SetStyle(value)
+		}
+	default:
+		_, err := elem.Check(key)
+		if err != nil || update {
+			elem.Call("setAttribute", key, value)
+		}
+	}
+	return nil
+}
+
+// SetAttributeIf SetAttribute if the condition is true, otherwise remove the attribute.
+//
+// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
+func (elem *Element) SetAttributeIf(condition bool, aname string, value string) *Element {
+	if condition {
+		elem.SetAttribute(aname, value)
+	} else {
+		elem.RemoveAttribute(aname)
+	}
+	return elem
+}
+
+// RemoveAttribute removes the attribute identified by its name.
+// Does nothing if the name is not in the map.
+//
+// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
+func (elem *Element) RemoveAttribute(aname string) *Element {
+	aname = strings.Trim(aname, " ")
+	elem.Call("removeAttribute", aname)
+	return elem
+}
+
+// ToggleAttribute toggles an attribute like a boolean.
+// If the attribute exists it's removed, if it does not exists it's created without value.
+//
+// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
+func (elem *Element) ToggleAttribute(aname string) *Element {
+	aname = strings.Trim(aname, " ")
+	found := elem.Call("hasAttribute", aname).Bool()
+	if found {
+		elem.Call("removeAttribute", aname)
+	} else {
+		elem.Call("setAttribute", aname, string(""))
+	}
+	return elem
+}
+
 // Id rrepresents the element's identifier, reflecting the id global attribute.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/id
-func (_elem *Element) SetId(_id string) *Element {
-	_elem.Set("id", _id)
-	return _elem
+func (elem *Element) Id() string {
+	if !elem.IsDefined() {
+		return UNDEFINED_NODE
+	}
+	return elem.GetString("id")
 }
 
-func (elem *Element) SetDisabled(f bool) {
-	if elem.IsDefined() && elem.IsInDOM() {
-		if f {
-			elem.Call("setAttribute", "disabled", "")
-		} else {
-			elem.Call("removeAttribute", "disabled")
+// Id represents the element's identifier, reflecting the id global attribute.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/id
+func (elem *Element) SetId(id string) *Element {
+	id = strings.Trim(id, " ")
+	elem.Set("id", id)
+	return elem
+}
+
+// Name returns the value of the name attribute
+func (elem *Element) Name() string {
+	if !elem.IsDefined() {
+		return UNDEFINED_NODE
+	}
+	return elem.GetString("name")
+}
+
+// SetName sets or overwrites the name attribute. In HTML5 name is case sensitive.
+// blanks at the ends of the id are automatically trimmed.
+// if name is empty, the name attribute is removed.
+func (elem *Element) SetName(name string) *Element {
+	name = strings.Trim(name, " ")
+	if name == "" {
+		elem.Call("removeAttribute", name)
+	} else {
+		elem.Set("name", name)
+	}
+	return elem
+}
+
+// Classes returns the class object related to _elem.
+// If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
+//
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+func (_elem *Element) Classes() string {
+	return _elem.Get("className").String()
+}
+
+// HasClass returns if the class exists in the list of classes.
+func (elem *Element) HasClass(class string) bool {
+	class = strings.Trim(class, " ")
+	if class == "" {
+		return false
+	}
+	return elem.Get("classList").Call("contains", class).Bool()
+}
+
+// AddClass adds each class in lists strings to the class attribute.
+// Each lists class string can be either a single class or a string of multiple classes separated by spaces.
+// Duplicates are not inserted twice.
+func (elem *Element) AddClass(lists ...string) *Element {
+	for _, list := range lists {
+		listf := strings.Fields(list)
+		callp := make([]any, len(listf))
+		for i, listc := range listf {
+			if listc != "" {
+				callp[i] = listc
+			}
+		}
+		if len(callp) > 0 {
+			elem.Get("classList").Call("add", callp...)
 		}
 	}
+	return elem
 }
 
-func (_elem *Element) SetStyle(style string) *Element {
-	_elem.Call("setAttribute", "style", style)
-	return _elem
+// AddClassIf adds each c classe to the class attribute if the condition is true.
+// Does nothing if the condition is false. See SetClassIf to also remove the class if the condition is false.
+func (elem *Element) AddClassIf(condition bool, addlist ...string) *Element {
+	if condition {
+		elem.AddClass(addlist...)
+	}
+	return elem
+}
+
+// SetClassIf adds each c classe to the class attribute if the condition is true, otherwise remove them.
+func (elem *Element) SetClassIf(condition bool, lists ...string) *Element {
+	if condition {
+		elem.AddClass(lists...)
+	} else {
+		elem.RemoveClass(lists...)
+	}
+	return elem
+}
+
+// PickClass set the picked class and only that one, removing all others in the classlist.
+// If picked is empty or not in the classlist then it's not added.
+func (elem *Element) PickClass(classlist string, picked string) *Element {
+	elem.RemoveClass(classlist)
+	if strings.Contains(classlist, picked) {
+		elem.AddClass(picked)
+	}
+	return elem
+}
+
+// ResetClass removes all classes by removing the class attribute
+func (elem *Element) ResetClass() *Element {
+	elem.Call("removeAttribute", "classList")
+	return elem
+}
+
+// RemoveClass removes each class in lists strings from the class attribute.
+// Each lists class string can be either a single class or a string of multiple classes separated by spaces.
+func (elem *Element) RemoveClass(lists ...string) *Element {
+	for _, list := range lists {
+		listf := strings.Fields(string(list))
+		callp := make([]any, len(listf))
+		for i, listc := range listf {
+			if listc != "" {
+				callp[i] = listc
+			}
+		}
+		if len(callp) > 0 {
+			elem.Get("classList").Call("remove", callp...)
+		}
+	}
+	return elem
+}
+
+// SwitchClass removes one class and set a new one
+func (elem *Element) SwitchClasses(remove string, new string) *Element {
+	elem.RemoveClass(remove)
+	elem.AddClass(new)
+	return elem
 }
 
 // TabIndex represents the tab order of the current element.
@@ -217,177 +370,88 @@ func (_elem *Element) SetStyle(style string) *Element {
 // They may even be negative, though each browser trims very large values.
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
-func (_elem *Element) SetTabIndex(_index int) *Element {
-	_elem.Call("setAttribute", "tabindex", strconv.Itoa(_index))
-	return _elem
-}
-
-func (_elem *Element) ResetClasses(list string) *Element {
-	_elem.Set("className", list)
-	return _elem
-}
-
-func (_elem *Element) SetClasses(list string) *Element {
-	listf := strings.Fields(list)
-	callp := make([]any, len(listf))
-	for i, listc := range listf {
-		if listc != "" {
-			callp[i] = listc
-		}
-	}
-	if len(callp) > 0 {
-		_elem.Get("classList").Call("add", callp...)
-	}
-	return _elem
-}
-
-func (_elem *Element) RemoveClasses(_list string) *Element {
-	listf := strings.Fields(string(_list))
-	callp := make([]any, len(listf))
-	for i, listc := range listf {
-		if listc != "" {
-			callp[i] = listc
-		}
-	}
-	if len(callp) > 0 {
-		_elem.Get("classList").Call("remove", callp...)
-	}
-	return _elem
-}
-
-func (_elem *Element) SwitchClasses(remove string, new string) *Element {
-	_elem.RemoveClasses(remove)
-	_elem.SetClasses(new)
-	return _elem
-}
-
-func (_elem *Element) HasClass(class string) bool {
-	class = strings.Trim(class, " ")
-	if class == "" {
-		return false
-	}
-	return _elem.Get("classList").Call("contains", class).Bool()
-}
-
-func (_elem *Element) Attribute(key string) (string, bool) {
-	key = strings.Trim(key, " ")
-	attr := _elem.Call("getAttribute", key)
-	if attr.IsDefined() && attr.String() != "" {
-		return attr.String(), true
-	}
-	return "", false
-}
-
-func (_elem *Element) CreateAttribute(key string, _value any) *Element {
-	_elem.setAttribute(key, _value, false)
-	return _elem
-}
-
-func (_elem *Element) SetAttribute(key string, _value any) *Element {
-	_elem.setAttribute(key, _value, true)
-	return _elem
-}
-
-func (_elem *Element) setAttribute(key string, value any, overwrite bool) error {
-	key = strings.Trim(key, " ")
-	switch strings.ToLower(key) {
-	case "id":
-		found := _elem.Get("id").Type() == js.TYPE_STRING
-		if !found || overwrite {
-			switch v := value.(type) {
-			case string:
-				_elem.SetId(v)
-			default:
-				return errors.New("wrong value type for id")
-			}
-		}
-	case "tabindex":
-		found := _elem.Get("tabindex").Type() == js.TYPE_STRING
-		if !found || overwrite {
-			switch v := value.(type) {
-			case string:
-				idx, _ := strconv.Atoi(v)
-				_elem.SetTabIndex(idx)
-			case int:
-				_elem.SetTabIndex(v)
-			case uint:
-				_elem.SetTabIndex(int(v))
-			case float32:
-				_elem.SetTabIndex(int(v))
-			case float64:
-				_elem.SetTabIndex(int(v))
-			default:
-				return errors.New("wrong value type for tabindex")
-			}
-		}
-	case "class":
-		var lst string
-		switch v := value.(type) {
-		case string:
-			lst = v
-		default:
-			return errors.New("wrong value type for class")
-		}
-		if overwrite {
-			_elem.ResetClasses(lst)
-		} else if value != "" {
-			_elem.SetClasses(lst)
-		}
-	case "style":
-		// TODO: handle Element style update to not overwrite
-		found := _elem.Get("style").Type() == js.TYPE_STRING
-		if !found || overwrite {
-			var style string
-			switch v := value.(type) {
-			case string:
-				style = v
-			default:
-				return errors.New("wrong value type for class")
-			}
-			_elem.SetStyle(style)
-		}
-	default:
-		_, err := _elem.Check(key)
-		if err != nil || overwrite {
-			var strv string
-			switch v := value.(type) {
-			case string:
-				strv = v
-			case bool:
-				if v {
-					strv = ""
-				} else {
-					_elem.Call("removeAttribute", key)
-					break
-				}
-			case int, uint, float32, float64:
-				strv = fmt.Sprintf("%v", v)
-			default:
-				return errors.New("wrong value type for " + key)
-			}
-			_elem.Call("setAttribute", key, string(strv))
-		}
-	}
-	return nil
-}
-
-func (_elem *Element) RemoveAttribute(_key string) *Element {
-	_key = strings.Trim(_key, " ")
-	_elem.Call("removeAttribute", _key)
-	return _elem
-}
-
-func (_elem *Element) ToggleAttribute(_key string) *Element {
-	_key = strings.Trim(_key, " ")
-	found := _elem.Call("hasAttribute", _key).Bool()
+func (elem *Element) TabIndex() (idx int) {
+	found := elem.Call("hasAttribute", "tabindex").Bool()
 	if found {
-		_elem.Call("removeAttribute", _key)
-	} else {
-		_elem.Call("setAttribute", _key, string(""))
+		sidx := elem.Call("getAttribute", "tabindex").String()
+		idx, _ = strconv.Atoi(string(sidx))
 	}
-	return _elem
+	return idx
 }
 
+// TabIndex represents the tab order of the current element.
+//
+// Tab order is as follows:
+//  1. Elements with a positive tabindex. Elements that have identical tabindex values should be navigated in the order they appear. Navigation proceeds from the lowest tabindex to the highest tabindex.
+//  1. Elements that do not support the tabindex attribute or support it and assign tabindex to 0, in the order they appear.
+//  1. Elements that are disabled do not participate in the tabbing order.
+//
+// Values don't need to be sequential, nor must they begin with any particular value.
+// They may even be negative, though each browser trims very large values.
+//
+// https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
+func (elem *Element) SetTabIndex(index int) *Element {
+	elem.Call("setAttribute", "tabindex", strconv.Itoa(index))
+	return elem
+}
+
+// Style returns the style attribute
+func (elem *Element) Style() (style string) {
+	found := elem.Call("hasAttribute", "style").Bool()
+	if found {
+		style = elem.Call("getAttribute", "style").String()
+	}
+	return style
+}
+
+// SetStyle sets or overwrites the style attribute.
+func (elem *Element) SetStyle(style string) *Element {
+	elem.Call("setAttribute", "style", style)
+	return elem
+}
+
+// AttributeIsTrue returns true if the attribute exists and if it's value is not false nor 0.
+//
+// Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
+func (elem *Element) AttributeIsTrue(aname string) bool {
+	aname = strings.Trim(aname, " ")
+	found := elem.Call("hasAttribute", aname).Bool()
+	if found {
+		str := elem.Call("getAttribute", aname).String()
+		if strings.ToLower(str) != "false" && str != "0" {
+			return true
+		}
+	}
+	return false
+}
+
+// SetBoolAttribute sets or overwrites a boolean attribute and returns the map to allow chainning.
+//
+// Blanks at the ends of the name are automatically trimmed. Attribute's name is case sensitive.
+func (elem *Element) SetBool(aname string, f bool) *Element {
+	aname = strings.Trim(aname, " ")
+	if elem.IsDefined() && elem.IsInDOM() {
+		if f {
+			elem.Call("setAttribute", aname, "")
+		} else {
+			elem.Call("removeAttribute", aname)
+		}
+	}
+	return elem
+}
+
+// Style returns the style attribute
+func (elem *Element) IsDisabled() bool {
+	return elem.AttributeIsTrue("disabled")
+}
+
+// SetDisabled sets the boolean disabled attribute
+func (elem *Element) SetDisabled(f bool) *Element {
+	elem.SetBool("disabled", f)
+	return elem
+}
+
+// AttributeString r
 // InnerHTML gets or sets the HTML or XML markup contained within the element.
 //
 // To insert the HTML into the document rather than replace the contents of an element, use the method insertAdjacentHTML().

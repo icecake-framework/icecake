@@ -43,7 +43,7 @@ var _ html.HTMLTagComposer = (*InputField)(nil)
 
 // BuildTag builds the tag used to render the html element.
 func (inputfield *InputField) BuildTag(tag *html.Tag) {
-	tag.SetTagName("div").AddClasses("field")
+	tag.SetTagName("div").AddClass("field")
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -51,40 +51,40 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	// <label>
 	if !cmp.Label.IsEmpty() {
 		html.WriteString(out, `<label class="label">`)
-		html.Render(out, cmp, &cmp.Label)
+		cmp.RenderChilds(out, &cmp.Label)
 		html.WriteString(out, `</label>`)
 	}
 
 	// <div control>
-	subcontrol := html.NewSnippet("div", `class="control"`)
-	subcontrol.Tag().SetClassesIf(cmp.State == INPUT_LOADING, "is-loading")
+	subcontrol := html.Div(`class="control"`)
+	subcontrol.Tag().SetClassIf(cmp.State == INPUT_LOADING, "is-loading")
 
 	// <input>
 	subinput := html.NewSnippet("input", `class="input" type="text"`)
 	subinput.Tag().
-		SetClassesIf(cmp.IsRounded, "is-rounded").
+		SetClassIf(cmp.IsRounded, "is-rounded").
 		SetAttributeIf(cmp.Value != "", "value", cmp.Value).
 		SetAttributeIf(cmp.PlaceHolder != "", "placeholder", cmp.PlaceHolder)
 	switch cmp.State {
 	case "success":
-		subinput.Tag().AddClasses("is-success")
+		subinput.Tag().AddClass("is-success")
 	case "warning":
-		subinput.Tag().AddClasses("is-warning")
+		subinput.Tag().AddClass("is-warning")
 	case "error":
-		subinput.Tag().AddClasses("is-danger")
+		subinput.Tag().AddClass("is-danger")
 	case "readonly":
 		subinput.Tag().SetBool("readonly", true)
 	}
-	subcontrol.Stack(subinput)
+	subcontrol.SetBody(subinput)
 	cmp.RenderChilds(out, subcontrol)
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
-		subhelp := html.NewSnippet("p", `class="help"`).Stack(&cmp.Help)
+		subhelp := html.P(`class="help"`).SetBody(&cmp.Help)
 		subhelp.Tag().
-			SetClassesIf(cmp.State == INPUT_SUCCESS, "is-success").
-			SetClassesIf(cmp.State == INPUT_WARNING, "is-warning").
-			SetClassesIf(cmp.State == INPUT_ERROR, "is-danger")
+			SetClassIf(cmp.State == INPUT_SUCCESS, "is-success").
+			SetClassIf(cmp.State == INPUT_WARNING, "is-warning").
+			SetClassIf(cmp.State == INPUT_ERROR, "is-danger")
 		cmp.RenderChilds(out, subhelp)
 	}
 

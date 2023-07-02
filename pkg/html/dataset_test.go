@@ -64,16 +64,16 @@ type testsnippet4 struct {
 }
 
 func (s *testsnippet4) BuildTag(tag *Tag) {
-	tag.SetTagName("div").AddClassesIf(s.IsOk, "ok")
+	tag.SetTagName("div").AddClassIf(s.IsOk, "ok")
 }
 
 func (s *testsnippet4) RenderContent(out io.Writer) error {
-	WriteStringsIf(s.Text != "", out, s.Text)
+	WriteStringIf(s.Text != "", out, s.Text)
 	s.RenderChilds(out, &s.HTML)
-	WriteStringsIf(s.I != 0, out, fmt.Sprintf("%v", s.I))
-	WriteStringsIf(s.F != 0, out, fmt.Sprintf("%v", s.F))
-	WriteStringsIf(s.D != 0, out, fmt.Sprintf("%v", s.D+(time.Hour*1)))
-	WriteStringsIf(s.U != nil, out, fmt.Sprintf("<a href='%v'></a>", s.U))
+	WriteStringIf(s.I != 0, out, fmt.Sprintf("%v", s.I))
+	WriteStringIf(s.F != 0, out, fmt.Sprintf("%v", s.F))
+	WriteStringIf(s.D != 0, out, fmt.Sprintf("%v", s.D+(time.Hour*1)))
+	WriteStringIf(s.U != nil, out, fmt.Sprintf("<a href='%v'></a>", s.U))
 	return nil
 }
 

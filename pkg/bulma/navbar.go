@@ -94,7 +94,7 @@ func (navi *NavbarItem) BuildTag(tag *html.Tag) {
 		tag.SetTagName("hr")
 		tag.PickClass("navbar-divider navbar-item", "navbar-divider")
 	} else {
-		tag.PickClass("navbar-divider navbar-item", "navbar-item").SetClassesIf(navi.IsActive, "is-active")
+		tag.PickClass("navbar-divider navbar-item", "navbar-item").SetClassIf(navi.IsActive, "is-active")
 		if navi.HRef != nil {
 			tag.SetTagName("a").SetURL("href", navi.HRef)
 		} else {
@@ -241,9 +241,9 @@ func (nav *Navbar) Item(key string) *NavbarItem {
 func (nav *Navbar) BuildTag(tag *html.Tag) {
 	tag.SetTagName("nav").
 		SetAttribute("role", "navigation").
-		AddClasses("navbar").
-		SetClassesIf(nav.IsTransparent, "is-transparent").
-		SetClassesIf(nav.HasShadow, "has-shadow")
+		AddClass("navbar").
+		SetClassIf(nav.IsTransparent, "is-transparent").
+		SetClassIf(nav.HasShadow, "has-shadow")
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -256,20 +256,20 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 		nav.RenderChildsIf(item.Type == NAVBARIT_BRAND, out, item)
 	}
 	// burger
-	html.WriteStrings(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
+	html.WriteString(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
 	html.WriteString(out, `</div>`)
 
 	// menu area
 	// the burger id is required for flipping it
-	html.WriteStrings(out, `<div class="navbar-menu">`)
+	html.WriteString(out, `<div class="navbar-menu">`)
 
-	html.WriteStrings(out, `<div class="navbar-start">`)
+	html.WriteString(out, `<div class="navbar-start">`)
 	for _, item := range nav.items {
 		nav.RenderChildsIf(item.Type == NAVBARIT_START, out, item)
 	}
 	html.WriteString(out, `</div>`)
 
-	html.WriteStrings(out, `<div class="navbar-end">`)
+	html.WriteString(out, `<div class="navbar-end">`)
 	for _, item := range nav.items {
 		nav.RenderChildsIf(item.Type == NAVBARIT_END, out, item)
 	}

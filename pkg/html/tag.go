@@ -18,12 +18,12 @@ type Tag struct {
 // Tag factory setting the tag named and allowing to assign an existing map of attibutes.
 func NewTag(name string, amap AttributeMap) *Tag {
 	tag := new(Tag)
-	tag.SetTagName(name)
 	if amap == nil {
 		tag.AttributeMap = make(AttributeMap)
 	} else {
 		tag.AttributeMap = amap
 	}
+	tag.SetTagName(name)
 	return tag
 }
 
@@ -33,7 +33,7 @@ func (src Tag) Clone() *Tag {
 	to.AttributeMap = src.AttributeMap.Clone()
 	to.NoName = src.NoName
 	to.tagname = src.tagname
-	to.selfClosing = to.selfClosing
+	to.selfClosing = src.selfClosing
 	return to
 }
 
@@ -51,6 +51,9 @@ func (tag *Tag) TagName() (string, bool) {
 // SetTagName normalizes the name and automaticlally update the SelfClosing attribute according to standard HTML5 specifications
 // https://developer.mozilla.org/en-US/docs/Glossary/Void_element
 func (tag *Tag) SetTagName(name string) *Tag {
+	if tag.AttributeMap == nil {
+		tag.AttributeMap = make(AttributeMap)
+	}
 	tag.tagname = helper.Normalize(name)
 	switch tag.tagname {
 	case "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr":
@@ -90,7 +93,7 @@ func (tag *Tag) ParseAttributes(alists ...string) AttributeMap {
 // errors mays occurs from the writer only.
 func (tag *Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
 	if tag.tagname != "" {
-		_, err = WriteStrings(out, "<", tag.tagname, " ", tag.AttributeString(), ">")
+		_, err = WriteString(out, "<", tag.tagname, " ", tag.AttributeString(), ">")
 		if err == nil {
 			selfclosed = tag.selfClosing
 		}
@@ -103,7 +106,7 @@ func (tag *Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
 // errors mays occurs from the writer only.
 func (tag *Tag) RenderClosing(out io.Writer) (err error) {
 	if tag.tagname != "" && !tag.selfClosing {
-		_, err = WriteStrings(out, "</", tag.tagname, ">")
+		_, err = WriteString(out, "</", tag.tagname, ">")
 	}
 	return
 }

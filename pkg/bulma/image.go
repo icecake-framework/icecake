@@ -79,7 +79,7 @@ func (image *Image) ParseSrcURL(rawUrl string) (_err error) {
 // BuildTag builds the tag used to render the html element.
 func (fig *Image) BuildTag(tag *html.Tag) {
 	tag.SetTagName("figure").
-		AddClasses("image").
+		AddClass("image").
 		PickClass(IMG_SIZE_OPTIONS, string(fig.Size))
 }
 
@@ -88,7 +88,7 @@ func (image *Image) RenderContent(out io.Writer) error {
 	img := html.NewSnippet("img", `role="img" focusable="false"`)
 	img.Tag().
 		SetURL("src", image.Src).
-		SetClassesIf(image.IsRounded, "is-rounded").
+		SetClassIf(image.IsRounded, "is-rounded").
 		SetAttributeIf(image.Alt != "", "alt", image.Alt)
 
 	image.RenderChilds(out, img)

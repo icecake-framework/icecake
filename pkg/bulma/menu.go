@@ -17,6 +17,7 @@ const (
 	MENUIT_LABEL      MENUITEM_TYPE = "label"  // informative label, a <p> tag at the top level
 	MENUIT_LINK       MENUITEM_TYPE = "link"   // interactive menu item, a <li><a> tag at the 1st level
 	MENUIT_NESTEDLINK MENUITEM_TYPE = "nested" // interactive menu item nested in a second level, a <li><a> tag at a 2nd level
+	MENUIT_FOOTER     MENUITEM_TYPE = "footer" // informative text, a <p> tag inserted in the foot of the menu
 )
 
 // bulma.MenuItem is an icecake snippet providing the HTML rendering for a [bulma navbar item].
@@ -39,7 +40,7 @@ type MenuItem struct {
 
 	// HRef defines the optional associated url link.
 	// If HRef is defined the item become an anchor link <a>, otherwise it's a <div>
-	// HRef can be nil. Usually it's created calling NavbarItem.TryParseHRef
+	// HRef can be nil. Usually it's created calling MenuItem.ParseHRef
 	HRef *url.URL
 
 	// Highlight this item
@@ -72,7 +73,7 @@ func (mnui MenuItem) Clone() *MenuItem {
 // BuildTag builds the tag used to render the html element.
 func (mnui *MenuItem) BuildTag(tag *html.Tag) {
 	if mnui.Type == MENUIT_LABEL {
-		mnui.Tag().SetTagName("p").AddClasses("menu-label")
+		mnui.Tag().SetTagName("p").AddClass("menu-label")
 	} else {
 		mnui.Tag().SetTagName("li")
 
@@ -85,11 +86,8 @@ func (mnui *MenuItem) RenderContent(out io.Writer) error {
 	if mnui.Type == MENUIT_LABEL {
 		html.WriteString(out, mnui.Text)
 	} else {
-		link := html.NewSnippet("a").Stack(html.ToHTML(mnui.Text))
-		if mnui.HRef != nil {
-			link.Tag().SetAttribute("href", mnui.HRef.String())
-		}
-		link.Tag().SetClassesIf(mnui.IsActive, "is-active")
+		link := html.A().SetHRef(mnui.HRef).SetBody(html.ToHTML(mnui.Text))
+		link.Tag().SetClassIf(mnui.IsActive, "is-active")
 		mnui.RenderChilds(out, link)
 	}
 	return nil
@@ -103,7 +101,7 @@ func (mnui *MenuItem) RenderContent(out io.Writer) error {
 type Menu struct {
 	html.HTMLSnippet
 
-	TagName string // menu, nav, aside. menu is used if nothing is specified
+	menuTag html.Tag // menu tag: nav, aside, menu. <menu> is used if nothing is specified. Cna be used to setup some classes like "is-small"
 
 	items []*MenuItem // list of Menu items
 }
@@ -115,12 +113,19 @@ var _ html.HTMLTagComposer = (*Menu)(nil)
 func (src Menu) Clone() *Menu {
 	clone := new(Menu)
 	clone.HTMLSnippet = *src.HTMLSnippet.Clone()
-	clone.TagName = src.TagName
+	clone.menuTag = *src.menuTag.Clone()
 	clone.items = make([]*MenuItem, len(src.items))
 	for i, itm := range src.items {
 		clone.items[i] = itm.Clone()
 	}
 	return clone
+}
+
+func (mnu *Menu) MenuTag() *html.Tag {
+	if mnu.menuTag.AttributeMap == nil {
+		mnu.menuTag.AttributeMap = make(html.AttributeMap)
+	}
+	return &mnu.menuTag
 }
 
 // SetActiveItem look for the key item (or subitem) and sets its IsActive flag.
@@ -166,17 +171,27 @@ func (mnu *Menu) Item(key string) *MenuItem {
 
 // BuildTag builds the tag used to render the html element.
 func (mnu *Menu) BuildTag(tag *html.Tag) {
-	if mnu.TagName == "" {
-		tag.SetTagName("menu")
-	} else {
-		tag.SetTagName(mnu.TagName)
+	tag.SetTagName("div")
+
+	// set style height if there's a footer
+	for _, item := range mnu.items {
+		if item.Type == MENUIT_FOOTER {
+			tag.AddClass("is-flex is-flex-direction-column is-justify-content-space-between")
+			tag.SetStyle("height:100%;")
+			break
+		}
 	}
-	tag.SetAttribute("role", "navigation").
-		AddClasses("menu")
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (mnu *Menu) RenderContent(out io.Writer) error {
+	mnutag := mnu.menuTag.Clone()
+	if tagname, _ := mnutag.TagName(); tagname == "" {
+		mnutag.SetTagName("menu")
+	}
+	mnutag.AddClass("menu")
+	mnutag.SetAttribute("role", "navigation")
+	mnutag.RenderOpening(out)
 
 	lastlevel := 0
 	for _, item := range mnu.items {
@@ -208,7 +223,10 @@ func (mnu *Menu) RenderContent(out io.Writer) error {
 			case 2:
 			}
 			lastlevel = 2
+		default:
+			continue
 		}
+
 		mnu.RenderChilds(out, item)
 	}
 
@@ -218,6 +236,26 @@ func (mnu *Menu) RenderContent(out io.Writer) error {
 		html.WriteString(out, "</ul>")
 	case 2:
 		html.WriteString(out, "</ul></ul>")
+	}
+
+	mnutag.RenderClosing(out)
+
+	// add footer
+	hasfooter := false
+	foottag := html.NewTag("div", html.ParseAttributes(`class="`+mnutag.Classes()+`"`))
+	for _, item := range mnu.items {
+		if item.Type == MENUIT_FOOTER {
+			if !hasfooter {
+				foottag.RenderOpening(out)
+				html.WriteString(out, `<ul class="menu-list">`)
+				hasfooter = true
+			}
+			mnu.RenderChilds(out, item)
+		}
+	}
+	if hasfooter {
+		html.WriteString(out, `</ul>`)
+		foottag.RenderClosing(out)
 	}
 	return nil
 }

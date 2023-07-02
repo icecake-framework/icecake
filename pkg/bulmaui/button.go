@@ -23,37 +23,50 @@ func NewButton(title html.HTMLString, id string, rawURL string, attrs ...string)
 	return btn
 }
 
-func (btn *Button) SetLoading(_f bool) *Button {
-	btn.Button.SetLoading(_f)
-	if _f {
-		btn.DOM.SetClasses("is-loading")
-	} else {
-		btn.DOM.RemoveClasses("is-loading")
+// returns nil if the id does not exists or if it's not a Navbar
+//
+// TODO: implement a generic wrapper to any event handlers
+func WrapButton(id string) *Button {
+	e := dom.RenderedId(id, "ick-button")
+	if e == nil {
+		return nil
 	}
+	n := new(Button)
+	n.DOM.Wrap(e)
+	return n
+}
+
+func (btn *Button) SetOutlined(f bool) *Button {
+	btn.Button.SetOutlined(f)
+	btn.DOM.SetClassIf(f, "is-outlined")
 	return btn
 }
 
-func (btn *Button) SetRounded(_f bool) *Button {
-	btn.IsRounded = _f
-	if _f {
-		btn.DOM.SetClasses("is-rounded")
-	} else {
-		btn.DOM.RemoveClasses("is-rounded")
-	}
-	return btn
-}
-
-func (btn *Button) SetOutlined(_f bool) *Button {
-	btn.IsOutlined = _f
-	if _f {
-		btn.DOM.SetClasses("is-outlined")
-	} else {
-		btn.DOM.RemoveClasses("is-outlined")
-	}
+func (btn *Button) SetRounded(f bool) *Button {
+	btn.Button.SetRounded(f)
+	btn.DOM.SetClassIf(f, "is-rounded")
 	return btn
 }
 
 func (btn *Button) SetDisabled(disabled bool) {
 	btn.Button.SetDisabled(disabled)
 	btn.DOM.SetDisabled(disabled)
+}
+
+func (btn *Button) SetLoading(f bool) *Button {
+	btn.Button.SetLoading(f)
+	btn.DOM.SetClassIf(f, "is-loading")
+	return btn
+}
+
+func (btn *Button) SetColor(c bulma.COLOR) *Button {
+	btn.Button.SetColor(c)
+	btn.DOM.PickClass(bulma.COLOR_OPTIONS, string(c))
+	return btn
+}
+
+func (btn *Button) SetLight(f bool) *Button {
+	btn.Button.SetLight(f)
+	btn.DOM.SetClassIf(f, "is-light")
+	return btn
 }

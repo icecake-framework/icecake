@@ -164,12 +164,12 @@ func (pg Page) WriteFile(outputpath string) (err error) {
 func (pg *Page) RenderContent(out io.Writer) (err error) {
 
 	// <!doctype>
-	WriteStrings(out, `<!doctype html><html lang="`, pg.Lang, `">`)
+	WriteString(out, `<!doctype html><html lang="`, pg.Lang, `">`)
 
 	// <head>
-	WriteStrings(out, `<head>`)
-	WriteStringsIf(pg.Title != "", out, "<title>", pg.Title, "</title>")
-	WriteStringsIf(pg.Description != "", out, `<meta name="description" content="`+pg.Description+`">`)
+	WriteString(out, `<head>`)
+	WriteStringIf(pg.Title != "", out, "<title>", pg.Title, "</title>")
+	WriteStringIf(pg.Description != "", out, `<meta name="description" content="`+pg.Description+`">`)
 	for _, item := range pg.HeadItems {
 		if err = Render(out, nil, &item); err != nil {
 			return err
@@ -190,12 +190,12 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 				}
 			}
 		}
-		WriteStringsIf(!duplicate, out, `<link rel="stylesheet" href="`+strrcssf+`">`)
+		WriteStringIf(!duplicate, out, `<link rel="stylesheet" href="`+strrcssf+`">`)
 	}
 
 	// required css styles
 	rcssstyle := RequiredCSSStyle()
-	WriteStringsIf(rcssstyle != "", out, `<style>`, rcssstyle, `</style>`)
+	WriteStringIf(rcssstyle != "", out, `<style>`, rcssstyle, `</style>`)
 
 	WriteString(out, "</head>")
 
@@ -204,7 +204,7 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 		tg, _ := pg.Body.Tag().TagName()
 		if tg != "body" {
 			err = ErrBodyTagMissing
-			WriteStrings(out, "<!-- ", err.Error(), " -->")
+			WriteString(out, "<!-- ", err.Error(), " -->")
 		} else {
 			err = Render(out, pg, pg.Body)
 		}

@@ -32,7 +32,7 @@ type Hero struct {
 
 	InsideHead html.HTMLComposer
 
-	*Container   // optional Container to render the content, allowing center
+	Container    *Container // optional Container to render the content, allowing center
 	Title        html.HTMLString
 	TitleSize    int // 1 to 6
 	Subtitle     html.HTMLString
@@ -48,16 +48,14 @@ var _ html.HTMLTagComposer = (*Hero)(nil)
 
 // Tag Builder used by the rendering functions.
 func (msg *Hero) BuildTag(tag *html.Tag) {
-	tag.SetTagName("section").AddClasses("hero").PickClass(HH_OPTIONS, string(msg.Height))
+	tag.SetTagName("section").AddClass("hero").PickClass(HH_OPTIONS, string(msg.Height))
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (msg *Hero) RenderContent(out io.Writer) error {
 
 	if msg.InsideHead != nil {
-		html.WriteString(out, `<div class="hero-head">`)
-		msg.RenderChilds(out, msg.InsideHead)
-		html.WriteString(out, `</div>`)
+		msg.RenderChilds(out, html.Div(`class="hero-head"`).SetBody(msg.InsideHead))
 	}
 
 	html.WriteString(out, `<div class="hero-body">`)
@@ -67,12 +65,12 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 		msg.Container.Tag().RenderOpening(out)
 	}
 
-	title := html.NewSnippet("p", `class="title"`).Stack(&msg.Title)
-	title.Tag().SetClassesIf(msg.TitleSize > 0 && msg.TitleSize <= 6, "is-"+strconv.Itoa(msg.TitleSize))
+	title := html.P(`class="title"`).SetBody(&msg.Title)
+	title.Tag().SetClassIf(msg.TitleSize > 0 && msg.TitleSize <= 6, "is-"+strconv.Itoa(msg.TitleSize))
 	msg.RenderChilds(out, title)
 
-	subtitle := html.NewSnippet("p", `class="subtitle"`).Stack(&msg.Subtitle)
-	subtitle.Tag().SetClassesIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
+	subtitle := html.P(`class="subtitle"`).SetBody(&msg.Subtitle)
+	subtitle.Tag().SetClassIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
 	msg.RenderChilds(out, subtitle)
 
 	msg.RenderChildsIf(msg.CTA != nil, out, msg.CTA)
@@ -84,9 +82,7 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 	html.WriteString(out, `</div>`)
 
 	if msg.InsideFoot != nil {
-		html.WriteString(out, `<div class="hero-foot">`)
-		msg.RenderChilds(out, msg.InsideFoot)
-		html.WriteString(out, `</div>`)
+		msg.RenderChilds(out, html.Div(`class="hero-foor"`).SetBody(msg.InsideFoot))
 	}
 
 	return nil

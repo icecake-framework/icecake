@@ -37,33 +37,33 @@ func TestAttribute(t *testing.T) {
 	assert.Error(t, err)
 
 	amap.ResetAttributes()
-	amap.AddClasses("c1", "c2")
+	amap.AddClass("c1", "c2")
 	assert.Equal(t, AttributeMap{"class": "c1 c2"}, amap)
 	assert.True(t, amap.HasClass("c1") && amap.HasClass("c2"))
 
-	amap.AddClasses(" c3  c4 ")
+	amap.AddClass(" c3  c4 ")
 	assert.Equal(t, AttributeMap{"class": "c1 c2 c3 c4"}, amap)
 
-	amap.AddClasses("  ")
+	amap.AddClass("  ")
 	assert.Equal(t, AttributeMap{"class": "c1 c2 c3 c4"}, amap)
 
-	amap.AddClasses("c4", "c2 c1")
+	amap.AddClass("c4", "c2 c1")
 	assert.Equal(t, AttributeMap{"class": "c1 c2 c3 c4"}, amap)
 
-	amap.RemoveClasses("c1")
+	amap.RemoveClass("c1")
 	assert.Equal(t, AttributeMap{"class": "c2 c3 c4"}, amap)
 
-	amap.RemoveClasses("c1", " c4 c2")
+	amap.RemoveClass("c1", " c4 c2")
 	assert.Equal(t, AttributeMap{"class": "c3"}, amap)
 
-	assert.True(t, amap.BoolAttribute("class"))
-	assert.False(t, amap.BoolAttribute("disabled"))
+	assert.True(t, amap.IsTrue("class"))
+	assert.False(t, amap.IsTrue("disabled"))
 
 	amap.SetBool("disabled", true)
-	assert.True(t, amap.BoolAttribute("disabled"))
+	assert.True(t, amap.IsTrue("disabled"))
 
 	amap.ResetAttributes()
-	amap.SetNameAttribute("icecake")
+	amap.SetName("icecake")
 	assert.Equal(t, AttributeMap{"name": "icecake"}, amap)
 
 	amap.SetId("Icecake")
@@ -76,7 +76,7 @@ func TestAttribute(t *testing.T) {
 	assert.True(t, f)
 	assert.Equal(t, "icecake-1", v)
 
-	assert.False(t, amap.BoolAttribute("missing"))
+	assert.False(t, amap.IsTrue("missing"))
 
 }
 
@@ -227,6 +227,6 @@ func TestString(t *testing.T) {
 	assert.Equal(t, `a=1 b="b" c="a'b'c" d='a"b"c'`, amap.SetAttribute("D", `a"b"c`).AttributeString())
 
 	amap.ResetAttributes()
-	assert.Equal(t, `id="ID1" class="c1 c2"`, amap.SetId("ID1").AddClasses("c1 c2").AttributeString())
+	assert.Equal(t, `id="ID1" class="c1 c2"`, amap.SetId("ID1").AddClass("c1 c2").AttributeString())
 	assert.Equal(t, `id="ID1" class="c1 c2" disabled`, amap.SetDisabled(true).AttributeString())
 }

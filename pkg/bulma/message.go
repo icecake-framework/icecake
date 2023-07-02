@@ -29,30 +29,25 @@ var _ html.HTMLTagComposer = (*Message)(nil)
 
 // Tag Builder used by the rendering functions.
 func (msg *Message) BuildTag(tag *html.Tag) {
-	tag.SetTagName("div").AddClasses("message")
+	tag.SetTagName("div").AddClass("message")
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (msg *Message) RenderContent(out io.Writer) error {
 
 	if !msg.Header.IsEmpty() {
-
 		html.WriteString(out, `<div class="message-header">`)
-		html.WriteString(out, `<p>`)
-		html.Render(out, nil, &msg.Header)
-		html.WriteString(out, `</p>`)
+		msg.RenderChilds(out, html.P().SetBody(&msg.Header))
 
 		if msg.CanDelete {
-			verbose.Printf(verbose.WARNING, "Message can delete TargetId=%s", msg.Id())
+			verbose.Debug("Message can delete TargetId=%s", msg.Id())
 			html.Render(out, nil, html.ToHTML(`<ick-delete TargetID='`+msg.Id()+`'/>`))
 		}
 		html.WriteString(out, `</div>`)
 	}
 
 	if !msg.Msg.IsEmpty() {
-		html.WriteString(out, `<div class="message-body">`)
-		msg.RenderChilds(out, &msg.Msg)
-		html.WriteString(out, `</div>`)
+		msg.RenderChilds(out, html.Div(`class="message-body"`).SetBody(&msg.Msg))
 	}
 
 	return nil

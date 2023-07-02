@@ -4,35 +4,27 @@ import (
 	"io"
 )
 
-// WriteStringsIf writes one or many strings to w only if the condition is true.
+// WriteStringIf writes one or many strings to w only if the condition is true.
 // Returns the number of bytes written and errors from the writer.
-func WriteStringsIf(condition bool, w io.Writer, ss ...string) (n int, err error) {
+func WriteStringIf(condition bool, w io.Writer, ss ...string) (n int, err error) {
 	if !condition {
 		return 0, nil
 	}
-	return WriteStrings(w, ss...)
+	return WriteString(w, ss...)
 }
 
-// WriteStrings writes one or many strings to w.
+// WriteString writes one or many strings to w.
 // Returns the number of bytes written and errors from the writer.
-func WriteStrings(w io.Writer, ss ...string) (n int, err error) {
+func WriteString(w io.Writer, ss ...string) (n int, err error) {
 	nn := 0
 	for _, s := range ss {
-		nn, err = WriteString(w, s)
+		nn, err = io.WriteString(w, s)
 		if err != nil {
 			return
 		}
 		n += nn
 	}
 	return
-}
-
-// WriteString writes the contents of the string s to w, which accepts a slice of bytes.
-// If w implements StringWriter, its WriteString method is invoked directly.
-// Otherwise, w.Write is called exactly once.
-// errors comes from the writer.
-func WriteString(out io.Writer, s string) (n int, err error) {
-	return io.WriteString(out, s)
 }
 
 // mini helper

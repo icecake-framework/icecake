@@ -210,13 +210,13 @@ func TrySet(_param ...string) error {
 }
 
 // Check is like Get but returns an error without printing a warning in case of an error
-func (_v JSValue) Check(_pname string) (JSValue, error) {
+func (_v JSValue) Check(propertyname string) (JSValue, error) {
 	if !_v.IsDefined() {
-		return null(), fmt.Errorf("unable to get %q: undefined js value", _pname)
+		return null(), fmt.Errorf("unable to get %q: undefined js value", propertyname)
 	}
-	jsret := val(_v.jsvalue.Get(_pname))
+	jsret := val(_v.jsvalue.Get(propertyname))
 	if !jsret.IsDefined() {
-		return null(), fmt.Errorf("get %q returns an undefined js value\n", _pname)
+		return null(), fmt.Errorf("get %q returns an undefined js value\n", propertyname)
 	}
 	return jsret, nil
 }

@@ -15,18 +15,8 @@ type Navbar struct {
 
 // returns nil if the id does not exists or if it's not a Navbar
 func WrapNavbar(id string) *Navbar {
-	e := dom.Id(id)
+	e := dom.RenderedId(id, "ick-navbar")
 	if e == nil {
-		console.Warnf("unable to wrap navbar Id %q: not found", id)
-		return nil
-	}
-	name, has := e.Attribute("name")
-	if !has {
-		console.Warnf("unable to wrap navbar Id %q: not an iceckahe snippet", id)
-		return nil
-	}
-	if name != "ick-navbar" {
-		console.Warnf("unable to wrap navbar Id %q: not an ick-navbab: %s", id, name)
 		return nil
 	}
 	n := new(Navbar)
@@ -54,10 +44,10 @@ func (nav *Navbar) Toggle() {
 	}
 
 	if bs[0].HasClass("is-active") {
-		bs[0].RemoveClasses("is-active")
-		ms[0].RemoveClasses("is-active")
+		bs[0].RemoveClass("is-active")
+		ms[0].RemoveClass("is-active")
 	} else {
-		bs[0].SetClasses("is-active")
-		ms[0].SetClasses("is-active")
+		bs[0].AddClass("is-active")
+		ms[0].AddClass("is-active")
 	}
 }
