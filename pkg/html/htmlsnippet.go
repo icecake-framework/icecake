@@ -18,9 +18,9 @@ import (
 // content can be empty. If tagname is empty only the content is rendered.
 // HTMLSnippet can be instantiated by itself or it can be embedded into a struct to define a more customizable html component.
 type HTMLSnippet struct {
-	meta  RenderingMeta  // Rendering MetaData.
-	tag   Tag            // HTML Element Tag with its attributes.
-	stack []HTMLComposer // HTML composers to render within the enclosed tag.
+	meta      RenderingMeta  // Rendering MetaData.
+	tag       Tag            // HTML Element Tag with its attributes.
+	bodystack []HTMLComposer // HTML composers to render within the enclosed tag.
 
 	// ds *DataState // a reference to a datastate that can be used for rendering.
 }
@@ -55,9 +55,9 @@ func P(attrlist ...string) *HTMLSnippet {
 func (src *HTMLSnippet) Clone() *HTMLSnippet {
 	to := new(HTMLSnippet)
 	to.tag = *src.tag.Clone()
-	if len(src.stack) > 0 {
-		copy := clone.Clone(src.stack)
-		to.stack = copy.([]HTMLComposer)
+	if len(src.bodystack) > 0 {
+		copy := clone.Clone(src.bodystack)
+		to.bodystack = copy.([]HTMLComposer)
 	}
 	return to
 }
@@ -96,21 +96,21 @@ func (s HTMLSnippet) Id() string {
 // SetBody adds one or many HTMLComposer to the rendering stack of this composer.
 // Returns the snippet to allow chaining calls.
 func (snippet *HTMLSnippet) SetBody(content ...HTMLComposer) *HTMLSnippet {
-	if snippet.stack == nil {
-		snippet.stack = make([]HTMLComposer, 0)
+	if snippet.bodystack == nil {
+		snippet.bodystack = make([]HTMLComposer, 0)
 	}
-	snippet.stack = append(snippet.stack, content...)
+	snippet.bodystack = append(snippet.bodystack, content...)
 	return snippet
 }
 
 // InsertSnippet builds and add a single snippet at the end of the content stack.
 // InsertSnippet returns the new snippet created and added to the stack.
 func (snippet *HTMLSnippet) InsertSnippet(tagname string, attrlist ...string) *HTMLSnippet {
-	if snippet.stack == nil {
-		snippet.stack = make([]HTMLComposer, 0)
+	if snippet.bodystack == nil {
+		snippet.bodystack = make([]HTMLComposer, 0)
 	}
 	s := NewSnippet(tagname, attrlist...)
-	snippet.stack = append(snippet.stack, s)
+	snippet.bodystack = append(snippet.bodystack, s)
 	return s
 }
 
@@ -118,6 +118,7 @@ func (snippet *HTMLSnippet) InsertSnippet(tagname string, attrlist ...string) *H
 // The content is unfolded to look for sub-snippet and every sub-snippet are also written to the writer.
 // If the child request an ID, RenderSnippet generates an ID by prefixing its parent id.
 // In addition the child is appended into the list of sub-components.
+// TODO: avoid rendering infinite loop
 func (parent *HTMLSnippet) RenderChilds(out io.Writer, childs ...HTMLComposer) error {
 	err := Render(out, parent, childs...)
 	return err
@@ -134,8 +135,12 @@ func (parent *HTMLSnippet) RenderChildsIf(condition bool, out io.Writer, childs 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 // The default implementation for an HTMLSnippet snippet is to render all the internal stack of composers inside an enclosed HTML tag.
 func (s *HTMLSnippet) RenderContent(out io.Writer) (err error) {
-	if s.stack != nil {
-		return s.RenderChilds(out, s.stack...)
+	if s.bodystack != nil {
+		return s.RenderChilds(out, s.bodystack...)
 	}
 	return nil
+}
+
+func (s HTMLSnippet) HasBody() bool {
+	return s.bodystack != nil
 }
