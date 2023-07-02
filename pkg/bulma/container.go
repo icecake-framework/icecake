@@ -15,15 +15,23 @@ const (
 
 // Container allow centering element on larger viewport.
 type Container struct {
-	html.HTMLSnippet
+	tag       html.Tag
 	FullWidth CONTAINER_FULLWIDTH
 }
 
 // Ensure Container implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*Container)(nil)
+var _ html.TagBuilder = (*Container)(nil)
+
+// Tag returns a reference to the snippet tag.
+func (s *Container) Tag() *html.Tag {
+	if s.tag.AttributeMap == nil {
+		s.tag.AttributeMap = make(html.AttributeMap)
+	}
+	return &s.tag
+}
 
 func (c *Container) BuildTag(tag *html.Tag) {
 	tag.SetTagName("div").
-		AddClasses("container").
-		SetClassesIf(c.FullWidth != "", "is-"+string(c.FullWidth))
+		AddClass("container").
+		SetClassIf(c.FullWidth != "", "is-"+string(c.FullWidth))
 }

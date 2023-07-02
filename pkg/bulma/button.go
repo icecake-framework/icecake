@@ -11,21 +11,6 @@ func init() {
 	html.RegisterComposer("ick-button", &Button{})
 }
 
-// The button type can be one of the following:
-//
-//	BTN_TYPE_BUTTON  // <button> form buttons.
-//	BTN_TYPE_A       // <a> anchor links
-//	BTN_TYPE_SUBMIT  // <input type="submit"> submit inputs
-//	BTN_TYPE_RESET   // <input type="reset"> reset inputs
-type BUTTON_TYPE int
-
-const (
-	BTN_TYPE_BUTTON BUTTON_TYPE = iota // <button> form buttons.
-	BTN_TYPE_A                         // <a> anchor link
-	BTN_TYPE_SUBMIT                    // <input type="submit"> submit inputs
-	BTN_TYPE_RESET                     // <input type="reset"> reset inputs
-)
-
 // Button is an UISnippet registered with the ick-tag `ick-button`.
 //
 // According to the ButtonType property, Button can be used either as a standard <button> element but also as an anchor link or a submit or reset form input.
@@ -35,25 +20,18 @@ const (
 type Button struct {
 	html.HTMLSnippet
 
-	// The button type.
-	// If nothing is specified, the default ButtonType is BTN_TYPE_BUTTON.
-	// TODO: ButtonType may be private and automatically setup according to the context of use
-	ButtonType BUTTON_TYPE
-
 	// The title of the Button. Can be a simple text or a more complex html string.
 	Title html.HTMLString
 
-	// If the ButtonType is BTN_TYPE_A then HRef defines the associated url link. HRef has no effect on other ButtonType.
-	// If HRef is defined then the button type is automatically set to BTN_TYPE_A.
-	// HRef can be nil. Usually it's created calling Button.TryParseHRef
+	// HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a <a> tag, otherwise it's a <button> tag.
 	HRef *url.URL
 
-	IsOutlined bool // Outlined button style
-	IsRounded  bool // Rounded button style
+	IsOutlined bool  // Outlined button style
+	IsRounded  bool  // Rounded button style
+	Color      COLOR // rendering color
+	IsLight    bool  // light color
 
 	IsDisabled bool // Disabled state
-
-	Color COLOR // rendering color
 
 	isLoading bool // Loading button state
 }
@@ -61,23 +39,22 @@ type Button struct {
 // Ensure Button implements HTMLTagComposer interface
 var _ html.HTMLTagComposer = (*Button)(nil)
 
-func NewButton(title html.HTMLString, id string, rawURL string, attrs ...string) *Button {
+func NewButton(title html.HTMLString, id string, rawurl string, attrs ...string) *Button {
 	btn := new(Button)
 	btn.Tag().SetId(id)
-	if rawURL == "" {
-		btn.ButtonType = BTN_TYPE_BUTTON
-	} else {
-		btn.ButtonType = BTN_TYPE_A
-		btn.ParseHRef(rawURL)
-	}
+	btn.ParseHRef(rawurl)
 	btn.Title = title
 	btn.Tag().ParseAttributes(attrs...)
 	return btn
 }
 
 // ParseHRef parses _rawUrl to HRef. HRef stays nil in case of error.
-func (btn *Button) ParseHRef(rawUrl string) (err error) {
-	btn.HRef, err = url.Parse(rawUrl)
+func (btn *Button) ParseHRef(rawurl string) (err error) {
+	if rawurl != "" {
+		btn.HRef, err = url.Parse(rawurl)
+	} else {
+		btn.HRef = nil
+	}
 	return
 }
 
@@ -102,44 +79,30 @@ func (btn *Button) SetColor(c COLOR) *Button {
 	btn.Color = c
 	return btn
 }
+func (btn *Button) SetLight(f bool) *Button {
+	btn.IsLight = f
+	return btn
+}
 
 // BuildTag builds the tag used to render the html element.
 // The tagname depends on the button type.
 func (btn *Button) BuildTag(tag *html.Tag) {
 
 	if btn.HRef != nil && btn.HRef.String() != "" {
-		btn.ButtonType = BTN_TYPE_A
-	}
-	switch btn.ButtonType {
-	case BTN_TYPE_A:
 		tag.SetTagName("a")
-	case BTN_TYPE_SUBMIT:
-		tag.SetTagName("input")
-	case BTN_TYPE_RESET:
-		tag.SetTagName("input")
-	default:
+	} else {
 		tag.SetTagName("button")
 	}
 
-	tag.AddClasses("button").
-		SetClassesIf(btn.IsOutlined, "is-outlined").
-		SetClassesIf(btn.IsRounded, "is-rounded").
-		SetClassesIf(btn.isLoading, "is-loading").
-		PickClass(COLOR_OPTIONS, string(btn.Color))
+	tag.AddClass("button").
+		SetClassIf(btn.IsOutlined, "is-outlined").
+		SetClassIf(btn.IsRounded, "is-rounded").
+		SetClassIf(btn.isLoading, "is-loading").
+		PickClass(COLOR_OPTIONS, string(btn.Color)).
+		SetClassIf(btn.IsLight, "is-light")
 
-	switch btn.ButtonType {
-	case BTN_TYPE_A:
-		tag.RemoveAttribute("type")
-		if btn.HRef != nil {
-			tag.SetAttribute("href", btn.HRef.String())
-		}
-	case BTN_TYPE_SUBMIT:
-		tag.RemoveAttribute("href")
-		tag.SetAttribute("type", "submit")
-	case BTN_TYPE_RESET:
-		tag.RemoveAttribute("href")
-		tag.SetAttribute("type", "reset")
-	default:
+	if btn.HRef != nil {
+		tag.SetAttribute("href", btn.HRef.String())
 	}
 
 	tag.SetDisabled(btn.IsDisabled)

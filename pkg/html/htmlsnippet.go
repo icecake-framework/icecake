@@ -28,12 +28,27 @@ type HTMLSnippet struct {
 // Ensure HTMLSnippet implements HTMLComposer interface
 var _ HTMLComposer = (*HTMLSnippet)(nil)
 
-// NewSnippet returns a new HTMLSnippet with a given tag name, a map of attributes and a content.
+// NewSnippet returns a new HTMLSnippet with a given tag name and a map of attributes.
 func NewSnippet(tagname string, attrlist ...string) *HTMLSnippet {
 	snippet := new(HTMLSnippet)
 	snippet.tag.SetTagName(tagname)
 	snippet.tag.ParseAttributes(attrlist...)
 	return snippet
+}
+
+// Div returns a new HTMLSnippet with DIV tag name and a map of attributes.
+func Div(attrlist ...string) *HTMLSnippet {
+	return NewSnippet("div", attrlist...)
+}
+
+// Div returns a new HTMLSnippet with DIV tag name and a map of attributes.
+func Span(attrlist ...string) *HTMLSnippet {
+	return NewSnippet("span", attrlist...)
+}
+
+// Div returns a new HTMLSnippet with DIV tag name and a map of attributes.
+func P(attrlist ...string) *HTMLSnippet {
+	return NewSnippet("p", attrlist...)
 }
 
 // Clone clones the snippet, without the rendering metadata
@@ -78,9 +93,9 @@ func (s HTMLSnippet) Id() string {
 // 	return snippet
 // }
 
-// Stack adds one or many HTMLComposer to the rendering stack of this composer.
+// SetBody adds one or many HTMLComposer to the rendering stack of this composer.
 // Returns the snippet to allow chaining calls.
-func (snippet *HTMLSnippet) Stack(content ...HTMLComposer) *HTMLSnippet {
+func (snippet *HTMLSnippet) SetBody(content ...HTMLComposer) *HTMLSnippet {
 	if snippet.stack == nil {
 		snippet.stack = make([]HTMLComposer, 0)
 	}
