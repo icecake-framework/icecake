@@ -13,7 +13,7 @@ type SectionIcecakeDoc struct {
 	Description string
 }
 
-func NewSectionIcecakeDoc(section string) html.HTMLComposer {
+func SectionDoc(section string) html.HTMLComposer {
 	switch section {
 	case "overview":
 		s := new(SectionOverview)
@@ -62,7 +62,7 @@ func NewSectionIcecakeDoc(section string) html.HTMLComposer {
 }
 
 func (cmp *SectionIcecakeDoc) BuildTag(tag *html.Tag) {
-	tag.SetTagName("section").AddClasses("content py-3")
+	tag.SetTagName("section").AddClass("content py-3")
 }
 
 func (cmp *SectionIcecakeDoc) RenderContent(out io.Writer) error {

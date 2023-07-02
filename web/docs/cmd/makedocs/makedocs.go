@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/bulma"
@@ -20,6 +21,8 @@ func main() {
 	flag.BoolVar(&verbose.IsOn, "verbose", false, "print out execution details")
 	flag.BoolVar(&verbose.IsDebugging, "debug", false, "print out debugging info")
 	flag.Parse()
+
+	start := time.Now()
 
 	// init new website
 	outpath := helper.MustCheckOutputPath(outpathparam)
@@ -43,16 +46,17 @@ func main() {
 		Container: &bulma.Container{FullWidth: bulma.CFW_MAXDESKTOP},
 		CTA:       bulma.NewButton(*html.ToHTML("Read doc"), "cta", "/overview.html").SetColor(bulma.COLOR_PRIMARY),
 	}
-	hero.Container.Tag().AddClasses("has-text-centered")
+	hero.Container.Tag().AddClass("has-text-centered")
 
-	pgindex.Body = html.NewSnippet("body").Stack(
+	pgindex.Body = html.NewSnippet("body").SetBody(
 		docs.DocNavbar().SetActiveItem("home"),
 		hero,
 		docs.DocFooter())
 
 	// menu for each pages unless home
-	menu := bulma.Menu{TagName: "nav"}
-	menu.Tag().SetId("docmenu").AddClasses("p-2").SetStyle("background-color:#fdfdfd;font-size:0.8rem;")
+	menu := bulma.Menu{}
+	menu.MenuTag().SetTagName("nav").AddClass("is-small")
+	menu.Tag().SetId("docmenu").AddClass("p-2").SetStyle("background-color:#fdfdfd;")
 	menu.AddItem("", bulma.MENUIT_LABEL, "General")
 	menu.AddItem("overview", bulma.MENUIT_LINK, "Overview").ParseHRef("/overview.html")
 	menu.AddItem("", bulma.MENUIT_LABEL, "Core Snippets")
@@ -69,6 +73,7 @@ func main() {
 	menu.AddItem("bulmamessage", bulma.MENUIT_LINK, "Message").ParseHRef("/bulmamessage.html")
 	menu.AddItem("bulmanavbar", bulma.MENUIT_LINK, "Navbar").ParseHRef("/bulmanavbar.html")
 	menu.AddItem("bulmanotify", bulma.MENUIT_LINK, "Notify").ParseHRef("/bulmanotify.html")
+	menu.AddItem("", bulma.MENUIT_FOOTER, "Alpha 4")
 
 	// page docs
 	addPageDoc(web, menu.Clone(), "overview")
@@ -102,7 +107,8 @@ func main() {
 		}
 		os.Exit(1)
 	}
-	fmt.Println(n, "website pages generated")
+
+	fmt.Println(n, "pages generated in ", time.Since(start))
 }
 
 func addPageDoc(web *html.WebSite, menu *bulma.Menu, pgkey string) {
@@ -112,13 +118,15 @@ func addPageDoc(web *html.WebSite, menu *bulma.Menu, pgkey string) {
 	pg.AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`)
 	pg.AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
 
-	pgc := html.NewSnippet("div", `class="columns is-mobile mb-0 pb-0"`)
-	pgc.InsertSnippet("div", `class="column is-narrow mb-0 pb-0"`).Stack(menu.SetActiveItem(pgkey))
-	pgc.InsertSnippet("div", `class="column mb-0 pb-0"`).Stack(webdocs.NewSectionIcecakeDoc(pgkey))
+	inside := html.Div(`class="columns is-mobile mb-0 pb-0"`).SetBody(
+		html.Div(`class="column is-narrow mb-0 pb-0"`).SetBody(
+			menu.SetActiveItem(pgkey)),
+		html.Div(`class="column mb-0 pb-0"`).SetBody(
+			webdocs.SectionDoc(pgkey)))
 
-	pg.Body = html.NewSnippet("body").Stack(
+	pg.Body = html.NewSnippet("body").SetBody(
 		docs.DocNavbar().SetActiveItem("docs"),
-		pgc,
+		inside,
 		docs.DocFooter())
 
 }

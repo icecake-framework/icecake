@@ -4,6 +4,18 @@ $primary: #48acf0;
 
 @import "../../../../../bulma/bulma.sass";
 
+.spaceout>*:not(:last-child) {
+    margin-right: 1.25rem;
+}
+
+.spaceout>* {
+    margin-bottom: 1.25rem;
+}
+
+.spaceout {
+    padding-bottom: 0;
+}
+
 a.navbar-item.is-active {
     border-bottom: 2px solid $link;
 }

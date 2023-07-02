@@ -10282,6 +10282,18 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
   padding: 3rem 1.5rem 6rem;
 }
 
+.spaceout > *:not(:last-child) {
+  margin-right: 1.25rem;
+}
+
+.spaceout > * {
+  margin-bottom: 1.25rem;
+}
+
+.spaceout {
+  padding-bottom: 0;
+}
+
 a.navbar-item.is-active {
   border-bottom: 2px solid hsl(229, 53%, 53%);
 }/*# sourceMappingURL=docs.css.map */
