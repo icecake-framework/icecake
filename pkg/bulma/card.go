@@ -10,18 +10,43 @@ func init() {
 	html.RegisterComposer("ick-card", &Card{})
 }
 
+// The card is an HTMLSnippet, use SetBody to setup the body of the card
 type Card struct {
 	html.HTMLSnippet
 
-	Title   html.HTMLString   // optional title to display on the head of the card
-	Image   *Image            // optional image
-	Content html.HTMLComposer // any html content to render within the body of the card
+	// Optional title to display in the head of the card
+	Title html.HTMLString
 
-	FooterItem []html.HTMLString // optional Footer 1 of 3 items max
+	// Optional image to display on top of the card
+	Image *Image
+
+	// optional Footer items
+	footerItem []html.HTMLString
 }
 
 // Ensure Card implements HTMLTagComposer interface
 var _ html.HTMLTagComposer = (*Card)(nil)
+
+func NewCard() *Card {
+	c := new(Card)
+	c.footerItem = make([]html.HTMLString, 0)
+	return c
+}
+
+func (card *Card) SetTitle(title html.HTMLString) *Card {
+	card.Title = title
+	return card
+}
+
+func (card *Card) SetImage(image Image) *Card {
+	card.Image = &image
+	return card
+}
+
+func (card *Card) AddFooterItem(item html.HTMLString) *Card {
+	card.footerItem = append(card.footerItem, item)
+	return card
+}
 
 // BuildTag builds the tag used to render the html element.
 // Card Tag is a simple <div class="card"></div>
@@ -39,17 +64,21 @@ func (card *Card) RenderContent(out io.Writer) error {
 		html.WriteString(out, `</p></header>`)
 	}
 
-	card.RenderChildsIf(card.Image != nil, out, card.Image)
-
-	if card.Content != nil {
-		html.WriteString(out, `<div class="card-content">`)
-		card.RenderChilds(out, card.Content)
+	if card.Image != nil {
+		html.WriteString(out, `<div class="card-image">`)
+		card.RenderChilds(out, card.Image)
 		html.WriteString(out, `</div>`)
 	}
 
-	if len(card.FooterItem) > 0 {
+	if card.HasBody() {
+		html.WriteString(out, `<div class="card-content">`)
+		card.HTMLSnippet.RenderContent(out)
+		html.WriteString(out, `</div>`)
+	}
+
+	if len(card.footerItem) > 0 {
 		html.WriteString(out, `<div class="card-footer">`)
-		for _, item := range card.FooterItem {
+		for _, item := range card.footerItem {
 			html.WriteString(out, `<span class="card-footer-item">`)
 			card.RenderChilds(out, &item)
 			html.WriteString(out, `</span>`)
