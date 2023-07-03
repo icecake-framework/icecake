@@ -4,9 +4,9 @@ import (
 	"net/url"
 )
 
-// Link represents an HTML anchor link.
+// ICKLink represents an HTML anchor link.
 // It is part of the core icecake snippets.
-type Link struct {
+type ICKLink struct {
 	HTMLSnippet
 
 	// HRef defines the associated url link.
@@ -16,23 +16,23 @@ type Link struct {
 }
 
 // Ensure HTMLString implements HTMLTagComposer interface
-var _ HTMLTagComposer = (*Link)(nil)
+var _ HTMLTagComposer = (*ICKLink)(nil)
 
 // A returns an HTML anchor link
-func A(attrlist ...string) *Link {
-	lnk := new(Link)
+func A(attrlist ...string) *ICKLink {
+	lnk := new(ICKLink)
 	lnk.Tag().SetTagName("a").ParseAttributes(attrlist...)
 	return lnk
 }
 
 // ParseHRef tries to parse rawUrl to HRef ignoring error.
-func (lnk *Link) ParseHRef(rawUrl string) *Link {
+func (lnk *ICKLink) ParseHRef(rawUrl string) *ICKLink {
 	lnk.HRef, _ = url.Parse(rawUrl)
 	return lnk
 }
 
 // SetHRef sets the href url
-func (lnk *Link) SetHRef(href *url.URL) *Link {
+func (lnk *ICKLink) SetHRef(href *url.URL) *ICKLink {
 	if href == nil {
 		lnk.HRef = nil
 	} else {
@@ -43,7 +43,7 @@ func (lnk *Link) SetHRef(href *url.URL) *Link {
 }
 
 // BuildTag builds the tag used to render the html element.
-func (lnk *Link) BuildTag() Tag {
+func (lnk *ICKLink) BuildTag() Tag {
 	if lnk.HRef != nil {
 		lnk.Tag().SetAttribute("href", lnk.HRef.String())
 	}
