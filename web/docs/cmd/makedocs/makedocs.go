@@ -39,16 +39,15 @@ func main() {
 
 	// ... with a hero section
 	hero := &bulma.Hero{
-		Height:    bulma.HH_FULLFHEIGHT_WITH_NAVBAR,
-		Title:     *html.ToHTML("Develop SPA and Static Websites in Go."),
-		TitleSize: 2,
-		Subtitle:  *html.ToHTML("Pure Go Web Assembly Framework"),
-		Container: &bulma.Container{FullWidth: bulma.CFW_MAXDESKTOP},
-		CTA:       bulma.NewButton(*html.ToHTML("Read doc"), "cta", "/overview.html").SetColor(bulma.COLOR_PRIMARY),
+		Height:        bulma.HH_FULLFHEIGHT_WITH_NAVBAR,
+		Title:         *html.ToHTML("Develop SPA and Static Websites in Go."),
+		TitleSize:     2,
+		Subtitle:      *html.ToHTML("Pure Go Web Assembly Framework"),
+		ContainerAttr: html.ParseAttributes(`class="has-text-centered ` + string(bulma.CFW_MAXDESKTOP) + `"`),
+		CTA:           bulma.NewButton(*html.ToHTML("Read doc"), "cta", "/overview.html").SetColor(bulma.COLOR_PRIMARY),
 	}
-	hero.Container.Tag().AddClass("has-text-centered")
 
-	pgindex.Body = html.NewSnippet("body").SetBody(
+	pgindex.Body().AddContent(
 		docs.DocNavbar().SetActiveItem("home"),
 		hero,
 		docs.DocFooter())
@@ -56,7 +55,7 @@ func main() {
 	// menu for each pages unless home
 	menu := bulma.Menu{}
 	menu.MenuTag().SetTagName("nav").AddClass("is-small")
-	menu.Tag().SetId("docmenu").AddClass("p-2").SetStyle("background-color:#fdfdfd;")
+	menu.Tag().SetId("docmenu").AddClass("p-2").AddStyle("background-color:#fdfdfd;")
 	menu.AddItem("", bulma.MENUIT_LABEL, "General")
 	menu.AddItem("overview", bulma.MENUIT_LINK, "Overview").ParseHRef("/overview.html")
 	menu.AddItem("", bulma.MENUIT_LABEL, "Core Snippets")
@@ -118,13 +117,13 @@ func addPageDoc(web *html.WebSite, menu *bulma.Menu, pgkey string) {
 	pg.AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`)
 	pg.AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
 
-	inside := html.Div(`class="columns is-mobile mb-0 pb-0"`).SetBody(
-		html.Div(`class="column is-narrow mb-0 pb-0"`).SetBody(
+	inside := html.Div(`class="columns is-mobile mb-0 pb-0"`).AddContent(
+		html.Div(`class="column is-narrow mb-0 pb-0"`).AddContent(
 			menu.SetActiveItem(pgkey)),
-		html.Div(`class="column mb-0 pb-0"`).SetBody(
+		html.Div(`class="column mb-0 pb-0"`).AddContent(
 			webdocs.SectionDoc(pgkey)))
 
-	pg.Body = html.NewSnippet("body").SetBody(
+	pg.Body().AddContent(
 		docs.DocNavbar().SetActiveItem("docs"),
 		inside,
 		docs.DocFooter())

@@ -30,7 +30,7 @@ type Page struct {
 	Description string     // the html "head/meta description" value.
 	HeadItems   []HeadItem // the list of tags in the section <head>
 
-	Body HTMLTagComposer // the html composer used to render the body tag. The tagname must be "body" otherwise will not render.
+	body HTMLSnippet // The tagname is forced to "body" during rendering.
 
 	url  *url.URL // relative url of the html page.
 	wasm *url.URL // relative url of the html page.
@@ -93,6 +93,12 @@ func (pg *Page) ParseURL(rawHTMLUrl string) (err error) {
 		}
 	}
 	return
+}
+
+// Body returns the HTMLSnippet used to render the body tag.
+// Attributes can be setup. The tag will be forced to body during rendering.
+func (pg *Page) Body() *HTMLSnippet {
+	return &pg.body
 }
 
 // RelURL returns the relative URL of the page, excluding the query and the fragments if any.
@@ -182,8 +188,8 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 		strrcssf := rcssf.String()
 		duplicate := false
 		for _, hi := range pg.HeadItems {
-			if hi.tag.tagname == "link" {
-				href, found := hi.tag.Attribute("href")
+			if hitn, _ := hi.Tag().TagName(); hitn == "link" {
+				href, found := hi.Tag().Attribute("href")
 				if found && href == strrcssf {
 					duplicate = true
 					break
@@ -200,18 +206,8 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 	WriteString(out, "</head>")
 
 	// <body>
-	if pg.Body != nil {
-		tg, _ := pg.Body.Tag().TagName()
-		if tg != "body" {
-			err = ErrBodyTagMissing
-			WriteString(out, "<!-- ", err.Error(), " -->")
-		} else {
-			err = Render(out, pg, pg.Body)
-		}
-		if err != nil {
-			return err
-		}
-	}
+	pg.body.Tag().SetTagName("body")
+	err = Render(out, pg, &pg.body)
 
 	// wasm script, if any
 	// must be loaded at the end of the page because the wasm code interacts with the loading/loaded )DOM

@@ -32,7 +32,8 @@ type Hero struct {
 
 	InsideHead html.HTMLComposer
 
-	Container    *Container // optional Container to render the content, allowing center
+	ContainerAttr html.AttributeMap // The attributes map to setup to the hero's container, allowing text centering
+
 	Title        html.HTMLString
 	TitleSize    int // 1 to 6
 	Subtitle     html.HTMLString
@@ -47,42 +48,41 @@ type Hero struct {
 var _ html.HTMLTagComposer = (*Hero)(nil)
 
 // Tag Builder used by the rendering functions.
-func (msg *Hero) BuildTag(tag *html.Tag) {
-	tag.SetTagName("section").AddClass("hero").PickClass(HH_OPTIONS, string(msg.Height))
+func (msg *Hero) BuildTag() html.Tag {
+	msg.Tag().SetTagName("section").AddClass("hero").PickClass(HH_OPTIONS, string(msg.Height))
+	return *msg.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (msg *Hero) RenderContent(out io.Writer) error {
 
 	if msg.InsideHead != nil {
-		msg.RenderChilds(out, html.Div(`class="hero-head"`).SetBody(msg.InsideHead))
+		msg.RenderChilds(out, html.Div(`class="hero-head"`).AddContent(msg.InsideHead))
 	}
 
 	html.WriteString(out, `<div class="hero-body">`)
 
-	if msg.Container != nil {
-		msg.Container.BuildTag(msg.Container.Tag())
-		msg.Container.Tag().RenderOpening(out)
-	}
+	cont := new(Container)
+	cont.Tag().AttributeMap = msg.ContainerAttr.Clone()
+	contag := cont.BuildTag()
+	contag.RenderOpening(out)
 
-	title := html.P(`class="title"`).SetBody(&msg.Title)
+	title := html.P(`class="title"`).AddContent(&msg.Title)
 	title.Tag().SetClassIf(msg.TitleSize > 0 && msg.TitleSize <= 6, "is-"+strconv.Itoa(msg.TitleSize))
 	msg.RenderChilds(out, title)
 
-	subtitle := html.P(`class="subtitle"`).SetBody(&msg.Subtitle)
+	subtitle := html.P(`class="subtitle"`).AddContent(&msg.Subtitle)
 	subtitle.Tag().SetClassIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
 	msg.RenderChilds(out, subtitle)
 
 	msg.RenderChildsIf(msg.CTA != nil, out, msg.CTA)
 
-	if msg.Container != nil {
-		msg.Container.Tag().RenderClosing(out)
-	}
+	contag.RenderClosing(out)
 
 	html.WriteString(out, `</div>`)
 
 	if msg.InsideFoot != nil {
-		msg.RenderChilds(out, html.Div(`class="hero-foor"`).SetBody(msg.InsideFoot))
+		msg.RenderChilds(out, html.Div(`class="hero-foor"`).AddContent(msg.InsideFoot))
 	}
 
 	return nil

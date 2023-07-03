@@ -313,8 +313,8 @@ func unfoldick(parent HTMLComposer, out io.Writer, ickname string, ickattrs Attr
 			} else {
 				// this attribute is not a field of the componenent
 				// keep it as is unless it is the class attribute, in this case, add the attribute
-				if tagbuilder, isbuilder := newref.Interface().(TagBuilder); isbuilder {
-					tagbuilder.Tag().SetAttribute(ickattname, ickattvalue)
+				if tagbuilder, isbuilder := newref.Interface().(TagBuilder); isbuilder && tagbuilder != nil {
+					tagbuilder.SetAttribute(ickattname, ickattvalue)
 				} else {
 					err = &IckTagNameError{TagName: ickname, Message: fmt.Sprintf("%q attribute: not a component property and not assignable to the composer.", ickattname)}
 					break

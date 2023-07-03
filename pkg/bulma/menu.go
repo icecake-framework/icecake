@@ -71,7 +71,7 @@ func (mnui MenuItem) Clone() *MenuItem {
 }
 
 // BuildTag builds the tag used to render the html element.
-func (mnui *MenuItem) BuildTag(tag *html.Tag) {
+func (mnui *MenuItem) BuildTag() html.Tag {
 	if mnui.Type == MENUIT_LABEL {
 		mnui.Tag().SetTagName("p").AddClass("menu-label")
 	} else {
@@ -79,6 +79,7 @@ func (mnui *MenuItem) BuildTag(tag *html.Tag) {
 
 	}
 	mnui.Tag().SetAttributeIf(mnui.Key != "", "data-key", mnui.Key)
+	return *mnui.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -170,17 +171,18 @@ func (mnu *Menu) Item(key string) *MenuItem {
 }
 
 // BuildTag builds the tag used to render the html element.
-func (mnu *Menu) BuildTag(tag *html.Tag) {
-	tag.SetTagName("div")
+func (mnu *Menu) BuildTag() html.Tag {
+	mnu.Tag().SetTagName("div")
 
 	// set style height if there's a footer
 	for _, item := range mnu.items {
 		if item.Type == MENUIT_FOOTER {
-			tag.AddClass("is-flex is-flex-direction-column is-justify-content-space-between")
-			tag.SetStyle("height:100%;")
+			mnu.Tag().AddClass("is-flex is-flex-direction-column is-justify-content-space-between")
+			mnu.Tag().AddStyle("height:100%;")
 			break
 		}
 	}
+	return *mnu.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.

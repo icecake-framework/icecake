@@ -28,8 +28,9 @@ type Message struct {
 var _ html.HTMLTagComposer = (*Message)(nil)
 
 // Tag Builder used by the rendering functions.
-func (msg *Message) BuildTag(tag *html.Tag) {
-	tag.SetTagName("div").AddClass("message")
+func (msg *Message) BuildTag() html.Tag {
+	msg.Tag().SetTagName("div").AddClass("message")
+	return *msg.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -37,7 +38,7 @@ func (msg *Message) RenderContent(out io.Writer) error {
 
 	if !msg.Header.IsEmpty() {
 		html.WriteString(out, `<div class="message-header">`)
-		msg.RenderChilds(out, html.P().SetBody(&msg.Header))
+		msg.RenderChilds(out, html.P().AddContent(&msg.Header))
 
 		if msg.CanDelete {
 			verbose.Debug("Message can delete TargetId=%s", msg.Id())
@@ -47,7 +48,7 @@ func (msg *Message) RenderContent(out io.Writer) error {
 	}
 
 	if !msg.Msg.IsEmpty() {
-		msg.RenderChilds(out, html.Div(`class="message-body"`).SetBody(&msg.Msg))
+		msg.RenderChilds(out, html.Div(`class="message-body"`).AddContent(&msg.Msg))
 	}
 
 	return nil

@@ -86,15 +86,14 @@ func (btn *Button) SetLight(f bool) *Button {
 
 // BuildTag builds the tag used to render the html element.
 // The tagname depends on the button type.
-func (btn *Button) BuildTag(tag *html.Tag) {
-
+func (btn *Button) BuildTag() html.Tag {
 	if btn.HRef != nil && btn.HRef.String() != "" {
-		tag.SetTagName("a")
+		btn.Tag().SetTagName("a")
 	} else {
-		tag.SetTagName("button")
+		btn.Tag().SetTagName("button")
 	}
 
-	tag.AddClass("button").
+	btn.Tag().AddClass("button").
 		SetClassIf(btn.IsOutlined, "is-outlined").
 		SetClassIf(btn.IsRounded, "is-rounded").
 		SetClassIf(btn.isLoading, "is-loading").
@@ -102,10 +101,11 @@ func (btn *Button) BuildTag(tag *html.Tag) {
 		SetClassIf(btn.IsLight, "is-light")
 
 	if btn.HRef != nil {
-		tag.SetAttribute("href", btn.HRef.String())
+		btn.Tag().SetAttribute("href", btn.HRef.String())
 	}
 
-	tag.SetDisabled(btn.IsDisabled)
+	btn.Tag().SetDisabled(btn.IsDisabled)
+	return *btn.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.

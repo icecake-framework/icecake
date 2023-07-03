@@ -142,7 +142,7 @@ func Render(out io.Writer, parent HTMLComposer, cmps ...HTMLComposer) error {
 	return nil
 }
 
-func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
+func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) error {
 
 	// nothing to render
 	if cmp == nil {
@@ -179,12 +179,13 @@ func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
 	cmptag, istagger := cmp.(TagBuilder)
 	cmpid := ""
 	autoid := false
-	if istagger {
-		tag := cmptag.Tag()
-		if tag.AttributeMap == nil {
-			tag.AttributeMap = make(AttributeMap)
-		}
-		cmptag.BuildTag(tag)
+	var tag Tag
+	if istagger && cmptag != nil {
+		// tag := cmptag.Tag()
+		// if tag.AttributeMap == nil {
+		// 	tag.AttributeMap = make(AttributeMap)
+		// }
+		tag = cmptag.BuildTag()
 
 		// force property name
 		if !tag.NoName {
@@ -193,7 +194,7 @@ func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
 
 		// get the id, may be empty
 		if tag.IsTrue("autoid") {
-			autoid = true // tag.RemoveAttribute("id")
+			autoid = true
 		} else {
 			cmpid = tag.Id()
 		}
@@ -202,7 +203,7 @@ func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
 	// generate the virtual id
 	virtualid := cmp.Meta().GenerateVirtualId(cmpname, cmpid)
 	if autoid {
-		cmptag.Tag().SetId(virtualid)
+		tag.SetId(virtualid)
 	}
 
 	// verbose information
@@ -212,27 +213,30 @@ func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) (err error) {
 
 	// render openingtag
 	if cmptag != nil {
-		selfclosed, errtag := cmptag.Tag().RenderOpening(out)
-		if selfclosed || errtag != nil {
-			return errtag
+		selfclosed, err := tag.RenderOpening(out)
+		if selfclosed || err != nil {
+			return err
 		}
 	}
 
 	// Render the content
-	err = cmp.RenderContent(out)
+	err := cmp.RenderContent(out)
 	if err != nil {
 		return err
 	}
 
 	// Render closingtag
 	if cmptag != nil {
-		err = cmptag.Tag().RenderClosing(out)
+		err := tag.RenderClosing(out)
+		if err != nil {
+			return err
+		}
 	}
 
 	// add it to the map of embedded components
-	if err == nil && parent != nil {
+	if parent != nil {
 		parent.Meta().Embed(virtualid, cmp)
 	}
 
-	return err
+	return nil
 }

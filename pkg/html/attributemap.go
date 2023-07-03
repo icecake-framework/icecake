@@ -424,14 +424,15 @@ func (amap AttributeMap) Style() string {
 	return amap["style"]
 }
 
-// SetStyle sets or overwrites the style attribute.
-// SetStyle returns the map to allow chainning.
-func (amap AttributeMap) SetStyle(style string) AttributeMap {
+// AddStyle adds the style to the style attribute.
+// AddStyle returns the map to allow chainning.
+func (amap AttributeMap) AddStyle(style string) AttributeMap {
 	style = strings.Trim(style, " ")
 	if err := checkstyle(style); err != nil {
 		verbose.Error("SetStyle", err)
 	} else {
-		amap.saveAttribute("style", style, true)
+		s, _ := amap["style"]
+		amap.saveAttribute("style", s+style, true)
 	}
 	return amap
 }

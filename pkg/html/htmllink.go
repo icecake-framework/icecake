@@ -16,13 +16,13 @@ type Link struct {
 }
 
 // Ensure HTMLString implements HTMLTagComposer interface
-var _ HTMLComposer = (*Link)(nil)
+var _ HTMLTagComposer = (*Link)(nil)
 
 // A returns an HTML anchor link
 func A(attrlist ...string) *Link {
 	lnk := new(Link)
-	lnk.tag.SetTagName("a")
-	lnk.tag.ParseAttributes(attrlist...)
+	lnk.Tag().SetTagName("a")
+	lnk.Tag().ParseAttributes(attrlist...)
 	return lnk
 }
 
@@ -44,15 +44,16 @@ func (lnk *Link) SetHRef(href *url.URL) *Link {
 }
 
 // BuildTag builds the tag used to render the html element.
-func (lnk *Link) BuildTag(tag *Tag) {
+func (lnk *Link) BuildTag() Tag {
 	if lnk.HRef != nil {
 		lnk.Tag().SetAttribute("href", lnk.HRef.String())
 	}
+	return *lnk.Tag()
 }
 
 // SetBody adds one or many HTMLComposer to the rendering stack of this composer.
 // Returns the snippet to allow chaining calls.
 func (lnk *Link) SetBody(content ...HTMLComposer) *Link {
-	lnk.HTMLSnippet.SetBody(content...)
+	lnk.HTMLSnippet.AddContent(content...)
 	return lnk
 }

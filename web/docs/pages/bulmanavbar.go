@@ -21,7 +21,7 @@ func (cmp *SectionBulmaNavbar) RenderContent(out io.Writer) error {
 
 	// example 1
 	ex1 := new(bulma.Navbar)
-	ex1.Tag().SetStyle("border: solid 1px;")
+	ex1.Tag().AddStyle("border: solid 1px;")
 	ex1.AddItem("", bulma.NAVBARIT_BRAND, html.ToHTML("BRAND"))
 	ex1.AddItem("", bulma.NAVBARIT_START, html.ToHTML("Home"))
 	ex1.AddItem("", bulma.NAVBARIT_START, html.ToHTML("Second Item"))

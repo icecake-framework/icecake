@@ -50,8 +50,9 @@ func (card *Card) AddFooterItem(item html.HTMLString) *Card {
 
 // BuildTag builds the tag used to render the html element.
 // Card Tag is a simple <div class="card"></div>
-func (card *Card) BuildTag(tag *html.Tag) {
-	tag.SetTagName("div").AddClass("card")
+func (card *Card) BuildTag() html.Tag {
+	card.Tag().SetTagName("div").AddClass("card")
+	return *card.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.

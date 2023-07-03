@@ -31,7 +31,7 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	// register a tiny html snippet
-	tiny := html.NewSnippet("a", `class="brand" href="https://icecake.net"`).SetBody(html.ToHTML("<strong>Icecake</strong>"))
+	tiny := html.NewSnippet("a", `class="brand" href="https://icecake.net"`).AddContent(html.ToHTML("<strong>Icecake</strong>"))
 	html.RegisterComposer("ick-icecake-brand", tiny)
 
 	// Text source is embedded in the compiled wasm code with the //go:embed compiler directive

@@ -27,21 +27,21 @@ func (cmp *SectionBulmaCard) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<div class="box is-flex spaceout mr-5">`)
 
 	card3 := bulma.NewCard()
-	card3.SetBody(html.ToHTML(`<p class="title">Very Good Cake</p>`))
-	card3.Tag().SetStyle("width: 150px;")
+	card3.AddContent(html.ToHTML(`<p class="title">Very Good Cake</p>`))
+	card3.Tag().AddStyle("width: 150px;")
 	cmp.RenderChilds(out, card3)
 
 	card1 := bulma.NewCard()
 	card1.SetTitle(*html.ToHTML("Hello World")).
 		SetImage(*bulma.NewImage("/assets/icecake.jpg", bulma.IMG_128x128)).
 		AddFooterItem(*html.ToHTML("<a href='/'>home</a>")).
-		SetBody(html.ToHTML("Nice cake"))
+		AddContent(html.ToHTML("Nice cake"))
 		//Tag().SetStyle("width: 300px;")
 	cmp.RenderChilds(out, card1)
 
 	card2 := bulma.NewCard()
 	card2.SetImage(*bulma.NewImage("/assets/icecake.jpg", bulma.IMG_64x64)).
-		SetBody(html.ToHTML("Nice cake"))
+		AddContent(html.ToHTML("Nice cake"))
 	cmp.RenderChilds(out, card2)
 
 	html.WriteString(out, `</div>`)

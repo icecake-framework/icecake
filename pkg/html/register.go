@@ -25,7 +25,7 @@ import (
 //   - If the _ickname does not meet the pattern "ick-*"
 //   - If the _composer does not implement the HTMLComposer interface
 func RegisterComposer(icktagname string, composer any) (entry *registry.RegistryEntry, err error) {
-	// TODO: RegisterComposer should generate ickname automatically (see RenderSnippet)
+	// TODO: RegisterComposer should generate ickname automatically (see RenderSnippet), unless a same component can be registered with 2 names ?!
 	typ := reflect.TypeOf(composer)
 	if typ.Kind() != reflect.Pointer {
 		err = fmt.Errorf("registering composer %q failed: must register by reference not by value", typ.String())
@@ -42,15 +42,7 @@ func RegisterComposer(icktagname string, composer any) (entry *registry.Registry
 
 	cmptag, istagger := composer.(TagBuilder)
 	if istagger {
-		tag := cmptag.Tag()
-		if tag == nil || tag.AttributeMap == nil {
-			err = fmt.Errorf("registering composer %q failed: TagBuilder must return a valid reference to a Tag", typ.String())
-			log.Println(err.Error())
-			return nil, err
-		}
-
-		cmptag.BuildTag(tag)
-		if !tag.HasRendering() {
+		if !cmptag.BuildTag().HasRendering() {
 			log.Printf("registering composer %q warning: TagBuilder without rendering", icktagname)
 		}
 	}
@@ -79,15 +71,3 @@ func RegisterComposer(icktagname string, composer any) (entry *registry.Registry
 
 	return entry, nil
 }
-
-// TODO: RegisterHTMLString
-// RegisterHTMLString allows registering a simple HTMLString with a simple line of code.
-// func RegisterHTMLString(_ickname string, _template SnippetTemplate) (_err error) {
-// 	s := new(HTMLSnippet)
-// 	s.TagName = _template.TagName
-// 	s.Body = _template.Body
-// 	if _err = ParseAttributes(string(_template.Attributes), s); _err != nil {
-// 		return _err
-// 	}
-// 	return RegisterComposer(_ickname, s, nil)
-// }

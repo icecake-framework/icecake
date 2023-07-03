@@ -42,8 +42,9 @@ type InputField struct {
 var _ html.HTMLTagComposer = (*InputField)(nil)
 
 // BuildTag builds the tag used to render the html element.
-func (inputfield *InputField) BuildTag(tag *html.Tag) {
-	tag.SetTagName("div").AddClass("field")
+func (inputfield *InputField) BuildTag() html.Tag {
+	inputfield.Tag().SetTagName("div").AddClass("field")
+	return *inputfield.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -75,12 +76,12 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	case "readonly":
 		subinput.Tag().SetBool("readonly", true)
 	}
-	subcontrol.SetBody(subinput)
+	subcontrol.AddContent(subinput)
 	cmp.RenderChilds(out, subcontrol)
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
-		subhelp := html.P(`class="help"`).SetBody(&cmp.Help)
+		subhelp := html.P(`class="help"`).AddContent(&cmp.Help)
 		subhelp.Tag().
 			SetClassIf(cmp.State == INPUT_SUCCESS, "is-success").
 			SetClassIf(cmp.State == INPUT_WARNING, "is-warning").

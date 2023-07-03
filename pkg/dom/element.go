@@ -739,17 +739,6 @@ func (_elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...html.HTMLCompose
 	// 	return "", console.Errorf("Element:InsertSnippet failed. snippet must implement HTMLComposer interface or UIComposer interface")
 	// }
 
-	// check that no elements are already into the DOM with this the composer id.
-	for _, cmp := range cmps {
-		if tagger, istagger := cmp.(html.TagBuilder); istagger {
-			if id := tagger.Tag().Id(); id != "" {
-				if _, err := Doc().CheckId(id); err == nil {
-					return "", console.Errorf("Element:InsertSnippet failed. snippet's ID %q is already in the DOM.", id)
-				}
-			}
-		}
-	}
-
 	out := new(bytes.Buffer)
 	err = html.Render(out, nil, cmps...)
 	if err != nil {

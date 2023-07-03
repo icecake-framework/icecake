@@ -28,6 +28,7 @@ var _ html.HTMLTagComposer = (*Delete)(nil)
 
 // BuildTag builds the tag used to render the html element.
 // Delete tag is a simple <button class="delete"></delete>
-func (del *Delete) BuildTag(tag *html.Tag) {
-	tag.SetTagName("button").AddClass("delete").SetAttribute("aria-label", "delete")
+func (del *Delete) BuildTag() html.Tag {
+	del.Tag().SetTagName("button").AddClass("delete").SetAttribute("aria-label", "delete")
+	return *del.Tag()
 }

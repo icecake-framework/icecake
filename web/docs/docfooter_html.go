@@ -26,15 +26,21 @@ const docsFooterStyle string = `.myfooter-title {
 }
 `
 
-type Footer struct{ html.HTMLSnippet }
+type docFooter struct{ html.HTMLSnippet }
 
-func DocFooter() *Footer {
-	return new(Footer)
+// Ensure Footer implements HTMLTagComposer interface
+var _ html.HTMLTagComposer = (*docFooter)(nil)
+
+func DocFooter() *docFooter {
+	return new(docFooter)
 }
 
-func (footer *Footer) BuildTag(tag *html.Tag) { tag.SetTagName("footer").AddClass("footer") }
+func (footer *docFooter) BuildTag() html.Tag {
+	footer.Tag().SetTagName("footer").AddClass("footer")
+	return *footer.Tag()
+}
 
-func (footer *Footer) RenderContent(out io.Writer) error {
+func (footer *docFooter) RenderContent(out io.Writer) error {
 
 	hrefMIT := `<a href="https://opensource.org/licenses/mit-license.php" rel="license">MIT</a>`
 	hrefCCBY := `<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>`

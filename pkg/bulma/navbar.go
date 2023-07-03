@@ -89,18 +89,20 @@ func (navi NavbarItem) Clone() *NavbarItem {
 //   - it's <hr> for a NAVBARIT_DIVIDER item type, otherwise
 //   - it's <a> when an HRef is provided,
 //   - it's <div> in other cases
-func (navi *NavbarItem) BuildTag(tag *html.Tag) {
+func (navi *NavbarItem) BuildTag() html.Tag {
 	if navi.Type == NAVBARIT_DIVIDER {
-		tag.SetTagName("hr")
-		tag.PickClass("navbar-divider navbar-item", "navbar-divider")
+		navi.Tag().
+			SetTagName("hr").
+			PickClass("navbar-divider navbar-item", "navbar-divider")
 	} else {
-		tag.PickClass("navbar-divider navbar-item", "navbar-item").SetClassIf(navi.IsActive, "is-active")
+		navi.Tag().PickClass("navbar-divider navbar-item", "navbar-item").SetClassIf(navi.IsActive, "is-active")
 		if navi.HRef != nil {
-			tag.SetTagName("a").SetURL("href", navi.HRef)
+			navi.Tag().SetTagName("a").SetURL("href", navi.HRef)
 		} else {
-			tag.SetTagName("div").RemoveAttribute("href")
+			navi.Tag().SetTagName("div").RemoveAttribute("href")
 		}
 	}
+	return *navi.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
@@ -238,12 +240,14 @@ func (nav *Navbar) Item(key string) *NavbarItem {
 }
 
 // BuildTag builds the tag used to render the html element.
-func (nav *Navbar) BuildTag(tag *html.Tag) {
-	tag.SetTagName("nav").
+func (nav *Navbar) BuildTag() html.Tag {
+	nav.Tag().
+		SetTagName("nav").
 		SetAttribute("role", "navigation").
 		AddClass("navbar").
 		SetClassIf(nav.IsTransparent, "is-transparent").
 		SetClassIf(nav.HasShadow, "has-shadow")
+	return *nav.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
