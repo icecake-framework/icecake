@@ -87,9 +87,11 @@ func (mnui *MenuItem) RenderContent(out io.Writer) error {
 	if mnui.Type == MENUIT_LABEL {
 		html.WriteString(out, mnui.Text)
 	} else {
-		link := html.A().SetHRef(mnui.HRef).SetBody(html.ToHTML(mnui.Text))
-		link.Tag().SetClassIf(mnui.IsActive, "is-active")
-		mnui.RenderChilds(out, link)
+		lnktag := html.A().SetHRef(mnui.HRef).BuildTag()
+		lnktag.SetClassIf(mnui.IsActive, "is-active")
+		lnktag.RenderOpening(out)
+		html.WriteString(out, mnui.Text)
+		lnktag.RenderClosing(out)
 	}
 	return nil
 }
