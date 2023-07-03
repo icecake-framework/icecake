@@ -10,7 +10,7 @@ func init() {
 	html.RegisterComposer("ick-card", &Card{})
 }
 
-// The card is an HTMLSnippet, use SetBody to setup the body of the card
+// The card is an HTMLSnippet. Use AddContent to setup the content of the card
 type Card struct {
 	html.HTMLSnippet
 
@@ -71,7 +71,7 @@ func (card *Card) RenderContent(out io.Writer) error {
 		html.WriteString(out, `</div>`)
 	}
 
-	if card.HasBody() {
+	if card.HasContent() {
 		html.WriteString(out, `<div class="card-content">`)
 		card.HTMLSnippet.RenderContent(out)
 		html.WriteString(out, `</div>`)
