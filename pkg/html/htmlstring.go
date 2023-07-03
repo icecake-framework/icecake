@@ -29,6 +29,7 @@ var _ HTMLComposer = (*HTMLString)(nil)
 
 // ToHTML is the HTMLString factory allowing to convert a string into a new HTMLString reday for rendering.
 // The string must contains safe string and can include icecake tags.
+// TODO: ToHTML accept any types
 func ToHTML(s string) *HTMLString {
 	h := new(HTMLString)
 	h.bytes = []byte(s)

@@ -2,6 +2,7 @@ package bulmaui
 
 import (
 	"github.com/icecake-framework/icecake/pkg/bulma"
+	"github.com/icecake-framework/icecake/pkg/clock"
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
@@ -10,6 +11,13 @@ import (
 type Delete struct {
 	bulma.Delete
 	DOM dom.Element
+
+	// The TargetID will be automatically removed after the clock Timeout duration if not zero.
+	// The timer starts when the delete button is rendered (call to addlisteners).
+	clock.Clock
+
+	// OnDelete, if set, is called when the deletion occurs and after the targetId has been removed
+	OnDelete func(*Delete)
 }
 
 func (_del *Delete) AddListeners() {
@@ -29,6 +37,6 @@ func (del *Delete) RemoveTarget() {
 	del.Stop()
 	dom.Id(del.TargetID).Remove()
 	if del.OnDelete != nil {
-		del.OnDelete(&del.Delete)
+		del.OnDelete(del)
 	}
 }

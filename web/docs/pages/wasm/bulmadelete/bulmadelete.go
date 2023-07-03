@@ -5,6 +5,7 @@ import (
 
 	"github.com/icecake-framework/icecake/pkg/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/dom"
+	"github.com/icecake-framework/icecake/pkg/event"
 )
 
 // This main package contains the web assembly source code for makedocs
@@ -21,10 +22,20 @@ func main() {
 
 	bulmaui.WrapNavbar("topbar")
 
+	dom.Id("btnreset").AddMouseEvent(event.MOUSE_ONCLICK, OnBtnReset)
+
 	// let's go
 	fmt.Println("Icecake initialized. Listening browser events")
 	if ests.IsDefined() {
 		ests.InsertRawHTML(dom.INSERT_BODY, `<span class="ick-running">running</span>`)
 	}
 	<-c
+}
+
+func OnBtnReset(*event.MouseEvent, *dom.Element) {
+
+}
+
+func RenderUsage() {
+
 }
