@@ -31,3 +31,13 @@ const (
 	COLOR_GREY_LIGHTER COLOR  = "is-grey-lighter"
 	COLOR_OPTIONS      string = string(COLOR_WHITE + " " + COLOR_WHITE_BIS + " " + COLOR_WHITE_TER + " " + COLOR_BLACK + " " + COLOR_BLACK_BIS + " " + COLOR_BLACK_TER + " " + COLOR_LIGHT + " " + COLOR_DARK + " " + COLOR_PRIMARY + " " + COLOR_LINK + " " + COLOR_INFO + " " + COLOR_SUCCESS + " " + COLOR_WARNING + " " + COLOR_DANGER + " " + COLOR_GREY_DARKER + " " + COLOR_GREY_DARK + " " + COLOR_GREY_LIGHT + " " + COLOR_GREY_LIGHTER)
 )
+
+type SIZE string
+
+const (
+	SIZE_SMALL   SIZE   = "is-small"
+	SIZE_STD     SIZE   = ""
+	SIZE_MEDIUM  SIZE   = "is-medium"
+	SIZE_LARGE   SIZE   = "is-large"
+	SIZE_OPTIONS string = string(SIZE_SMALL + " " + SIZE_MEDIUM + " " + SIZE_LARGE)
+)
