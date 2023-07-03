@@ -33,7 +33,7 @@ func (cmp *SectionBulmaButton) RenderContent(out io.Writer) error {
 	html.Render(out, cmp, uA1, uA2)
 	html.WriteString(out, `</div>`)
 
-	// stylling
+	// styling
 	html.WriteString(out, `<h3>Stylling</h3>`)
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
 	uB0 := bulma.NewButton(*html.ToHTML("Default"), "", "")
