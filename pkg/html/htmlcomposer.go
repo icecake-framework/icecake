@@ -1,11 +1,13 @@
 package html
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 	"strconv"
 	"strings"
 
+	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/registry"
 	"github.com/sunraylab/verbose"
 )
@@ -208,7 +210,13 @@ func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) error {
 
 	// verbose information
 	if verbose.IsOn {
-		verbose.Printf(verbose.INFO, "rendering composer %v (%s) vid=%q --> id=%q\n", cmpdeep, reflect.TypeOf(cmp).String(), virtualid, cmpid)
+		tos := reflect.TypeOf(cmp).String()
+		tos = helper.FillString(tos, 30)
+		strid := ""
+		if cmpid != "" {
+			strid = fmt.Sprintf("--> id=%q", cmpid)
+		}
+		verbose.Printf(verbose.INFO, "rendering composer %v %s %s %s\n", cmpdeep, tos, virtualid, strid)
 	}
 
 	// render openingtag
