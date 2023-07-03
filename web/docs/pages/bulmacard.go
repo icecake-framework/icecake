@@ -19,7 +19,7 @@ func (cmp *SectionBulmaCard) RenderContent(out io.Writer) error {
 
 	// api
 	html.WriteString(out, `<h3>bulma.Card API</h3>`)
-	html.WriteString(out, `<p>The card is an HTMLSnippet. Use 'SetBody()' to setup the body of the card.</p>`)
+	html.WriteString(out, `<p>The Card is an HTMLSnippet. Use <code>SetContent()</code> to setup the content of the card.</p>`)
 	html.WriteString(out, `<p><strong>Title HTMLString</strong> Optional title to display in the head of the card. Can be a simple text or a more complex html string.</p>`)
 	html.WriteString(out, `<p><strong>Image *Image</strong> Optional image to display on top of the card.</p>`)
 
