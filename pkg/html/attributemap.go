@@ -11,7 +11,7 @@ import (
 	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/registry"
 	"github.com/icecake-framework/icecake/pkg/stringpattern"
-	"github.com/sunraylab/verbose"
+	"github.com/lolorenzo777/verbose"
 	"golang.org/x/exp/slices"
 )
 

@@ -9,7 +9,7 @@ import (
 
 	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/registry"
-	"github.com/sunraylab/verbose"
+	"github.com/lolorenzo777/verbose"
 )
 
 // maxDEEP is the maximum HTML string unfolding levels

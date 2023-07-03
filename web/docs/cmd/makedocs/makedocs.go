@@ -11,7 +11,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/web/docs"
 	webdocs "github.com/icecake-framework/icecake/web/docs/pages"
-	"github.com/sunraylab/verbose"
+	"github.com/lolorenzo777/verbose"
 )
 
 func main() {

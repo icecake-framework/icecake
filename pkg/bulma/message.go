@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/icecake-framework/icecake/pkg/html"
-	"github.com/sunraylab/verbose"
+	"github.com/lolorenzo777/verbose"
 )
 
 func init() {

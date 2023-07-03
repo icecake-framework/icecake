@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sunraylab/verbose"
+	"github.com/lolorenzo777/verbose"
 )
 
 type HeadItem struct {

@@ -13,7 +13,7 @@ import (
 
 	"github.com/icecake-framework/icecake/pkg/registry"
 	"github.com/icecake-framework/icecake/pkg/stringpattern"
-	"github.com/sunraylab/verbose"
+	"github.com/lolorenzo777/verbose"
 )
 
 // HTMLString represents a string document fragment, mixing standard HTML syntax with <ick-tags/> inline components.

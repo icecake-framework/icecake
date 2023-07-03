@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/icecake-framework/icecake/internal/helper"
-	"github.com/sunraylab/verbose"
+	"github.com/lolorenzo777/verbose"
 )
 
 type WebSite struct {

@@ -8,8 +8,8 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/lolorenzo777/verbose"
 	"github.com/otiai10/copy"
-	"github.com/sunraylab/verbose"
 )
 
 // Copy copies src to dst, can be a single file or a full path

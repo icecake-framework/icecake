@@ -4,24 +4,20 @@ go 1.20
 
 require (
 	github.com/gorilla/mux v1.8.0
-	github.com/joho/godotenv v1.4.0
+	github.com/joho/godotenv v1.5.1
 )
 
 require (
 	github.com/huandu/go-clone v1.6.0
+	github.com/lolorenzo777/verbose v1.2.6
 	github.com/otiai10/copy v1.12.0
-	github.com/stretchr/testify v1.8.2
-	github.com/sunraylab/verbose v1.2.5
-	github.com/yuin/goldmark v1.5.4
-	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20220924101305-151362477c87
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
+	github.com/stretchr/testify v1.8.4
+	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
 )
 
 require (
-	github.com/alecthomas/chroma/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
