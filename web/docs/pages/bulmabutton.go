@@ -24,7 +24,7 @@ func (cmp *SectionBulmaButton) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<p><strong>Title HTMLString</strong> The title of the Button. Can be a simple text or a more complex html string.</p>`)
 	html.WriteString(out, `<p><strong>HRef *url.URL</strong> HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a &lt;a&gt; tag, otherwise it's a &lt;button&gt; tag.</p>`)
 
-	// usagesis
+	// usages
 	html.WriteString(out, `<h3>Usage</h3>`)
 
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
@@ -45,7 +45,7 @@ func (cmp *SectionBulmaButton) RenderContent(out io.Writer) error {
 	html.Render(out, cmp, uB0, uB1, uB2, uB3, uB4, uB5)
 	html.WriteString(out, `</div>`)
 
-	// States
+	// states
 	html.WriteString(out, `<h3>States</h3>`)
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
 	uC1 := bulma.NewButton(*html.ToHTML("Standard"), "", "").SetColor(bulma.COLOR_PRIMARY)
