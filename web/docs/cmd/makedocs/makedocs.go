@@ -44,7 +44,7 @@ func main() {
 		TitleSize:     2,
 		Subtitle:      *html.ToHTML("Pure Go Web Assembly Framework"),
 		ContainerAttr: html.ParseAttributes(`class="has-text-centered ` + string(bulma.CFW_MAXDESKTOP) + `"`),
-		CTA:           bulma.NewButton(*html.ToHTML("Read doc"), "cta", "/overview.html").SetColor(bulma.COLOR_PRIMARY),
+		CTA:           bulma.Button(*html.ToHTML("Read doc"), "cta", "/overview.html").SetColor(bulma.COLOR_PRIMARY),
 	}
 
 	pgindex.Body().AddContent(

@@ -23,7 +23,7 @@ func (cmp *SectionBulmaDelete) RenderContent(out io.Writer) error {
 
 	// usage
 	html.WriteString(out, `<h3>Usage</h3>`)
-	cmp.RenderChilds(out, bulma.NewButton(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(bulma.COLOR_PRIMARY).SetOutlined(true))
+	cmp.RenderChilds(out, bulma.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(bulma.COLOR_PRIMARY).SetOutlined(true))
 	html.WriteString(out, `<div id="boxusage" class="box mr-5">`)
 	html.Render(out, nil, bulma.Spinner())
 	html.WriteString(out, `</div>`)

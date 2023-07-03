@@ -13,13 +13,13 @@ import (
 //
 // The IsDisabled property is directly handled by the embedded UISnippet.
 type Button struct {
-	*bulma.Button
+	*bulma.ICKButton
 	DOM dom.Element
 }
 
 func NewButton(title html.HTMLString, id string, rawURL string, attrs ...string) *Button {
 	btn := new(Button)
-	btn.Button = bulma.NewButton(title, id, rawURL, attrs...)
+	btn.ICKButton = bulma.Button(title, id, rawURL, attrs...)
 	return btn
 }
 
@@ -37,36 +37,36 @@ func WrapButton(id string) *Button {
 }
 
 func (btn *Button) SetOutlined(f bool) *Button {
-	btn.Button.SetOutlined(f)
+	btn.ICKButton.SetOutlined(f)
 	btn.DOM.SetClassIf(f, "is-outlined")
 	return btn
 }
 
 func (btn *Button) SetRounded(f bool) *Button {
-	btn.Button.SetRounded(f)
+	btn.ICKButton.SetRounded(f)
 	btn.DOM.SetClassIf(f, "is-rounded")
 	return btn
 }
 
 func (btn *Button) SetDisabled(disabled bool) {
-	btn.Button.SetDisabled(disabled)
+	btn.ICKButton.SetDisabled(disabled)
 	btn.DOM.SetDisabled(disabled)
 }
 
 func (btn *Button) SetLoading(f bool) *Button {
-	btn.Button.SetLoading(f)
+	btn.ICKButton.SetLoading(f)
 	btn.DOM.SetClassIf(f, "is-loading")
 	return btn
 }
 
 func (btn *Button) SetColor(c bulma.COLOR) *Button {
-	btn.Button.SetColor(c)
+	btn.ICKButton.SetColor(c)
 	btn.DOM.PickClass(bulma.COLOR_OPTIONS, string(c))
 	return btn
 }
 
 func (btn *Button) SetLight(f bool) *Button {
-	btn.Button.SetLight(f)
+	btn.ICKButton.SetLight(f)
 	btn.DOM.SetClassIf(f, "is-light")
 	return btn
 }

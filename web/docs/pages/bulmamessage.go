@@ -26,7 +26,7 @@ func (sec *SectionBulmaMessage) RenderContent(out io.Writer) error {
 
 	// rendering
 	html.WriteString(out, `<h3>Usage</h3>`)
-	sec.RenderChilds(out, bulma.NewButton(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(bulma.COLOR_PRIMARY).SetOutlined(true).SetDisabled(true))
+	sec.RenderChilds(out, bulma.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(bulma.COLOR_PRIMARY).SetOutlined(true).SetDisabled(true))
 	html.WriteString(out, `<div id="boxusage" class="box mr-5">`)
 	html.Render(out, nil, bulma.Spinner())
 	html.WriteString(out, `</div>`)

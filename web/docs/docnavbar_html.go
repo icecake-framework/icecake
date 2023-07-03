@@ -12,8 +12,7 @@ func DocNavbar() *bulma.Navbar {
 	nav.AddItem("home", bulma.NAVBARIT_START, html.ToHTML(`Home`)).ParseHRef("/")
 	nav.AddItem("docs", bulma.NAVBARIT_START, html.ToHTML(`Docs`)).ParseHRef("/overview.html")
 
-	btngit := &bulma.Button{Title: *html.ToHTML("GitHub")}
-	btngit.ParseHRef("https://github.com/icecake-framework/icecake")
+	btngit := bulma.Button(*html.ToHTML("GitHub"), "", "https://github.com/icecake-framework/icecake")
 	btngit.SetColor(bulma.COLOR_PRIMARY).SetOutlined(true)
 
 	nav.AddItem("", bulma.NAVBARIT_END, btngit)

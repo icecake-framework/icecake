@@ -8,16 +8,16 @@ import (
 )
 
 func init() {
-	html.RegisterComposer("ick-button", &Button{})
+	html.RegisterComposer("ick-button", &ICKButton{})
 }
 
-// Button is an UISnippet registered with the ick-tag `ick-button`.
+// ICKButton is an UISnippet registered with the ick-tag `ick-button`.
 //
-// According to the ButtonType property, Button can be used either as a standard <button> element but also as an anchor link or a submit or reset form input.
+// According to the ButtonType property, ICKButton can be used either as a standard <button> element but also as an anchor link or a submit or reset form input.
 // The core text is handle with the Title html property, allowing simple text or complex rendering.
 //
 // The IsDisabled property is directly handled by the embedded UISnippet.
-type Button struct {
+type ICKButton struct {
 	html.HTMLSnippet
 
 	// The title of the Button. Can be a simple text or a more complex html string.
@@ -37,10 +37,10 @@ type Button struct {
 }
 
 // Ensure Button implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*Button)(nil)
+var _ html.HTMLTagComposer = (*ICKButton)(nil)
 
-func NewButton(title html.HTMLString, id string, rawurl string, attrs ...string) *Button {
-	btn := new(Button)
+func Button(title html.HTMLString, id string, rawurl string, attrs ...string) *ICKButton {
+	btn := new(ICKButton)
 	btn.Tag().SetId(id)
 	btn.ParseHRef(rawurl)
 	btn.Title = title
@@ -49,7 +49,7 @@ func NewButton(title html.HTMLString, id string, rawurl string, attrs ...string)
 }
 
 // ParseHRef parses _rawUrl to HRef. HRef stays nil in case of error.
-func (btn *Button) ParseHRef(rawurl string) (err error) {
+func (btn *ICKButton) ParseHRef(rawurl string) (err error) {
 	if rawurl != "" {
 		btn.HRef, err = url.Parse(rawurl)
 	} else {
@@ -58,35 +58,35 @@ func (btn *Button) ParseHRef(rawurl string) (err error) {
 	return
 }
 
-func (btn *Button) SetOutlined(f bool) *Button {
+func (btn *ICKButton) SetOutlined(f bool) *ICKButton {
 	btn.IsOutlined = f
 	return btn
 }
-func (btn *Button) SetRounded(f bool) *Button {
+func (btn *ICKButton) SetRounded(f bool) *ICKButton {
 	btn.IsRounded = f
 	return btn
 }
-func (btn *Button) SetDisabled(f bool) *Button {
+func (btn *ICKButton) SetDisabled(f bool) *ICKButton {
 	btn.IsDisabled = f
 	btn.Tag().SetDisabled(f)
 	return btn
 }
-func (btn *Button) SetLoading(f bool) *Button {
+func (btn *ICKButton) SetLoading(f bool) *ICKButton {
 	btn.isLoading = f
 	return btn
 }
-func (btn *Button) SetColor(c COLOR) *Button {
+func (btn *ICKButton) SetColor(c COLOR) *ICKButton {
 	btn.Color = c
 	return btn
 }
-func (btn *Button) SetLight(f bool) *Button {
+func (btn *ICKButton) SetLight(f bool) *ICKButton {
 	btn.IsLight = f
 	return btn
 }
 
 // BuildTag builds the tag used to render the html element.
 // The tagname depends on the button type.
-func (btn *Button) BuildTag() html.Tag {
+func (btn *ICKButton) BuildTag() html.Tag {
 	if btn.HRef != nil && btn.HRef.String() != "" {
 		btn.Tag().SetTagName("a")
 	} else {
@@ -110,7 +110,7 @@ func (btn *Button) BuildTag() html.Tag {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 // Button rendering unfold the Title
-func (btn *Button) RenderContent(out io.Writer) error {
+func (btn *ICKButton) RenderContent(out io.Writer) error {
 	err := btn.RenderChilds(out, &btn.Title)
 	return err
 }
