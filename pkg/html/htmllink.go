@@ -21,8 +21,7 @@ var _ HTMLTagComposer = (*Link)(nil)
 // A returns an HTML anchor link
 func A(attrlist ...string) *Link {
 	lnk := new(Link)
-	lnk.Tag().SetTagName("a")
-	lnk.Tag().ParseAttributes(attrlist...)
+	lnk.Tag().SetTagName("a").ParseAttributes(attrlist...)
 	return lnk
 }
 
@@ -51,9 +50,9 @@ func (lnk *Link) BuildTag() Tag {
 	return *lnk.Tag()
 }
 
-// SetBody adds one or many HTMLComposer to the rendering stack of this composer.
-// Returns the snippet to allow chaining calls.
-func (lnk *Link) SetBody(content ...HTMLComposer) *Link {
-	lnk.HTMLSnippet.AddContent(content...)
-	return lnk
-}
+// // SetBody adds one or many HTMLComposer to the rendering stack of this composer.
+// // Returns the snippet to allow chaining calls.
+// func (lnk *Link) SetBody(content ...HTMLComposer) *Link {
+// 	lnk.HTMLSnippet.AddContent(content...)
+// 	return lnk
+// }
