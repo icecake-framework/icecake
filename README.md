@@ -120,7 +120,7 @@ icecake
 | `spaserver`   | provides a configurable webserver dedicated to serve an spa with wasm code.
 | `ui`          | core UI Snippets
 | `namepattern` | provides functions to check validity of an HTML name such a a token name or the name of an attribute.
-| `extensions`  | provides optional packages for frontend rendering, not imported and compiled by default in the wasm code.
+
 
 
 
