@@ -19,11 +19,12 @@ func (cmp *SectionBulmaButton) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<h2>Icecake Bulma Button</h2>`)
 	html.WriteString(out, `<p>bulma.Button is an icecake snippet providing the HTML rendering for a `, linkBulmaButton, ` with extra features and usefull Go APIs.</p>`)
 
+	// API
 	html.WriteString(out, `<h3>bulma.Button API</h3>`)
 	html.WriteString(out, `<p><strong>Title HTMLString</strong> The title of the Button. Can be a simple text or a more complex html string.</p>`)
 	html.WriteString(out, `<p><strong>HRef *url.URL</strong> HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a &lt;a&gt; tag, otherwise it's a &lt;button&gt; tag.</p>`)
 
-	// usage
+	// usagesis
 	html.WriteString(out, `<h3>Usage</h3>`)
 
 	html.WriteString(out, `<div class="box spaceout mr-5">`)

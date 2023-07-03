@@ -17,12 +17,13 @@ func (cmp *SectionBulmaCard) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<h2>Bulma Card</h2>`)
 	html.WriteString(out, `<p>bulma.Card is an icecake snippet providing the HTML rendering for a `, linkBulmaCard, ` with extra features and usefull Go APIs.</p>`)
 
+	// api
 	html.WriteString(out, `<h3>bulma.Card API</h3>`)
 	html.WriteString(out, `<p>The card is an HTMLSnippet. Use 'SetBody()' to setup the body of the card.</p>`)
 	html.WriteString(out, `<p><strong>Title HTMLString</strong> Optional title to display in the head of the card. Can be a simple text or a more complex html string.</p>`)
 	html.WriteString(out, `<p><strong>Image *Image</strong> Optional image to display on top of the card.</p>`)
 
-	// usage
+	// usages
 	html.WriteString(out, `<h3>Usage</h3>`)
 	html.WriteString(out, `<div class="box is-flex spaceout mr-5">`)
 
@@ -36,7 +37,6 @@ func (cmp *SectionBulmaCard) RenderContent(out io.Writer) error {
 		SetImage(*bulma.NewImage("/assets/icecake.jpg", bulma.IMG_128x128)).
 		AddFooterItem(*html.ToHTML("<a href='/'>home</a>")).
 		AddContent(html.ToHTML("Nice cake"))
-		//Tag().SetStyle("width: 300px;")
 	cmp.RenderChilds(out, card1)
 
 	card2 := bulma.NewCard()
