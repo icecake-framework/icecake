@@ -111,7 +111,13 @@ func (snippet *HTMLSnippet) AddContent(content ...HTMLComposer) *HTMLSnippet {
 	if snippet.contantstack == nil {
 		snippet.contantstack = make([]HTMLComposer, 0)
 	}
-	snippet.contantstack = append(snippet.contantstack, content...)
+	if len(content) > 0 {
+		for _, c := range content {
+			if c != nil {
+				snippet.contantstack = append(snippet.contantstack, c)
+			}
+		}
+	}
 	return snippet
 }
 
@@ -153,6 +159,7 @@ func (s *HTMLSnippet) RenderContent(out io.Writer) (err error) {
 	return nil
 }
 
-func (s HTMLSnippet) HasBody() bool {
-	return s.contantstack != nil
+// HasContent returns true is the content stack is not nil and it contains at least on item
+func (s HTMLSnippet) HasContent() bool {
+	return s.contantstack != nil && len(s.contantstack) > 0
 }
