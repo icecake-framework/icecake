@@ -431,7 +431,7 @@ func (amap AttributeMap) AddStyle(style string) AttributeMap {
 	if err := checkstyle(style); err != nil {
 		verbose.Error("SetStyle", err)
 	} else {
-		s, _ := amap["style"]
+		s := amap["style"]
 		amap.saveAttribute("style", s+style, true)
 	}
 	return amap
