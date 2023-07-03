@@ -57,6 +57,8 @@ type Image struct {
 	Alt       string   // the alternative text
 	Size      IMG_SIZE // the size or the ratio of the image
 	IsRounded bool     // Rounded image style
+
+	// TODO: Image add a background
 }
 
 // Ensure Image implements HTMLTagComposer interface
