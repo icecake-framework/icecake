@@ -70,11 +70,11 @@ func CastElements(_jsvp js.JSValueProvider) []*Element {
 }
 
 // IsDefined returns true if the Element is not nil AND it's type is not TypeNull and not TypeUndefined
-func (_elem *Element) IsDefined() bool {
-	if _elem == nil {
+func (e *Element) IsDefined() bool {
+	if e == nil {
 		return false
 	}
-	return _elem.JSValue.IsDefined()
+	return e.JSValue.IsDefined()
 }
 
 // Remove removes the element from the DOM.
@@ -147,7 +147,10 @@ func (elem *Element) Attribute(aname string) (string, bool) {
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
 func (elem *Element) SetAttribute(key string, value string) *Element {
-	elem.setAttribute(key, value, true)
+	err := elem.setAttribute(key, value, true)
+	if err != nil {
+		console.Errorf("SetAttribute: %s", err.Error())
+	}
 	return elem
 }
 
@@ -224,13 +227,19 @@ func (elem *Element) ToggleAttribute(aname string) *Element {
 }
 
 // Id rrepresents the element's identifier, reflecting the id global attribute.
+// Returns the UNDEFINED_NODE string if elem is nil or not a defined js value.
+// Returns the UNDEFINED_ATTR string if the returned string is empty.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/id
 func (elem *Element) Id() string {
 	if !elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return elem.GetString("id")
+	v := elem.GetString("id")
+	if v == "" {
+		v = UNDEFINED_ATTR
+	}
+	return v
 }
 
 // Id represents the element's identifier, reflecting the id global attribute.
@@ -242,12 +251,18 @@ func (elem *Element) SetId(id string) *Element {
 	return elem
 }
 
-// Name returns the value of the name attribute
+// Name returns the value of the name attribute.
+// Returns the UNDEFINED_NODE string if elem is nil or not a defined js value.
+// Returns the UNDEFINED_ATTR string if the returned string is empty.
 func (elem *Element) Name() string {
 	if !elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return elem.GetString("name")
+	v := elem.GetString("name")
+	if v == "" {
+		v = UNDEFINED_ATTR
+	}
+	return v
 }
 
 // SetName sets or overwrites the name attribute. In HTML5 name is case sensitive.
@@ -664,31 +679,10 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 	return CastElements(elems)
 }
 
-// TODO: handle Element.InsertRawHTML exceptions
-func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml string) {
-	if !_me.IsDefined() {
-		return
-	}
-	switch _where {
-	case INSERT_BEFORE_ME:
-		_me.Call("insertAdjacentHTML", "beforebegin", _unsafeHtml)
-	case INSERT_FIRST_CHILD:
-		_me.Call("insertAdjacentHTML", "afterbegin", _unsafeHtml)
-	case INSERT_LAST_CHILD:
-		_me.Call("insertAdjacentHTML", "beforeend", _unsafeHtml)
-	case INSERT_AFTER_ME:
-		_me.Call("insertAdjacentHTML", "afterend", _unsafeHtml)
-	case INSERT_OUTER:
-		_me.Set("outerHTML", _unsafeHtml)
-	case INSERT_BODY:
-		_me.Set("innerHTML", _unsafeHtml)
-	}
-}
-
 // InsertHTML unfolds and renders the html of the _html and write it into the DOM.
 // All embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // Returns an error if _elem in not the DOM or if an error occurs during UnfoldHtml or mounting process.
-// FIXME: InsertHTML
+// TODO: Element.InsertHTML
 // func (_elem *Element) InsertHTML(_where INSERT_WHERE, htmltemplate html.HTMLString, ds *html.DataState) (_err error) {
 // 	if !_elem.IsDefined() || !_elem.IsInDOM() {
 // 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
@@ -727,40 +721,98 @@ func (_me *Element) InsertRawHTML(_where INSERT_WHERE, _unsafeHtml string) {
 // InsertSnippet unfolds and renders the html of the _snippet and write it into the DOM.
 // The _snippet and all its embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // _snippet can be either an HTMLComposer or an UIComposer.
+//
 // Returns an error if _elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
 // Returns an error if WriteSnippet or mounting process fail.
-func (_elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...html.HTMLComposer) (snippetid string, err error) {
-	if !_elem.IsDefined() {
-		return "", console.Errorf("Element:InsertSnippet failed on undefined element")
+func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...Composer) (err error) {
+	if !elem.IsDefined() {
+		return console.Errorf("Element:InsertSnippet failed on undefined element")
 	}
 
-	// snippet, ok := composer.(html.HTMLComposer)
-	// if !ok {
-	// 	return "", console.Errorf("Element:InsertSnippet failed. snippet must implement HTMLComposer interface or UIComposer interface")
-	// }
-
+	// rendering html of the composers. custodian embeds all direct childrens.
 	out := new(bytes.Buffer)
-	err = html.Render(out, nil, cmps...)
-	if err != nil {
-		console.Errorf(err.Error())
-		return "", err
-	}
+	for _, cmp := range cmps {
 
-	// insert the html element into the dom and wrapit
-	_elem.InsertRawHTML(where, out.String())
-	if newe := Id(snippetid); newe != nil {
-		// wrap the snippet with the fresh new Element and wrap every embedded components with their dom element
-		for _, cmp := range cmps {
-			if snippet, ok := cmp.(UIComposer); ok {
-				err = mountDeepSnippet(snippet, newe)
-			} else {
-				err = console.Warnf("snippet %q(%v) not mounted, it's not an UIComposer", snippetid, reflect.TypeOf(cmps).String())
+		// nothing to render ?
+		if cmp == nil || reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {
+			console.Warnf("InsertSnippet: empty composer %s\n", reflect.TypeOf(cmp).String())
+			continue
+		}
+
+		IsInserted := false
+		out.Reset()
+
+		// if the composer is a tag builder then create an element from the composer and insert it into the dom
+		// then wrap it. By this way interacting with the DOM of the UIcomposer is possible event if it has no id.
+		if tb, istb := cmp.(html.TagBuilder); istb {
+			tag := html.BuildTag(tb)
+			if tag.HasRendering() {
+				IsInserted = true
+				tagn, _ := tag.TagName()
+				newe := CreateElement(tagn)
+				for attrn, attrv := range tag.AttributeMap {
+					newe.SetAttribute(attrn, attrv)
+				}
+
+				// Render the content
+				err = cmp.RenderContent(out)
+				if err != nil {
+					cmp.RMeta().RError = err
+					break
+				}
+				newe.Set("innerHTML", out.String())
+				elem.InsertElement(where, newe)
+				cmp.Wrap(newe)
+				cmp.AddListeners()
+				err = mountSnippetTree(cmp)
+				if err != nil {
+					break
+				}
 			}
 		}
-	} else {
-		err = console.Warnf("snippet %q(%v) not mounted: id not found in the DOM", snippetid, reflect.TypeOf(cmps).String())
+
+		if !IsInserted {
+			// otherwise insert the rendered snippet html into the dom
+			custodian := &html.RMetaData{}
+			err = html.Render(out, custodian, cmp)
+			if err != nil {
+				break
+			}
+			elem.InsertRawHTML(where, out.String())
+
+			// mount every embedded components with an ID
+			err = mountSnippetTree(custodian)
+			if err != nil {
+				break
+			}
+		}
 	}
-	return snippetid, nil
+
+	if err != nil {
+		console.Errorf(err.Error())
+	}
+	return err
+}
+
+// TODO: handle Element.InsertRawHTML exceptions
+func (elem *Element) InsertRawHTML(where INSERT_WHERE, unsafeHtml string) {
+	if !elem.IsDefined() {
+		return
+	}
+	switch where {
+	case INSERT_BEFORE_ME:
+		elem.Call("insertAdjacentHTML", "beforebegin", unsafeHtml)
+	case INSERT_FIRST_CHILD:
+		elem.Call("insertAdjacentHTML", "afterbegin", unsafeHtml)
+	case INSERT_LAST_CHILD:
+		elem.Call("insertAdjacentHTML", "beforeend", unsafeHtml)
+	case INSERT_AFTER_ME:
+		elem.Call("insertAdjacentHTML", "afterend", unsafeHtml)
+	case INSERT_OUTER:
+		elem.Set("outerHTML", unsafeHtml)
+	case INSERT_BODY:
+		elem.Set("innerHTML", unsafeHtml)
+	}
 }
 
 // InsertText insert the formated _value as a simple text (not an HTML string) at the _where position.
@@ -802,7 +854,7 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) {
 	case INSERT_OUTER:
 		_me.Set("replaceWith", _elem.Value())
 	case INSERT_BODY:
-		_me.Set("innerHTML", "")
+		_me.Set("innerText", "") // HACK
 		_me.Call("append", _elem.Value())
 	}
 }
