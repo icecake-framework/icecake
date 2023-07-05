@@ -1,6 +1,10 @@
 package html
 
 type TagBuilder interface {
+
+	// Meta returns a reference to render meta data
+	RMetaProvider
+
 	// BuildTag builds the tag used to render the html element.
 	// The composer rendering processes call BuildTag once.
 	// If the implementer builds an empty tag, only the body will be rendered.

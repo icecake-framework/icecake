@@ -2,6 +2,8 @@ package html
 
 import (
 	"io"
+	"reflect"
+	"strings"
 
 	"github.com/icecake-framework/icecake/internal/helper"
 )
@@ -9,7 +11,7 @@ import (
 // Tag represents the tag of an HTML element with its attributes.
 type Tag struct {
 	AttributeMap      // map of all tag attributes of any type, including the id if there's one.
-	NoName       bool // does not generate name attribute
+	NoName       bool // does not generate name attribute with the ick-name of the composer
 
 	tagname     string // the name of the tag a.k.a "div", "span", "meta"...
 	selfClosing bool   // specifies if this is a selfclosing tag, automatically setup by SetTagName. Use SetSelfClosing to force the value.
@@ -24,6 +26,22 @@ func NewTag(name string, amap AttributeMap) *Tag {
 		tag.AttributeMap = amap
 	}
 	tag.SetTagName(name)
+	return tag
+}
+
+// BuildTag get a tag from the TagBuilder then set up name attribute and RMeta id
+func BuildTag(tb TagBuilder) Tag {
+	tag := tb.BuildTag()
+
+	// force property name
+	if !tag.NoName {
+		cmpname := reflect.TypeOf(tb).Elem().Name()
+		cmpname = strings.ToLower(cmpname)
+		tag.SetAttribute("name", cmpname)
+	}
+
+	tb.RMeta().Id = tag.Id()
+
 	return tag
 }
 
