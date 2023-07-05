@@ -3,60 +3,73 @@ package dom
 import (
 	// "bytes"
 
+	"reflect"
+
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/js"
 )
 
-type UIListener interface {
-	AddListeners()
-	RemoveListeners()
-}
+// type UIListener interface {
+// 	Wrap(js.JSValueProvider)
+// 	AddListeners()
+// 	RemoveListeners()
+// }
 
 type UIComposer interface {
-	html.HTMLComposer
 
-	js.JSValueWrapper
+	// Meta returns a reference to render meta data
+	html.RMetaProvider
 
-	UIListener
+	Wrap(js.JSValueProvider)
 
-	Mount()
-	UnMount()
+	AddListeners()
+
+	RemoveListeners()
+	// Mount()
+	// UnMount()
+}
+
+type Composer interface {
+	html.HTMLContentComposer
+	UIComposer
 }
 
 /*****************************************************************************/
 
 // UISnippet combines an htmlSnippet allowing html rendering of ick-name tags in different ways, and
 // a wrapped dom.Element allowing event listening and other direct DOM interactions.
-type UISnippet struct {
-	html.HTMLSnippet
+type UI struct {
 	DOM Element
 }
 
 // Mount does nothing by default. Can be implemented by the component embedding UISnippet.
-func (_s *UISnippet) Mount() {}
+// func (ui *UI) Mount() {}
 
 // UnMount does nothing by default. Can be implemented by the component embedding UISnippet.
-func (_s *UISnippet) UnMount() {}
+// func (ui *UI) UnMount() {}
 
 // AddListeners does nothing by default. Can be implemented by the component embedding UISnippet.
-func (_s *UISnippet) AddListeners() {}
+func (ui *UI) AddListeners() {}
 
 // Wrap implements the JSValueWrapper to enable wrapping of a dom.Element usually
 // to wrap embedded component instantiated during unfolding an html string.
 // Does not need to be overloaded by the component embedding UISnippet.
-func (_s *UISnippet) Wrap(_jsvp js.JSValueProvider) {
-	if _s.DOM.Value().Truthy() {
-		console.Warnf("wrapping snippet %q to the already wrapped element %q", _s.Id(), _s.DOM.Id())
+func (ui *UI) Wrap(jsvp js.JSValueProvider) {
+	if ui.DOM.Value().Truthy() {
+		console.Warnf("UI.wrap: UI element %q already wrapped", ui.DOM.Id())
 	}
-	_s.DOM.JSValue = _jsvp.Value()
+	ui.DOM.JSValue = jsvp.Value()
+	if !ui.DOM.IsInDOM() {
+		console.Warnf("UI.wrap: fails, %q not in DOM", ui.DOM.Id())
+	}
 }
 
 // RemoveListeners remove all event handlers attached to this UISnippet Element.
 // If RemoveListeners is implemented by the component embedding UISnippet then the UISnippet one should be called.
 // Usually RemoveListeners does not need to be overloaded because every listeners added to the Element are automatically removed.
-func (_s *UISnippet) RemoveListeners() {
-	_s.DOM.RemoveListeners()
+func (ui *UI) RemoveListeners() {
+	ui.DOM.RemoveListeners()
 }
 
 // RenderHTML builds and unfolds the UIcomposer and returns its html string.
@@ -122,41 +135,54 @@ func (_s *UISnippet) RemoveListeners() {
 * Private Area
 *******************************************************************************/
 
-// mountDeepSnippet wraps _elem to the _snippet add its listeners and call the customized Mount function.
-// mountDeepSnippet is called recursively for every embedded components of the _snippet.
-func mountDeepSnippet(_snippet UIComposer, _elem *Element) (_err error) {
-	//DEBUG: console.Warnf("mouting %s(%s)", _snippet.Id(), reflect.TypeOf(_snippet).String())
-	_snippet.Wrap(_elem)
-	_snippet.AddListeners()
-	_snippet.Mount()
+// mountSnippetTree addlisteners to the snippet and looks recursively for every childs with an id and add listeners to each of them.
+// The snippet must have been wrapped with a DOM element before
+func mountSnippetTree(parent html.RMetaProvider) (err error) {
+	if parent.RMeta().IsMounted {
+		console.Warnf("mountSnippetTree: parent:%q is already mounted", parent.RMeta().VirtualId)
+		return
+	}
 
-	if embedded := _snippet.Meta().Embedded(); embedded != nil {
-		// DEBUG: console.Warnf("scanning %+v", embedded)
-		for subid, sub := range embedded {
-			// look everywhere in the DOM
-			if sube := Id(subid); sube != nil {
-				if cmp, ok := sub.(UIComposer); ok {
-					// DEBUG: console.Warnf("wrapping %+v", w)
-					_err = mountDeepSnippet(cmp, sube)
+	// mount children
+	if embedded := parent.RMeta().Embedded(); embedded != nil {
+		for _, emb := range embedded {
+			if child, ok := emb.(UIComposer); ok {
+				childid := child.RMeta().Id
+				if childid != "" {
+					console.Logf("mountSnippetTree: parent:%q is mounting %v id:%s", parent.RMeta().VirtualId, reflect.TypeOf(child).String(), childid)
+					errm := TryWrapId(child, childid)
+					if errm != nil {
+						console.Errorf(errm.Error())
+					} else {
+						child.AddListeners()
+						errm = mountSnippetTree(child)
+					}
+					if errm != nil && err == nil {
+						err = errm
+					}
+
 				}
 			}
 		}
 	}
-	return _err
+	if err == nil {
+		parent.RMeta().IsMounted = true
+	}
+	return err
 }
 
 // TODO: must call unmount somewhere
-// unmountDeepSnippet remove listeners anc all Unmount recusrively for every embedded components
-func unmountDeepSnippet(_snippet UIComposer) {
+// unmountSnippetTree remove listeners anc all Unmount recusrively for every embedded components
+func unmountSnippetTree(_snippet UIComposer) {
 	_snippet.RemoveListeners()
-	_snippet.UnMount()
+	// _snippet.UnMount()
 
-	if embedded := _snippet.Meta().Embedded(); embedded != nil {
+	if embedded := _snippet.RMeta().Embedded(); embedded != nil {
 		// DEBUG: console.Warnf("scanning %+v", embedded)
 		for _, sub := range embedded {
 			if cmp, ok := sub.(UIComposer); ok {
 				// DEBUG: console.Warnf("wrapping %+v", w)
-				unmountDeepSnippet(cmp)
+				unmountSnippetTree(cmp)
 			}
 		}
 	}
