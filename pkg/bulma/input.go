@@ -39,7 +39,7 @@ type InputField struct {
 }
 
 // Ensure inputfield implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*InputField)(nil)
+var _ html.HTMLComposer = (*InputField)(nil)
 
 // BuildTag builds the tag used to render the html element.
 func (inputfield *InputField) BuildTag() html.Tag {
@@ -52,7 +52,7 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	// <label>
 	if !cmp.Label.IsEmpty() {
 		html.WriteString(out, `<label class="label">`)
-		cmp.RenderChilds(out, &cmp.Label)
+		cmp.RenderChild(out, &cmp.Label)
 		html.WriteString(out, `</label>`)
 	}
 
@@ -77,7 +77,7 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 		subinput.Tag().SetBool("readonly", true)
 	}
 	subcontrol.AddContent(subinput)
-	cmp.RenderChilds(out, subcontrol)
+	cmp.RenderChild(out, subcontrol)
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
@@ -86,7 +86,7 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 			SetClassIf(cmp.State == INPUT_SUCCESS, "is-success").
 			SetClassIf(cmp.State == INPUT_WARNING, "is-warning").
 			SetClassIf(cmp.State == INPUT_ERROR, "is-danger")
-		cmp.RenderChilds(out, subhelp)
+		cmp.RenderChild(out, subhelp)
 	}
 
 	return nil

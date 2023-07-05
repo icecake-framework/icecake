@@ -33,7 +33,7 @@ func RegisterComposer(icktagname string, composer any) (entry *registry.Registry
 		return nil, err
 	}
 
-	_, iscmp := composer.(HTMLComposer)
+	_, iscmp := composer.(HTMLContentComposer)
 	if !iscmp {
 		err = fmt.Errorf("registering composer %q failed: must implement HTMLComposer interface", typ.String())
 		log.Println(err.Error())

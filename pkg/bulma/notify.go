@@ -24,14 +24,14 @@ type Notify struct {
 	// Notify includes a programmable Delete Button.
 	// Delete is a local variable rather than an embedded struct to avoid AddliSteners interface conflict.
 	// Notify implements AddliSteners interface via the UISnippet embedded.
-	Delete Delete
+	Delete ICKDelete
 
 	// TODO: handle Notify toast style
 	// Toast bool
 }
 
 // Ensure Notify implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*Notify)(nil)
+var _ html.HTMLComposer = (*Notify)(nil)
 
 // BuildTag builds the tag used to render the html element.
 // Notify tag is a simple <div class="notification"></div>
@@ -42,8 +42,8 @@ func (notify *Notify) BuildTag() html.Tag {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (notify *Notify) RenderContent(out io.Writer) error {
-	notify.Delete.TargetID = notify.Id()
-	notify.RenderChilds(out, &notify.Delete)
-	notify.RenderChilds(out, &notify.Message)
+	notify.Delete.TargetId = notify.Id()
+	notify.RenderChild(out, &notify.Delete)
+	notify.RenderChild(out, &notify.Message)
 	return nil
 }

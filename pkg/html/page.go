@@ -23,7 +23,7 @@ func NewHeadItem(tagname string) *HeadItem {
 
 // An HTML5 file with its content.
 type Page struct {
-	meta RenderingMeta // Rendering MetaData.
+	meta RMetaData // Rendering MetaData.
 
 	Lang        string     // the html "lang" value.
 	Title       string     // the html "head/title" value.
@@ -52,7 +52,7 @@ func NewPage(lang string, rawUrl string) *Page {
 
 // Meta provides a reference to the RenderingMeta object associated with this composer.
 // This is required by the icecake rendering process.
-func (pg *Page) Meta() *RenderingMeta {
+func (pg *Page) RMeta() *RMetaData {
 	return &pg.meta
 }
 
@@ -156,7 +156,7 @@ func (pg Page) WriteFile(outputpath string) (err error) {
 		}
 		verbose.Error(fmt.Sprintf("WriteFile %s", outputpath), err)
 		if err == nil {
-			verbose.Println(verbose.INFO, absfilename, "succesfully written")
+			verbose.Println(verbose.INFO, absfilename, "successfully written\n")
 		}
 	}()
 

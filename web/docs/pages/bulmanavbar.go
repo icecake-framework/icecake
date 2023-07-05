@@ -20,7 +20,7 @@ func (cmp *SectionBulmaNavbar) RenderContent(out io.Writer) error {
 	html.WriteString(out, `The navbar is splitted in three areas: the brand area, the start area stacked on the left, and the end area stacked on the right.</p>`)
 
 	// example 1
-	ex1 := new(bulma.Navbar)
+	ex1 := new(bulma.ICKNavbar)
 	ex1.Tag().AddStyle("border: solid 1px;")
 	ex1.AddItem("", bulma.NAVBARIT_BRAND, html.ToHTML("BRAND"))
 	ex1.AddItem("", bulma.NAVBARIT_START, html.ToHTML("Home"))

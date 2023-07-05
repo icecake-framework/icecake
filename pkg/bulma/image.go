@@ -62,7 +62,7 @@ type Image struct {
 }
 
 // Ensure Image implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*Image)(nil)
+var _ html.HTMLComposer = (*Image)(nil)
 
 func NewImage(rawUrl string, size IMG_SIZE) *Image {
 	img := new(Image)
@@ -93,6 +93,6 @@ func (image *Image) RenderContent(out io.Writer) error {
 		SetClassIf(image.IsRounded, "is-rounded").
 		SetAttributeIf(image.Alt != "", "alt", image.Alt)
 
-	image.RenderChilds(out, img)
+	image.RenderChild(out, img)
 	return nil
 }

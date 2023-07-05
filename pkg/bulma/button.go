@@ -37,7 +37,7 @@ type ICKButton struct {
 }
 
 // Ensure Button implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*ICKButton)(nil)
+var _ html.HTMLComposer = (*ICKButton)(nil)
 
 func Button(title html.HTMLString, id string, rawurl string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)
@@ -111,6 +111,6 @@ func (btn *ICKButton) BuildTag() html.Tag {
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 // Button rendering unfold the Title
 func (btn *ICKButton) RenderContent(out io.Writer) error {
-	err := btn.RenderChilds(out, &btn.Title)
+	err := btn.RenderChild(out, &btn.Title)
 	return err
 }

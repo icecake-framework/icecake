@@ -363,13 +363,13 @@ func (_v JSValue) String() string {
 	return _v.jsvalue.String()
 }
 
-func (_v JSValue) GetString(_pname string) string {
-	get := _v.Get(_pname)
+func (v JSValue) GetString(pname string) string {
+	get := v.Get(pname)
 	if get.Type() == TYPE_STRING {
 		return get.String()
 	}
 	if get.IsDefined() {
-		console.Errorf("JSValue:GetString failed: %q type is %s", _pname, get.Type().String())
+		console.Errorf("JSValue:GetString failed: %q type is %s", pname, get.Type().String())
 	}
 	return ""
 }

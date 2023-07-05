@@ -20,7 +20,7 @@ func main() {
 		ests.InsertRawHTML(dom.INSERT_BODY, `<span class="ick-initializing">initializing</span>`)
 	}
 
-	bulmaui.WrapNavbar("topbar")
+	dom.WrapId(&bulmaui.ICKNavbar{}, "topbar").AddListeners()
 
 	dom.Id("btnreset").AddMouseEvent(event.MOUSE_ONCLICK, OnBtnReset)
 

@@ -23,7 +23,7 @@ func (cmp *SectionBulmaDelete) RenderContent(out io.Writer) error {
 
 	// usage
 	html.WriteString(out, `<h3>Usage</h3>`)
-	cmp.RenderChilds(out, bulma.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(bulma.COLOR_PRIMARY).SetOutlined(true))
+	cmp.RenderChild(out, bulma.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(bulma.COLOR_PRIMARY).SetOutlined(true))
 	html.WriteString(out, `<div id="boxusage" class="box mr-5">`)
 	html.Render(out, nil, bulma.Spinner())
 	html.WriteString(out, `</div>`)
@@ -31,8 +31,8 @@ func (cmp *SectionBulmaDelete) RenderContent(out io.Writer) error {
 	// rendering
 	html.WriteString(out, `<h3>Rendering</h3>`)
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
-	uA1 := &bulma.Delete{TargetID: "Idone"}
-	uA2 := &bulma.Delete{TargetID: "Idtwo", SIZE: bulma.SIZE_LARGE}
+	uA1 := &bulma.ICKDelete{TargetId: "Idone"}
+	uA2 := &bulma.ICKDelete{TargetId: "Idtwo", SIZE: bulma.SIZE_LARGE}
 	html.Render(out, cmp, uA1, uA2)
 	html.WriteString(out, `</div>`)
 

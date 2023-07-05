@@ -3,13 +3,15 @@ package dom
 import (
 	"fmt"
 	"net/url"
-	"time"
-
+	"reflect"
+	"strings"
 	syscalljs "syscall/js"
+	"time"
 
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/js"
+	"github.com/lolorenzo777/verbose"
 )
 
 /******************************************************************************
@@ -60,37 +62,62 @@ func Id(elementId string) *Element {
 	return Doc().ChildById(elementId)
 }
 
-// RenderedId returns the Element found in the doc with the elementId attribute and .
-// returns an undefined Element if the id is not found or if it's not an icecake rendered snippet.
-func RenderedId(elementId string, ickname string) (result *Element) {
-	e := Doc().ChildById(elementId)
-	if e == nil {
-		console.Warnf("RenderedElement: unable to found Id %q", elementId)
-		return nil
+func WrapId(ui UIComposer, elementid string) UIComposer {
+	err := TryWrapId(ui, elementid)
+	if err != nil {
+		verbose.Error("Try", err)
 	}
-	name, has := e.Attribute("name")
-	if !has {
-		console.Warnf("RenderedElement: Id %q is not an iceckahe snippet", elementId)
-		return nil
+	return ui
+}
+
+// TryWrapId looks for elementid into the DOM and wrap it to ick if ick type corresponds to the attribute name of the element.
+// Returns an error if elementid is not in the DOM or if the type does not match or if ick does not implement .
+func TryWrapId(ui UIComposer, elemid string) error {
+
+	if elemid == "" {
+		return fmt.Errorf("WrapById: unable to wrap an empty Id")
 	}
-	if name != ickname {
-		console.Warnf("RenderedElement: Id %q is not an %s snippet: %s", elementId, ickname, name)
-		return nil
+
+	e := Doc().ChildById(elemid)
+	if !e.IsDefined() {
+		return fmt.Errorf("WrapById: unable to found Id %q", elemid)
 	}
-	return e
+
+	aname, _ := e.Attribute("name")
+	// if !has || !strings.HasPrefix(aname, "ick-") {
+	// 	return fmt.Errorf("WrapById: Id %q is not an icecake rendered element", elemid)
+	// }
+	ickname := aname // strings.ToLower(aname[4:])
+	// DEBUG: console.Warnf("%s %s %s", elemid, aname, ickname)
+
+	if reflect.ValueOf(ui).Kind() != reflect.Ptr {
+		return fmt.Errorf("WrapById: %v is not a pointer", ui)
+	}
+
+	icktype := reflect.TypeOf(ui).String()
+	spos := strings.LastIndex(icktype, ".")
+	if spos > 0 {
+		icktype = icktype[spos+1:]
+	}
+
+	icktype = strings.ToLower(icktype)
+	if ickname != icktype {
+		return fmt.Errorf("WrapById: Id %q with name %q does not match snippet type %q", elemid, ickname, icktype)
+	}
+
+	ui.Wrap(e)
+	return nil
 }
 
 // CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
-func CreateElement(_tagName string) *Element {
-	elem := Doc().Call("createElement", _tagName)
+func CreateElement(tagName string) *Element {
+	elem := Doc().Call("createElement", tagName)
 	return CastElement(elem)
 }
 
-// CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.
-//
-// https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
+// CreateTextNode creates a text node
 func CreateTextNode(_text string) *Node {
 	node := Doc().Call("createTextNode", _text)
 	return CastNode(node)
@@ -364,8 +391,9 @@ func (_doc Document) ChildrenByName(elementName string) []*Element {
 	return CastElements(elems)
 }
 
-// GetElementById returns an Element object representing the element whose id property matches the specified string.
+// ChildById calls GetElementById and returns an Element object representing the element whose id property matches the specified string.
 // Since element IDs are required to be unique if specified, they're a useful way to get access to a specific element quickly.
+// If the id is not found, returns an undefined element.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
 func (doc Document) ChildById(elementId string) *Element {
@@ -374,23 +402,22 @@ func (doc Document) ChildById(elementId string) *Element {
 	}
 	elem := doc.Call("getElementById", elementId)
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
-		//DEBUG: console.Warnf("ChildById success: %q \n", _elementId)
 		return CastElement(elem)
 	}
 	console.Warnf("ChildById failed: %q not found, or not an <Element>\n", elementId)
 	return new(Element)
 }
 
-func (doc Document) CheckId(elementId string) (*Element, error) {
-	if elementId == "" {
-		return new(Element), fmt.Errorf("CheckId called with an empty id")
+// IsInDOM return true if the element has been found in the DOM.
+func (doc Document) IsInDOM(elemid string) bool {
+	if elemid == "" {
+		return false
 	}
-	elem := doc.Call("getElementById", elementId)
+	elem := doc.Call("getElementById", elemid)
 	if elem.Truthy() && CastNode(elem).NodeType() == NT_ELEMENT {
-		//DEBUG: console.Warnf("ChildById success: %q \n", _elementId)
-		return CastElement(elem), nil
+		return true
 	}
-	return new(Element), fmt.Errorf("CheckId %q not found, or not an <Element>", elementId)
+	return false
 }
 
 // QuerySelector returns the first Element within the document that matches the specified selector, or group of selectors.

@@ -13,7 +13,7 @@ type SectionIcecakeDoc struct {
 	Description string
 }
 
-func SectionDoc(section string) html.HTMLComposer {
+func SectionDoc(section string) html.HTMLContentComposer {
 	switch section {
 	case "overview":
 		s := new(SectionOverview)

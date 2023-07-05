@@ -25,7 +25,7 @@ type Card struct {
 }
 
 // Ensure Card implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*Card)(nil)
+var _ html.HTMLComposer = (*Card)(nil)
 
 func NewCard() *Card {
 	c := new(Card)
@@ -61,13 +61,13 @@ func (card *Card) RenderContent(out io.Writer) error {
 
 	if !card.Title.IsEmpty() {
 		html.WriteString(out, `<header class="card-header">`, `<p class="card-header-title">`)
-		card.RenderChilds(out, &card.Title)
+		card.RenderChild(out, &card.Title)
 		html.WriteString(out, `</p></header>`)
 	}
 
 	if card.Image != nil {
 		html.WriteString(out, `<div class="card-image">`)
-		card.RenderChilds(out, card.Image)
+		card.RenderChild(out, card.Image)
 		html.WriteString(out, `</div>`)
 	}
 
@@ -81,7 +81,7 @@ func (card *Card) RenderContent(out io.Writer) error {
 		html.WriteString(out, `<div class="card-footer">`)
 		for _, item := range card.footerItem {
 			html.WriteString(out, `<span class="card-footer-item">`)
-			card.RenderChilds(out, &item)
+			card.RenderChild(out, &item)
 			html.WriteString(out, `</span>`)
 		}
 		html.WriteString(out, `</div>`)

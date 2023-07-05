@@ -21,11 +21,12 @@ func main() {
 		ests.InsertRawHTML(dom.INSERT_BODY, `<span class="ick-initializing">initializing</span>`)
 	}
 
-	bulmaui.WrapNavbar("topbar")
+	dom.WrapId(&bulmaui.ICKNavbar{}, "topbar").AddListeners()
 
 	// static button
-	uA2 := bulmaui.WrapButton("uA2")
-	uA2.DOM.AddMouseEvent(event.MOUSE_ONCLICK, func(*event.MouseEvent, *dom.Element) {
+	uA2 := &bulmaui.ICKButton{}
+	dom.WrapId(&bulmaui.ICKNavbar{}, "uA2")
+	uA2.UI.DOM.AddMouseEvent(event.MOUSE_ONCLICK, func(*event.MouseEvent, *dom.Element) {
 		browser.Win().Alert("clicked")
 	})
 

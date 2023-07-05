@@ -9,7 +9,7 @@ import (
 type ICKSpinner struct{ html.HTMLSnippet }
 
 // Ensure Hero implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*ICKSpinner)(nil)
+var _ html.HTMLComposer = (*ICKSpinner)(nil)
 
 func Spinner() *ICKSpinner {
 	return new(ICKSpinner)

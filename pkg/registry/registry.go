@@ -31,7 +31,8 @@ func (_r *RegistryEntry) Count() int {
 }
 
 // Name returns the unique name of the component
-func (_r RegistryEntry) TagName() string {
+// starting with the `ick-` prefix.
+func (_r RegistryEntry) IckTagName() string {
 	return _r.icktagname
 }
 
@@ -84,15 +85,15 @@ func AddRegistryEntry(name string, cmp any) *RegistryEntry {
 // If _name does not correspond to an existing entry in the resitry, then
 // GetRegistryEntry create a default entry in the registry with that name.
 // Also GetRegistryEntry always returns a RegistryEntry.
-func GetRegistryEntry(_name string) *RegistryEntry {
+func GetRegistryEntry(name string) *RegistryEntry {
 	theRegistry.init()
-	_name = helper.Normalize(_name)
-	if _name == "" {
-		_name = "ick"
+	name = helper.Normalize(name)
+	if name == "" {
+		name = "ick"
 	}
-	regentry, found := theRegistry.entries[_name]
+	regentry, found := theRegistry.entries[name]
 	if !found {
-		regentry = &RegistryEntry{icktagname: _name}
+		regentry = &RegistryEntry{icktagname: name}
 	}
 	return regentry
 }
@@ -100,9 +101,9 @@ func GetRegistryEntry(_name string) *RegistryEntry {
 // LookupRegistryEntry lookup for _cmp in the registry and returns the first RegistryEntry with matching type.
 // _cmp must be a pointer, like it was registered with AddRegistryEntry.
 // Return nil if nothing is found.
-func LookupRegistryEntry(_cmp any) *RegistryEntry {
+func LookupRegistryEntry(cmp any) *RegistryEntry {
 	theRegistry.init()
-	typ := reflect.TypeOf(_cmp)
+	typ := reflect.TypeOf(cmp)
 	for _, v := range theRegistry.entries {
 		tv := reflect.TypeOf(v.cmp)
 		if tv == typ {

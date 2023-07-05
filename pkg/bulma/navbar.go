@@ -8,10 +8,6 @@ import (
 	"github.com/icecake-framework/icecake/pkg/html"
 )
 
-// func init() {
-// 	html.RegisterComposer("ick-navbar", &Navbar{})
-// }
-
 type NAVBARITEM_TYPE string
 
 const (
@@ -37,7 +33,7 @@ type NavbarItem struct {
 	Type NAVBARITEM_TYPE
 
 	// Item Content
-	Content html.HTMLComposer
+	Content html.HTMLContentComposer
 
 	// HRef defines the optional associated url link.
 	// If HRef is defined the item become an anchor link <a>, otherwise it's a <div>
@@ -54,7 +50,7 @@ type NavbarItem struct {
 }
 
 // Ensure NavbarItem implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*NavbarItem)(nil)
+var _ html.HTMLComposer = (*NavbarItem)(nil)
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
 func (navi NavbarItem) Clone() *NavbarItem {
@@ -64,7 +60,7 @@ func (navi NavbarItem) Clone() *NavbarItem {
 
 	if navi.Content != nil {
 		copy := clone.Clone(navi.Content)
-		c.Content = copy.(html.HTMLComposer)
+		c.Content = copy.(html.HTMLContentComposer)
 	}
 
 	if navi.HRef != nil {
@@ -111,20 +107,19 @@ func (navi *NavbarItem) RenderContent(out io.Writer) error {
 		if navi.ImageSrc != nil {
 			img := html.NewSnippet("img", `width="auto" height="28"`)
 			img.Tag().SetURL("src", navi.ImageSrc)
-			navi.RenderChilds(out, img)
+			navi.RenderChild(out, img)
 		}
-		navi.RenderChilds(out, navi.Content)
+		navi.RenderChild(out, navi.Content)
 	}
 	return nil
 }
 
 // AddItem adds the item as a subitem within the navbar item
-func (navi *NavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLComposer) *NavbarItem {
+func (navi *NavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLContentComposer) *NavbarItem {
 	itm := new(NavbarItem)
 	itm.Key = key
 	itm.Type = itmtyp
 	itm.Content = content
-	itm.Meta().LinkParent(navi)
 	navi.items = append(navi.items, itm)
 	return itm
 }
@@ -164,12 +159,12 @@ func (navi *NavbarItem) ParseImageSrc(rawUrl string) *NavbarItem {
 	return navi
 }
 
-// bulma.Navbar is an icecake snippet providing the HTML rendering for a [bulma navbar].
+// bulma.ICKNavbar is an icecake snippet providing the HTML rendering for a [bulma navbar].
 //
 // Can't be used for inline rendering.
 //
 // [bulma navbar]: https://bulma.io/documentation/components/navbar
-type Navbar struct {
+type ICKNavbar struct {
 	html.HTMLSnippet
 
 	items []*NavbarItem // list of navbar items
@@ -180,11 +175,16 @@ type Navbar struct {
 }
 
 // Ensure Navbar implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*Navbar)(nil)
+var _ html.HTMLComposer = (*ICKNavbar)(nil)
+
+func NavBar() *ICKNavbar {
+	n := new(ICKNavbar)
+	return n
+}
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
-func (src Navbar) Clone() *Navbar {
-	clone := new(Navbar)
+func (src ICKNavbar) Clone() *ICKNavbar {
+	clone := new(ICKNavbar)
 	clone.HTMLSnippet = *src.HTMLSnippet.Clone()
 	clone.IsTransparent = src.IsTransparent
 	clone.HasShadow = src.HasShadow
@@ -196,19 +196,18 @@ func (src Navbar) Clone() *Navbar {
 }
 
 // AddItem adds the item to the navbar
-func (nav *Navbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLComposer) *NavbarItem {
+func (nav *ICKNavbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLContentComposer) *NavbarItem {
 	itm := new(NavbarItem)
 	itm.Key = key
 	itm.Type = itmtyp
 	itm.Content = content
-	itm.Meta().LinkParent(nav)
 	nav.items = append(nav.items, itm)
 	return itm
 }
 
 // At returns the item at a given index.
 // returns nil if index is out of range.
-func (nav *Navbar) At(index int) *NavbarItem {
+func (nav *ICKNavbar) At(index int) *NavbarItem {
 	if index < 0 || index >= len(nav.items) {
 		return nil
 	}
@@ -217,7 +216,7 @@ func (nav *Navbar) At(index int) *NavbarItem {
 
 // SetActiveItem look for the key item (or subitem) and sets its IsActive flag.
 // warning: does not unset other actve items if any.
-func (nav *Navbar) SetActiveItem(key string) *Navbar {
+func (nav *ICKNavbar) SetActiveItem(key string) *ICKNavbar {
 	itm := nav.Item(key)
 	if itm != nil {
 		itm.IsActive = true
@@ -227,7 +226,7 @@ func (nav *Navbar) SetActiveItem(key string) *Navbar {
 
 // Item returns the first item found with the given key, walking through all levels.
 // returns nil if key is not found
-func (nav *Navbar) Item(key string) *NavbarItem {
+func (nav *ICKNavbar) Item(key string) *NavbarItem {
 	for _, itm := range nav.items {
 		if itm.Key == key {
 			return itm
@@ -240,7 +239,7 @@ func (nav *Navbar) Item(key string) *NavbarItem {
 }
 
 // BuildTag builds the tag used to render the html element.
-func (nav *Navbar) BuildTag() html.Tag {
+func (nav *ICKNavbar) BuildTag() html.Tag {
 	nav.Tag().
 		SetTagName("nav").
 		SetAttribute("role", "navigation").
@@ -251,13 +250,13 @@ func (nav *Navbar) BuildTag() html.Tag {
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (nav *Navbar) RenderContent(out io.Writer) error {
+func (nav *ICKNavbar) RenderContent(out io.Writer) error {
 	// brand area
 	html.WriteString(out, `<div class="navbar-brand">`)
 
 	// brand items
 	for _, item := range nav.items {
-		nav.RenderChildsIf(item.Type == NAVBARIT_BRAND, out, item)
+		nav.RenderChildIf(item.Type == NAVBARIT_BRAND, out, item)
 	}
 	// burger
 	html.WriteString(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
@@ -269,13 +268,13 @@ func (nav *Navbar) RenderContent(out io.Writer) error {
 
 	html.WriteString(out, `<div class="navbar-start">`)
 	for _, item := range nav.items {
-		nav.RenderChildsIf(item.Type == NAVBARIT_START, out, item)
+		nav.RenderChildIf(item.Type == NAVBARIT_START, out, item)
 	}
 	html.WriteString(out, `</div>`)
 
 	html.WriteString(out, `<div class="navbar-end">`)
 	for _, item := range nav.items {
-		nav.RenderChildsIf(item.Type == NAVBARIT_END, out, item)
+		nav.RenderChildIf(item.Type == NAVBARIT_END, out, item)
 	}
 	html.WriteString(out, `</div>`)
 

@@ -26,7 +26,7 @@ type testsnippet1 struct {
 }
 
 func (tst *testsnippet1) RenderContent(out io.Writer) error {
-	err := tst.RenderChilds(out, &tst.Html)
+	err := tst.RenderChild(out, &tst.Html)
 	return err
 }
 
@@ -39,7 +39,7 @@ func (testsnippet2) BuildTag(tag *Tag) {
 }
 
 func (tst *testsnippet2) RenderContent(out io.Writer) error {
-	err := tst.RenderChilds(out, &tst.Html)
+	err := tst.RenderChild(out, &tst.Html)
 	return err
 }
 
@@ -69,7 +69,7 @@ func (s *testsnippet4) BuildTag(tag *Tag) {
 
 func (s *testsnippet4) RenderContent(out io.Writer) error {
 	WriteStringIf(s.Text != "", out, s.Text)
-	s.RenderChilds(out, &s.HTML)
+	s.RenderChild(out, &s.HTML)
 	WriteStringIf(s.I != 0, out, fmt.Sprintf("%v", s.I))
 	WriteStringIf(s.F != 0, out, fmt.Sprintf("%v", s.F))
 	WriteStringIf(s.D != 0, out, fmt.Sprintf("%v", s.D+(time.Hour*1)))
@@ -81,14 +81,14 @@ func (s *testsnippet4) RenderContent(out io.Writer) error {
 type testsnippetinfinite struct{ HTMLSnippet }
 
 func (s *testsnippetinfinite) RenderContent(out io.Writer) error {
-	return s.RenderChilds(out, ToHTML("<ick-testinfinite/>"))
+	return s.RenderChild(out, ToHTML("<ick-testinfinite/>"))
 }
 
 // testsnippetinfinite
 type testcustomcomposer struct{}
 
-func (s *testcustomcomposer) Tag() *Tag                            { return nil }
-func (s *testcustomcomposer) BuildTag(tag *Tag)                    {}
-func (s *testcustomcomposer) RenderContent(out io.Writer) error    { return nil }
-func (s *testcustomcomposer) Embedded() ComposerMap                { return nil }
-func (s *testcustomcomposer) Embed(id string, subcmp HTMLComposer) {}
+func (s *testcustomcomposer) Tag() *Tag                                   { return nil }
+func (s *testcustomcomposer) BuildTag(tag *Tag)                           {}
+func (s *testcustomcomposer) RenderContent(out io.Writer) error           { return nil }
+func (s *testcustomcomposer) Embedded() ComposerMap                       { return nil }
+func (s *testcustomcomposer) Embed(id string, subcmp HTMLContentComposer) {}

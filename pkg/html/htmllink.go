@@ -16,7 +16,7 @@ type ICKLink struct {
 }
 
 // Ensure HTMLString implements HTMLTagComposer interface
-var _ HTMLTagComposer = (*ICKLink)(nil)
+var _ HTMLComposer = (*ICKLink)(nil)
 
 // A returns an HTML anchor link
 func A(attrlist ...string) *ICKLink {

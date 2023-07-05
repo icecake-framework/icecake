@@ -30,7 +30,7 @@ type Hero struct {
 
 	Height HERO_HEIGHT // the height of the hero section,
 
-	InsideHead html.HTMLComposer
+	InsideHead html.HTMLContentComposer
 
 	ContainerAttr html.AttributeMap // The attributes map to setup to the hero's container, allowing text centering
 
@@ -39,13 +39,13 @@ type Hero struct {
 	Subtitle     html.HTMLString
 	SubtitleSize int // 1 to 6
 
-	CTA html.HTMLComposer // Call To Action
+	CTA html.HTMLContentComposer // Call To Action
 
-	InsideFoot html.HTMLComposer
+	InsideFoot html.HTMLContentComposer
 }
 
 // Ensure Hero implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*Hero)(nil)
+var _ html.HTMLComposer = (*Hero)(nil)
 
 // Tag Builder used by the rendering functions.
 func (msg *Hero) BuildTag() html.Tag {
@@ -57,7 +57,7 @@ func (msg *Hero) BuildTag() html.Tag {
 func (msg *Hero) RenderContent(out io.Writer) error {
 
 	if msg.InsideHead != nil {
-		msg.RenderChilds(out, html.Div(`class="hero-head"`).AddContent(msg.InsideHead))
+		msg.RenderChild(out, html.Div(`class="hero-head"`).AddContent(msg.InsideHead))
 	}
 
 	html.WriteString(out, `<div class="hero-body">`)
@@ -69,20 +69,20 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 
 	title := html.P(`class="title"`).AddContent(&msg.Title)
 	title.Tag().SetClassIf(msg.TitleSize > 0 && msg.TitleSize <= 6, "is-"+strconv.Itoa(msg.TitleSize))
-	msg.RenderChilds(out, title)
+	msg.RenderChild(out, title)
 
 	subtitle := html.P(`class="subtitle"`).AddContent(&msg.Subtitle)
 	subtitle.Tag().SetClassIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
-	msg.RenderChilds(out, subtitle)
+	msg.RenderChild(out, subtitle)
 
-	msg.RenderChildsIf(msg.CTA != nil, out, msg.CTA)
+	msg.RenderChildIf(msg.CTA != nil, out, msg.CTA)
 
 	contag.RenderClosing(out)
 
 	html.WriteString(out, `</div>`)
 
 	if msg.InsideFoot != nil {
-		msg.RenderChilds(out, html.Div(`class="hero-foor"`).AddContent(msg.InsideFoot))
+		msg.RenderChild(out, html.Div(`class="hero-foor"`).AddContent(msg.InsideFoot))
 	}
 
 	return nil

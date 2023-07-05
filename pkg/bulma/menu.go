@@ -48,7 +48,7 @@ type MenuItem struct {
 }
 
 // Ensure NavbarItem implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*MenuItem)(nil)
+var _ html.HTMLComposer = (*MenuItem)(nil)
 
 // ParseHRef tries to parse rawUrl to HRef ignoring error.
 func (mnui *MenuItem) ParseHRef(rawUrl string) *MenuItem {
@@ -110,7 +110,7 @@ type Menu struct {
 }
 
 // Ensure Menu implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*Menu)(nil)
+var _ html.HTMLComposer = (*Menu)(nil)
 
 // Clone clones this Menu and all its items and subitem, keeping their attributes their item index and their key.
 func (src Menu) Clone() *Menu {
@@ -147,7 +147,6 @@ func (mnu *Menu) AddItem(key string, itmtyp MENUITEM_TYPE, txt string) *MenuItem
 	itm.Key = key
 	itm.Type = itmtyp
 	itm.Text = txt
-	itm.Meta().LinkParent(mnu)
 	mnu.items = append(mnu.items, itm)
 	return itm
 }
@@ -231,7 +230,7 @@ func (mnu *Menu) RenderContent(out io.Writer) error {
 			continue
 		}
 
-		mnu.RenderChilds(out, item)
+		mnu.RenderChild(out, item)
 	}
 
 	// close the menu
@@ -254,7 +253,7 @@ func (mnu *Menu) RenderContent(out io.Writer) error {
 				html.WriteString(out, `<ul class="menu-list">`)
 				hasfooter = true
 			}
-			mnu.RenderChilds(out, item)
+			mnu.RenderChild(out, item)
 		}
 	}
 	if hasfooter {

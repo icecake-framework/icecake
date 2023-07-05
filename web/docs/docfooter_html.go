@@ -29,7 +29,7 @@ const docsFooterStyle string = `.myfooter-title {
 type docFooter struct{ html.HTMLSnippet }
 
 // Ensure Footer implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*docFooter)(nil)
+var _ html.HTMLComposer = (*docFooter)(nil)
 
 func DocFooter() *docFooter {
 	return new(docFooter)
