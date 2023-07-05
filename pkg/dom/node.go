@@ -12,6 +12,7 @@ import (
 
 const (
 	UNDEFINED_NODE string = "<undefined node>"
+	UNDEFINED_ATTR string = "<undefined attribute>"
 )
 
 /****************************************************************************
@@ -177,8 +178,11 @@ func (_node *Node) BaseURI() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/isConnected
 // func (_node Node) IsConnected() bool {
-func (_node Node) IsInDOM() bool {
-	return _node.GetBool("isConnected")
+func (n Node) IsInDOM() bool {
+	if !n.JSValue.IsDefined() {
+		return false
+	}
+	return n.GetBool("isConnected")
 }
 
 // GetRootNode returns the context object's root, which optionally includes the shadow root if it is available.
@@ -409,8 +413,10 @@ func (_node *Node) addListener(_evttyp string, _evjsh syscalljs.Func) {
 
 // RemoveListeners removes all event listeners and release ressources allocated fot the associated js func
 // To be called only when event handlers have been added to the node.
-func (node *Node) RemoveListeners() {
-	for _, evh := range node.evth {
-		evh.Release()
+func (n *Node) RemoveListeners() {
+	if n != nil && n.IsInDOM() {
+		for _, evh := range n.evth {
+			evh.Release()
+		}
 	}
 }
