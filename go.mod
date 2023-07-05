@@ -9,7 +9,7 @@ require (
 
 require (
 	github.com/huandu/go-clone v1.6.0
-	github.com/lolorenzo777/verbose v1.2.6
+	github.com/lolorenzo777/verbose v1.2.8
 	github.com/otiai10/copy v1.12.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
