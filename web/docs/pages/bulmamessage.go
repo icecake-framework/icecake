@@ -26,7 +26,7 @@ func (sec *SectionBulmaMessage) RenderContent(out io.Writer) error {
 
 	// rendering
 	html.WriteString(out, `<h3>Usage</h3>`)
-	sec.RenderChilds(out, bulma.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(bulma.COLOR_PRIMARY).SetOutlined(true).SetDisabled(true))
+	sec.RenderChild(out, bulma.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(bulma.COLOR_PRIMARY).SetOutlined(true).SetDisabled(true))
 	html.WriteString(out, `<div id="boxusage" class="box mr-5">`)
 	html.Render(out, nil, bulma.Spinner())
 	html.WriteString(out, `</div>`)
@@ -35,18 +35,21 @@ func (sec *SectionBulmaMessage) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<h3>Rendering</h3>`)
 	html.WriteString(out, `<div class="box mr-5">`)
 	r1 := bulma.Message(html.ToHTML("This is a simple message."))
-	r2 := bulma.Message(html.ToHTML("This is a message with a header.")).SetHeader(*html.ToHTML("Icecake Message"), false)
-	r3 := bulma.Message(html.ToHTML("This is a message with the delete button.")).SetHeader(*html.ToHTML("Icecake Message"), true)
-	r4 := bulma.Message(nil).SetHeader(*html.ToHTML("Only header"), true)
+	r2 := bulma.Message(html.ToHTML("This is a message with a header.")).SetHeader(*html.ToHTML("Icecake Message"))
+
+	r3 := bulma.Message(html.ToHTML("This is a message with the delete button.")).SetHeader(*html.ToHTML("Icecake Message")).SetDeletable("msgr3")
+	// DEBUG: dump the map of sub composers
+
+	r4 := bulma.Message(nil).SetHeader(*html.ToHTML("Only header")).SetDeletable("msgr4")
 	html.Render(out, sec, r1, r2, r3, r4)
 	html.WriteString(out, `</div>`)
 
 	// styling
 	html.WriteString(out, `<h3>Styling</h3>`)
 	html.WriteString(out, `<div class="box mr-5">`)
-	styl1 := bulma.Message(html.ToHTML("Make use of bulma.COLOR property.<br>COLOR = COLOR_PRIMARY")).SetHeader(*html.ToHTML("Icecake Message"), false).
+	styl1 := bulma.Message(html.ToHTML("Make use of bulma.COLOR property.<br>COLOR = COLOR_PRIMARY")).SetHeader(*html.ToHTML("Icecake Message")).
 		SetColor(bulma.COLOR_INFO)
-	styl2 := bulma.Message(html.ToHTML("Make use of bulma.SIZE property.<br>SIZE = SIZE_SMALL")).SetHeader(*html.ToHTML("Icecake Message"), false).
+	styl2 := bulma.Message(html.ToHTML("Make use of bulma.SIZE property.<br>SIZE = SIZE_SMALL")).SetHeader(*html.ToHTML("Icecake Message")).
 		SetSize(bulma.SIZE_SMALL)
 
 	html.Render(out, sec, styl1, styl2)
