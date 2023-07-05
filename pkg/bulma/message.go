@@ -34,30 +34,11 @@ type ICKMessage struct {
 }
 
 // Ensure Message implements HTMLTagComposer interface
-var _ html.HTMLTagComposer = (*ICKMessage)(nil)
+var _ html.HTMLComposer = (*ICKMessage)(nil)
 
-func Message(cmp html.HTMLComposer) *ICKMessage {
+func Message(cnt html.HTMLContentComposer) *ICKMessage {
 	msg := new(ICKMessage)
-	msg.AddContent(cmp)
-	return msg
-}
-
-// SetHeader set a message header
-func (msg *ICKMessage) SetHeader(header html.HTMLString, candelete bool) *ICKMessage {
-	msg.Header = header
-	msg.CanDelete = candelete
-	return msg
-}
-
-// SetColor set a message color
-func (msg *ICKMessage) SetColor(c COLOR) *ICKMessage {
-	msg.COLOR = c
-	return msg
-}
-
-// SetSize set the size of the message
-func (msg *ICKMessage) SetSize(s SIZE) *ICKMessage {
-	msg.SIZE = s
+	msg.AddContent(cnt)
 	return msg
 }
 
@@ -76,10 +57,15 @@ func (msg *ICKMessage) RenderContent(out io.Writer) error {
 
 	if !msg.Header.IsEmpty() {
 		html.WriteString(out, `<div class="message-header">`)
-		msg.RenderChilds(out, html.Span().AddContent(&msg.Header))
+		msg.RenderChild(out, html.Span().AddContent(&msg.Header))
 		if msg.CanDelete {
-			verbose.Debug("Message can delete TargetId=%s", msg.Id())
-			html.Render(out, nil, html.ToHTML(`<ick-delete TargetID='`+msg.Id()+`'/>`))
+			id := msg.Id()
+			if id == "" {
+				verbose.Debug("ICKMessage: Rendering Deletable Message without TargetId")
+				msg.RenderChild(out, html.ToHTML(`<ick-delete/>`))
+			} else {
+				msg.RenderChild(out, html.ToHTML(`<ick-delete id="del`+id+`" TargetId='`+id+`'/>`))
+			}
 		}
 		html.WriteString(out, `</div>`)
 	}
@@ -91,4 +77,34 @@ func (msg *ICKMessage) RenderContent(out io.Writer) error {
 	}
 
 	return nil
+}
+
+/******************************************************************************/
+
+// SetHeader set a message header
+func (msg *ICKMessage) SetHeader(header html.HTMLString) *ICKMessage {
+	msg.Header = header
+	return msg
+}
+
+// SetDeletable make this message delatable by rendering the delete button.
+// A deletable message must have an id.
+func (msg *ICKMessage) SetDeletable(id string) *ICKMessage {
+	if id != "" {
+		msg.Tag().SetId(id)
+	}
+	msg.CanDelete = true
+	return msg
+}
+
+// SetColor set a message color
+func (msg *ICKMessage) SetColor(c COLOR) *ICKMessage {
+	msg.COLOR = c
+	return msg
+}
+
+// SetSize set the size of the message
+func (msg *ICKMessage) SetSize(s SIZE) *ICKMessage {
+	msg.SIZE = s
+	return msg
 }
