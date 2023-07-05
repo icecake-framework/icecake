@@ -1,13 +1,11 @@
 package html
 
 import (
-	"fmt"
 	"io"
 	"reflect"
 	"strconv"
 	"strings"
 
-	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/registry"
 	"github.com/lolorenzo777/verbose"
 )
@@ -15,23 +13,32 @@ import (
 // maxDEEP is the maximum HTML string unfolding levels
 const maxDEEP int = 25
 
-type ComposerMap map[string]any
+type ComposerMap map[string]HTMLContentComposer
 
-type RenderingMeta struct {
-	VirtualId string // virtual id allocated to a composer
-	Deep      int    // deepness of the composer
-	Parent    HTMLComposer
+// RMetaData is rendering metadata for a single HTMLContentComposer
+type RMetaData struct {
+	VirtualId string        // virtual id allocated to an HTMLContentComposer, always one
+	Id        string        // the id allocated to the HTMLContentComposer if any
+	Parent    RMetaProvider // optional parent, may be an orphan
+	Deep      int           // deepness of the HTMLContentComposer
+	IsRender  bool          // Indicates the HTMLContentComposer has been rendered at least once
+	RError    error         // rendering error if any
+	IsMounted bool          // Indicates the HTMLContentComposer has been mounted
 
-	sub ComposerMap // instantiated embedded sub-snippet if any.
+	childs ComposerMap // embedded child content composer
 }
 
-func (rmeta *RenderingMeta) LinkParent(parent HTMLComposer) (deep int) {
-	rmeta.Parent = parent
-	rmeta.Deep = 0
-	if parent != nil {
-		rmeta.Deep = parent.Meta().Deep + 1
-	}
-	return rmeta.Deep
+// func (rmeta *RMetaData) LinkParent(parent HTMLContentComposer) (deep int) {
+// 	rmeta.Parent = parent
+// 	rmeta.Deep = 0
+// 	if parent != nil {
+// 		rmeta.Deep = parent.RMeta().Deep + 1
+// 	}
+// 	return rmeta.Deep
+// }
+
+func (rmeta *RMetaData) RMeta() *RMetaData {
+	return rmeta
 }
 
 // GenerateVirtualId generates a unique id for every rendering composer.
@@ -45,27 +52,32 @@ func (rmeta *RenderingMeta) LinkParent(parent HTMLComposer) (deep int) {
 //   - the dot "-" seperator is added followed by the cmpname if any
 //
 // - the cmpname is added
-func (rmeta *RenderingMeta) GenerateVirtualId(cmpname string, cmpid string) string {
+func (rmeta *RMetaData) GenerateVirtualId(cmp HTMLContentComposer) string {
 	prefix := "orphan"
 	if rmeta.Parent != nil {
-		if pvid := rmeta.Parent.Meta().VirtualId; pvid != "" {
+		if pvid := rmeta.Parent.RMeta().VirtualId; pvid != "" {
 			prefix = pvid
 		}
 	}
 	prefix += "."
 	toporphan := strings.HasPrefix(prefix, "orphan.")
 
+	cmpname := reflect.TypeOf(cmp).Elem().Name()
+	cmpname = strings.ToLower(cmpname)
+
 	body := cmpname
+	cmpid := cmp.RMeta().Id
 	if cmpid != "" {
 		body = cmpid
 		if toporphan {
+			toporphan = false
 			prefix = ""
 		}
 	}
 
 	index := 0
 	if rmeta.Parent != nil {
-		index = len(rmeta.Parent.Meta().Embedded())
+		index = len(rmeta.Parent.RMeta().Embedded())
 	} else {
 		index, _ = registry.GetUniqueId(cmpname)
 	}
@@ -79,48 +91,62 @@ func (rmeta *RenderingMeta) GenerateVirtualId(cmpname string, cmpid string) stri
 	return rmeta.VirtualId
 }
 
-// Embed adds subcmp to the map of embedded components within the _parent.
-// If a component with the same _id has already been embedded it's replaced.
-// Usually the _id is the id of the html element.
-func (rmeta *RenderingMeta) Embed(id string, subcmp HTMLComposer) {
-	if rmeta.sub == nil {
-		rmeta.sub = make(ComposerMap, 1)
+// Embed adds child to the map of embedded components.
+// If a child with the same key has already been embedded it's replaced and a warning is raised in verbose mode.
+// The key is the id of the html element if any otherwise it's its virtual id.
+func (rmeta *RMetaData) Embed(child HTMLContentComposer) {
+	if rmeta.childs == nil {
+		rmeta.childs = make(ComposerMap, 1)
 	}
-	rmeta.sub[id] = subcmp
+	key := child.RMeta().Id
+	if key == "" {
+		key = child.RMeta().VirtualId
+	}
+	if _, f := rmeta.childs[key]; f {
+		verbose.Println(verbose.WARNING, "Embed: duplicate child id:%q for parent id:%q", key, rmeta.VirtualId)
+	}
+	rmeta.childs[key] = child
+	child.RMeta().Parent = rmeta
 	// verbose.Debug("embedded (%v) %q", reflect.TypeOf(subcmp).String(), id)
 }
 
 // Embedded returns the map of embedded components, keyed by their id.
-func (rmeta RenderingMeta) Embedded() ComposerMap {
-	if rmeta.sub == nil {
-		rmeta.sub = make(ComposerMap, 1)
+func (rmeta RMetaData) Embedded() ComposerMap {
+	if rmeta.childs == nil {
+		rmeta.childs = make(ComposerMap, 0)
 	}
-	return rmeta.sub
+	return rmeta.childs
 }
 
-type HTMLComposer interface {
+type RMetaProvider interface {
+	// Meta returns a reference to render meta data
+	RMeta() *RMetaData
+}
 
-	// Meta returns a reference to a RenderingMeta containing meta data of the rendering
-	Meta() *RenderingMeta
+type HTMLContentComposer interface {
+
+	// Meta returns a reference to render meta data
+	RMetaProvider
 
 	// RenderContent writes the HTML string corresponding to the content of the HTML element.
 	// Return an error to stops the rendering process.
 	RenderContent(out io.Writer) error
 }
 
-type HTMLTagComposer interface {
+// HTMLComposer interface combines TagBuilder interfaces and HTMLContentComposer interfaces
+type HTMLComposer interface {
 	TagBuilder
-	HTMLComposer
+	HTMLContentComposer
 }
 
-// Render renders the HTML string of the snippet to out, including its tag element its properties and its content.
+// Render renders the HTML string of the composers to out, including its tag element its properties and its content.
 // Rendering the content can renders child-snippets recursively. This can be done maxDEEP times max to avoid infinite loop.
 //
-// If the snippet provides a tagname the output looks like this:
+// If composer is a also a TagBuilder the output looks like this:
 //
 //	`<{tagname} id={xxx} name="{ick-tag}" [attributes]>[content]</tagname>`
 //
-// otherwise only the content is written:
+// otherwise only the content is written.
 //
 // A snippet id can be setup up upfront (a) accessing any saved tag attribute within the snippet struct, or (b) within an html ick-tag attribute (for embedded snippet).
 // Thes id will be lost if ther'e a parent, the snippet attributes will be overwritten with the unique id generated by the rendering process.
@@ -134,7 +160,8 @@ type HTMLTagComposer interface {
 // If the parent is not nil, the snippet is added to its embedded stack of sub-components.
 //
 // Returns rendering errors, typically with the writer, or if there's too many recursive rendering.
-func Render(out io.Writer, parent HTMLComposer, cmps ...HTMLComposer) error {
+// TODO: avoid rendering infinite loop when cmp == parent
+func Render(out io.Writer, parent RMetaProvider, cmps ...HTMLContentComposer) error {
 	for _, cmp := range cmps {
 		err := render(out, parent, cmp)
 		if err != nil {
@@ -144,85 +171,41 @@ func Render(out io.Writer, parent HTMLComposer, cmps ...HTMLComposer) error {
 	return nil
 }
 
-func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) error {
+func render(out io.Writer, parent RMetaProvider, cmp HTMLContentComposer) error {
 
 	// nothing to render
-	if cmp == nil {
-		return nil
-	}
-	if reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {
+	if cmp == nil || reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {
 		verbose.Printf(verbose.WARNING, "Render: empty composer %s\n", reflect.TypeOf(cmp).String())
 		return nil
 	}
 
 	// look for depth and ensure no infinite loop
-	cmpdeep := cmp.Meta().LinkParent(parent)
-	if cmpdeep > maxDEEP {
-		return verbose.Error("RenderSnippet", ErrTooManyRecursiveRendering)
-	}
-
-	// Get a name for the composer and set its name property
-	// TODO: simplify with the tag name automattically generated with reflection
-	var icktagname, cmpname string
-	regentry := registry.LookupRegistryEntry(cmp)
-	if regentry != nil {
-		icktagname = regentry.TagName()
-		cmpname = icktagname
-		if left, has := strings.CutPrefix(icktagname, "ick-"); has {
-			cmpname = left
+	deep := 0
+	if parent != nil {
+		if deep = parent.RMeta().Deep + 1; deep > maxDEEP {
+			return verbose.Error("Render", ErrTooManyRecursiveRendering)
 		}
-	} else {
-		cmpname = reflect.TypeOf(cmp).Elem().Name()
-		cmpname = strings.ToLower(cmpname)
-		icktagname = "ick-" + cmpname
 	}
+	verbose.Printf(verbose.INFO, "rendering L.%v composer %s\n", deep, reflect.TypeOf(cmp).String())
 
 	// build the tag
-	cmptag, istagger := cmp.(TagBuilder)
-	cmpid := ""
-	autoid := false
 	var tag Tag
+	cmptag, istagger := cmp.(TagBuilder)
 	if istagger && cmptag != nil {
-		// tag := cmptag.Tag()
-		// if tag.AttributeMap == nil {
-		// 	tag.AttributeMap = make(AttributeMap)
-		// }
-		tag = cmptag.BuildTag()
-
-		// force property name
-		if !tag.NoName {
-			tag.SetAttribute("name", icktagname)
-		}
-
-		// get the id, may be empty
-		if tag.IsTrue("autoid") {
-			autoid = true
-		} else {
-			cmpid = tag.Id()
-		}
+		tag = BuildTag(cmptag)
 	}
 
 	// generate the virtual id
-	virtualid := cmp.Meta().GenerateVirtualId(cmpname, cmpid)
-	if autoid {
-		tag.SetId(virtualid)
-	}
+	cmp.RMeta().GenerateVirtualId(cmp)
 
-	// verbose information
-	if verbose.IsOn {
-		tos := reflect.TypeOf(cmp).String()
-		tos = helper.FillString(tos, 30)
-		strid := ""
-		if cmpid != "" {
-			strid = fmt.Sprintf("--> id=%q", cmpid)
-		}
-		verbose.Printf(verbose.INFO, "rendering composer %v %s %s %s\n", cmpdeep, tos, virtualid, strid)
-	}
+	// verbose id information
+	//verbose.Debug(" vid:%s --> id:%s", virtualid, cmpid)
 
 	// render openingtag
 	if cmptag != nil {
 		selfclosed, err := tag.RenderOpening(out)
 		if selfclosed || err != nil {
+			cmp.RMeta().RError = err
 			return err
 		}
 	}
@@ -230,6 +213,7 @@ func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) error {
 	// Render the content
 	err := cmp.RenderContent(out)
 	if err != nil {
+		cmp.RMeta().RError = err
 		return err
 	}
 
@@ -237,13 +221,17 @@ func render(out io.Writer, parent HTMLComposer, cmp HTMLComposer) error {
 	if cmptag != nil {
 		err := tag.RenderClosing(out)
 		if err != nil {
+			cmp.RMeta().RError = err
 			return err
 		}
 	}
 
 	// add it to the map of embedded components
+	cmp.RMeta().IsRender = true
+	cmp.RMeta().Deep = 0
 	if parent != nil {
-		parent.Meta().Embed(virtualid, cmp)
+		parent.RMeta().Embed(cmp)
+		cmp.RMeta().Deep = parent.RMeta().Deep + 1
 	}
 
 	return nil
