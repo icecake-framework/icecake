@@ -111,10 +111,20 @@ func (tag *Tag) ParseAttributes(alists ...string) AttributeMap {
 // errors mays occurs from the writer only.
 func (tag *Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
 	if tag.tagname != "" {
-		_, err = WriteString(out, "<", tag.tagname, " ", tag.AttributeString(), ">")
-		if err == nil {
-			selfclosed = tag.selfClosing
+		stratt := tag.AttributeString()
+		_, err = WriteString(out, "<", tag.tagname)
+		if err != nil {
+			return
 		}
+		_, err = WriteStringIf(stratt != "", out, " ", tag.AttributeString())
+		if err != nil {
+			return
+		}
+		_, err = WriteString(out, ">")
+		if err != nil {
+			return
+		}
+		selfclosed = tag.selfClosing
 	}
 	return
 }

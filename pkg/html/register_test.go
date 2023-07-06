@@ -25,31 +25,33 @@ func TestRegisterComposer(t *testing.T) {
 
 	// by reference
 	c1 := new(HTMLSnippet)
-	_, err := RegisterComposer("snippet", *c1)
+	_, err := RegisterComposer("mysnippet", *c1)
 	assert.ErrorContains(t, err, "not by value")
 
 	// HTMLcomposer implementation
 	i := new(int)
-	_, err = RegisterComposer("snippet", i)
+	_, err = RegisterComposer("mysnippet", i)
 	assert.ErrorContains(t, err, "must implement HTMLComposer interface")
 
 	// empty tag
 	_, err = RegisterComposer("ick-testsnippet1", &testcustomcomposer{})
-	assert.ErrorContains(t, err, "Tag() must return a valid reference")
+	assert.ErrorContains(t, err, "TagBuilder without rendering")
 
 	// naming prefix
-	_, err = RegisterComposer("snippet", &testsnippet1{})
+	_, err = RegisterComposer("snippet", &testsnippet0{})
 	assert.ErrorContains(t, err, "name must start by 'ick-'")
 
 	// name
-	_, err = RegisterComposer("ick-", &testsnippet1{})
+	_, err = RegisterComposer("ick-", &testsnippet0{})
 	assert.ErrorContains(t, err, "name missing")
 
-	// log tag builder
+	// No Error
 	_, err = RegisterComposer("ick-testsnippet1", &testsnippet1{})
 	assert.NoError(t, err)
 
-	// log "already registered"
+	// registered twice
+	_, err = RegisterComposer("ick-testsnippet1", &testsnippet0{})
+	assert.Error(t, err)
 	_, err = RegisterComposer("ick-testsnippet1", &testsnippet1{})
 	assert.NoError(t, err)
 }

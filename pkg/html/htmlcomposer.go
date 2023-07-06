@@ -185,6 +185,7 @@ func render(out io.Writer, parent RMetaProvider, cmp HTMLContentComposer) error 
 		if deep = parent.RMeta().Deep + 1; deep > maxDEEP {
 			return verbose.Error("Render", ErrTooManyRecursiveRendering)
 		}
+		cmp.RMeta().Deep = parent.RMeta().Deep + 1
 	}
 	verbose.Printf(verbose.INFO, "rendering L.%v composer %s\n", deep, reflect.TypeOf(cmp).String())
 
@@ -231,7 +232,6 @@ func render(out io.Writer, parent RMetaProvider, cmp HTMLContentComposer) error 
 	cmp.RMeta().Deep = 0
 	if parent != nil {
 		parent.RMeta().Embed(cmp)
-		cmp.RMeta().Deep = parent.RMeta().Deep + 1
 	}
 
 	return nil

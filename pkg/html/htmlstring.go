@@ -346,8 +346,8 @@ func updateproperty(prop reflect.Value, value string) (err error) {
 	verbose.Debug("property type:%s value:%v", typ, value)
 	switch typ {
 	case "html.HTMLString":
-		s := string(ToHTML(value).Bytes())
-		prop.Set(reflect.ValueOf(s))
+		s := ToHTML(value)
+		prop.Set(reflect.ValueOf(*s))
 	case "time.Duration":
 		var d time.Duration
 		d, err = time.ParseDuration(value)
