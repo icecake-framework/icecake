@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/icecake-framework/icecake/pkg/bulma"
-	"github.com/icecake-framework/icecake/pkg/bulmaui"
+	"github.com/icecake-framework/icecake/pkg/bulma/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/html"

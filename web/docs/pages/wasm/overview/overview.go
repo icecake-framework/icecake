@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/icecake-framework/icecake/pkg/bulmaui"
+	"github.com/icecake-framework/icecake/pkg/bulma/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/dom"
 )
 
