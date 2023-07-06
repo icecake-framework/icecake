@@ -62,7 +62,7 @@ func SectionDoc(section string) html.HTMLContentComposer {
 }
 
 func (cmp *SectionDocIcecake) BuildTag() html.Tag {
-	cmp.Tag().SetTagName("section").AddClass("content py-5")
+	cmp.Tag().SetTagName("section").AddClass("py-5")
 	return *cmp.Tag()
 }
 

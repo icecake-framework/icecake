@@ -14,9 +14,11 @@ const (
 type SectionDocDelete struct{ SectionDocIcecake }
 
 func (cmp *SectionDocDelete) RenderContent(out io.Writer) error {
-	html.WriteString(out, `<h2>Delete</h2>`)
-	html.WriteString(out, `<p>ICKDelete is an icecake snippet providing the HTML rendering for a `, linkBulmaDelete, `</p>`)
-	html.WriteString(out, `<p>The html rendering is a simple button with a centered cross.</p>`)
+	html.Render(out, nil, ick.Title(3, "Delete"))
+	html.WriteString(out, `<div class="block">`+
+		`<p>ICKDelete is an icecake snippet providing the HTML rendering for a `, linkBulmaDelete, `</p>`+
+		`<p>The html rendering is a simple button with a centered cross.</p>`+
+		`</div>`)
 
 	// usages
 	html.WriteString(out, `<div id="boxusage" class="box mr-5">`)
@@ -25,10 +27,12 @@ func (cmp *SectionDocDelete) RenderContent(out io.Writer) error {
 	cmp.RenderChild(out, ick.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(ick.COLOR_PRIMARY).SetOutlined(true))
 
 	// apis
-	html.WriteString(out, `<h3>Delete API</h3>`)
+	html.Render(out, nil, ick.Title(3, "ICKDelete APIs"))
+	html.WriteString(out, `<div class="block">To come`)
+	html.WriteString(out, `</div>`)
 
 	// rendering
-	html.WriteString(out, `<h3>Rendering</h3>`)
+	html.Render(out, nil, ick.Title(3, "Rendering"))
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
 	uA1 := &ick.ICKDelete{TargetId: "Idone"}
 	uA2 := &ick.ICKDelete{TargetId: "Idtwo", SIZE: ick.SIZE_LARGE}
