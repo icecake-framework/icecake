@@ -24,7 +24,7 @@ type ICKCard struct {
 	footerItem []html.HTMLString
 }
 
-// Ensure Card implements HTMLTagComposer interface
+// Ensure Card implements HTMLComposer interface
 var _ html.HTMLComposer = (*ICKCard)(nil)
 
 // Card main factory

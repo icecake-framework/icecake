@@ -108,7 +108,7 @@ func (s *testsnippetinfinite) RenderContent(out io.Writer) error {
 // testsnippetinfinite
 type testcustomcomposer struct{}
 
-// Ensure testcustomcomposer implements HTMLTagComposer interface
+// Ensure testcustomcomposer implements HTMLComposer interface
 var _ HTMLComposer = (*testcustomcomposer)(nil)
 
 // func (s *testcustomcomposer) Tag() *Tag                                   { return nil }

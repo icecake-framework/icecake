@@ -49,7 +49,7 @@ type NavbarItem struct {
 	items []*NavbarItem // list of navbar items
 }
 
-// Ensure NavbarItem implements HTMLTagComposer interface
+// Ensure NavbarItem implements HTMLComposer interface
 var _ html.HTMLComposer = (*NavbarItem)(nil)
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
@@ -174,7 +174,7 @@ type ICKNavbar struct {
 	HasShadow     bool // renders a shadow below the navbar
 }
 
-// Ensure Navbar implements HTMLTagComposer interface
+// Ensure Navbar implements HTMLComposer interface
 var _ html.HTMLComposer = (*ICKNavbar)(nil)
 
 func NavBar() *ICKNavbar {

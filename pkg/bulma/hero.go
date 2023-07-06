@@ -44,7 +44,7 @@ type Hero struct {
 	InsideFoot html.HTMLContentComposer
 }
 
-// Ensure Hero implements HTMLTagComposer interface
+// Ensure Hero implements HTMLComposer interface
 var _ html.HTMLComposer = (*Hero)(nil)
 
 // Tag Builder used by the rendering functions.

@@ -33,7 +33,7 @@ type ICKMessage struct {
 	SIZE
 }
 
-// Ensure Message implements HTMLTagComposer interface
+// Ensure Message implements HTMLComposer interface
 var _ html.HTMLComposer = (*ICKMessage)(nil)
 
 func Message(cnt html.HTMLContentComposer) *ICKMessage {

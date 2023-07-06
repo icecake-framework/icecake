@@ -21,7 +21,7 @@ type ICKDelete struct {
 	OnDelete func(*ICKDelete)
 }
 
-// Ensure Button implements HTMLTagComposer interface
+// Ensure Button implements UIComposer interface
 var _ dom.UIComposer = (*ICKDelete)(nil)
 
 // Wrap implements the JSValueWrapper to enable wrapping of a dom.Element usually

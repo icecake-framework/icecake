@@ -23,7 +23,7 @@ type Container struct {
 	FullWidth CONTAINER_FULLWIDTH
 }
 
-// Ensure Container implements HTMLTagComposer interface
+// Ensure Container implements HTMLComposer interface
 var _ html.HTMLComposer = (*Container)(nil)
 
 func (c *Container) BuildTag() html.Tag {

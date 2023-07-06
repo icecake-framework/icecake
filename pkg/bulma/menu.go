@@ -47,7 +47,7 @@ type MenuItem struct {
 	IsActive bool
 }
 
-// Ensure NavbarItem implements HTMLTagComposer interface
+// Ensure NavbarItem implements HTMLComposer interface
 var _ html.HTMLComposer = (*MenuItem)(nil)
 
 // ParseHRef tries to parse rawUrl to HRef ignoring error.
@@ -109,7 +109,7 @@ type Menu struct {
 	items []*MenuItem // list of Menu items
 }
 
-// Ensure Menu implements HTMLTagComposer interface
+// Ensure Menu implements HTMLComposer interface
 var _ html.HTMLComposer = (*Menu)(nil)
 
 // Clone clones this Menu and all its items and subitem, keeping their attributes their item index and their key.

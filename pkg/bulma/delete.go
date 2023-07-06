@@ -21,7 +21,7 @@ type ICKDelete struct {
 	SIZE
 }
 
-// Ensure Delete implements HTMLTagComposer interface
+// Ensure Delete implements HTMLComposer interface
 var _ html.HTMLComposer = (*ICKDelete)(nil)
 
 // BuildTag builds the tag used to render the html element.

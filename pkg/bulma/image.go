@@ -61,7 +61,7 @@ type Image struct {
 	// TODO: Image add a background
 }
 
-// Ensure Image implements HTMLTagComposer interface
+// Ensure Image implements HTMLComposer interface
 var _ html.HTMLComposer = (*Image)(nil)
 
 func NewImage(rawUrl string, size IMG_SIZE) *Image {

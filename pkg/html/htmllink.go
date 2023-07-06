@@ -15,7 +15,7 @@ type ICKLink struct {
 	HRef *url.URL
 }
 
-// Ensure HTMLString implements HTMLTagComposer interface
+// Ensure HTMLString implements HTMLComposer interface
 var _ HTMLComposer = (*ICKLink)(nil)
 
 // A returns an HTML anchor link

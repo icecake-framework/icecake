@@ -24,7 +24,7 @@ type HTMLString struct {
 	bytes []byte
 }
 
-// Ensure HTMLString implements HTMLTagComposer interface
+// Ensure HTMLString implements HTMLContentComposer interface
 var _ HTMLContentComposer = (*HTMLString)(nil)
 
 // ToHTML is the HTMLString factory allowing to convert a string into a new HTMLString reday for rendering.
