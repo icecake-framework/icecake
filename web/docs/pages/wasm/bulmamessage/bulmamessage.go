@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 
-	"github.com/icecake-framework/icecake/pkg/bulma"
-	"github.com/icecake-framework/icecake/pkg/bulma/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ick"
+	"github.com/icecake-framework/icecake/pkg/ick/ickui"
 	"github.com/lolorenzo777/verbose"
 )
 
-var _btnreset = &bulmaui.ICKButton{}
+var _btnreset = &ickui.ICKButton{}
 
 // This main package contains web assembly source code.
 func main() {
@@ -27,13 +27,13 @@ func main() {
 	_btnreset.OnClick = func() { ResetBoxUsage() }
 
 	// wrap the back rendered navbar and reset btn
-	dom.MountId(&bulmaui.ICKNavbar{}, "topbar")
+	dom.MountId(&ickui.ICKNavbar{}, "topbar")
 	dom.MountId(_btnreset, "btnreset")
 
 	// front rendering
 	boxusage := dom.Id("boxusage")
 	boxusage.InsertText(dom.INSERT_BODY, "")
-	u1 := bulmaui.Message(html.ToHTML("This is an informative message.")).SetColor(bulma.COLOR_INFO)
+	u1 := ickui.Message(html.ToHTML("This is an informative message.")).SetColor(ick.COLOR_INFO)
 	boxusage.InsertSnippet(dom.INSERT_LAST_CHILD, u1)
 
 	ResetBoxUsage()
@@ -46,12 +46,12 @@ func main() {
 	<-c
 }
 
-func OnDeleteU2(del *bulmaui.ICKDelete) {
+func OnDeleteU2(del *ickui.ICKDelete) {
 	_btnreset.SetDisabled(false)
 }
 
 func ResetBoxUsage() {
-	u2 := bulmaui.Message(html.ToHTML("Click on the delete button to close this warning.")).SetColor(bulma.COLOR_WARNING)
+	u2 := ickui.Message(html.ToHTML("Click on the delete button to close this warning.")).SetColor(ick.COLOR_WARNING)
 	u2.SetHeader(*html.ToHTML("Warning")).SetDeletable("msgu2")
 	u2.BtnDelete.OnDelete = OnDeleteU2
 	dom.Id("boxusage").InsertSnippet(dom.INSERT_LAST_CHILD, u2)

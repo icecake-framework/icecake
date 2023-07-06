@@ -1,4 +1,4 @@
-package bulma
+package ick
 
 import (
 	_ "embed"

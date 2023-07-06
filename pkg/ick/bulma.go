@@ -1,4 +1,4 @@
-package bulma
+package ick
 
 type COLOR string
 

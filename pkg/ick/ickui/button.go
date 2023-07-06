@@ -1,14 +1,14 @@
-package bulmaui
+package ickui
 
 import (
-	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ick"
 )
 
 type ICKButton struct {
-	bulma.ICKButton
+	ick.ICKButton
 	dom.UI
 
 	OnClick func() // optional OnClick function called by the default button listeners
@@ -16,7 +16,7 @@ type ICKButton struct {
 
 func Button(title html.HTMLString, id string, rawURL string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)
-	btn.ICKButton = *bulma.Button(title, id, rawURL, attrs...)
+	btn.ICKButton = *ick.Button(title, id, rawURL, attrs...)
 	return btn
 }
 
@@ -43,9 +43,9 @@ func (btn *ICKButton) SetLoading(f bool) *ICKButton {
 	return btn
 }
 
-func (btn *ICKButton) SetColor(c bulma.COLOR) *ICKButton {
+func (btn *ICKButton) SetColor(c ick.COLOR) *ICKButton {
 	btn.ICKButton.SetColor(c)
-	btn.DOM.PickClass(bulma.COLOR_OPTIONS, string(c))
+	btn.DOM.PickClass(ick.COLOR_OPTIONS, string(c))
 	return btn
 }
 

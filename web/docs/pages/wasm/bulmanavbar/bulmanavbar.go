@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/icecake-framework/icecake/pkg/bulma/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/dom"
+	bulmaui "github.com/icecake-framework/icecake/pkg/ick/ickui"
 )
 
 // This main package contains web assembly source code.

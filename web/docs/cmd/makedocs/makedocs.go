@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/icecake-framework/icecake/internal/helper"
-	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/web/docs"
 	webdocs "github.com/icecake-framework/icecake/web/docs/pages"
 	"github.com/lolorenzo777/verbose"
@@ -38,13 +38,13 @@ func main() {
 	pgindex.AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
 
 	// ... with a hero section
-	hero := &bulma.Hero{
-		Height:        bulma.HH_FULLFHEIGHT_WITH_NAVBAR,
+	hero := &ick.Hero{
+		Height:        ick.HH_FULLFHEIGHT_WITH_NAVBAR,
 		Title:         *html.ToHTML("Develop SPA and Static Websites in Go."),
 		TitleSize:     2,
 		Subtitle:      *html.ToHTML("Pure Go Web Assembly Framework"),
-		ContainerAttr: html.ParseAttributes(`class="has-text-centered ` + string(bulma.CFW_MAXDESKTOP) + `"`),
-		CTA:           bulma.Button(*html.ToHTML("Read doc"), "cta", "/overview.html").SetColor(bulma.COLOR_PRIMARY),
+		ContainerAttr: html.ParseAttributes(`class="has-text-centered ` + string(ick.CFW_MAXDESKTOP) + `"`),
+		CTA:           ick.Button(*html.ToHTML("Read doc"), "cta", "/overview.html").SetColor(ick.COLOR_PRIMARY),
 	}
 
 	pgindex.Body().AddContent(
@@ -53,26 +53,26 @@ func main() {
 		docs.DocFooter())
 
 	// menu for each pages unless home
-	menu := bulma.Menu{}
+	menu := ick.Menu{}
 	menu.MenuTag().SetTagName("nav").AddClass("is-small")
 	menu.Tag().SetId("docmenu").AddClass("p-2").AddStyle("background-color:#fdfdfd;")
-	menu.AddItem("", bulma.MENUIT_LABEL, "General")
-	menu.AddItem("overview", bulma.MENUIT_LINK, "Overview").ParseHRef("/overview.html")
-	menu.AddItem("", bulma.MENUIT_LABEL, "Core Snippets")
-	menu.AddItem("", bulma.MENUIT_LINK, "HTMLString")
-	menu.AddItem("", bulma.MENUIT_LINK, "HTMLSnippet")
-	menu.AddItem("", bulma.MENUIT_LINK, "HTMLPage")
-	menu.AddItem("", bulma.MENUIT_LABEL, "Bulma Snippets")
-	menu.AddItem("bulmabutton", bulma.MENUIT_LINK, "Button").ParseHRef("/bulmabutton.html")
-	menu.AddItem("bulmacard", bulma.MENUIT_LINK, "Card").ParseHRef("/bulmacard.html")
-	menu.AddItem("bulmadelete", bulma.MENUIT_LINK, "Delete").ParseHRef("/bulmadelete.html")
-	menu.AddItem("bulmahero", bulma.MENUIT_LINK, "Hero").ParseHRef("/bulmahero.html")
-	menu.AddItem("bulmaimage", bulma.MENUIT_LINK, "Image").ParseHRef("/bulmaimage.html")
-	menu.AddItem("bulmamenu", bulma.MENUIT_LINK, "Menu").ParseHRef("/bulmamenu.html")
-	menu.AddItem("bulmamessage", bulma.MENUIT_LINK, "Message").ParseHRef("/bulmamessage.html")
-	menu.AddItem("bulmanavbar", bulma.MENUIT_LINK, "Navbar").ParseHRef("/bulmanavbar.html")
-	menu.AddItem("bulmanotify", bulma.MENUIT_LINK, "Notify").ParseHRef("/bulmanotify.html")
-	menu.AddItem("", bulma.MENUIT_FOOTER, "Alpha 4")
+	menu.AddItem("", ick.MENUIT_LABEL, "General")
+	menu.AddItem("overview", ick.MENUIT_LINK, "Overview").ParseHRef("/overview.html")
+	menu.AddItem("", ick.MENUIT_LABEL, "Core Snippets")
+	menu.AddItem("", ick.MENUIT_LINK, "HTMLString")
+	menu.AddItem("", ick.MENUIT_LINK, "HTMLSnippet")
+	menu.AddItem("", ick.MENUIT_LINK, "HTMLPage")
+	menu.AddItem("", ick.MENUIT_LABEL, "Bulma Snippets")
+	menu.AddItem("bulmabutton", ick.MENUIT_LINK, "Button").ParseHRef("/bulmabutton.html")
+	menu.AddItem("bulmacard", ick.MENUIT_LINK, "Card").ParseHRef("/bulmacard.html")
+	menu.AddItem("bulmadelete", ick.MENUIT_LINK, "Delete").ParseHRef("/bulmadelete.html")
+	menu.AddItem("bulmahero", ick.MENUIT_LINK, "Hero").ParseHRef("/bulmahero.html")
+	menu.AddItem("bulmaimage", ick.MENUIT_LINK, "Image").ParseHRef("/bulmaimage.html")
+	menu.AddItem("bulmamenu", ick.MENUIT_LINK, "Menu").ParseHRef("/bulmamenu.html")
+	menu.AddItem("bulmamessage", ick.MENUIT_LINK, "Message").ParseHRef("/bulmamessage.html")
+	menu.AddItem("bulmanavbar", ick.MENUIT_LINK, "Navbar").ParseHRef("/bulmanavbar.html")
+	menu.AddItem("bulmanotify", ick.MENUIT_LINK, "Notify").ParseHRef("/bulmanotify.html")
+	menu.AddItem("", ick.MENUIT_FOOTER, "Alpha 4")
 
 	// page docs
 	addPageDoc(web, menu.Clone(), "overview")
@@ -110,7 +110,7 @@ func main() {
 	fmt.Println(n, "pages generated in ", time.Since(start))
 }
 
-func addPageDoc(web *html.WebSite, menu *bulma.Menu, pgkey string) {
+func addPageDoc(web *html.WebSite, menu *ick.Menu, pgkey string) {
 	pg := web.AddPage("en", pgkey)
 	pg.AddHeadItem("meta", "charset=UTF-8")
 	pg.AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`)

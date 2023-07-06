@@ -1,4 +1,4 @@
-package bulma
+package ick
 
 import "github.com/icecake-framework/icecake/pkg/html"
 

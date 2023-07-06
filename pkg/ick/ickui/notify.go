@@ -1,11 +1,11 @@
-package bulmaui
+package ickui
 
 import (
-	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/dom"
+	"github.com/icecake-framework/icecake/pkg/ick"
 )
 
 type Notify struct {
-	bulma.Notify
+	ick.Notify
 	DOM dom.Element
 }

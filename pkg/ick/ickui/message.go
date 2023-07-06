@@ -1,14 +1,14 @@
-package bulmaui
+package ickui
 
 import (
-	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ick"
 )
 
 type ICKMessage struct {
-	bulma.ICKMessage
+	ick.ICKMessage
 	dom.UI
 
 	BtnDelete ICKDelete // The delete button snippet created only if candelete is true
@@ -20,26 +20,26 @@ var _ dom.UIComposer = (*ICKMessage)(nil)
 // Message factory
 func Message(cnt html.HTMLContentComposer) *ICKMessage {
 	msg := new(ICKMessage)
-	msg.ICKMessage = *bulma.Message(cnt)
+	msg.ICKMessage = *ick.Message(cnt)
 	return msg
 }
 
 /******************************************************************************/
 
 // SetColor set a message color. Immediate effect to the DOM.
-func (msg *ICKMessage) SetColor(c bulma.COLOR) *ICKMessage {
+func (msg *ICKMessage) SetColor(c ick.COLOR) *ICKMessage {
 	msg.ICKMessage.SetColor(c)
 	if msg.DOM.IsInDOM() {
-		msg.DOM.PickClass(bulma.COLOR_OPTIONS, string(msg.COLOR))
+		msg.DOM.PickClass(ick.COLOR_OPTIONS, string(msg.COLOR))
 	}
 	return msg
 }
 
 // SetSize set the size of the message. Immediate effect to the DOM.
-func (msg *ICKMessage) SetSize(s bulma.SIZE) *ICKMessage {
+func (msg *ICKMessage) SetSize(s ick.SIZE) *ICKMessage {
 	msg.ICKMessage.SetSize(s)
 	if msg.DOM.IsInDOM() {
-		msg.DOM.PickClass(bulma.SIZE_OPTIONS, string(msg.SIZE))
+		msg.DOM.PickClass(ick.SIZE_OPTIONS, string(msg.SIZE))
 	}
 	return msg
 }

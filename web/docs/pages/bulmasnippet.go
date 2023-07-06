@@ -20,7 +20,7 @@ func SectionDoc(section string) html.HTMLContentComposer {
 		s.Title = "overview - icecake framework documentation"
 		return s
 	case "bulmabutton":
-		s := new(SectionBulmaButton)
+		s := new(SectionIckButton)
 		s.Title = "bulma button - icecake framework documentation"
 		return s
 	case "bulmacard":
@@ -28,7 +28,7 @@ func SectionDoc(section string) html.HTMLContentComposer {
 		s.Title = "bulma card - icecake framework documentation"
 		return s
 	case "bulmadelete":
-		s := new(SectionBulmaDelete)
+		s := new(SectionIckDelete)
 		s.Title = "bulma delete - icecake framework documentation"
 		return s
 	case "bulmahero":
@@ -36,7 +36,7 @@ func SectionDoc(section string) html.HTMLContentComposer {
 		s.Title = "bulma hero - icecake framework documentation"
 		return s
 	case "bulmaimage":
-		s := new(SectionBulmaImage)
+		s := new(SectionIckImage)
 		s.Title = "bulma image - icecake framework documentation"
 		return s
 	case "bulmamenu":
@@ -44,11 +44,11 @@ func SectionDoc(section string) html.HTMLContentComposer {
 		s.Title = "bulma menu - icecake framework documentation"
 		return s
 	case "bulmamessage":
-		s := new(SectionBulmaMessage)
+		s := new(SectionIckMessage)
 		s.Title = "bulma message - icecake framework documentation"
 		return s
 	case "bulmanavbar":
-		s := new(SectionBulmaNavbar)
+		s := new(SectionIckNavbar)
 		s.Title = "bulma navbar - icecake framework documentation"
 		return s
 	case "bulmanotify":
