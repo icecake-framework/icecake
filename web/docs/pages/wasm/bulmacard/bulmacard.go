@@ -19,7 +19,7 @@ func main() {
 		ests.InsertRawHTML(dom.INSERT_BODY, `<span class="ick-initializing">initializing</span>`)
 	}
 
-	dom.WrapId(&bulmaui.ICKNavbar{}, "topbar").AddListeners()
+	dom.MountId(&bulmaui.ICKNavbar{}, "topbar")
 
 	// let's go
 	fmt.Println("Icecake initialized. Listening browser events")

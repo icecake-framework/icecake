@@ -6,7 +6,6 @@ import (
 	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/bulma/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/dom"
-	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/lolorenzo777/verbose"
 )
@@ -27,10 +26,11 @@ func main() {
 		ests.InsertRawHTML(dom.INSERT_BODY, `<span class="ick-initializing">initializing</span>`)
 	}
 
-	// wrap the back rendered navbar
-	dom.WrapId(&bulmaui.ICKNavbar{}, "topbar").AddListeners()
-	dom.WrapId(_btnreset, "btnreset")
-	_btnreset.DOM.AddMouseEvent(event.MOUSE_ONCLICK, OnReset)
+	_btnreset.OnClick = func() { ResetBoxUsage() }
+
+	// wrap the back rendered navbar and reset btn
+	dom.MountId(&bulmaui.ICKNavbar{}, "topbar")
+	dom.MountId(_btnreset, "btnreset")
 
 	// front rendering
 	boxusage := dom.Id("boxusage")
@@ -50,10 +50,6 @@ func main() {
 
 func OnDeleteU2(del *bulmaui.ICKDelete) {
 	_btnreset.SetDisabled(false)
-}
-
-func OnReset(evt *event.MouseEvent, e *dom.Element) {
-	ResetBoxUsage()
 }
 
 func ResetBoxUsage() {
