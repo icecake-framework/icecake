@@ -8,8 +8,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/event"
 )
 
-// This main package contains the web assembly source code for makedocs
-// It's compiled into a '.wasm' file with the build_ex1 task
+// This main package contains web assembly source code.
 func main() {
 
 	c := make(chan struct{})

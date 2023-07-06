@@ -12,10 +12,8 @@ import (
 
 var _btnreset = &bulmaui.ICKButton{}
 
-// This main package contains the web assembly source code for makedocs
-// It's compiled into a '.wasm' file with the build_ex1 task
+// This main package contains web assembly source code.
 func main() {
-
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded. Icecake initializing...")
 	verbose.IsOn = true
