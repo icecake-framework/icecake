@@ -136,7 +136,7 @@ func (ui *UI) RemoveListeners() {
 *******************************************************************************/
 
 // mountSnippetTree addlisteners to the snippet and looks recursively for every childs with an id and add listeners to each of them.
-// The snippet must have been wrapped with a DOM element before
+// Nothing is done with the parent but its IsMounted RMeta is turned on in case of success.
 func mountSnippetTree(parent html.RMetaProvider) (err error) {
 	if parent.RMeta().IsMounted {
 		console.Warnf("mountSnippetTree: parent:%q is already mounted", parent.RMeta().VirtualId)
@@ -150,13 +150,7 @@ func mountSnippetTree(parent html.RMetaProvider) (err error) {
 				childid := child.RMeta().Id
 				if childid != "" {
 					console.Logf("mountSnippetTree: parent:%q is mounting %v id:%s", parent.RMeta().VirtualId, reflect.TypeOf(child).String(), childid)
-					errm := TryWrapId(child, childid)
-					if errm != nil {
-						console.Errorf(errm.Error())
-					} else {
-						child.AddListeners()
-						errm = mountSnippetTree(child)
-					}
+					errm := TryMountId(child, childid)
 					if errm != nil && err == nil {
 						err = errm
 					}

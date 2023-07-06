@@ -48,12 +48,9 @@ func (msg *ICKMessage) AddListeners() {
 	console.Warnf("ICKMessage.AddListeners")
 	if msg.DOM.Id() != dom.UNDEFINED_NODE {
 		msg.BtnDelete.RemoveListeners()
-		btndelid := "del" + msg.DOM.Id()
-		if dom.Doc().IsInDOM(btndelid) {
-			err := dom.TryWrapId(&msg.BtnDelete, btndelid)
-			if err == nil {
-				msg.BtnDelete.AddListeners()
-			} else {
+		// Mount the button only if it's in the DOM
+		if btndelid := "del" + msg.DOM.Id(); dom.Doc().IsInDOM(btndelid) {
+			if err := dom.TryMountId(&msg.BtnDelete, btndelid); err != nil {
 				console.Errorf("ICKMessage.AddListeners: %s", err.Error())
 			}
 		}

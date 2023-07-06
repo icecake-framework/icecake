@@ -62,16 +62,42 @@ func Id(elementId string) *Element {
 	return Doc().ChildById(elementId)
 }
 
-func WrapId(ui UIComposer, elementid string) UIComposer {
-	err := TryWrapId(ui, elementid)
-	if err != nil {
-		verbose.Error("Try", err)
+// MountId wraps the elemid to the uicomposer and add its listeners and to it and to all its childs.
+// Returns ui to allow chaining calls.
+
+func MountId(ui UIComposer, elemid string) UIComposer {
+	if err := TryMountId(ui, elemid); err != nil {
+		verbose.Error("MountId", err)
+	}
+	return nil
+}
+
+// TryMountId wraps the elemid to the uicomposer and add its listeners and to it and to all its childs.
+// Returns wrapping errors.
+func TryMountId(ui UIComposer, elemid string) (err error) {
+	if err = TryWrapId(ui, elemid); err != nil {
+		return err
+	}
+	ui.AddListeners()
+	if err = mountSnippetTree(ui); err != nil {
+		return err
+	}
+	return nil
+}
+
+// WrapId looks for elemid into the DOM and wrap it to ui if its type corresponds to the attribute name of the element.
+// Returns ui to allow chaining calls.
+//
+// If elemid is not in the DOM or if the type does not match or if ui does not implement, a message is logged out if verbose mode is on.
+func WrapId(ui UIComposer, elemid string) UIComposer {
+	if err := TryWrapId(ui, elemid); err != nil {
+		verbose.Error("WrapId", err)
 	}
 	return ui
 }
 
-// TryWrapId looks for elementid into the DOM and wrap it to ick if ick type corresponds to the attribute name of the element.
-// Returns an error if elementid is not in the DOM or if the type does not match or if ick does not implement .
+// TryWrapId looks for elemid into the DOM and wrap it to ui if its type corresponds to the attribute name of the element.
+// Returns an error if elemid is not in the DOM or if the type does not match or ui ick does not implement .
 func TryWrapId(ui UIComposer, elemid string) error {
 
 	if elemid == "" {
