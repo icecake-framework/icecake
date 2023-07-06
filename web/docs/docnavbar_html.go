@@ -7,12 +7,12 @@ import (
 
 func DocNavbar() *ick.ICKNavbar {
 	nav := &ick.ICKNavbar{HasShadow: true}
-	nav.SetId("topbar")
+	nav.Tag().SetId("topbar")
 	nav.AddItem("", ick.NAVBARIT_BRAND, html.ToHTML(`<span class="title pl-2">Icecake</span>`)).ParseHRef("/").ParseImageSrc("/assets/icecake-color.svg")
 	nav.AddItem("home", ick.NAVBARIT_START, html.ToHTML(`Home`)).ParseHRef("/")
 	nav.AddItem("docs", ick.NAVBARIT_START, html.ToHTML(`Docs`)).ParseHRef("/docoverview.html")
 
-	btngit := ick.Button(*html.ToHTML("GitHub"), "", "https://github.com/icecake-framework/icecake")
+	btngit := ick.Button("GitHub", "").ParseHRef("https://github.com/icecake-framework/icecake")
 	btngit.SetColor(ick.COLOR_PRIMARY).SetOutlined(true)
 
 	nav.AddItem("", ick.NAVBARIT_END, btngit)

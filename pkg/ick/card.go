@@ -35,16 +35,14 @@ func Card(content html.HTMLContentComposer) *ICKCard {
 	return c
 }
 
-func (card *ICKCard) SetTitle(title html.HTMLString) *ICKCard {
-	card.Title = title
+func (card *ICKCard) SetTitle(title string) *ICKCard {
+	card.Title = *html.ToHTML(title)
 	return card
 }
-
 func (card *ICKCard) SetImage(image ICKImage) *ICKCard {
 	card.Image = &image
 	return card
 }
-
 func (card *ICKCard) AddFooterItem(item html.HTMLString) *ICKCard {
 	card.footerItem = append(card.footerItem, item)
 	return card

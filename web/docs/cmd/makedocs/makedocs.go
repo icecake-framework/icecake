@@ -40,11 +40,10 @@ func main() {
 	// ... with a hero section
 	hero := &ick.Hero{
 		Height:        ick.HH_FULLFHEIGHT_WITH_NAVBAR,
-		Title:         *html.ToHTML("Develop SPA and Static Websites in Go."),
-		TitleSize:     2,
-		Subtitle:      *html.ToHTML("Pure Go Web Assembly Framework"),
+		Title:         *ick.Title(2, "Develop SPA and Static Websites in Go."),
+		Subtitle:      *ick.Title(4, "Pure Go Web Assembly Framework"),
 		ContainerAttr: html.ParseAttributes(`class="has-text-centered ` + string(ick.CFW_MAXDESKTOP) + `"`),
-		CTA:           ick.Button(*html.ToHTML("Read doc"), "cta", "/docoverview.html").SetColor(ick.COLOR_PRIMARY),
+		CTA:           ick.Button("Read doc", "cta").ParseHRef("/docoverview.html").SetColor(ick.COLOR_PRIMARY),
 	}
 
 	pgindex.Body().AddContent(

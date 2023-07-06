@@ -2,7 +2,6 @@ package ick
 
 import (
 	"io"
-	"strconv"
 
 	"github.com/icecake-framework/icecake/pkg/html"
 )
@@ -34,10 +33,8 @@ type Hero struct {
 
 	ContainerAttr html.AttributeMap // The attributes map to setup to the hero's container, allowing text centering
 
-	Title        html.HTMLString
-	TitleSize    int // 1 to 6
-	Subtitle     html.HTMLString
-	SubtitleSize int // 1 to 6
+	Title    ICKTitle
+	Subtitle ICKTitle
 
 	CTA html.HTMLContentComposer // Call To Action
 
@@ -67,13 +64,7 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 	contag := cont.BuildTag()
 	contag.RenderOpening(out)
 
-	title := html.P(`class="title"`).AddContent(&msg.Title)
-	title.Tag().SetClassIf(msg.TitleSize > 0 && msg.TitleSize <= 6, "is-"+strconv.Itoa(msg.TitleSize))
-	msg.RenderChild(out, title)
-
-	subtitle := html.P(`class="subtitle"`).AddContent(&msg.Subtitle)
-	subtitle.Tag().SetClassIf(msg.SubtitleSize > 0 && msg.SubtitleSize <= 6, "is-"+strconv.Itoa(msg.SubtitleSize))
-	msg.RenderChild(out, subtitle)
+	msg.RenderChild(out, &msg.Title, &msg.Subtitle)
 
 	msg.RenderChildIf(msg.CTA != nil, out, msg.CTA)
 

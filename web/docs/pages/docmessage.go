@@ -20,13 +20,12 @@ func (sec *SectionDocMessage) RenderContent(out io.Writer) error {
 		`</div>`)
 
 	// usages
-	u1 := ick.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-5"`).
+	u1 := ick.Button("reset", "btnreset", `class="mb-5"`).
 		SetColor(ick.COLOR_PRIMARY).
 		SetOutlined(true).
 		SetDisabled(true)
-	u2 := html.Div(`class="box mr-5"`).
-		SetId("boxusage").
-		AddContent(ick.Spinner())
+	u2 := html.Div(`class="box mr-5"`).AddContent(ick.Spinner())
+	u2.Tag().SetId("boxusage")
 	html.Render(out, nil, u2, u1)
 
 	// apis

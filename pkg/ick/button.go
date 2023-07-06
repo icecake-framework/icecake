@@ -1,7 +1,6 @@
 package ick
 
 import (
-	"io"
 	"net/url"
 
 	"github.com/icecake-framework/icecake/pkg/html"
@@ -20,9 +19,6 @@ func init() {
 type ICKButton struct {
 	html.HTMLSnippet
 
-	// The title of the Button. Can be a simple text or a more complex html string.
-	Title html.HTMLString
-
 	// HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a <a> tag, otherwise it's a <button> tag.
 	HRef *url.URL
 
@@ -39,30 +35,28 @@ type ICKButton struct {
 // Ensure Button implements HTMLComposer interface
 var _ html.HTMLComposer = (*ICKButton)(nil)
 
-func Button(title html.HTMLString, id string, rawurl string, attrs ...string) *ICKButton {
+func Button(htmltitle string, id string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)
-	btn.SetId(id)
-	btn.ParseHRef(rawurl)
-	btn.SetTitle(title)
+	btn.SetTitle(htmltitle)
+	btn.Tag().SetId(id)
 	btn.Tag().ParseAttributes(attrs...)
 	return btn
 }
 
-// ParseHRef parses _rawUrl to HRef. HRef stays nil in case of error.
-func (btn *ICKButton) ParseHRef(rawurl string) (err error) {
+// ParseHRef parses rawurl to HRef. HRef stays nil in case of error.
+func (btn *ICKButton) ParseHRef(rawurl string) *ICKButton {
+	btn.HRef = nil
 	if rawurl != "" {
-		btn.HRef, err = url.Parse(rawurl)
-	} else {
-		btn.HRef = nil
+		btn.HRef, _ = url.Parse(rawurl)
 	}
-	return
-}
-
-func (btn *ICKButton) SetTitle(title html.HTMLString) *ICKButton {
-	btn.Title = title
 	return btn
 }
 
+func (btn *ICKButton) SetTitle(htmltitle string) *ICKButton {
+	btn.ClearContent()
+	btn.AddContent(html.ToHTML(htmltitle))
+	return btn
+}
 func (btn *ICKButton) SetOutlined(f bool) *ICKButton {
 	btn.IsOutlined = f
 	return btn
@@ -89,6 +83,8 @@ func (btn *ICKButton) SetLight(f bool) *ICKButton {
 	return btn
 }
 
+/******************************************************************************/
+
 // BuildTag builds the tag used to render the html element.
 // The tagname depends on the button type.
 func (btn *ICKButton) BuildTag() html.Tag {
@@ -113,9 +109,9 @@ func (btn *ICKButton) BuildTag() html.Tag {
 	return *btn.Tag()
 }
 
-// RenderContent writes the HTML string corresponding to the content of the HTML element.
-// Button rendering unfold the Title
-func (btn *ICKButton) RenderContent(out io.Writer) error {
-	err := btn.RenderChild(out, &btn.Title)
-	return err
-}
+// // RenderContent writes the HTML string corresponding to the content of the HTML element.
+// // Button rendering unfold the Title
+// func (btn *ICKButton) RenderContent(out io.Writer) error {
+// 	err := btn.RenderChild(out, &btn.Title)
+// 	return err
+// }

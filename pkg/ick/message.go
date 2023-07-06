@@ -91,7 +91,7 @@ func (msg *ICKMessage) SetHeader(header html.HTMLString) *ICKMessage {
 // A deletable message must have an id. Dos nothing if id is empty.
 func (msg *ICKMessage) SetDeletable(id string) *ICKMessage {
 	if id != "" {
-		msg.SetId(id)
+		msg.Tag().SetId(id)
 		msg.CanDelete = true
 	}
 	return msg

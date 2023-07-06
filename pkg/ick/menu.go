@@ -84,21 +84,21 @@ func (mnui *IckMenuItem) BuildTag() html.Tag {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (mnui *IckMenuItem) RenderContent(out io.Writer) error {
-	if mnui.Type == MENUIT_LABEL {
+	switch mnui.Type {
+	case MENUIT_LABEL:
 		html.WriteString(out, mnui.Text)
-	} else {
-		lnktag := A().SetHRef(mnui.HRef).BuildTag()
-		lnktag.SetClassIf(mnui.IsActive, "is-active")
-		lnktag.RenderOpening(out)
-		html.WriteString(out, mnui.Text)
-		lnktag.RenderClosing(out)
+	case MENUIT_FOOTER:
+		mnui.RenderChild(out, html.ToHTML(mnui.Text))
+	default:
+		item := A().SetHRef(mnui.HRef)
+		item.AddContent(html.ToHTML(mnui.Text))
+		item.Tag().SetClassIf(mnui.IsActive, "is-active")
+		mnui.RenderChild(out, item)
 	}
 	return nil
 }
 
 // IckMenu is an icecake snippet providing the HTML rendering for a [bulma menu].
-//
-// Can't be used for inline rendering.
 //
 // [bulma menu]: https://bulma.io/documentation/components/menu
 type IckMenu struct {

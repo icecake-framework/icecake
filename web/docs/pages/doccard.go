@@ -24,7 +24,7 @@ func (cmp *SectionDocCard) RenderContent(out io.Writer) error {
 	u1 := ick.Card(html.ToHTML(`<div class="title">Very Good Cake</div>`))
 	u1.Tag().AddStyle("width: 150px;")
 	u2 := ick.Card(html.ToHTML("Nice ice cake !")).
-		SetTitle(*html.ToHTML("Hello World")).
+		SetTitle("Hello World").
 		SetImage(*ick.Image("/assets/icecake.jpg", "a cake", ick.IMG_R2by1, `class="m-0"`)).
 		AddFooterItem(*html.ToHTML("<a href='/'>home</a>"))
 	u3 := ick.Card(html.ToHTML("Nice cake")).

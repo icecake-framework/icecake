@@ -24,7 +24,8 @@ func (cmp *SectionDocDelete) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<div id="boxusage" class="box mr-5">`)
 	html.Render(out, nil, ick.Spinner())
 	html.WriteString(out, `</div>`)
-	cmp.RenderChild(out, ick.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(ick.COLOR_PRIMARY).SetOutlined(true))
+	btnreset := ick.Button("reset", "btnreset", `class="mb-3"`).SetColor(ick.COLOR_PRIMARY).SetOutlined(true)
+	cmp.RenderChild(out, btnreset)
 
 	// apis
 	html.Render(out, nil, ick.Title(3, "ICKDelete APIs"))
