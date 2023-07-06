@@ -12,9 +12,15 @@ import (
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/html"
-	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/js"
 )
+
+type Rect struct {
+	X      float64
+	Y      float64
+	Width  float64
+	Height float64
+}
 
 /****************************************************************************
 * Enum
@@ -864,7 +870,7 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth
-func (_elem *Element) ScrollRect() (_rect ick.Rect) {
+func (_elem *Element) ScrollRect() (_rect Rect) {
 	if !_elem.IsDefined() {
 		return
 	}
@@ -881,7 +887,7 @@ func (_elem *Element) ScrollRect() (_rect ick.Rect) {
 //
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft
-func (_elem *Element) ClientRect() (_rect ick.Rect) {
+func (_elem *Element) ClientRect() (_rect Rect) {
 	if !_elem.IsDefined() {
 		return
 	}
@@ -895,7 +901,7 @@ func (_elem *Element) ClientRect() (_rect ick.Rect) {
 // GetBoundingClientRect eturns a DOMRect object providing information about the size of an element and its position relative to the viewport.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-func (_elem *Element) BoundingClientRect() (_rect ick.Rect) {
+func (_elem *Element) BoundingClientRect() (_rect Rect) {
 	if !_elem.IsDefined() {
 		return
 	}
