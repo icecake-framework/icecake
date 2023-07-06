@@ -437,7 +437,7 @@ func (amap AttributeMap) AddStyle(style string) AttributeMap {
 	return amap
 }
 
-// TODO: html.checkstyle
+// TODO: html - checkstyle
 func checkstyle(style string) error {
 	return nil
 }

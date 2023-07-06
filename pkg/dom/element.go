@@ -685,45 +685,6 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 	return CastElements(elems)
 }
 
-// InsertHTML unfolds and renders the html of the _html and write it into the DOM.
-// All embedded components are wrapped with their DOM element and their listeners are added to the DOM.
-// Returns an error if _elem in not the DOM or if an error occurs during UnfoldHtml or mounting process.
-// TODO: Element.InsertHTML
-// func (_elem *Element) InsertHTML(_where INSERT_WHERE, htmltemplate html.HTMLString, ds *html.DataState) (_err error) {
-// 	if !_elem.IsDefined() || !_elem.IsInDOM() {
-// 		return fmt.Errorf("unable to render Html on nil element or for an element not into the DOM")
-// 	}
-
-// 	// temparent := &html.HTMLSnippet{}
-// 	out := new(bytes.Buffer)
-// 	_err = html.RenderHTML(out, nil, htmltemplate)
-// 	// _err = html.RenderHTML(out, temparent, htmltemplate)
-// 	if _err == nil {
-// 		// insert the html element into the dom and wrapit
-// 		_elem.InsertRawHTML(_where, out.String())
-// 		// mount every embedded components
-// 		embedded := html.ComposerMap{}
-// 		// embedded := temparent.Embedded()
-// 		if embedded != nil {
-// 			// DEBUG: console.Warnf("scanning %+v", embedded)
-// 			for subid, sub := range embedded {
-// 				// look everywhere in the DOM
-// 				if sube := Id(subid); sube != nil {
-// 					if cmp, ok := sub.(UIComposer); ok {
-// 						// DEBUG: console.Warnf("wrapping %+v", w)
-// 						_err = mountDeepSnippet(cmp, sube)
-// 					}
-// 				}
-// 			}
-// 		} else {
-// 			_err = console.Errorf("html string does not have any embedded components")
-// 		}
-// 	} else {
-// 		console.Errorf(_err.Error())
-// 	}
-// 	return _err
-// }
-
 // InsertSnippet unfolds and renders the html of the _snippet and write it into the DOM.
 // The _snippet and all its embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // _snippet can be either an HTMLComposer or an UIComposer.
@@ -800,7 +761,7 @@ func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...Composer) (err er
 	return err
 }
 
-// TODO: handle Element.InsertRawHTML exceptions
+// TODO: dom - handle Element.InsertRawHTML exceptions
 func (elem *Element) InsertRawHTML(where INSERT_WHERE, unsafeHtml string) {
 	if !elem.IsDefined() {
 		return

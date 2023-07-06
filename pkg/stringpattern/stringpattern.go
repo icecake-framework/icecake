@@ -171,7 +171,7 @@ func parseRune(s string) (_r rune, _err error) {
 			}
 			_r = rune(r)
 		default:
-			// TODO: handle parseRune "\\u" case
+			// TODO: stringpattern - handle parseRune "\\u" case
 			return 0, fmt.Errorf("wrong range definition")
 		}
 	}

@@ -132,7 +132,7 @@ func (_store *Storage) GetInt(key string) (_value int) {
 // when passed a key name, will return that key's value, or null if the key does not exist, in the given Storage object.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem
-// TODO: handle Storage error
+// TODO: browser - handle Storage error
 func (_store *Storage) Set(key string, value string) error {
 	if _store == nil {
 		return nil

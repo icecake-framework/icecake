@@ -50,6 +50,8 @@ const (
 
 // bulma.ICKImage is a typical img element embedded into a figure container specifying the image size. See [bulma image]
 //
+// Background color can be setup by adding snipet classes.
+//
 // [bulma image]: https://bulma.io/documentation/elements/image/
 type ICKImage struct {
 	html.HTMLSnippet
@@ -59,8 +61,6 @@ type ICKImage struct {
 	Size      IMG_SIZE // the size or the ratio of the image
 	IsRounded bool     // Rounded image style
 	NoCrop    bool     // set to true to avoid to crop the image if its size does not fit the Size property. The image may be reduced or distord.
-
-	// TODO: Image add a background
 }
 
 // Ensure Image implements HTMLComposer interface

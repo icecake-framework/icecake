@@ -74,7 +74,7 @@ func (_this *History) SetScrollRestoration(value HISTORY_SCROLL_RESTORATION) {
 //
 // The value is null until the pushState() or replaceState() method is used.
 //
-// TODO: handle History.State returned value
+// TODO: browser - handle History.State returned value
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/History/state
 func (_this *History) State() js.JSValue {

@@ -160,7 +160,6 @@ type HTMLComposer interface {
 // If the parent is not nil, the snippet is added to its embedded stack of sub-components.
 //
 // Returns rendering errors, typically with the writer, or if there's too many recursive rendering.
-// TODO: avoid rendering infinite loop when cmp == parent
 func Render(out io.Writer, parent RMetaProvider, cmps ...HTMLContentComposer) error {
 	for _, cmp := range cmps {
 		err := render(out, parent, cmp)

@@ -29,7 +29,7 @@ var _ HTMLContentComposer = (*HTMLString)(nil)
 
 // ToHTML is the HTMLString factory allowing to convert a string into a new HTMLString reday for rendering.
 // The string must contains safe string and can include icecake tags.
-// TODO: ToHTML accept any types
+// TODO: html - think of a way to accept any types for ToHTML
 func ToHTML(s string) *HTMLString {
 	h := new(HTMLString)
 	h.bytes = []byte(s)
@@ -72,10 +72,7 @@ func (s HTMLString) IsEmpty() bool {
 // The rendering process renders an HTML comment in the following cases:
 //   - If the HTML string contains ick-tag but the ick-tagname does not correspond to a Registered composer,
 //   - If the HTML string contains ick-tag with attributes but one value of these attribute is of a bad type,
-//
-// TODO: implement rendering of ick-tag with content inside
 func renderHTML(out io.Writer, parent HTMLContentComposer, htmlstr HTMLString) (err error) {
-
 	const (
 		processing_NONE int = iota
 		processing_TXT

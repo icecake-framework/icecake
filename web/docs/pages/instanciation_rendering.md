@@ -9,7 +9,7 @@ According to your goal there's multiple way to instantiate and to render a snipp
 
 And in every case your snippet can be used by other snippet, but with or without a dependance between each other. We call it a parent/child relationship. So every snippet can be instantiated and rendered as an orphan or as a child of another composer.
 
-TODO: doc: examples of parent/child relationship
+TODO: webdoc - examples of parent/child relationship
 
 In both cases a snippet can be instantiated with the snippet factory or by [unfolding an `ick-tag`], in this former case your code can not access the snippet instance directly like for a snippet _hidden_ within another one.
 
