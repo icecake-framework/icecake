@@ -17,6 +17,16 @@ func (sec *SectionBulmaMessage) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<h2>Bulma Message</h2>`+
 		`<p>bulma.Message is an icecake snippet providing the HTML rendering for a `, linkBulmaMessage, ` with extra features and usefull Go APIs.</p>`)
 
+	// usages
+	u1 := bulma.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).
+		SetColor(bulma.COLOR_PRIMARY).
+		SetOutlined(true).
+		SetDisabled(true)
+	u2 := html.Div(`class="box mr-5"`).
+		SetId("boxusage").
+		AddContent(bulma.Spinner())
+	html.Render(out, nil, u1, u2)
+
 	// apis
 	html.WriteString(out, `<h3>bulma.ICKMessage API</h3>`+
 		`<p><code>Message(content html.HTMLComposer) *ICKMessage</code> is the main Message factory.</p>`+
@@ -25,24 +35,11 @@ func (sec *SectionBulmaMessage) RenderContent(out io.Writer) error {
 		`<p><code>.AddContent(cmp html.HTMLComposer) error</code> Stack content inside.</p>`)
 
 	// rendering
-	html.WriteString(out, `<h3>Usage</h3>`)
-	html.Render(out, nil, bulma.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).
-		SetColor(bulma.COLOR_PRIMARY).
-		SetOutlined(true).
-		SetDisabled(true))
-	html.Render(out, nil, html.Div(`class="box mr-5"`).
-		SetId("boxusage").
-		AddContent(bulma.Spinner()))
-
-	// rendering
 	html.WriteString(out, `<h3>Rendering</h3>`)
 	html.WriteString(out, `<div class="box mr-5">`)
 	r1 := bulma.Message(html.ToHTML("This is a simple message."))
 	r2 := bulma.Message(html.ToHTML("This is a message with a header.")).SetHeader(*html.ToHTML("Icecake Message"))
-
 	r3 := bulma.Message(html.ToHTML("This is a message with the delete button.")).SetHeader(*html.ToHTML("Icecake Message")).SetDeletable("msgr3")
-	// DEBUG: dump the map of sub composers
-
 	r4 := bulma.Message(nil).SetHeader(*html.ToHTML("Only header")).SetDeletable("msgr4")
 	html.Render(out, nil, r1, r2, r3, r4)
 	html.WriteString(out, `</div>`)
