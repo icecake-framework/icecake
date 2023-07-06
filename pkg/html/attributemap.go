@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/icecake-framework/icecake/internal/helper"
-	"github.com/icecake-framework/icecake/pkg/registry"
-	"github.com/icecake-framework/icecake/pkg/stringpattern"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
+	"github.com/icecake-framework/icecake/pkg/namingpattern"
 	"github.com/lolorenzo777/verbose"
 	"golang.org/x/exp/slices"
 )
@@ -240,7 +240,7 @@ func (amap AttributeMap) SetId(id string) AttributeMap {
 // SetUniqueId sets or overwrites the id attribute by generating a unique id starting with the prefix.
 // "ick-" is used to prefix the returned id if prefix is empty.
 func (amap AttributeMap) SetUniqueId(prefix string) {
-	_, uid := registry.GetUniqueId(prefix)
+	_, uid := ickcore.GetUniqueId(prefix)
 	amap.saveAttribute("id", uid, true)
 }
 
@@ -358,7 +358,7 @@ func (amap AttributeMap) PickClass(classlist string, picked string) AttributeMap
 }
 
 func checkclass(class string) error {
-	if class == "" || !stringpattern.IsValidName(class) {
+	if class == "" || !namingpattern.IsValidName(class) {
 		return fmt.Errorf("class %q is not valid", class)
 	}
 	return nil
@@ -505,7 +505,7 @@ func checkAttribute(name string, value string) (err error) {
 	case "id", "name":
 		value := strings.Trim(value, " ")
 		if value != "" {
-			if !stringpattern.IsValidName(value) {
+			if !namingpattern.IsValidName(value) {
 				err = fmt.Errorf("%s %q is not valid", name, value)
 			}
 		}
@@ -523,7 +523,7 @@ func checkAttribute(name string, value string) (err error) {
 	default:
 	}
 	if err == nil {
-		if !stringpattern.IsValidName(name) {
+		if !namingpattern.IsValidName(name) {
 			err = fmt.Errorf("attribute %q is not a valid name", name)
 		}
 	}

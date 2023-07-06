@@ -11,8 +11,8 @@ type ICKCard struct {
 	dom.UI
 }
 
-// Ensure ICKCard implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKCard)(nil)
+// Ensure ICKCard implements UIComposer interface
+var _ dom.UIComposer = (*ICKCard)(nil)
 
 // Card main factory
 func Card(content html.HTMLContentComposer) *ICKCard {

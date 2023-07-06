@@ -11,8 +11,8 @@ func init() {
 	html.RegisterComposer("ick-message", &ICKMessage{})
 }
 
-// bulma.Message is an icecake snippet providing the HTML rendering for a [bulma message].
-// The card is an HTMLSnippet. Use AddContent to setup the content of the body of the message.
+// ICKMessage is an icecake snippet providing the HTML rendering for a [bulma message].
+// The message is an HTMLSnippet. Use AddContent to setup the content of the body of the message.
 //
 //	Use `<ick-message/>` for inline rendering.
 //

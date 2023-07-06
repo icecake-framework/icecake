@@ -26,7 +26,7 @@ type Notify struct {
 	// Notify implements AddliSteners interface via the UISnippet embedded.
 	Delete ICKDelete
 
-	// TODO: bulma.Notify - handle toast style
+	// TODO: ick.Notify - handle toast style
 	// Toast bool
 }
 

@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/huandu/go-clone"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 // HTMLSnippet enables creation of simple or complex html strings based on
@@ -18,7 +19,7 @@ import (
 // content can be empty. If tagname is empty only the content is rendered.
 // HTMLSnippet can be instantiated by itself or it can be embedded into a struct to define a more customizable html component.
 type HTMLSnippet struct {
-	meta         RMetaData             // Rendering MetaData.
+	meta         ickcore.RMetaData     // Rendering MetaData.
 	tag          Tag                   // HTML Element Tag with its attributes.
 	contantstack []HTMLContentComposer // HTML composers to render within the enclosed tag.
 
@@ -61,7 +62,7 @@ func (src *HTMLSnippet) Clone() *HTMLSnippet {
 	return to
 }
 
-func (snippet *HTMLSnippet) RMeta() *RMetaData {
+func (snippet *HTMLSnippet) RMeta() *ickcore.RMetaData {
 	return &snippet.meta
 }
 

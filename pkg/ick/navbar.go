@@ -17,12 +17,10 @@ const (
 	NAVBARIT_END     NAVBARITEM_TYPE = "end"     // item stacked at the end (right) of the navbar,
 )
 
-// bulma.NavbarItem is an icecake snippet providing the HTML rendering for a [bulma navbar item].
-//
-// Can't be used for inline rendering.
+// ICKNavbarItem is an icecake snippet providing the HTML rendering for a [bulma navbar item].
 //
 // [bulma navbar item]: https://bulma.io/documentation/components/navbar/#navbar-item
-type NavbarItem struct {
+type ICKNavbarItem struct {
 	html.HTMLSnippet
 
 	// Optional Key allows to access a specific navbaritem, whatever it's level in the hierarchy, directly from the navbar.
@@ -46,15 +44,15 @@ type NavbarItem struct {
 	// Highlight this item
 	IsActive bool
 
-	items []*NavbarItem // list of navbar items
+	items []*ICKNavbarItem // list of navbar items
 }
 
 // Ensure NavbarItem implements HTMLComposer interface
-var _ html.HTMLComposer = (*NavbarItem)(nil)
+var _ html.HTMLComposer = (*ICKNavbarItem)(nil)
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
-func (navi NavbarItem) Clone() *NavbarItem {
-	c := new(NavbarItem)
+func (navi ICKNavbarItem) Clone() *ICKNavbarItem {
+	c := new(ICKNavbarItem)
 	c.Key = navi.Key
 	c.Type = navi.Type
 
@@ -73,7 +71,7 @@ func (navi NavbarItem) Clone() *NavbarItem {
 	}
 	c.IsActive = navi.IsActive
 
-	c.items = make([]*NavbarItem, len(navi.items))
+	c.items = make([]*ICKNavbarItem, len(navi.items))
 	for i, itm := range navi.items {
 		c.items[i] = itm.Clone()
 	}
@@ -85,7 +83,7 @@ func (navi NavbarItem) Clone() *NavbarItem {
 //   - it's <hr> for a NAVBARIT_DIVIDER item type, otherwise
 //   - it's <a> when an HRef is provided,
 //   - it's <div> in other cases
-func (navi *NavbarItem) BuildTag() html.Tag {
+func (navi *ICKNavbarItem) BuildTag() html.Tag {
 	if navi.Type == NAVBARIT_DIVIDER {
 		navi.Tag().
 			SetTagName("hr").
@@ -102,7 +100,7 @@ func (navi *NavbarItem) BuildTag() html.Tag {
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (navi *NavbarItem) RenderContent(out io.Writer) error {
+func (navi *ICKNavbarItem) RenderContent(out io.Writer) error {
 	if navi.Type != NAVBARIT_DIVIDER {
 		if navi.ImageSrc != nil {
 			img := html.NewSnippet("img", `width="auto" height="28"`)
@@ -115,8 +113,8 @@ func (navi *NavbarItem) RenderContent(out io.Writer) error {
 }
 
 // AddItem adds the item as a subitem within the navbar item
-func (navi *NavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLContentComposer) *NavbarItem {
-	itm := new(NavbarItem)
+func (navi *ICKNavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLContentComposer) *ICKNavbarItem {
+	itm := new(ICKNavbarItem)
 	itm.Key = key
 	itm.Type = itmtyp
 	itm.Content = content
@@ -126,7 +124,7 @@ func (navi *NavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html
 
 // At returns the item at a given index.
 // returns nil if index is out of range.
-func (navi *NavbarItem) At(index int) *NavbarItem {
+func (navi *ICKNavbarItem) At(index int) *ICKNavbarItem {
 	if index < 0 || index >= len(navi.items) {
 		return nil
 	}
@@ -135,7 +133,7 @@ func (navi *NavbarItem) At(index int) *NavbarItem {
 
 // Item returns the first item found with the given key, walking through all levels.
 // returns nil if key is not found
-func (navi *NavbarItem) Item(key string) *NavbarItem {
+func (navi *ICKNavbarItem) Item(key string) *ICKNavbarItem {
 	for _, itm := range navi.items {
 		if itm.Key == key {
 			return itm
@@ -148,26 +146,24 @@ func (navi *NavbarItem) Item(key string) *NavbarItem {
 }
 
 // ParseHRef tries to parse rawUrl to HRef ignoring error.
-func (navi *NavbarItem) ParseHRef(rawUrl string) *NavbarItem {
+func (navi *ICKNavbarItem) ParseHRef(rawUrl string) *ICKNavbarItem {
 	navi.HRef, _ = url.Parse(rawUrl)
 	return navi
 }
 
 // ParseImageSrc tries to parse rawUrl to image src ignoring error.
-func (navi *NavbarItem) ParseImageSrc(rawUrl string) *NavbarItem {
+func (navi *ICKNavbarItem) ParseImageSrc(rawUrl string) *ICKNavbarItem {
 	navi.ImageSrc, _ = url.Parse(rawUrl)
 	return navi
 }
 
-// bulma.ICKNavbar is an icecake snippet providing the HTML rendering for a [bulma navbar].
-//
-// Can't be used for inline rendering.
+// ICKNavbar is an icecake snippet providing the HTML rendering for a [bulma navbar].
 //
 // [bulma navbar]: https://bulma.io/documentation/components/navbar
 type ICKNavbar struct {
 	html.HTMLSnippet
 
-	items []*NavbarItem // list of navbar items
+	items []*ICKNavbarItem // list of navbar items
 
 	// Styling properties
 	IsTransparent bool // renders a transparent navbar
@@ -188,7 +184,7 @@ func (src ICKNavbar) Clone() *ICKNavbar {
 	clone.HTMLSnippet = *src.HTMLSnippet.Clone()
 	clone.IsTransparent = src.IsTransparent
 	clone.HasShadow = src.HasShadow
-	clone.items = make([]*NavbarItem, len(src.items))
+	clone.items = make([]*ICKNavbarItem, len(src.items))
 	for i, itm := range src.items {
 		clone.items[i] = itm.Clone()
 	}
@@ -196,8 +192,8 @@ func (src ICKNavbar) Clone() *ICKNavbar {
 }
 
 // AddItem adds the item to the navbar
-func (nav *ICKNavbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLContentComposer) *NavbarItem {
-	itm := new(NavbarItem)
+func (nav *ICKNavbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLContentComposer) *ICKNavbarItem {
+	itm := new(ICKNavbarItem)
 	itm.Key = key
 	itm.Type = itmtyp
 	itm.Content = content
@@ -207,7 +203,7 @@ func (nav *ICKNavbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.H
 
 // At returns the item at a given index.
 // returns nil if index is out of range.
-func (nav *ICKNavbar) At(index int) *NavbarItem {
+func (nav *ICKNavbar) At(index int) *ICKNavbarItem {
 	if index < 0 || index >= len(nav.items) {
 		return nil
 	}
@@ -226,7 +222,7 @@ func (nav *ICKNavbar) SetActiveItem(key string) *ICKNavbar {
 
 // Item returns the first item found with the given key, walking through all levels.
 // returns nil if key is not found
-func (nav *ICKNavbar) Item(key string) *NavbarItem {
+func (nav *ICKNavbar) Item(key string) *ICKNavbarItem {
 	for _, itm := range nav.items {
 		if itm.Key == key {
 			return itm

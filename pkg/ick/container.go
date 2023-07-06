@@ -18,6 +18,7 @@ const (
 // Container allow centering element on larger viewport. See [bulma container]
 //
 // [bulma container]: https://bulma.io/documentation/layout/container/
+// TODO: ick - rework Container
 type Container struct {
 	html.HTMLSnippet
 	FullWidth CONTAINER_FULLWIDTH

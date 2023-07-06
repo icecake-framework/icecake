@@ -26,7 +26,7 @@ func main() {
 
 	// init new website
 	outpath := helper.MustCheckOutputPath(outpathparam)
-	web := html.NewWebSite(outpath)
+	web := ick.NewWebSite(outpath)
 
 	// page index
 	pgindex := web.AddPage("en", "index")
@@ -44,7 +44,7 @@ func main() {
 		TitleSize:     2,
 		Subtitle:      *html.ToHTML("Pure Go Web Assembly Framework"),
 		ContainerAttr: html.ParseAttributes(`class="has-text-centered ` + string(ick.CFW_MAXDESKTOP) + `"`),
-		CTA:           ick.Button(*html.ToHTML("Read doc"), "cta", "/overview.html").SetColor(ick.COLOR_PRIMARY),
+		CTA:           ick.Button(*html.ToHTML("Read doc"), "cta", "/docoverview.html").SetColor(ick.COLOR_PRIMARY),
 	}
 
 	pgindex.Body().AddContent(
@@ -53,38 +53,38 @@ func main() {
 		docs.DocFooter())
 
 	// menu for each pages unless home
-	menu := ick.Menu{}
+	menu := ick.IckMenu{}
 	menu.MenuTag().SetTagName("nav").AddClass("is-small")
 	menu.Tag().SetId("docmenu").AddClass("p-2").AddStyle("background-color:#fdfdfd;")
 	menu.AddItem("", ick.MENUIT_LABEL, "General")
-	menu.AddItem("overview", ick.MENUIT_LINK, "Overview").ParseHRef("/overview.html")
-	menu.AddItem("", ick.MENUIT_LABEL, "Core Snippets")
+	menu.AddItem("docoverview", ick.MENUIT_LINK, "Overview").ParseHRef("/docoverview.html")
+	menu.AddItem("", ick.MENUIT_LABEL, "Composers")
 	menu.AddItem("", ick.MENUIT_LINK, "HTMLString")
 	menu.AddItem("", ick.MENUIT_LINK, "HTMLSnippet")
 	menu.AddItem("", ick.MENUIT_LINK, "HTMLPage")
-	menu.AddItem("", ick.MENUIT_LABEL, "Bulma Snippets")
-	menu.AddItem("bulmabutton", ick.MENUIT_LINK, "Button").ParseHRef("/bulmabutton.html")
-	menu.AddItem("bulmacard", ick.MENUIT_LINK, "Card").ParseHRef("/bulmacard.html")
-	menu.AddItem("bulmadelete", ick.MENUIT_LINK, "Delete").ParseHRef("/bulmadelete.html")
-	menu.AddItem("bulmahero", ick.MENUIT_LINK, "Hero").ParseHRef("/bulmahero.html")
-	menu.AddItem("bulmaimage", ick.MENUIT_LINK, "Image").ParseHRef("/bulmaimage.html")
-	menu.AddItem("bulmamenu", ick.MENUIT_LINK, "Menu").ParseHRef("/bulmamenu.html")
-	menu.AddItem("bulmamessage", ick.MENUIT_LINK, "Message").ParseHRef("/bulmamessage.html")
-	menu.AddItem("bulmanavbar", ick.MENUIT_LINK, "Navbar").ParseHRef("/bulmanavbar.html")
-	menu.AddItem("bulmanotify", ick.MENUIT_LINK, "Notify").ParseHRef("/bulmanotify.html")
+	menu.AddItem("", ick.MENUIT_LABEL, "Core Snippets")
+	menu.AddItem("docbutton", ick.MENUIT_LINK, "Button").ParseHRef("/docbutton.html")
+	menu.AddItem("doccard", ick.MENUIT_LINK, "Card").ParseHRef("/doccard.html")
+	menu.AddItem("docdelete", ick.MENUIT_LINK, "Delete").ParseHRef("/docdelete.html")
+	menu.AddItem("dochero", ick.MENUIT_LINK, "Hero").ParseHRef("/dochero.html")
+	menu.AddItem("docimage", ick.MENUIT_LINK, "Image").ParseHRef("/docimage.html")
+	menu.AddItem("docmenu", ick.MENUIT_LINK, "Menu").ParseHRef("/docmenu.html")
+	menu.AddItem("docmessage", ick.MENUIT_LINK, "Message").ParseHRef("/docmessage.html")
+	menu.AddItem("docnavbar", ick.MENUIT_LINK, "Navbar").ParseHRef("/docnavbar.html")
+	menu.AddItem("docnotify", ick.MENUIT_LINK, "Notify").ParseHRef("/docnotify.html")
 	menu.AddItem("", ick.MENUIT_FOOTER, "Alpha 4")
 
 	// page docs
-	addPageDoc(web, menu.Clone(), "overview")
-	addPageDoc(web, menu.Clone(), "bulmabutton")
-	addPageDoc(web, menu.Clone(), "bulmacard")
-	addPageDoc(web, menu.Clone(), "bulmadelete")
-	addPageDoc(web, menu.Clone(), "bulmahero")
-	addPageDoc(web, menu.Clone(), "bulmaimage")
-	addPageDoc(web, menu.Clone(), "bulmamenu")
-	addPageDoc(web, menu.Clone(), "bulmamessage")
-	addPageDoc(web, menu.Clone(), "bulmanavbar")
-	addPageDoc(web, menu.Clone(), "bulmanotify")
+	addPageDoc(web, menu.Clone(), "docoverview")
+	addPageDoc(web, menu.Clone(), "docbutton")
+	addPageDoc(web, menu.Clone(), "doccard")
+	addPageDoc(web, menu.Clone(), "docdelete")
+	addPageDoc(web, menu.Clone(), "dochero")
+	addPageDoc(web, menu.Clone(), "docimage")
+	addPageDoc(web, menu.Clone(), "docmenu")
+	addPageDoc(web, menu.Clone(), "docmessage")
+	addPageDoc(web, menu.Clone(), "docnavbar")
+	addPageDoc(web, menu.Clone(), "docnotify")
 
 	// required files
 	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css")
@@ -110,7 +110,7 @@ func main() {
 	fmt.Println(n, "pages generated in ", time.Since(start))
 }
 
-func addPageDoc(web *html.WebSite, menu *ick.Menu, pgkey string) {
+func addPageDoc(web *ick.WebSite, menu *ick.IckMenu, pgkey string) {
 	pg := web.AddPage("en", pgkey)
 	pg.AddHeadItem("meta", "charset=UTF-8")
 	pg.AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`)

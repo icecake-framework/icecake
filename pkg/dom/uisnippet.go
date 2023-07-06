@@ -7,6 +7,7 @@ import (
 
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/pkg/js"
 )
 
@@ -58,7 +59,7 @@ func (ui *UI) RemoveListeners() {
 
 // mountSnippetTree addlisteners to the snippet and looks recursively for every childs with an id and add listeners to each of them.
 // Nothing is done with the parent but its IsMounted RMeta is turned on in case of success.
-func mountSnippetTree(parent html.RMetaProvider) (err error) {
+func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
 	if parent.RMeta().IsMounted {
 		console.Warnf("mountSnippetTree: parent:%q is already mounted", parent.RMeta().VirtualId)
 		return
@@ -87,7 +88,7 @@ func mountSnippetTree(parent html.RMetaProvider) (err error) {
 }
 
 // unmountSnippetTree remove listeners recusrively for every embedded child
-func unmountSnippetTree(parent html.RMetaProvider) {
+func unmountSnippetTree(parent ickcore.RMetaProvider) {
 	if embedded := parent.RMeta().Embedded(); embedded != nil {
 		for _, sub := range embedded {
 			if child, ok := sub.(UIComposer); ok {

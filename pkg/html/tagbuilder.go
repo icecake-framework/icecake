@@ -1,9 +1,11 @@
 package html
 
+import "github.com/icecake-framework/icecake/pkg/ickcore"
+
 type TagBuilder interface {
 
 	// Meta returns a reference to render meta data
-	RMetaProvider
+	ickcore.RMetaProvider
 
 	// BuildTag builds the tag used to render the html element.
 	// The composer rendering processes call BuildTag once.

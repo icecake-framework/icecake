@@ -7,7 +7,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/icecake-framework/icecake/pkg/spaserver"
+	"github.com/icecake-framework/icecake/pkg/ickserver"
 	"github.com/joho/godotenv"
 )
 
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// Make a web server a add APIs route handlers
-	spa := spaserver.MakeWebserver()
+	spa := ickserver.MakeWebserver()
 	//spa.ApiRouter.HandleFunc("/login", api.ServeLogin())
 
 	// Let's start the server, listen requests and serve answers

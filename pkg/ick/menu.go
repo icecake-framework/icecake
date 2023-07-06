@@ -20,12 +20,12 @@ const (
 	MENUIT_FOOTER     MENUITEM_TYPE = "footer" // informative text, a <p> tag inserted in the foot of the menu
 )
 
-// bulma.MenuItem is an icecake snippet providing the HTML rendering for a [bulma navbar item].
+// IckMenuItem is an icecake snippet providing the HTML rendering for a [bulma navbar item].
 //
 // Can't be used for inline rendering.
 //
 // [bulma navbar item]: https://bulma.io/documentation/components/navbar/#navbar-item
-type MenuItem struct {
+type IckMenuItem struct {
 	html.HTMLSnippet
 
 	// Optional Key allows to access a specific navbaritem, whatever it's level in the hierarchy, directly from the navbar.
@@ -48,17 +48,17 @@ type MenuItem struct {
 }
 
 // Ensure NavbarItem implements HTMLComposer interface
-var _ html.HTMLComposer = (*MenuItem)(nil)
+var _ html.HTMLComposer = (*IckMenuItem)(nil)
 
 // ParseHRef tries to parse rawUrl to HRef ignoring error.
-func (mnui *MenuItem) ParseHRef(rawUrl string) *MenuItem {
+func (mnui *IckMenuItem) ParseHRef(rawUrl string) *IckMenuItem {
 	mnui.HRef, _ = url.Parse(rawUrl)
 	return mnui
 }
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
-func (mnui MenuItem) Clone() *MenuItem {
-	m := new(MenuItem)
+func (mnui IckMenuItem) Clone() *IckMenuItem {
+	m := new(IckMenuItem)
 	m.Key = mnui.Key
 	m.Type = mnui.Type
 	m.Text = mnui.Text
@@ -71,7 +71,7 @@ func (mnui MenuItem) Clone() *MenuItem {
 }
 
 // BuildTag builds the tag used to render the html element.
-func (mnui *MenuItem) BuildTag() html.Tag {
+func (mnui *IckMenuItem) BuildTag() html.Tag {
 	if mnui.Type == MENUIT_LABEL {
 		mnui.Tag().SetTagName("p").AddClass("menu-label")
 	} else {
@@ -83,11 +83,11 @@ func (mnui *MenuItem) BuildTag() html.Tag {
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (mnui *MenuItem) RenderContent(out io.Writer) error {
+func (mnui *IckMenuItem) RenderContent(out io.Writer) error {
 	if mnui.Type == MENUIT_LABEL {
 		html.WriteString(out, mnui.Text)
 	} else {
-		lnktag := html.A().SetHRef(mnui.HRef).BuildTag()
+		lnktag := A().SetHRef(mnui.HRef).BuildTag()
 		lnktag.SetClassIf(mnui.IsActive, "is-active")
 		lnktag.RenderOpening(out)
 		html.WriteString(out, mnui.Text)
@@ -96,35 +96,35 @@ func (mnui *MenuItem) RenderContent(out io.Writer) error {
 	return nil
 }
 
-// bulma.Menu is an icecake snippet providing the HTML rendering for a [bulma menu].
+// IckMenu is an icecake snippet providing the HTML rendering for a [bulma menu].
 //
 // Can't be used for inline rendering.
 //
 // [bulma menu]: https://bulma.io/documentation/components/menu
-type Menu struct {
+type IckMenu struct {
 	html.HTMLSnippet
 
 	menuTag html.Tag // menu tag: nav, aside, menu. <menu> is used if nothing is specified. Cna be used to setup some classes like "is-small"
 
-	items []*MenuItem // list of Menu items
+	items []*IckMenuItem // list of Menu items
 }
 
 // Ensure Menu implements HTMLComposer interface
-var _ html.HTMLComposer = (*Menu)(nil)
+var _ html.HTMLComposer = (*IckMenu)(nil)
 
 // Clone clones this Menu and all its items and subitem, keeping their attributes their item index and their key.
-func (src Menu) Clone() *Menu {
-	clone := new(Menu)
+func (src IckMenu) Clone() *IckMenu {
+	clone := new(IckMenu)
 	clone.HTMLSnippet = *src.HTMLSnippet.Clone()
 	clone.menuTag = *src.menuTag.Clone()
-	clone.items = make([]*MenuItem, len(src.items))
+	clone.items = make([]*IckMenuItem, len(src.items))
 	for i, itm := range src.items {
 		clone.items[i] = itm.Clone()
 	}
 	return clone
 }
 
-func (mnu *Menu) MenuTag() *html.Tag {
+func (mnu *IckMenu) MenuTag() *html.Tag {
 	if mnu.menuTag.AttributeMap == nil {
 		mnu.menuTag.AttributeMap = make(html.AttributeMap)
 	}
@@ -133,7 +133,7 @@ func (mnu *Menu) MenuTag() *html.Tag {
 
 // SetActiveItem look for the key item (or subitem) and sets its IsActive flag.
 // warning: does not unset other actve items if any.
-func (mnu *Menu) SetActiveItem(key string) *Menu {
+func (mnu *IckMenu) SetActiveItem(key string) *IckMenu {
 	itm := mnu.Item(key)
 	if itm != nil {
 		itm.IsActive = true
@@ -142,8 +142,8 @@ func (mnu *Menu) SetActiveItem(key string) *Menu {
 }
 
 // AddItem adds the item to the Menu
-func (mnu *Menu) AddItem(key string, itmtyp MENUITEM_TYPE, txt string) *MenuItem {
-	itm := new(MenuItem)
+func (mnu *IckMenu) AddItem(key string, itmtyp MENUITEM_TYPE, txt string) *IckMenuItem {
+	itm := new(IckMenuItem)
 	itm.Key = key
 	itm.Type = itmtyp
 	itm.Text = txt
@@ -153,7 +153,7 @@ func (mnu *Menu) AddItem(key string, itmtyp MENUITEM_TYPE, txt string) *MenuItem
 
 // At returns the item at a given index.
 // returns nil if index is out of range.
-func (mnu *Menu) At(index int) *MenuItem {
+func (mnu *IckMenu) At(index int) *IckMenuItem {
 	if index < 0 || index >= len(mnu.items) {
 		return nil
 	}
@@ -162,7 +162,7 @@ func (mnu *Menu) At(index int) *MenuItem {
 
 // Item returns the first item found with the given key, walking through all levels.
 // returns nil if key is not found
-func (mnu *Menu) Item(key string) *MenuItem {
+func (mnu *IckMenu) Item(key string) *IckMenuItem {
 	for _, itm := range mnu.items {
 		if itm.Key == key {
 			return itm
@@ -172,7 +172,7 @@ func (mnu *Menu) Item(key string) *MenuItem {
 }
 
 // BuildTag builds the tag used to render the html element.
-func (mnu *Menu) BuildTag() html.Tag {
+func (mnu *IckMenu) BuildTag() html.Tag {
 	mnu.Tag().SetTagName("div")
 
 	// set style height if there's a footer
@@ -187,7 +187,7 @@ func (mnu *Menu) BuildTag() html.Tag {
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (mnu *Menu) RenderContent(out io.Writer) error {
+func (mnu *IckMenu) RenderContent(out io.Writer) error {
 	mnutag := mnu.menuTag.Clone()
 	if tagname, _ := mnutag.TagName(); tagname == "" {
 		mnutag.SetTagName("menu")

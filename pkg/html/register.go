@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/icecake-framework/icecake/internal/helper"
-	"github.com/icecake-framework/icecake/pkg/registry"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/lolorenzo777/verbose"
 )
 
@@ -24,7 +24,7 @@ import (
 //   - If the _ickname has already been registered
 //   - If the _ickname does not meet the pattern "ick-*"
 //   - If the _composer does not implement the HTMLComposer interface
-func RegisterComposer(icktagname string, composer any) (entry *registry.RegistryEntry, err error) {
+func RegisterComposer(icktagname string, composer any) (entry *ickcore.RegistryEntry, err error) {
 	// TODO: register - RegisterComposer should generate ickname automatically (see RenderSnippet), unless a same component can be registered with 2 names ?!
 
 	// register by reference
@@ -69,13 +69,13 @@ func RegisterComposer(icktagname string, composer any) (entry *registry.Registry
 	}
 
 	// already registeredwith anoher
-	if registry.IsRegistered(icktagname) && reflect.TypeOf(registry.GetRegistryEntry(icktagname).Component()).String() != typ.String() {
+	if ickcore.IsRegistered(icktagname) && reflect.TypeOf(ickcore.GetRegistryEntry(icktagname).Component()).String() != typ.String() {
 		err = fmt.Errorf("RegisterComposer: %s(%v) warning: already registered with another composer", icktagname, typ.String())
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	entry = registry.AddRegistryEntry(icktagname, composer)
+	entry = ickcore.AddRegistryEntry(icktagname, composer)
 
 	verbose.Debug("RegisterComposer: %s(%v) with success", icktagname, typ.String())
 

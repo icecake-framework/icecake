@@ -29,7 +29,7 @@ Current works on Alpha4 focus on:
 - instantiating ick-components, embedded or not  
 - rendering any html containing ick-component on the front side, with event handling
 - provide examples to use UI Snippets 
-- provide core UI Snippets: 
+- provide some core UI Snippets such as: 
     - button
     - card
     - image
@@ -43,7 +43,7 @@ In parallel we're doing many refactoring to make code more coder friendly.
 
 - Go 1.20 and it's wasm compiler
 - based on the ``syscall/js`` package
-- UI snippets use CSS framework [Bulma](https://bulma.io/). Bulma is a pure CSS framework without any JS code.
+- Snippets use [Bulma](https://bulma.io/) CSS framework. Bulma is a pure CSS framework without any JS code.
 
 ## Examples
 
@@ -84,7 +84,7 @@ icecake
 │   └── testwasm                    # wasm test environment
 │
 ├── pkg
-│   ├── spaserver                   # see description of packages here under
+│   ├── *                           # see description of packages here under
 │
 ├── web                             # source codes and assets required by the front
 │   ├── static
@@ -109,18 +109,18 @@ icecake
 | pkg           | description |
 | -             | - |
 | `browser`     | provides primitives to interact directly with the browser, its navigation hystory and the local or the session storages.
+| `clock`       | provides a timer and a ticker with possibility to add callback functions at every tic and at the end of the timer.
+| `console`     | provides helpers to raise enhanced messages in the browser console.
 | `dom`         | provides primitives to interact with the DOM of a webpage. Traditional node, element, and document's methods can be call in go here. An UISnippet struct and an UIComposer Interface are provided to allow rendering of HTMLSnippet and to handle event listening.
 | `event`       | defines all types of the dom event handlers with their methods
 | `html`        | provides an HTMLSnippet struct and an HTMLComposer Interface to allow html rendering of ick-name tags in different ways.
-| `clock`       | provides a timer and a ticker with possibility to add callback functions at every tic and at the end of the timer.
-| `console `    | provides helpers to raise enhanced messages in the browser console.
+| `ick`         | core Snippets with html rendering
+|  └── `ickui`  | UI of core Snippets with event handler. Compiles with the wasm compiler
+| `ickcore`     | provides the render metadata provider and the global registry of Composers, this needs to be fully reworks.
+| `icksdk`      | usefull functions to call API on the spaserver.
+| `ickserver`   | provides a configurable webserver dedicated to serve an spa with wasm code.
 | `js`          | ``syscall/js`` extended with ``console`` 
-| `registry`    | provides the global Registry of HtmlSnippets and UISnippets.
-| `spasdk`      | usefull functions to call API on the spaserver.
-| `spaserver`   | provides a configurable webserver dedicated to serve an spa with wasm code.
-| `ui`          | core UI Snippets
-| `namepattern` | provides functions to check validity of an HTML name such a a token name or the name of an attribute.
-
+| `stringpattern` | provides functions to check validity of an HTML name such a a token name or the name of an attribute.
 
 
 

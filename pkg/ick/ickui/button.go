@@ -14,6 +14,9 @@ type ICKButton struct {
 	OnClick func() // optional OnClick function called by the default button listeners
 }
 
+// Ensure ICKButton implements UIComposer interface
+var _ dom.UIComposer = (*ICKButton)(nil)
+
 func Button(title html.HTMLString, id string, rawURL string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)
 	btn.ICKButton = *ick.Button(title, id, rawURL, attrs...)

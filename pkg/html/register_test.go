@@ -3,25 +3,24 @@ package html
 import (
 	"testing"
 
-	"github.com/icecake-framework/icecake/pkg/registry"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestLookupRegistryEntry(t *testing.T) {
+	ickcore.ResetRegistry()
+	ickcore.AddRegistryEntry("ick-snippet", &HTMLSnippet{})
 
-	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-snippet", &HTMLSnippet{})
-
-	r := registry.LookupRegistryEntry(&HTMLSnippet{})
+	r := ickcore.LookupRegistryEntry(&HTMLSnippet{})
 	assert.NotNil(t, r)
 
-	r = registry.LookupRegistryEntry(HTMLSnippet{})
+	r = ickcore.LookupRegistryEntry(HTMLSnippet{})
 	assert.Nil(t, r)
 }
 
 func TestRegisterComposer(t *testing.T) {
 
-	registry.ResetRegistry()
+	ickcore.ResetRegistry()
 
 	// by reference
 	c1 := new(HTMLSnippet)

@@ -12,6 +12,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/pkg/js"
 )
 
@@ -740,7 +741,7 @@ func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...Composer) (err er
 
 		if !IsInserted {
 			// otherwise insert the rendered snippet html into the dom
-			custodian := &html.RMetaData{}
+			custodian := &ickcore.RMetaData{}
 			err = html.Render(out, custodian, cmp)
 			if err != nil {
 				break

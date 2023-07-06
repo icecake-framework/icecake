@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/icecake-framework/icecake/pkg/registry"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,7 +20,7 @@ func TestComposeBasics(t *testing.T) {
 	require.Empty(t, out)
 
 	// unregistered snippet with a simple tagname and an empty body
-	registry.ResetRegistry()
+	ickcore.ResetRegistry()
 	s0 := NewSnippet("span")
 	err = Render(out, nil, s0)
 	require.NoError(t, err)
@@ -34,7 +34,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// The same but when registered, with forced id
 	out.Reset()
-	registry.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
+	ickcore.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
 	Render(out, nil, s0)
 	assert.Equal(t, `<span id="helloworld" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
@@ -52,7 +52,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// snippet with a tagname and default attributes
 	out.Reset()
-	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
+	ickcore.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
 	s2 := new(testsnippet2)
 	Render(out, nil, s2)
 	assert.Equal(t, `<div name="testsnippet2" class="ts2a ts2b" a2 style="display=test;" tabindex=2></div>`, out.String())
@@ -74,20 +74,20 @@ func TestComposeBasics(t *testing.T) {
 
 func TestUnfoldBody1(t *testing.T) {
 
-	registry.ResetRegistry()
+	ickcore.ResetRegistry()
 	out := new(bytes.Buffer)
 
 	// only the composer is registered, not the the data
 	// so ick-testsnippet0 is an empty snippet : no tag and no content
 	// the rendering should render nothing
 	out.Reset()
-	registry.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
+	ickcore.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
 	err := renderHTML(out, nil, *ToHTML("<ick-testsnippet0/>"))
 	require.NoError(t, err)
 	require.Equal(t, ``, out.String())
 
 	out.Reset()
-	registry.AddRegistryEntry("ick-testsnippet4", &testsnippet4{})
+	ickcore.AddRegistryEntry("ick-testsnippet4", &testsnippet4{})
 	err = renderHTML(out, nil, *ToHTML("<ick-testsnippet4/>"))
 	require.NoError(t, err)
 	require.Equal(t, `<div name="testsnippet4"></div>`, out.String())
@@ -282,10 +282,10 @@ func TestUnfoldBody2(t *testing.T) {
 	}
 
 	// restet the component registrey for tests
-	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-testsnippet0", &testsnippet0{})
-	registry.AddRegistryEntry("ick-testsnippet1", &testsnippet1{})
-	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
+	ickcore.ResetRegistry()
+	ickcore.AddRegistryEntry("ick-testsnippet0", &testsnippet0{})
+	ickcore.AddRegistryEntry("ick-testsnippet1", &testsnippet1{})
+	ickcore.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
 
 	output := new(bytes.Buffer)
 	for i, tst := range tstset {
@@ -367,12 +367,12 @@ func TestComposeEmbedded(t *testing.T) {
 	}
 
 	// restet the component registrey for tests
-	registry.ResetRegistry()
-	registry.AddRegistryEntry("ick-testsnippet0", &testsnippet0{})
-	registry.AddRegistryEntry("ick-testsnippet1", &testsnippet1{})
-	registry.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
-	registry.AddRegistryEntry("ick-testsnippet4", &testsnippet4{})
-	registry.AddRegistryEntry("ick-testinfinite", &testsnippetinfinite{})
+	ickcore.ResetRegistry()
+	ickcore.AddRegistryEntry("ick-testsnippet0", &testsnippet0{})
+	ickcore.AddRegistryEntry("ick-testsnippet1", &testsnippet1{})
+	ickcore.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
+	ickcore.AddRegistryEntry("ick-testsnippet4", &testsnippet4{})
+	ickcore.AddRegistryEntry("ick-testinfinite", &testsnippetinfinite{})
 
 	// running tests
 	out := new(bytes.Buffer)
@@ -404,8 +404,8 @@ func TestComposeEmbedded(t *testing.T) {
 
 func TestSnippetId_1(t *testing.T) {
 
-	// registry.ResetRegistry()
-	// registry.AddRegistryEntry("ick-testsnippet0", &testsnippet0{})
+	// ickcore.ResetRegistry()
+	// ickcore.AddRegistryEntry("ick-testsnippet0", &testsnippet0{})
 
 	// out := new(bytes.Buffer)
 
@@ -445,7 +445,7 @@ func TestSnippetId_1(t *testing.T) {
 	// require.Contains(t, out.String(), `id="IdTemplate1"`)
 
 	// // C> setup an ID into the icktag
-	// registry.AddRegistryEntry("ick-testsnippetid", &testsnippetid{})
+	// ickcore.AddRegistryEntry("ick-testsnippetid", &testsnippetid{})
 	// // C.1> without parent
 	// out.Reset()
 	// err = renderHTML(out, nil, *ToHTML(`<ick-testsnippetid/>`))

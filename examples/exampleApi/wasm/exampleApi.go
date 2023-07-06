@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/icecake-framework/icecake/pkg/spasdk"
+	"github.com/icecake-framework/icecake/pkg/icksdk"
 )
 
 // the main func is required by the wasm GO builder
@@ -20,7 +20,7 @@ func main() {
 	fmt.Println("Go/WASM loaded.")
 
 	// Check Server Health
-	if !spasdk.ApiGetHealth() {
+	if !icksdk.ApiGetHealth() {
 		fmt.Println("Go/WASM stopped")
 		os.Exit(1)
 	}

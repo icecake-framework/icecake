@@ -48,7 +48,7 @@ const (
 		string(IMG_RSQUARE+" "+IMG_R1by1+" "+IMG_R5by4+" "+IMG_R4by3+" "+IMG_R3by2+" "+IMG_R5by3+" "+IMG_R16by9+" "+IMG_R2by1+" "+IMG_R3by1+" "+IMG_R4by5+" "+IMG_R3by4+" "+IMG_R2by3+" "+IMG_R3by5+" "+IMG_R9by16+" "+IMG_R1by2+" "+IMG_R1by3)
 )
 
-// bulma.ICKImage is a typical img element embedded into a figure container specifying the image size. See [bulma image]
+// ICKImage is a typical img element embedded into a figure container specifying the image size. See [bulma image]
 //
 // Background color can be setup by adding snipet classes.
 //

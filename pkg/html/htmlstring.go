@@ -11,8 +11,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/icecake-framework/icecake/pkg/registry"
-	"github.com/icecake-framework/icecake/pkg/stringpattern"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
+	"github.com/icecake-framework/icecake/pkg/namingpattern"
 	"github.com/lolorenzo777/verbose"
 )
 
@@ -20,7 +20,7 @@ import (
 // HTMLString implements HTMLcomposer interfaces and the string is rendered to an output stream with the icecake Rendering functions.
 // It is part of the core icecake snippets.
 type HTMLString struct {
-	meta  RMetaData // Rendering MetaData
+	meta  ickcore.RMetaData // Rendering MetaData
 	bytes []byte
 }
 
@@ -38,7 +38,7 @@ func ToHTML(s string) *HTMLString {
 
 // Meta provides a reference to the RenderingMeta object associated with this composer.
 // This is required by the icecake rendering process.
-func (h *HTMLString) RMeta() *RMetaData {
+func (h *HTMLString) RMeta() *ickcore.RMetaData {
 	return &h.meta
 }
 
@@ -170,7 +170,7 @@ nextbyte:
 
 			default: // build component ick-tagname
 				r, size := utf8.DecodeRune(htmlstring[i:mini(ilast+1, i+4)])
-				if size != 0 && stringpattern.IsValidNameRune(r, false) {
+				if size != 0 && namingpattern.IsValidNameRune(r, false) {
 					i += size - 1
 					walk.fieldto = i
 				} else {
@@ -207,7 +207,7 @@ nextbyte:
 
 			default: // build attribute name
 				r, size := utf8.DecodeRune(htmlstring[i:mini(ilast+1, i+4)])
-				if size > 0 && stringpattern.IsValidNameRune(r, walk.fieldat == 0) {
+				if size > 0 && namingpattern.IsValidNameRune(r, walk.fieldat == 0) {
 					if walk.fieldat == 0 {
 						startfield(&walk, i)
 					}
@@ -283,7 +283,7 @@ func unfoldick(parent HTMLContentComposer, out io.Writer, ickname string, ickatt
 	verbose.Debug("unfolding composer %q", ickname)
 
 	// does this tag refer to a registered component ?
-	regentry := registry.GetRegistryEntry(ickname)
+	regentry := ickcore.GetRegistryEntry(ickname)
 	if regentry.Component() != nil {
 
 		// clone the registered snippet (a composer)

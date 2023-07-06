@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/url"
 	"time"
+
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 // testsnippet0
@@ -23,13 +25,13 @@ func (s *testsnippet0) BuildTag() Tag { return *s.Tag().SetTagName("span") }
 
 // testsnippet1
 type testsnippet1 struct {
-	meta RMetaData // Rendering MetaData
+	meta ickcore.RMetaData // Rendering MetaData
 	HTML HTMLString
 }
 
 // Meta provides a reference to the RenderingMeta object associated with this composer.
 // This is required by the icecake rendering process.
-func (h *testsnippet1) RMeta() *RMetaData {
+func (h *testsnippet1) RMeta() *ickcore.RMetaData {
 	return &h.meta
 }
 
@@ -112,7 +114,7 @@ type testcustomcomposer struct{}
 var _ HTMLComposer = (*testcustomcomposer)(nil)
 
 // func (s *testcustomcomposer) Tag() *Tag                                   { return nil }
-func (s *testcustomcomposer) RMeta() *RMetaData                       { return &RMetaData{} }
+func (s *testcustomcomposer) RMeta() *ickcore.RMetaData               { return &ickcore.RMetaData{} }
 func (s *testcustomcomposer) BuildTag() Tag                           { return Tag{} }
 func (s *testcustomcomposer) SetAttribute(aname string, value string) {}
 func (s *testcustomcomposer) RenderContent(out io.Writer) error       { return nil }
