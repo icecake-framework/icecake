@@ -91,6 +91,12 @@ func (s HTMLSnippet) Id() string {
 	return s.Tag().Id()
 }
 
+// SetIf sets the snippet id. This is a shortcut to s.Tag().AttributeMap.SetId(id)
+func (s *HTMLSnippet) SetId(id string) *HTMLSnippet {
+	s.Tag().SetId(id)
+	return s
+}
+
 // AddContent adds one or many HTMLComposer to the rendering stack of this composer.
 // Returns the snippet to allow chaining calls.
 func (snippet *HTMLSnippet) AddContent(content ...HTMLContentComposer) *HTMLSnippet {

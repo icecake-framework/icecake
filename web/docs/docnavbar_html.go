@@ -7,7 +7,7 @@ import (
 
 func DocNavbar() *bulma.ICKNavbar {
 	nav := &bulma.ICKNavbar{HasShadow: true}
-	nav.Tag().SetId("topbar")
+	nav.SetId("topbar")
 	nav.AddItem("", bulma.NAVBARIT_BRAND, html.ToHTML(`<span class="title pl-2">Icecake</span>`)).ParseHRef("/").ParseImageSrc("/assets/icecake-color.svg")
 	nav.AddItem("home", bulma.NAVBARIT_START, html.ToHTML(`Home`)).ParseHRef("/")
 	nav.AddItem("docs", bulma.NAVBARIT_START, html.ToHTML(`Docs`)).ParseHRef("/overview.html")

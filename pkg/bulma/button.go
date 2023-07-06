@@ -41,9 +41,9 @@ var _ html.HTMLComposer = (*ICKButton)(nil)
 
 func Button(title html.HTMLString, id string, rawurl string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)
-	btn.Tag().SetId(id)
+	btn.SetId(id)
 	btn.ParseHRef(rawurl)
-	btn.Title = title
+	btn.SetTitle(title)
 	btn.Tag().ParseAttributes(attrs...)
 	return btn
 }
@@ -56,6 +56,11 @@ func (btn *ICKButton) ParseHRef(rawurl string) (err error) {
 		btn.HRef = nil
 	}
 	return
+}
+
+func (btn *ICKButton) SetTitle(title html.HTMLString) *ICKButton {
+	btn.Title = title
+	return btn
 }
 
 func (btn *ICKButton) SetOutlined(f bool) *ICKButton {
