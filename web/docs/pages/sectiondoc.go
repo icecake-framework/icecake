@@ -15,7 +15,7 @@ type SectionDocIcecake struct {
 
 func SectionDoc(section string) html.HTMLContentComposer {
 	switch section {
-	case "overview":
+	case "docoverview":
 		s := new(SectionDocOverview)
 		s.Title = "overview - icecake framework documentation"
 		return s

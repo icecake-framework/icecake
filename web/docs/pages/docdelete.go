@@ -18,15 +18,14 @@ func (cmp *SectionDocDelete) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<p>ICKDelete is an icecake snippet providing the HTML rendering for a `, linkBulmaDelete, `</p>`)
 	html.WriteString(out, `<p>The html rendering is a simple button with a centered cross.</p>`)
 
-	// API
-	html.WriteString(out, `<h3>Delete API</h3>`)
-
-	// usage
-	html.WriteString(out, `<h3>Usage</h3>`)
-	cmp.RenderChild(out, ick.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(ick.COLOR_PRIMARY).SetOutlined(true))
+	// usages
 	html.WriteString(out, `<div id="boxusage" class="box mr-5">`)
 	html.Render(out, nil, ick.Spinner())
 	html.WriteString(out, `</div>`)
+	cmp.RenderChild(out, ick.Button(*html.ToHTML("reset"), "btnreset", "", `class="mb-3"`).SetColor(ick.COLOR_PRIMARY).SetOutlined(true))
+
+	// apis
+	html.WriteString(out, `<h3>Delete API</h3>`)
 
 	// rendering
 	html.WriteString(out, `<h3>Rendering</h3>`)

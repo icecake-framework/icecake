@@ -19,19 +19,17 @@ func (cmp *SectionDocButton) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<h2>Button</h2>`)
 	html.WriteString(out, `<p>ick.Button is an icecake snippet providing the HTML rendering for a `, linkBulmaButton, ` with extra features and usefull Go APIs.</p>`)
 
-	// API
-	html.WriteString(out, `<h3>ick.Button API</h3>`)
-	html.WriteString(out, `<p><strong>Title HTMLString</strong> The title of the Button. Can be a simple text or a more complex html string.</p>`)
-	html.WriteString(out, `<p><strong>HRef *url.URL</strong> HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a &lt;a&gt; tag, otherwise it's a &lt;button&gt; tag.</p>`)
-
 	// usages
-	html.WriteString(out, `<h3>Usage</h3>`)
-
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
 	uA1 := ick.Button(*html.ToHTML("Click Link"), "", "#")
 	uA2 := ick.Button(*html.ToHTML("Trigger Event"), "uA2", "")
 	html.Render(out, cmp, uA1, uA2)
 	html.WriteString(out, `</div>`)
+
+	// apis
+	html.WriteString(out, `<h3>ick.Button API</h3>`)
+	html.WriteString(out, `<p><strong>Title HTMLString</strong> The title of the Button. Can be a simple text or a more complex html string.</p>`)
+	html.WriteString(out, `<p><strong>HRef *url.URL</strong> HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a &lt;a&gt; tag, otherwise it's a &lt;button&gt; tag.</p>`)
 
 	// styling
 	html.WriteString(out, `<h3>Styling</h3>`)

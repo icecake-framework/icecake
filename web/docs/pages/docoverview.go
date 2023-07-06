@@ -9,8 +9,7 @@ import (
 type SectionDocOverview struct{ SectionDocIcecake }
 
 func (cmp *SectionDocOverview) RenderContent(out io.Writer) error {
-	html.WriteString(out, `<h2>Overview</h2>
-	<p>welcome</p>`)
+	html.WriteString(out, `<h2>Overview</h2>`)
 
 	return nil
 }
