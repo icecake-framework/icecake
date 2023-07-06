@@ -207,7 +207,7 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 
 	// <body>
 	pg.body.Tag().SetTagName("body")
-	err = Render(out, pg, &pg.body)
+	Render(out, pg, &pg.body)
 
 	// wasm script, if any
 	// must be loaded at the end of the page because the wasm code interacts with the loading/loaded )DOM
