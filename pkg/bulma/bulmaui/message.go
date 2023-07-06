@@ -14,7 +14,7 @@ type ICKMessage struct {
 	BtnDelete ICKDelete // The delete button snippet created only if candelete is true
 }
 
-// Ensure Card implements HTMLTagComposer interface
+// Ensure ICKMessage implements UIComposer interface
 var _ dom.UIComposer = (*ICKMessage)(nil)
 
 // Message factory
@@ -26,7 +26,7 @@ func Message(cnt html.HTMLContentComposer) *ICKMessage {
 
 /******************************************************************************/
 
-// SetColor set a message color
+// SetColor set a message color. Immediate effect to the DOM.
 func (msg *ICKMessage) SetColor(c bulma.COLOR) *ICKMessage {
 	msg.ICKMessage.SetColor(c)
 	if msg.DOM.IsInDOM() {
@@ -35,7 +35,7 @@ func (msg *ICKMessage) SetColor(c bulma.COLOR) *ICKMessage {
 	return msg
 }
 
-// SetSize set the size of the message
+// SetSize set the size of the message. Immediate effect to the DOM.
 func (msg *ICKMessage) SetSize(s bulma.SIZE) *ICKMessage {
 	msg.ICKMessage.SetSize(s)
 	if msg.DOM.IsInDOM() {
@@ -60,6 +60,7 @@ func (msg *ICKMessage) AddListeners() {
 	}
 }
 
+// RemoveListeners remove delete button listeners
 func (msg *ICKMessage) RemoveListeners() {
 	msg.BtnDelete.RemoveListeners()
 	msg.UI.RemoveListeners()
