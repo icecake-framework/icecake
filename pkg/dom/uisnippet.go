@@ -10,24 +10,14 @@ import (
 	"github.com/icecake-framework/icecake/pkg/js"
 )
 
-// type UIListener interface {
-// 	Wrap(js.JSValueProvider)
-// 	AddListeners()
-// 	RemoveListeners()
-// }
-
 type UIComposer interface {
-
-	// Meta returns a reference to render meta data
-	html.RMetaProvider
+	html.HTMLComposer
 
 	Wrap(js.JSValueProvider)
 
 	AddListeners()
 
 	RemoveListeners()
-	// Mount()
-	// UnMount()
 }
 
 type Composer interface {
@@ -42,12 +32,6 @@ type Composer interface {
 type UI struct {
 	DOM Element
 }
-
-// Mount does nothing by default. Can be implemented by the component embedding UISnippet.
-// func (ui *UI) Mount() {}
-
-// UnMount does nothing by default. Can be implemented by the component embedding UISnippet.
-// func (ui *UI) UnMount() {}
 
 // AddListeners does nothing by default. Can be implemented by the component embedding UISnippet.
 func (ui *UI) AddListeners() {}
@@ -71,69 +55,6 @@ func (ui *UI) Wrap(jsvp js.JSValueProvider) {
 func (ui *UI) RemoveListeners() {
 	ui.DOM.RemoveListeners()
 }
-
-// RenderHTML builds and unfolds the UIcomposer and returns its html string.
-// RenderHTML does not mount the component into the DOM.
-// func (_parent *UISnippet) RenderHTML(_snippet UIComposer) (_html html.String) {
-// 	out := new(bytes.Buffer)
-// 	id, err := html.WriteSnippet(out, _snippet, nil)
-// 	if err == nil {
-// 		_parent.Embed(id, _snippet) // need to embed the snippet itself
-// 		_html = html.String(out.String())
-// 	}
-// 	return _html
-// }
-
-// InsertSnippet insrets a _snippet within the _parent (according to the _where location) and add _parents lisneters
-// func (_parent *UISnippet) InsertSnippet(_where INSERT_WHERE, _snippet any, _data *html.DataState) (_id string, _err error) {
-// 	if _parent == nil || !_parent.DOM.IsDefined() {
-// 		return "", console.Errorf("Snippet:InsertSnippetfailed on undefined _parent")
-// 	}
-// 	_id, _err = _parent.DOM.InsertSnippet(_where, _snippet, _data)
-// 	_parent.AddListeners()
-// 	return _id, nil
-// }
-
-// MountCSSLinks inserts links elements to the Head section of the Document for every csslinkref found in TheRegistry of components.
-// If a link already exists for a csslinkref nothing is done.
-// MountCSSLinks call is optional if your html head already contains stylesheet links for your css or if you import it in your own js code.
-// MountCSSLinks must be called at the early begining of the wasm code.
-// func MountCSSLinks() {
-// 	reg := registry.Map()
-// 	for ickname, e := range reg {
-// 		fmt.Println("Mounting CSSLinks for", ickname)
-// 		if !e.IsCSSLinkMounted() {
-// 			links := e.CSSLinkRefs()
-// 			if links != nil {
-// 				for _, l := range links {
-// 					if l == "" {
-// 						continue
-// 					}
-// 					head := Doc().Head()
-// 					children := head.ChildrenMatching(func(e *Element) bool {
-// 						if e.TagName() == "LINK" {
-// 							href, _ := e.Attribute("href")
-// 							if href == l {
-// 								return true
-// 							}
-// 						}
-// 						return false
-// 					})
-// 					if len(children) == 0 {
-// 						e := CreateElement("LINK").SetAttribute("href", l).SetAttribute("rel", "stylesheet")
-// 						head.InsertElement(INSERT_LAST_CHILD, e)
-
-// 					}
-// 				}
-// 			}
-// 			e.SetCSSLinkMounted()
-// 		}
-// 	}
-// }
-
-/******************************************************************************
-* Private Area
-*******************************************************************************/
 
 // mountSnippetTree addlisteners to the snippet and looks recursively for every childs with an id and add listeners to each of them.
 // Nothing is done with the parent but its IsMounted RMeta is turned on in case of success.
@@ -165,18 +86,13 @@ func mountSnippetTree(parent html.RMetaProvider) (err error) {
 	return err
 }
 
-// TODO: must call unmount somewhere
-// unmountSnippetTree remove listeners anc all Unmount recusrively for every embedded components
-func unmountSnippetTree(_snippet UIComposer) {
-	_snippet.RemoveListeners()
-	// _snippet.UnMount()
-
-	if embedded := _snippet.RMeta().Embedded(); embedded != nil {
-		// DEBUG: console.Warnf("scanning %+v", embedded)
+// unmountSnippetTree remove listeners recusrively for every embedded child
+func unmountSnippetTree(parent html.RMetaProvider) {
+	if embedded := parent.RMeta().Embedded(); embedded != nil {
 		for _, sub := range embedded {
-			if cmp, ok := sub.(UIComposer); ok {
-				// DEBUG: console.Warnf("wrapping %+v", w)
-				unmountSnippetTree(cmp)
+			if child, ok := sub.(UIComposer); ok {
+				child.RemoveListeners()
+				unmountSnippetTree(child)
 			}
 		}
 	}
