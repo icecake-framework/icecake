@@ -57,7 +57,7 @@ func (msg *ICKMessage) RenderContent(out io.Writer) error {
 
 	if !msg.Header.IsEmpty() {
 		html.WriteString(out, `<div class="message-header">`)
-		msg.RenderChild(out, html.Span().AddContent(&msg.Header))
+		msg.RenderChild(out, html.Snippet("span").AddContent(&msg.Header))
 		if msg.CanDelete {
 			id := msg.Id()
 			if id == "" {

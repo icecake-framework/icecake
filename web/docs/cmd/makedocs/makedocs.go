@@ -116,10 +116,10 @@ func addPageDoc(web *ick.WebSite, menu *ick.IckMenu, pgkey string) {
 	pg.AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`)
 	pg.AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
 
-	inside := html.Div(`class="columns is-mobile mb-0 pb-0"`).AddContent(
-		html.Div(`class="column is-narrow mb-0 pb-0"`).AddContent(
+	inside := html.Snippet("div", `class="columns is-mobile mb-0 pb-0"`).AddContent(
+		html.Snippet("div", `class="column is-narrow mb-0 pb-0"`).AddContent(
 			menu.SetActiveItem(pgkey)),
-		html.Div(`class="column mb-0 pb-0"`).AddContent(
+		html.Snippet("div", `class="column mb-0 pb-0"`).AddContent(
 			webdocs.SectionDoc(pgkey)))
 
 	pg.Body().AddContent(

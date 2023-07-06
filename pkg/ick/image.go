@@ -114,7 +114,7 @@ func (fig *ICKImage) BuildTag() html.Tag {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (image *ICKImage) RenderContent(out io.Writer) error {
-	img := html.NewSnippet("img", `role="img" focusable="false"`)
+	img := html.Snippet("img", `role="img" focusable="false"`)
 	img.Tag().SetURL("src", image.Src).
 		SetClassIf(image.IsRounded, "is-rounded").
 		SetAttributeIf(image.Alt != "", "alt", image.Alt)

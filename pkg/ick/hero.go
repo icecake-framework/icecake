@@ -54,7 +54,7 @@ func (msg *Hero) BuildTag() html.Tag {
 func (msg *Hero) RenderContent(out io.Writer) error {
 
 	if msg.InsideHead != nil {
-		msg.RenderChild(out, html.Div(`class="hero-head"`).AddContent(msg.InsideHead))
+		msg.RenderChild(out, html.Snippet("div", `class="hero-head"`).AddContent(msg.InsideHead))
 	}
 
 	html.WriteString(out, `<div class="hero-body">`)
@@ -73,7 +73,7 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 	html.WriteString(out, `</div>`)
 
 	if msg.InsideFoot != nil {
-		msg.RenderChild(out, html.Div(`class="hero-foor"`).AddContent(msg.InsideFoot))
+		msg.RenderChild(out, html.Snippet("div", `class="hero-foor"`).AddContent(msg.InsideFoot))
 	}
 
 	return nil

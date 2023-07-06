@@ -57,11 +57,11 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	}
 
 	// <div control>
-	subcontrol := html.Div(`class="control"`)
+	subcontrol := html.Snippet("div", `class="control"`)
 	subcontrol.Tag().SetClassIf(cmp.State == INPUT_LOADING, "is-loading")
 
 	// <input>
-	subinput := html.NewSnippet("input", `class="input" type="text"`)
+	subinput := html.Snippet("input", `class="input" type="text"`)
 	subinput.Tag().
 		SetClassIf(cmp.IsRounded, "is-rounded").
 		SetAttributeIf(cmp.Value != "", "value", cmp.Value).
@@ -81,7 +81,7 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
-		subhelp := html.P(`class="help"`).AddContent(&cmp.Help)
+		subhelp := html.Snippet("p", `class="help"`).AddContent(&cmp.Help)
 		subhelp.Tag().
 			SetClassIf(cmp.State == INPUT_SUCCESS, "is-success").
 			SetClassIf(cmp.State == INPUT_WARNING, "is-warning").

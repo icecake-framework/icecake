@@ -29,27 +29,27 @@ type HTMLSnippet struct {
 // Ensure HTMLSnippet implements HTMLComposer interface
 var _ HTMLContentComposer = (*HTMLSnippet)(nil)
 
-// NewSnippet returns a new HTMLSnippet with a given tag name and a map of attributes.
-func NewSnippet(tagname string, attrlist ...string) *HTMLSnippet {
+// Snippet returns a new HTMLSnippet with a given tag name and a map of attributes.
+func Snippet(tagname string, attrlist ...string) *HTMLSnippet {
 	snippet := new(HTMLSnippet)
 	snippet.Tag().SetTagName(tagname).ParseAttributes(attrlist...)
 	return snippet
 }
 
 // Div returns a new HTMLSnippet with DIV tag name and a map of attributes.
-func Div(attrlist ...string) *HTMLSnippet {
-	return NewSnippet("div", attrlist...)
-}
+// func Div(attrlist ...string) *HTMLSnippet {
+// 	return Snippet("div", attrlist...)
+// }
 
-// Div returns a new HTMLSnippet with DIV tag name and a map of attributes.
-func Span(attrlist ...string) *HTMLSnippet {
-	return NewSnippet("span", attrlist...)
-}
+// // Div returns a new HTMLSnippet with DIV tag name and a map of attributes.
+// func Span(attrlist ...string) *HTMLSnippet {
+// 	return Snippet("span", attrlist...)
+// }
 
-// Div returns a new HTMLSnippet with DIV tag name and a map of attributes.
-func P(attrlist ...string) *HTMLSnippet {
-	return NewSnippet("p", attrlist...)
-}
+// // Div returns a new HTMLSnippet with DIV tag name and a map of attributes.
+// func P(attrlist ...string) *HTMLSnippet {
+// 	return Snippet("p", attrlist...)
+// }
 
 // Clone clones the snippet, without the rendering metadata
 func (src *HTMLSnippet) Clone() *HTMLSnippet {

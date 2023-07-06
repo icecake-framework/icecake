@@ -21,7 +21,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// unregistered snippet with a simple tagname and an empty body
 	ickcore.ResetRegistry()
-	s0 := NewSnippet("span")
+	s0 := Snippet("span")
 	err = Render(out, nil, s0)
 	require.NoError(t, err)
 	assert.Equal(t, `<span></span>`, out.String())
@@ -470,7 +470,7 @@ func TestSnippetId_2(t *testing.T) {
 
 	out := new(bytes.Buffer)
 
-	s := NewSnippet("div", "noid").AddContent(ToHTML("<i>test</i>"))
+	s := Snippet("div", "noid").AddContent(ToHTML("<i>test</i>"))
 	err := Render(out, nil, s)
 	require.NoError(t, err)
 	require.Equal(t, `<div noid><i>test</i></div>`, out.String())

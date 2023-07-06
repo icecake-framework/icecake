@@ -24,7 +24,7 @@ func (sec *SectionDocMessage) RenderContent(out io.Writer) error {
 		SetColor(ick.COLOR_PRIMARY).
 		SetOutlined(true).
 		SetDisabled(true)
-	u2 := html.Div(`class="box mr-5"`).AddContent(ick.Spinner())
+	u2 := html.Snippet("div", `class="box mr-5"`).AddContent(ick.Spinner())
 	u2.Tag().SetId("boxusage")
 	html.Render(out, nil, u2, u1)
 

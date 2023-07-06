@@ -103,7 +103,7 @@ func (navi *ICKNavbarItem) BuildTag() html.Tag {
 func (navi *ICKNavbarItem) RenderContent(out io.Writer) error {
 	if navi.Type != NAVBARIT_DIVIDER {
 		if navi.ImageSrc != nil {
-			img := html.NewSnippet("img", `width="auto" height="28"`)
+			img := html.Snippet("img", `width="auto" height="28"`)
 			img.Tag().SetURL("src", navi.ImageSrc)
 			navi.RenderChild(out, img)
 		}
