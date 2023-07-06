@@ -6,7 +6,6 @@ import (
 	"github.com/icecake-framework/icecake/pkg/browser"
 	"github.com/icecake-framework/icecake/pkg/bulma/bulmaui"
 	"github.com/icecake-framework/icecake/pkg/dom"
-	"github.com/icecake-framework/icecake/pkg/event"
 )
 
 // This main package contains the web assembly source code for makedocs
@@ -21,14 +20,12 @@ func main() {
 		ests.InsertRawHTML(dom.INSERT_BODY, `<span class="ick-initializing">initializing</span>`)
 	}
 
-	dom.WrapId(&bulmaui.ICKNavbar{}, "topbar").AddListeners()
+	dom.MountId(&bulmaui.ICKNavbar{}, "topbar")
 
 	// static button
 	uA2 := &bulmaui.ICKButton{}
-	dom.WrapId(&bulmaui.ICKNavbar{}, "uA2")
-	uA2.UI.DOM.AddMouseEvent(event.MOUSE_ONCLICK, func(*event.MouseEvent, *dom.Element) {
-		browser.Win().Alert("clicked")
-	})
+	uA2.OnClick = func() { browser.Win().Alert("clicked") }
+	dom.MountId(&bulmaui.ICKNavbar{}, "uA2")
 
 	// let's go
 	fmt.Println("Icecake initialized. Listening browser events")

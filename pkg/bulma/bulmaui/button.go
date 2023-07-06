@@ -3,18 +3,29 @@ package bulmaui
 import (
 	"github.com/icecake-framework/icecake/pkg/bulma"
 	"github.com/icecake-framework/icecake/pkg/dom"
+	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/html"
 )
 
 type ICKButton struct {
 	bulma.ICKButton
 	dom.UI
+
+	OnClick func() // optional OnClick function called by the default button listeners
 }
 
 func Button(title html.HTMLString, id string, rawURL string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)
 	btn.ICKButton = *bulma.Button(title, id, rawURL, attrs...)
 	return btn
+}
+
+func (btn *ICKButton) AddListeners() {
+	if btn.OnClick != nil {
+		btn.DOM.AddMouseEvent(event.MOUSE_ONCLICK, func(*event.MouseEvent, *dom.Element) {
+			btn.OnClick()
+		})
+	}
 }
 
 func (btn *ICKButton) SetOutlined(f bool) *ICKButton {
