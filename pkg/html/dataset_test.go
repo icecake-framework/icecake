@@ -13,13 +13,13 @@ type testsnippet0 struct{ HTMLSnippet }
 func (s *testsnippet0) BuildTag() Tag { return *s.Tag().SetTagName("span") }
 
 // testsnippetid
-type testsnippetid struct{ HTMLSnippet }
+// type testsnippetid struct{ HTMLSnippet }
 
-func (s *testsnippetid) BuildTag() Tag {
-	tag := NewTag("span", nil)
-	tag.SetId("IdTemplate1")
-	return *tag
-}
+// func (s *testsnippetid) BuildTag() Tag {
+// 	tag := NewTag("span", nil)
+// 	tag.SetId("IdTemplate1")
+// 	return *tag
+// }
 
 // testsnippet1
 type testsnippet1 struct {
