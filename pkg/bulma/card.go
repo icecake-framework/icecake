@@ -7,11 +7,11 @@ import (
 )
 
 func init() {
-	html.RegisterComposer("ick-card", &Card{})
+	html.RegisterComposer("ick-card", &ICKCard{})
 }
 
 // The card is an HTMLSnippet. Use AddContent to setup the content of the card
-type Card struct {
+type ICKCard struct {
 	html.HTMLSnippet
 
 	// Optional title to display in the head of the card
@@ -25,39 +25,43 @@ type Card struct {
 }
 
 // Ensure Card implements HTMLTagComposer interface
-var _ html.HTMLComposer = (*Card)(nil)
+var _ html.HTMLComposer = (*ICKCard)(nil)
 
-func NewCard() *Card {
-	c := new(Card)
+// Card main factory
+func Card(content html.HTMLContentComposer) *ICKCard {
+	c := new(ICKCard)
 	c.footerItem = make([]html.HTMLString, 0)
+	c.AddContent(content)
 	return c
 }
 
-func (card *Card) SetTitle(title html.HTMLString) *Card {
+func (card *ICKCard) SetTitle(title html.HTMLString) *ICKCard {
 	card.Title = title
 	return card
 }
 
-func (card *Card) SetImage(image Image) *Card {
+func (card *ICKCard) SetImage(image Image) *ICKCard {
 	card.Image = &image
 	return card
 }
 
-func (card *Card) AddFooterItem(item html.HTMLString) *Card {
+func (card *ICKCard) AddFooterItem(item html.HTMLString) *ICKCard {
 	card.footerItem = append(card.footerItem, item)
 	return card
 }
 
+/******************************************************************************/
+
 // BuildTag builds the tag used to render the html element.
 // Card Tag is a simple <div class="card"></div>
-func (card *Card) BuildTag() html.Tag {
+func (card *ICKCard) BuildTag() html.Tag {
 	card.Tag().SetTagName("div").AddClass("card")
 	return *card.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 // Card rendering renders the optional header withe the Title, the optional Image, the content, and a slice of footers
-func (card *Card) RenderContent(out io.Writer) error {
+func (card *ICKCard) RenderContent(out io.Writer) error {
 
 	if !card.Title.IsEmpty() {
 		html.WriteString(out, `<header class="card-header">`, `<p class="card-header-title">`)
