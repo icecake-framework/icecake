@@ -93,13 +93,15 @@ func (s HTMLSnippet) Id() string {
 }
 
 // SetIf sets the snippet id. This is a shortcut to s.Tag().AttributeMap.SetId(id)
-func (s *HTMLSnippet) SetId(id string) *HTMLSnippet {
-	s.Tag().SetId(id)
-	return s
-}
+// func (s *HTMLSnippet) SetId(id string) *HTMLSnippet {
+// 	s.Tag().SetId(id)
+// 	return s
+// }
 
 // AddContent adds one or many HTMLComposer to the rendering stack of this composer.
 // Returns the snippet to allow chaining calls.
+//
+// Warning: Struct embedding HTMLSnippet should be car of AddContent returns an HTMLSnippet and not the parent stuct type.
 func (snippet *HTMLSnippet) AddContent(content ...HTMLContentComposer) *HTMLSnippet {
 	if snippet.contantstack == nil {
 		snippet.contantstack = make([]HTMLContentComposer, 0)
@@ -112,6 +114,11 @@ func (snippet *HTMLSnippet) AddContent(content ...HTMLContentComposer) *HTMLSnip
 		}
 	}
 	return snippet
+}
+
+// Clear clears the rendering stack
+func (snippet *HTMLSnippet) ClearContent() {
+	snippet.contantstack = make([]HTMLContentComposer, 0)
 }
 
 // InsertSnippet builds and add a single snippet at the end of the content stack.
