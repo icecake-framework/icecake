@@ -10296,4 +10296,10 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
 
 a.navbar-item.is-active {
   border-bottom: 2px solid hsl(229, 53%, 53%);
+}
+
+.cropimage img {
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
 }/*# sourceMappingURL=docs.css.map */

@@ -19,3 +19,8 @@ $primary: #48acf0;
 a.navbar-item.is-active {
     border-bottom: 2px solid $link;
 }
+
+.cropimage img {
+    height: 100%;
+    object-fit: cover;
+}

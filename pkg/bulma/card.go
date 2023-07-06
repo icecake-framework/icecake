@@ -18,7 +18,7 @@ type ICKCard struct {
 	Title html.HTMLString
 
 	// Optional image to display on top of the card
-	Image *Image
+	Image *ICKImage
 
 	// optional Footer items
 	footerItem []html.HTMLString
@@ -40,7 +40,7 @@ func (card *ICKCard) SetTitle(title html.HTMLString) *ICKCard {
 	return card
 }
 
-func (card *ICKCard) SetImage(image Image) *ICKCard {
+func (card *ICKCard) SetImage(image ICKImage) *ICKCard {
 	card.Image = &image
 	return card
 }
