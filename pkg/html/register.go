@@ -70,7 +70,7 @@ func RegisterComposer(icktagname string, composer any) (entry *registry.Registry
 
 	// already registeredwith anoher
 	if registry.IsRegistered(icktagname) && reflect.TypeOf(registry.GetRegistryEntry(icktagname).Component()).String() != typ.String() {
-		err = fmt.Errorf("RegisterComposer: %s(%v) warning: already registered with another composer\n", icktagname, typ.String())
+		err = fmt.Errorf("RegisterComposer: %s(%v) warning: already registered with another composer", icktagname, typ.String())
 		log.Println(err.Error())
 		return nil, err
 	}
