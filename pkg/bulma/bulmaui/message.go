@@ -14,6 +14,9 @@ type ICKMessage struct {
 	BtnDelete ICKDelete // The delete button snippet created only if candelete is true
 }
 
+// Ensure Card implements HTMLTagComposer interface
+var _ dom.UIComposer = (*ICKMessage)(nil)
+
 // Message factory
 func Message(cnt html.HTMLContentComposer) *ICKMessage {
 	msg := new(ICKMessage)
