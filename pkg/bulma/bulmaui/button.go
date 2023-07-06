@@ -20,14 +20,6 @@ func Button(title html.HTMLString, id string, rawURL string, attrs ...string) *I
 	return btn
 }
 
-func (btn *ICKButton) AddListeners() {
-	if btn.OnClick != nil {
-		btn.DOM.AddMouseEvent(event.MOUSE_ONCLICK, func(*event.MouseEvent, *dom.Element) {
-			btn.OnClick()
-		})
-	}
-}
-
 func (btn *ICKButton) SetOutlined(f bool) *ICKButton {
 	btn.ICKButton.SetOutlined(f)
 	btn.DOM.SetClassIf(f, "is-outlined")
@@ -61,4 +53,14 @@ func (btn *ICKButton) SetLight(f bool) *ICKButton {
 	btn.ICKButton.SetLight(f)
 	btn.DOM.SetClassIf(f, "is-light")
 	return btn
+}
+
+/******************************************************************************/
+
+func (btn *ICKButton) AddListeners() {
+	if btn.OnClick != nil {
+		btn.DOM.AddMouseEvent(event.MOUSE_ONCLICK, func(*event.MouseEvent, *dom.Element) {
+			btn.OnClick()
+		})
+	}
 }
