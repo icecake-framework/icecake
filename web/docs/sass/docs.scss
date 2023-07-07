@@ -4,12 +4,21 @@ $primary: #48acf0;
 
 @import "../../../../../bulma/bulma.sass";
 
+
 .spaceout>*:not(:last-child) {
     margin-right: 1.25rem;
+
+    @include touch {
+        margin-right: 0.5rem;
+    }
 }
 
 .spaceout>* {
     margin-bottom: 1.25rem;
+
+    @include touch {
+        margin-right: 0.5rem;
+    }
 }
 
 .spaceout {

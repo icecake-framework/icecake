@@ -10285,9 +10285,19 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
 .spaceout > *:not(:last-child) {
   margin-right: 1.25rem;
 }
+@media screen and (max-width: 1023px) {
+  .spaceout > *:not(:last-child) {
+    margin-right: 0.5rem;
+  }
+}
 
 .spaceout > * {
   margin-bottom: 1.25rem;
+}
+@media screen and (max-width: 1023px) {
+  .spaceout > * {
+    margin-right: 0.5rem;
+  }
 }
 
 .spaceout {

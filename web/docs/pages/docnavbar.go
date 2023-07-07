@@ -13,8 +13,8 @@ const (
 
 type SectionDocNavbar struct{ SectionDocIcecake }
 
-func (cmp *SectionDocNavbar) RenderContent(out io.Writer) error {
-	html.Render(out, nil, ick.Title(3, "Navbar"))
+func (sec *SectionDocNavbar) RenderContent(out io.Writer) error {
+	sec.RenderHead(out, "Navbar", "Navbar.go", "ICKNavbar")
 	html.WriteString(out, `<div class="block">`+
 		`<p>ICKNavbar is an icecake snippet providing the HTML rendering for a `, linkBulmaNavbar, `, with extra features and usefull go wasm APIs.</p>`+
 		`<p>The navbar is an horizontal bar containing items and sub items.`+
@@ -29,15 +29,10 @@ func (cmp *SectionDocNavbar) RenderContent(out io.Writer) error {
 	us1.AddItem("", ick.NAVBARIT_START, html.ToHTML("Home"))
 	us1.AddItem("", ick.NAVBARIT_START, html.ToHTML("Second Item"))
 	us1.AddItem("", ick.NAVBARIT_END, html.ToHTML("Last Item"))
-	html.Render(out, cmp, us1)
+	html.Render(out, sec, us1)
 	html.WriteString(out, `</div>`)
 
-	html.Render(out, nil, ick.Title(3, "ICKNavbar APIs"))
-	html.WriteString(out, `<div class="block">`+
-		`<p><code>IsTransparent</code> renders a transparent navbar</p>`+
-		`<p><code>HasShadow</code> renders a shadow below the navbar</p>`+
-		`</div>`)
-
+	//Styling
 	html.Render(out, nil, ick.Title(4, "Styling"))
 	html.WriteString(out, `<div class="block">`+
 		`</div>`)
