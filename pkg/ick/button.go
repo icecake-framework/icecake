@@ -18,7 +18,7 @@ func init() {
 //
 // The IsDisabled property is directly handled by the embedded UISnippet.
 type ICKButton struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	OpeningIcon ICKIcon // optional opening icon
 	Title       string  // simple title string
@@ -51,10 +51,9 @@ func Button(htmltitle string, attrs ...string) *ICKButton {
 
 // Clone clones the snippet, without the rendering metadata
 func (btn *ICKButton) Clone() *ICKButton {
-	// TODO: reset id and metadata
 	to := new(ICKButton)
 	*to = *btn
-	to.HTMLSnippet = *btn.HTMLSnippet.Clone()
+	to.BareSnippet = *btn.BareSnippet.Clone()
 	return to
 }
 

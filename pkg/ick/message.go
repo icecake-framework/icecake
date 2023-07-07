@@ -12,16 +12,16 @@ func init() {
 }
 
 // ICKMessage is an icecake snippet providing the HTML rendering for a [bulma message].
-// The message is an HTMLSnippet. Use AddContent to setup the content of the body of the message.
-//
-//	Use `<ick-message/>` for inline rendering.
 //
 // [bulma message]: https://bulma.io/documentation/components/message/
 type ICKMessage struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	// optional header to display on top of the message
 	Header html.HTMLString
+
+	// the body of the message
+	Msg html.ContentStack
 
 	// set to true to display the delete button and allow user to delete the message
 	CanDelete bool
@@ -38,7 +38,7 @@ var _ html.ElementComposer = (*ICKMessage)(nil)
 
 func Message(cnt html.ContentComposer) *ICKMessage {
 	msg := new(ICKMessage)
-	msg.AddContent(cnt)
+	msg.Msg.Push(cnt)
 	return msg
 }
 
@@ -57,7 +57,7 @@ func (msg *ICKMessage) RenderContent(out io.Writer) error {
 
 	if !msg.Header.IsEmpty() {
 		html.WriteString(out, `<div class="message-header">`)
-		msg.RenderChild(out, html.Snippet("span").AddContent(&msg.Header))
+		msg.RenderChild(out, html.Snippet("span").SetBody(&msg.Header))
 		if msg.CanDelete {
 			id := msg.Id()
 			if id == "" {
@@ -70,9 +70,9 @@ func (msg *ICKMessage) RenderContent(out io.Writer) error {
 		html.WriteString(out, `</div>`)
 	}
 
-	if msg.HasContent() {
+	if msg.Msg.HasContent() {
 		html.WriteString(out, `<div class="message-body">`)
-		msg.HTMLSnippet.RenderContent(out)
+		msg.Msg.RenderStack(out, msg)
 		html.WriteString(out, `</div>`)
 	}
 

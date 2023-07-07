@@ -12,10 +12,13 @@ func init() {
 
 // The card is an HTMLSnippet. Use AddContent to setup the content of the card
 type ICKCard struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	// Optional title to display in the head of the card
 	Title html.HTMLString
+
+	// the body of the card
+	Body html.ContentStack
 
 	// Optional image to display on top of the card
 	Image *ICKImage
@@ -31,7 +34,7 @@ var _ html.ElementComposer = (*ICKCard)(nil)
 func Card(content html.ContentComposer) *ICKCard {
 	c := new(ICKCard)
 	c.footerItem = make([]html.HTMLString, 0)
-	c.AddContent(content)
+	c.Body.Push(content)
 	return c
 }
 
@@ -73,9 +76,9 @@ func (card *ICKCard) RenderContent(out io.Writer) error {
 		html.WriteString(out, `</div>`)
 	}
 
-	if card.HasContent() {
+	if card.Body.HasContent() {
 		html.WriteString(out, `<div class="card-content">`)
-		card.HTMLSnippet.RenderContent(out)
+		card.Body.RenderStack(out, card)
 		html.WriteString(out, `</div>`)
 	}
 

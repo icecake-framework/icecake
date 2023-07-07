@@ -14,7 +14,8 @@ import (
 )
 
 type HeadItem struct {
-	html.HTMLSnippet
+	// TODO: HeadItem base on baresnippet
+	html.ICKSnippet
 }
 
 func NewHeadItem(tagname string) *HeadItem {
@@ -32,7 +33,7 @@ type Page struct {
 	Description string     // the html "head/meta description" value.
 	HeadItems   []HeadItem // the list of tags in the section <head>
 
-	body html.HTMLSnippet // The tagname is forced to "body" during rendering.
+	body html.ICKSnippet // The tagname is forced to "body" during rendering.
 
 	url  *url.URL // relative url of the html page.
 	wasm *url.URL // relative url of the html page.
@@ -99,7 +100,7 @@ func (pg *Page) ParseURL(rawHTMLUrl string) (err error) {
 
 // Body returns the HTMLSnippet used to render the body tag.
 // Attributes can be setup. The tag will be forced to body during rendering.
-func (pg *Page) Body() *html.HTMLSnippet {
+func (pg *Page) Body() *html.ICKSnippet {
 	return &pg.body
 }
 

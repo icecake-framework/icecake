@@ -20,7 +20,7 @@ const (
 // [bulma container]: https://bulma.io/documentation/layout/container/
 // TODO: ick - rework Container
 type Container struct {
-	html.HTMLSnippet
+	html.ICKSnippet
 	FullWidth CONTAINER_FULLWIDTH
 }
 

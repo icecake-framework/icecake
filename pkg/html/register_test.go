@@ -9,12 +9,12 @@ import (
 
 func TestLookupRegistryEntry(t *testing.T) {
 	ickcore.ResetRegistry()
-	ickcore.AddRegistryEntry("ick-snippet", &HTMLSnippet{})
+	ickcore.AddRegistryEntry("ick-snippet", &BareSnippet{})
 
-	r := ickcore.LookupRegistryEntry(&HTMLSnippet{})
+	r := ickcore.LookupRegistryEntry(&BareSnippet{})
 	assert.NotNil(t, r)
 
-	r = ickcore.LookupRegistryEntry(HTMLSnippet{})
+	r = ickcore.LookupRegistryEntry(BareSnippet{})
 	assert.Nil(t, r)
 }
 
@@ -23,7 +23,7 @@ func TestRegisterComposer(t *testing.T) {
 	ickcore.ResetRegistry()
 
 	// by reference
-	c1 := new(HTMLSnippet)
+	c1 := new(BareSnippet)
 	_, err := RegisterComposer("mysnippet", *c1)
 	assert.ErrorContains(t, err, "not by value")
 

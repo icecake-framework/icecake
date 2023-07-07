@@ -9,7 +9,7 @@ import (
 // ICKLink represents an HTML anchor link.
 // It is part of the core icecake snippets.
 type ICKLink struct {
-	html.HTMLSnippet
+	html.ICKSnippet
 
 	// HRef defines the associated url link.
 	// if nil the <a> tag is rendered without href attribute.

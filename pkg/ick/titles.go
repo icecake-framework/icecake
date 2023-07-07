@@ -1,6 +1,7 @@
 package ick
 
 import (
+	"io"
 	"strconv"
 
 	"github.com/icecake-framework/icecake/pkg/html"
@@ -11,10 +12,12 @@ import (
 //
 // [bulma title]: https://bulma.io/documentation/elements/title/
 type ICKTitle struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
-	// Subtitle allows to render the title with the class subtitle rather than title.
-	Subtitle bool
+	Title string
+
+	// IsSubtitle allows to render the title with the class subtitle rather than title.
+	IsSubtitle bool
 
 	// Heading allows to render the title within a <h> tag, otherwise it's in a <p> tag.
 	Heading bool
@@ -26,23 +29,19 @@ type ICKTitle struct {
 // Ensuring ICKTitle implements the right interface
 var _ html.ElementComposer = (*ICKTitle)(nil)
 
-func Title(size int, htmltitle string, attrs ...string) *ICKTitle {
+func Title(size int, title string, attrs ...string) *ICKTitle {
 	msg := new(ICKTitle)
 	msg.Tag().ParseAttributes(attrs...)
 	msg.Heading = true
 	msg.Size = size
-	msg.Subtitle = false
-	msg.AddContent(html.ToHTML(htmltitle))
+	msg.IsSubtitle = false
+	msg.Title = title
 	return msg
 }
 
-func SubTitle(size int, htmltitle string, attrs ...string) *ICKTitle {
-	msg := new(ICKTitle)
-	msg.Tag().ParseAttributes(attrs...)
-	msg.Heading = true
-	msg.Size = size
-	msg.Subtitle = true
-	msg.AddContent(html.ToHTML(htmltitle))
+func SubTitle(size int, title string, attrs ...string) *ICKTitle {
+	msg := Title(size, title, attrs...)
+	msg.IsSubtitle = true
 	return msg
 }
 
@@ -61,7 +60,7 @@ func (msg *ICKTitle) BuildTag() html.Tag {
 		msg.Tag().SetTagName("p")
 	}
 
-	if !msg.Subtitle {
+	if !msg.IsSubtitle {
 		msg.Tag().AddClass("title")
 	} else {
 		msg.Tag().AddClass("subtitle")
@@ -69,4 +68,10 @@ func (msg *ICKTitle) BuildTag() html.Tag {
 	msg.Tag().AddClass("is-" + ssiz)
 
 	return *msg.Tag()
+}
+
+// BuildTag returns tag <div class="message {classes}" {attributes}>
+func (msg *ICKTitle) RenderContent(out io.Writer) error {
+	_, err := html.WriteString(out, msg.Title)
+	return err
 }

@@ -26,7 +26,7 @@ const (
 //
 // [bulma navbar item]: https://bulma.io/documentation/components/navbar/#navbar-item
 type IckMenuItem struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	// Optional Key allows to access a specific navbaritem, whatever it's level in the hierarchy, directly from the navbar.
 	Key string
@@ -91,7 +91,7 @@ func (mnui *IckMenuItem) RenderContent(out io.Writer) error {
 		mnui.RenderChild(out, html.ToHTML(mnui.Text))
 	default:
 		item := A().SetHRef(mnui.HRef)
-		item.AddContent(html.ToHTML(mnui.Text))
+		item.Push(html.ToHTML(mnui.Text))
 		item.Tag().SetClassIf(mnui.IsActive, "is-active")
 		mnui.RenderChild(out, item)
 	}
@@ -102,7 +102,7 @@ func (mnui *IckMenuItem) RenderContent(out io.Writer) error {
 //
 // [bulma menu]: https://bulma.io/documentation/components/menu
 type IckMenu struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	menuTag html.Tag // menu tag: nav, aside, menu. <menu> is used if nothing is specified. Cna be used to setup some classes like "is-small"
 
@@ -115,7 +115,7 @@ var _ html.ElementComposer = (*IckMenu)(nil)
 // Clone clones this Menu and all its items and subitem, keeping their attributes their item index and their key.
 func (src IckMenu) Clone() *IckMenu {
 	clone := new(IckMenu)
-	clone.HTMLSnippet = *src.HTMLSnippet.Clone()
+	clone.BareSnippet = *src.BareSnippet.Clone()
 	clone.menuTag = *src.menuTag.Clone()
 	clone.items = make([]*IckMenuItem, len(src.items))
 	for i, itm := range src.items {

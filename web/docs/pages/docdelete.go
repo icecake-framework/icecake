@@ -21,7 +21,7 @@ func (sec *SectionDocDelete) RenderContent(out io.Writer) error {
 		`</div>`)
 
 	// usages
-	ux := html.Snippet("div", `id="boxusage" class="box mr-5"`).AddContent(ick.Spinner())
+	ux := html.Snippet("div", `id="boxusage" class="box mr-5"`).SetBody(ick.Spinner())
 	btnreset := ick.Button("reset", `class="mb-3"`).
 		SetId("btnreset").
 		SetColor(ick.COLOR_PRIMARY).

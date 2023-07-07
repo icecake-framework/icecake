@@ -13,7 +13,7 @@ const (
 )
 
 type SectionDocIcecake struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	Title       string
 	Description string
@@ -98,7 +98,7 @@ func (doc *SectionDocIcecake) RenderHead(out io.Writer, title string, gitpkg str
 	html.WriteString(out, `<div class="is-flex is-justify-content-space-between">`)
 	html.Render(out, nil, ick.Title(3, title, `style="white-space: nowrap;"`))
 
-	html.Render(out, nil, html.Snippet("div", "class='is-flex is-justify-content-flex-end spaceout'").AddContent(
+	html.Render(out, nil, html.Snippet("div", "class='is-flex is-justify-content-flex-end spaceout'").SetBody(
 		b.Clone().SetTitle(gostruct+" code").ParseHRef(hrefICK_Git).SetIcon(*ick.Icon("bi bi-github"), false),
 		b.Clone().SetTitle("UI code").ParseHRef(hrefICK_GitUI).SetIcon(*ick.Icon("bi bi-github"), false),
 		b.Clone().SetTitle(gostruct+" Go pkg").ParseHRef(hrefICK_Go).SetIcon(*ick.Icon("bi bi-book"), false),

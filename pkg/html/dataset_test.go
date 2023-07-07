@@ -10,7 +10,7 @@ import (
 )
 
 // testsnippet0
-type testsnippet0 struct{ HTMLSnippet }
+type testsnippet0 struct{ BareSnippet }
 
 func (s *testsnippet0) BuildTag() Tag { return *s.Tag().SetTagName("span") }
 
@@ -48,7 +48,7 @@ func (h *testsnippet1) RenderContent(out io.Writer) error {
 // }
 
 // testsnippet2
-type testsnippet2 struct{ HTMLSnippet }
+type testsnippet2 struct{ ICKSnippet }
 
 func (s *testsnippet2) BuildTag() Tag {
 	s.Tag().SetTagName("div")
@@ -73,7 +73,7 @@ type Unmanaged struct{}
 
 // testsnippet4
 type testsnippet4 struct {
-	HTMLSnippet
+	BareSnippet
 	IsOk bool
 	Text string
 	HTML HTMLString
@@ -101,7 +101,7 @@ func (s *testsnippet4) RenderContent(out io.Writer) error {
 }
 
 // testsnippetinfinite
-type testsnippetinfinite struct{ HTMLSnippet }
+type testsnippetinfinite struct{ BareSnippet }
 
 func (s *testsnippetinfinite) RenderContent(out io.Writer) error {
 	return s.RenderChild(out, ToHTML("<ick-testinfinite/>"))

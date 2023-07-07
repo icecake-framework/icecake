@@ -6,7 +6,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/html"
 )
 
-type ICKSpinner struct{ html.HTMLSnippet }
+type ICKSpinner struct{ html.BareSnippet }
 
 // Ensuring ICKSpinner implements the right interface
 var _ html.ElementComposer = (*ICKSpinner)(nil)

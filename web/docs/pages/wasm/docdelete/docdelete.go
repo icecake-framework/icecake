@@ -46,7 +46,7 @@ func ResetBoxUsage() {
 	btndel := ickui.Delete("deleteme")
 	btndel.Tag().SetId("btndelu1")
 	btndel.OnDelete = OnDeleteU1
-	u1 := html.Snippet("div", `id="deleteme"`).AddContent(html.ToHTML("Click on the delete button to delete this text &rarr;  "), btndel)
+	u1 := html.Snippet("div", `id="deleteme"`).SetBody(html.ToHTML("Click on the delete button to delete this text &rarr;  "), btndel)
 	dom.Id("boxusage").InsertSnippet(dom.INSERT_BODY, u1)
 	_btnreset.SetDisabled(true)
 }

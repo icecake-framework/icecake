@@ -7,7 +7,7 @@ import (
 )
 
 type ICKIcon struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	// Key is the icon key that will be added to the <class attribute of the <i> element.
 	// Format of this key depends on the icon provider:
@@ -66,7 +66,7 @@ func (icon *ICKIcon) RenderContent(out io.Writer) error {
 	if icon.Text == "" {
 		html.WriteString(out, `<i class="`, icon.Key, `"></i>`)
 	} else {
-		s := html.Snippet("span", `class="icon"`).AddContent(html.ToHTML(`<i class="` + icon.Key + `"></i>`))
+		s := html.Snippet("span", `class="icon"`).SetBody(html.ToHTML(`<i class="` + icon.Key + `"></i>`))
 		html.Render(out, nil, s)
 		html.WriteString(out, `<span>`+icon.Text+`</span>`)
 	}

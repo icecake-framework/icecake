@@ -21,7 +21,7 @@ const (
 //
 // [bulma navbar item]: https://bulma.io/documentation/components/navbar/#navbar-item
 type ICKNavbarItem struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	// Optional Key allows to access a specific navbaritem, whatever it's level in the hierarchy, directly from the navbar.
 	Key string
@@ -161,7 +161,7 @@ func (navi *ICKNavbarItem) ParseImageSrc(rawUrl string) *ICKNavbarItem {
 //
 // [bulma navbar]: https://bulma.io/documentation/components/navbar
 type ICKNavbar struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	items []*ICKNavbarItem // list of navbar items
 
@@ -181,7 +181,7 @@ func NavBar() *ICKNavbar {
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
 func (src ICKNavbar) Clone() *ICKNavbar {
 	clone := new(ICKNavbar)
-	clone.HTMLSnippet = *src.HTMLSnippet.Clone()
+	clone.BareSnippet = *src.BareSnippet.Clone()
 	clone.IsTransparent = src.IsTransparent
 	clone.HasShadow = src.HasShadow
 	clone.items = make([]*ICKNavbarItem, len(src.items))

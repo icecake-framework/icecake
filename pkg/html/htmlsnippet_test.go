@@ -14,7 +14,7 @@ func TestComposeBasics(t *testing.T) {
 	out := new(bytes.Buffer)
 
 	// empty snippet
-	s00 := new(HTMLSnippet)
+	s00 := new(ICKSnippet)
 	err := Render(out, nil, s00)
 	require.NoError(t, err)
 	require.Empty(t, out)
@@ -34,7 +34,7 @@ func TestComposeBasics(t *testing.T) {
 
 	// The same but when registered, with forced id
 	out.Reset()
-	ickcore.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
+	ickcore.AddRegistryEntry("ick-testsnippet0", &BareSnippet{})
 	Render(out, nil, s0)
 	assert.Equal(t, `<span id="helloworld" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
@@ -81,7 +81,7 @@ func TestUnfoldBody1(t *testing.T) {
 	// so ick-testsnippet0 is an empty snippet : no tag and no content
 	// the rendering should render nothing
 	out.Reset()
-	ickcore.AddRegistryEntry("ick-testsnippet0", &HTMLSnippet{})
+	ickcore.AddRegistryEntry("ick-testsnippet0", &BareSnippet{})
 	err := renderHTML(out, nil, *ToHTML("<ick-testsnippet0/>"))
 	require.NoError(t, err)
 	require.Equal(t, ``, out.String())
@@ -470,7 +470,7 @@ func TestSnippetId_2(t *testing.T) {
 
 	out := new(bytes.Buffer)
 
-	s := Snippet("div", "noid").AddContent(ToHTML("<i>test</i>"))
+	s := Snippet("div", "noid").SetBody(ToHTML("<i>test</i>"))
 	err := Render(out, nil, s)
 	require.NoError(t, err)
 	require.Equal(t, `<div noid><i>test</i></div>`, out.String())

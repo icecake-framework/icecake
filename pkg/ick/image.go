@@ -54,7 +54,7 @@ const (
 //
 // [bulma image]: https://bulma.io/documentation/elements/image/
 type ICKImage struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	Src       *url.URL // the url for the source of the image
 	Alt       string   // the alternative text

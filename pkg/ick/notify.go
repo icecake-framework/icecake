@@ -16,7 +16,7 @@ func init() {
 }
 
 type Notify struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	// the message to display within the notification
 	Message html.HTMLString

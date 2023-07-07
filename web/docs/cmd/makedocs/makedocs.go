@@ -46,7 +46,7 @@ func main() {
 		CTA:           ick.Button("Read doc").SetId("cta").ParseHRef("/docoverview.html").SetColor(ick.COLOR_PRIMARY),
 	}
 
-	pgindex.Body().AddContent(
+	pgindex.Body().Push(
 		docs.DocNavbar().SetActiveItem("home"),
 		hero,
 		docs.DocFooter())
@@ -118,13 +118,13 @@ func addPageDoc(web *ick.WebSite, menu *ick.IckMenu, pgkey string) {
 	pg.AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`)
 	pg.AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
 
-	inside := html.Snippet("div", `class="columns is-mobile mb-0 pb-0"`).AddContent(
-		html.Snippet("div", `class="column is-narrow mb-0 pb-0"`).AddContent(
+	inside := html.Snippet("div", `class="columns is-mobile mb-0 pb-0"`).SetBody(
+		html.Snippet("div", `class="column is-narrow mb-0 pb-0"`).SetBody(
 			menu.SetActiveItem(pgkey)),
-		html.Snippet("div", `class="column mb-0 pb-0"`).AddContent(
+		html.Snippet("div", `class="column mb-0 pb-0"`).SetBody(
 			webdocs.SectionDoc(pgkey)))
 
-	pg.Body().AddContent(
+	pg.Body().Push(
 		docs.DocNavbar().SetActiveItem("docs"),
 		inside,
 		docs.DocFooter())

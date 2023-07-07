@@ -20,7 +20,7 @@ func (sec *SectionDocMessage) RenderContent(out io.Writer) error {
 		`</div>`)
 
 	// usages
-	ux := html.Snippet("div", `id="boxusage" class="box"`).AddContent(ick.Spinner())
+	ux := html.Snippet("div", `id="boxusage" class="box"`).SetBody(ick.Spinner())
 	btnreset := ick.Button("reset", `class="mb-5"`).
 		SetId("btnreset").
 		SetColor(ick.COLOR_PRIMARY).

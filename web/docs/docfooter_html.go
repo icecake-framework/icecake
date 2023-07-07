@@ -26,7 +26,7 @@ const docsFooterStyle string = `.myfooter-title {
 }
 `
 
-type docFooter struct{ html.HTMLSnippet }
+type docFooter struct{ html.BareSnippet }
 
 // Ensuring docFooter implements the right interface
 var _ html.ElementComposer = (*docFooter)(nil)

@@ -12,7 +12,7 @@ func init() {
 }
 
 type ICKDelete struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	// The element id to remove from the DOM when the delete button is clicked
 	TargetId string

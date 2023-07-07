@@ -22,7 +22,7 @@ const (
 )
 
 type InputField struct {
-	html.HTMLSnippet
+	html.BareSnippet
 
 	Label       html.HTMLString // Optional
 	PlaceHolder string          // Optional
@@ -76,12 +76,12 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	case "readonly":
 		subinput.Tag().SetBool("readonly", true)
 	}
-	subcontrol.AddContent(subinput)
+	subcontrol.Push(subinput)
 	cmp.RenderChild(out, subcontrol)
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
-		subhelp := html.Snippet("p", `class="help"`).AddContent(&cmp.Help)
+		subhelp := html.Snippet("p", `class="help"`).SetBody(&cmp.Help)
 		subhelp.Tag().
 			SetClassIf(cmp.State == INPUT_SUCCESS, "is-success").
 			SetClassIf(cmp.State == INPUT_WARNING, "is-warning").
