@@ -35,18 +35,19 @@ tasks:
   doc_wasm:
     dir: '{{.USER_WORKING_DIR}}'
     cmds: 
-      - GOARCH=wasm GOOS=js go build -o ./docs/index.wasm ./web/docs/pages/wasm/index/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docoverview.wasm ./web/docs/pages/wasm/docoverview/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docbutton.wasm ./web/docs/pages/wasm/docbutton/
-      - GOARCH=wasm GOOS=js go build -o ./docs/doccard.wasm ./web/docs/pages/wasm/doccard/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docmenu.wasm ./web/docs/pages/wasm/docmenu/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docmessage.wasm ./web/docs/pages/wasm/docmessage/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docnavbar.wasm ./web/docs/pages/wasm/docnavbar/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docnotify.wasm ./web/docs/pages/wasm/docnotify/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docimage.wasm ./web/docs/pages/wasm/docimage/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docinput.wasm ./web/docs/pages/wasm/docinput/
-      - GOARCH=wasm GOOS=js go build -o ./docs/dochero.wasm ./web/docs/pages/wasm/dochero/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docdelete.wasm ./web/docs/pages/wasm/docdelete/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/index.wasm ./web/docs/pages/wasm/index/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/docoverview.wasm ./web/docs/pages/wasm/docoverview/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/docbutton.wasm ./web/docs/pages/wasm/docbutton/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/doccard.wasm ./web/docs/pages/wasm/doccard/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/docmenu.wasm ./web/docs/pages/wasm/docmenu/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/docmessage.wasm ./web/docs/pages/wasm/docmessage/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/docnavbar.wasm ./web/docs/pages/wasm/docnavbar/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/docnotify.wasm ./web/docs/pages/wasm/docnotify/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/docimage.wasm ./web/docs/pages/wasm/docimage/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/docinput.wasm ./web/docs/pages/wasm/docinput/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/dochero.wasm ./web/docs/pages/wasm/dochero/
+      # - GOARCH=wasm GOOS=js go build -o ./docs/docdelete.wasm ./web/docs/pages/wasm/docdelete/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docicon.wasm ./web/docs/pages/wasm/docicon/
 
   # task -t ./build/Taskfile.yaml dev_framework
   dev_framework:

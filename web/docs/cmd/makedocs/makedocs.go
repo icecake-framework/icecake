@@ -71,6 +71,7 @@ func main() {
 	menu.AddItem("docmessage", ick.MENUIT_LINK, "Message").ParseHRef("/docmessage.html")
 	menu.AddItem("docnavbar", ick.MENUIT_LINK, "Navbar").ParseHRef("/docnavbar.html")
 	menu.AddItem("docnotify", ick.MENUIT_LINK, "Notify").ParseHRef("/docnotify.html")
+	menu.AddItem("docicon", ick.MENUIT_LINK, "Icon").ParseHRef("/docicon.html")
 	menu.AddItem("", ick.MENUIT_FOOTER, "Alpha 4")
 
 	// page docs
@@ -84,9 +85,10 @@ func main() {
 	addPageDoc(web, menu.Clone(), "docmessage")
 	addPageDoc(web, menu.Clone(), "docnavbar")
 	addPageDoc(web, menu.Clone(), "docnotify")
+	addPageDoc(web, menu.Clone(), "docicon")
 
 	// required files
-	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css")
+	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css")
 	html.RequireCSSFile("/assets/docs.css")
 
 	// copy assets

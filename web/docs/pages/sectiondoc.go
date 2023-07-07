@@ -60,6 +60,10 @@ func SectionDoc(section string) html.ContentComposer {
 		s := new(SectionDocNotify)
 		s.Title = "Notify Snippet - icecake framework documentation"
 		return s
+	case "docicon":
+		s := new(SectionDocIcon)
+		s.Title = "Icon Snippet - icecake framework documentation"
+		return s
 	}
 	s := new(SectionDocIcecake)
 	s.Title = "icecake framework documentation"
