@@ -17,12 +17,18 @@ type ICKDelete struct {
 	// The timer starts when the delete button is rendered (call to addlisteners).
 	clock.Clock
 
-	// OnDelete, if set, is called when the deletion occurs and after the targetId has been removed
+	// OnDelete, if it is set, it's called when the deletion occurs and after the targetId has been removed.
 	OnDelete func(*ICKDelete)
 }
 
 // Ensure Button implements UIComposer interface
 var _ dom.UIComposer = (*ICKDelete)(nil)
+
+func Delete(targetid string) *ICKDelete {
+	del := new(ICKDelete)
+	del.ICKDelete = *ick.Delete(targetid)
+	return del
+}
 
 // Wrap implements the JSValueWrapper to enable wrapping of a dom.Element usually
 // to wrap embedded component instantiated during unfolding an html string.

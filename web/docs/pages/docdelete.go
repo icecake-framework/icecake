@@ -21,16 +21,26 @@ func (cmp *SectionDocDelete) RenderContent(out io.Writer) error {
 		`</div>`)
 
 	// usages
-	html.WriteString(out, `<div id="boxusage" class="box mr-5">`)
-	html.Render(out, nil, ick.Spinner())
-	html.WriteString(out, `</div>`)
-	btnreset := ick.Button("reset", "btnreset", `class="mb-3"`).SetColor(ick.COLOR_PRIMARY).SetOutlined(true)
-	cmp.RenderChild(out, btnreset)
+	ux := html.Snippet("div", `id="boxusage" class="box mr-5"`).AddContent(ick.Spinner())
+	btnreset := ick.Button("reset", "btnreset", `class="mb-3"`).
+		SetColor(ick.COLOR_PRIMARY).
+		SetOutlined(true).
+		SetDisabled(true)
+	cmp.RenderChild(out, ux, btnreset)
 
 	// apis
 	html.Render(out, nil, ick.Title(3, "ICKDelete APIs"))
-	html.WriteString(out, `<div class="block">To come`)
-	html.WriteString(out, `</div>`)
+	html.WriteString(out, `<div class="block">`+
+		`<p><code>Delete(targetid string) *ICKDelete</code> is the only one Delete factory.</p>`+
+		`<p><code>TargetId string</code> The element id to remove from the DOM when the delete button is clicked.</p>`+
+		`</div>`)
+
+	html.Render(out, nil, ick.Title(3, "UI APIs"))
+	html.WriteString(out, `<div class="block">`+
+		`<p><code>Delete(targetid string) *ICKDelete</code> is the only one Delete factory.</p>`+
+		`<p><code>clock.Clock</code> The TargetID will be automatically removed after the clock Timeout duration if not zero. The timer starts when the delete button is rendered (call to addlisteners).</p>`+
+		`<p><code>OnDelete func(*ICKDelete)</code> if it is set, it's called when the deletion occurs and after the targetId has been removed.</p>`+
+		`</div>`)
 
 	// rendering
 	html.Render(out, nil, ick.Title(3, "Rendering"))
