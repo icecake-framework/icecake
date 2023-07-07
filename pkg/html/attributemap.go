@@ -347,12 +347,15 @@ func (amap AttributeMap) SetClassIf(condition bool, lists ...string) AttributeMa
 	return amap
 }
 
-// PickClass set the picked class and only that one, removing all others in the classlist.
+// PickClass set the picked classes and only that one, removing all others in the classlist.
 // If picked is empty or not in the classlist then it's not added.
 func (amap AttributeMap) PickClass(classlist string, picked string) AttributeMap {
 	amap.RemoveClass(classlist)
-	if strings.Contains(classlist, picked) {
-		amap.AddClass(picked)
+	fs := strings.Fields(picked)
+	for _, f := range fs {
+		if strings.Contains(classlist, f) {
+			amap.AddClass(picked)
+		}
 	}
 	return amap
 }
