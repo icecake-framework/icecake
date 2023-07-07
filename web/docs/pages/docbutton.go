@@ -44,7 +44,9 @@ func (cmp *SectionDocButton) RenderContent(out io.Writer) error {
 	uB3 := ick.Button("Link color").SetColor(ick.COLOR_LINK)
 	uB4 := ick.Button("Outlined").SetColor(ick.COLOR_PRIMARY).SetOutlined(true)
 	uB5 := ick.Button("Rounded").SetColor(ick.COLOR_PRIMARY).SetRounded(true)
-	html.Render(out, cmp, uB0, uB1, uB2, uB3, uB4, uB5)
+	uB6 := ick.Button("Small").SetColor(ick.COLOR_PRIMARY).SetSize(ick.SIZE_SMALL)
+	uB7 := ick.Button("Large").SetColor(ick.COLOR_PRIMARY).SetSize(ick.SIZE_LARGE)
+	html.Render(out, cmp, uB0, uB1, uB2, uB3, uB4, uB5, uB6, uB7)
 	html.WriteString(out, `</div>`)
 
 	// states

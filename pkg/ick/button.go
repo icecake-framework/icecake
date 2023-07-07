@@ -26,6 +26,7 @@ type ICKButton struct {
 	IsRounded  bool  // Rounded button style
 	Color      COLOR // rendering color
 	IsLight    bool  // light color
+	SIZE             // button size
 
 	IsDisabled bool // Disabled state
 
@@ -42,9 +43,18 @@ func Button(htmltitle string, attrs ...string) *ICKButton {
 	return btn
 }
 
-func (cmp *ICKButton) SetId(id string) *ICKButton {
-	cmp.Tag().SetId(id)
-	return cmp
+// Clone clones the snippet, without the rendering metadata
+func (btn *ICKButton) Clone() *ICKButton {
+	// TODO: reset id and metadata
+	to := new(ICKButton)
+	*to = *btn
+	to.HTMLSnippet = *btn.HTMLSnippet.Clone()
+	return to
+}
+
+func (btn *ICKButton) SetId(id string) *ICKButton {
+	btn.Tag().SetId(id)
+	return btn
 }
 
 // ParseHRef parses rawurl to HRef. HRef stays nil in case of error.
@@ -61,6 +71,7 @@ func (btn *ICKButton) SetTitle(htmltitle string) *ICKButton {
 	btn.AddContent(html.ToHTML(htmltitle))
 	return btn
 }
+
 func (btn *ICKButton) SetOutlined(f bool) *ICKButton {
 	btn.IsOutlined = f
 	return btn
@@ -69,6 +80,19 @@ func (btn *ICKButton) SetRounded(f bool) *ICKButton {
 	btn.IsRounded = f
 	return btn
 }
+func (btn *ICKButton) SetColor(c COLOR) *ICKButton {
+	btn.Color = c
+	return btn
+}
+func (btn *ICKButton) SetLight(f bool) *ICKButton {
+	btn.IsLight = f
+	return btn
+}
+func (btn *ICKButton) SetSize(s SIZE) *ICKButton {
+	btn.SIZE = s
+	return btn
+}
+
 func (btn *ICKButton) SetDisabled(f bool) *ICKButton {
 	btn.IsDisabled = f
 	btn.Tag().SetDisabled(f)
@@ -76,14 +100,6 @@ func (btn *ICKButton) SetDisabled(f bool) *ICKButton {
 }
 func (btn *ICKButton) SetLoading(f bool) *ICKButton {
 	btn.isLoading = f
-	return btn
-}
-func (btn *ICKButton) SetColor(c COLOR) *ICKButton {
-	btn.Color = c
-	return btn
-}
-func (btn *ICKButton) SetLight(f bool) *ICKButton {
-	btn.IsLight = f
 	return btn
 }
 
@@ -103,7 +119,8 @@ func (btn *ICKButton) BuildTag() html.Tag {
 		SetClassIf(btn.IsRounded, "is-rounded").
 		SetClassIf(btn.isLoading, "is-loading").
 		PickClass(COLOR_OPTIONS, string(btn.Color)).
-		SetClassIf(btn.IsLight, "is-light")
+		SetClassIf(btn.IsLight, "is-light").
+		PickClass(SIZE_OPTIONS, string(btn.SIZE))
 
 	if btn.HRef != nil {
 		btn.Tag().SetAttribute("href", btn.HRef.String())
