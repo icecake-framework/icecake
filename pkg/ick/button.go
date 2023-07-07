@@ -20,7 +20,9 @@ func init() {
 type ICKButton struct {
 	html.HTMLSnippet
 
-	Title string // simple title string
+	OpeningIcon ICKIcon // optional opening icon
+	Title       string  // simple title string
+	ClosingIcon ICKIcon // optional closing icon
 
 	// HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a <a> tag, otherwise it's a <button> tag.
 	HRef *url.URL
@@ -32,7 +34,9 @@ type ICKButton struct {
 
 	IsDisabled bool // Disabled state
 
-	isLoading bool // Loading button state
+	IsLoading bool // Loading button state
+
+	// TODO: ick.ICKButton - add a feature to automatically setup the link color and a closing link icon when ther's an HREF withe a base different than the one of the website
 }
 
 // Ensuring ICKButton implements the right interface
@@ -73,6 +77,15 @@ func (btn *ICKButton) SetTitle(title string) *ICKButton {
 	return btn
 }
 
+func (btn *ICKButton) SetIcon(icon ICKIcon, closing bool) *ICKButton {
+	if closing {
+		btn.ClosingIcon = icon
+	} else {
+		btn.OpeningIcon = icon
+	}
+	return btn
+}
+
 func (btn *ICKButton) SetOutlined(f bool) *ICKButton {
 	btn.IsOutlined = f
 	return btn
@@ -97,7 +110,7 @@ func (btn *ICKButton) SetDisabled(f bool) *ICKButton {
 	return btn
 }
 func (btn *ICKButton) SetLoading(f bool) *ICKButton {
-	btn.isLoading = f
+	btn.IsLoading = f
 	return btn
 }
 
@@ -115,9 +128,8 @@ func (btn *ICKButton) BuildTag() html.Tag {
 	btn.Tag().AddClass("button").
 		SetClassIf(btn.IsOutlined, "is-outlined").
 		SetClassIf(btn.IsRounded, "is-rounded").
-		SetClassIf(btn.isLoading, "is-loading").
+		SetClassIf(btn.IsLoading, "is-loading").
 		PickClass(COLOR_OPTIONS, string(btn.COLOR)).
-		// SetClassIf(btn.LightColor, "is-light").
 		PickClass(SIZE_OPTIONS, string(btn.SIZE))
 
 	if btn.HRef != nil {
@@ -130,6 +142,12 @@ func (btn *ICKButton) BuildTag() html.Tag {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (btn *ICKButton) RenderContent(out io.Writer) error {
+	has := btn.OpeningIcon.Key != "" || btn.ClosingIcon.Key != ""
+
+	html.Render(out, nil, &btn.OpeningIcon)
+	html.WriteStringIf(has, out, "<span>")
 	html.WriteString(out, btn.Title)
+	html.WriteStringIf(has, out, "</span>")
+	html.Render(out, nil, &btn.ClosingIcon)
 	return nil
 }
