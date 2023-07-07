@@ -43,7 +43,7 @@ func main() {
 		Title:         *ick.Title(2, "Develop SPA and Static Websites in Go."),
 		Subtitle:      *ick.Title(4, "Pure Go Web Assembly Framework"),
 		ContainerAttr: html.ParseAttributes(`class="has-text-centered ` + string(ick.CFW_MAXDESKTOP) + `"`),
-		CTA:           ick.Button("Read doc", "cta").ParseHRef("/docoverview.html").SetColor(ick.COLOR_PRIMARY),
+		CTA:           ick.Button("Read doc").SetId("cta").ParseHRef("/docoverview.html").SetColor(ick.COLOR_PRIMARY),
 	}
 
 	pgindex.Body().AddContent(

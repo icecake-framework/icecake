@@ -23,8 +23,8 @@ func (cmp *SectionDocButton) RenderContent(out io.Writer) error {
 
 	// usages
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
-	uA1 := ick.Button("Click Link", "").ParseHRef("#")
-	uA2 := ick.Button("Trigger Event", "uA2")
+	uA1 := ick.Button("Click Link").ParseHRef("#")
+	uA2 := ick.Button("Trigger Event").SetId("uA2")
 	html.Render(out, cmp, uA1, uA2)
 	html.WriteString(out, `</div>`)
 
@@ -38,21 +38,21 @@ func (cmp *SectionDocButton) RenderContent(out io.Writer) error {
 	// styling
 	html.Render(out, nil, ick.Title(4, "Styling"))
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
-	uB0 := ick.Button("Default", "")
-	uB1 := ick.Button("Primary color", "").SetColor(ick.COLOR_PRIMARY)
-	uB2 := ick.Button("Light color", "").SetColor(ick.COLOR_PRIMARY).SetLight(true)
-	uB3 := ick.Button("Link color", "").SetColor(ick.COLOR_LINK)
-	uB4 := ick.Button("Outlined", "").SetColor(ick.COLOR_PRIMARY).SetOutlined(true)
-	uB5 := ick.Button("Rounded", "").SetColor(ick.COLOR_PRIMARY).SetRounded(true)
+	uB0 := ick.Button("Default")
+	uB1 := ick.Button("Primary color").SetColor(ick.COLOR_PRIMARY)
+	uB2 := ick.Button("Light color").SetColor(ick.COLOR_PRIMARY).SetLight(true)
+	uB3 := ick.Button("Link color").SetColor(ick.COLOR_LINK)
+	uB4 := ick.Button("Outlined").SetColor(ick.COLOR_PRIMARY).SetOutlined(true)
+	uB5 := ick.Button("Rounded").SetColor(ick.COLOR_PRIMARY).SetRounded(true)
 	html.Render(out, cmp, uB0, uB1, uB2, uB3, uB4, uB5)
 	html.WriteString(out, `</div>`)
 
 	// states
 	html.Render(out, nil, ick.Title(4, "State"))
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
-	uC1 := ick.Button("Standard", "").SetColor(ick.COLOR_PRIMARY)
-	uC2 := ick.Button("Loading", "").SetColor(ick.COLOR_PRIMARY).SetLoading(true)
-	uC3 := ick.Button("Disabled", "").SetColor(ick.COLOR_PRIMARY).SetDisabled(true)
+	uC1 := ick.Button("Standard").SetColor(ick.COLOR_PRIMARY)
+	uC2 := ick.Button("Loading").SetColor(ick.COLOR_PRIMARY).SetLoading(true)
+	uC3 := ick.Button("Disabled").SetColor(ick.COLOR_PRIMARY).SetDisabled(true)
 	html.Render(out, cmp, uC1, uC2, uC3)
 	html.WriteString(out, `</div>`)
 

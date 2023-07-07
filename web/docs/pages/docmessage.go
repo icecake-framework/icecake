@@ -21,7 +21,8 @@ func (sec *SectionDocMessage) RenderContent(out io.Writer) error {
 
 	// usages
 	ux := html.Snippet("div", `id="boxusage" class="box mr-5"`).AddContent(ick.Spinner())
-	btnreset := ick.Button("reset", "btnreset", `class="mb-5"`).
+	btnreset := ick.Button("reset", `class="mb-5"`).
+		SetId("btnreset").
 		SetColor(ick.COLOR_PRIMARY).
 		SetOutlined(true).
 		SetDisabled(true)

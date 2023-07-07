@@ -16,10 +16,15 @@ type ICKButton struct {
 // Ensure ICKButton implements UIComposer interface
 var _ dom.UIComposer = (*ICKButton)(nil)
 
-func Button(title string, id string, attrs ...string) *ICKButton {
+func Button(title string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)
-	btn.ICKButton = *ick.Button(title, id, attrs...)
+	btn.ICKButton = *ick.Button(title, attrs...)
 	return btn
+}
+
+func (cmp *ICKButton) SetId(id string) *ICKButton {
+	cmp.Tag().SetId(id)
+	return cmp
 }
 
 func (btn *ICKButton) SetTitle(htmltitle string) *ICKButton {

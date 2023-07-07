@@ -35,12 +35,16 @@ type ICKButton struct {
 // Ensuring ICKButton implements the right interface
 var _ html.ElementComposer = (*ICKButton)(nil)
 
-func Button(htmltitle string, id string, attrs ...string) *ICKButton {
+func Button(htmltitle string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)
 	btn.SetTitle(htmltitle)
-	btn.Tag().SetId(id)
 	btn.Tag().ParseAttributes(attrs...)
 	return btn
+}
+
+func (cmp *ICKButton) SetId(id string) *ICKButton {
+	cmp.Tag().SetId(id)
+	return cmp
 }
 
 // ParseHRef parses rawurl to HRef. HRef stays nil in case of error.
