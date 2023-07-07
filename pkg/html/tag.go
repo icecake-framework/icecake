@@ -33,14 +33,15 @@ func NewTag(name string, amap AttributeMap) *Tag {
 func BuildTag(tb TagBuilder) Tag {
 	tag := tb.BuildTag()
 
-	// force property name
-	if !tag.NoName {
-		cmpname := reflect.TypeOf(tb).Elem().Name()
-		cmpname = strings.ToLower(cmpname)
-		tag.SetAttribute("name", cmpname)
+	if tag.HasRendering() {
+		// force property name
+		if !tag.NoName {
+			cmpname := reflect.TypeOf(tb).Elem().Name()
+			cmpname = strings.ToLower(cmpname)
+			tag.SetAttribute("name", cmpname)
+		}
+		tb.RMeta().Id = tag.Id()
 	}
-
-	tb.RMeta().Id = tag.Id()
 
 	return tag
 }
