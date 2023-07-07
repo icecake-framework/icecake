@@ -1,6 +1,7 @@
 package ick
 
 import (
+	"io"
 	"net/url"
 
 	"github.com/icecake-framework/icecake/pkg/html"
@@ -18,6 +19,8 @@ func init() {
 // The IsDisabled property is directly handled by the embedded UISnippet.
 type ICKButton struct {
 	html.HTMLSnippet
+
+	Title string // simple title string
 
 	// HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a <a> tag, otherwise it's a <button> tag.
 	HRef *url.URL
@@ -66,9 +69,8 @@ func (btn *ICKButton) ParseHRef(rawurl string) *ICKButton {
 	return btn
 }
 
-func (btn *ICKButton) SetTitle(htmltitle string) *ICKButton {
-	btn.ClearContent()
-	btn.AddContent(html.ToHTML(htmltitle))
+func (btn *ICKButton) SetTitle(title string) *ICKButton {
+	btn.Title = title
 	return btn
 }
 
@@ -130,9 +132,8 @@ func (btn *ICKButton) BuildTag() html.Tag {
 	return *btn.Tag()
 }
 
-// // RenderContent writes the HTML string corresponding to the content of the HTML element.
-// // Button rendering unfold the Title
-// func (btn *ICKButton) RenderContent(out io.Writer) error {
-// 	err := btn.RenderChild(out, &btn.Title)
-// 	return err
-// }
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
+func (btn *ICKButton) RenderContent(out io.Writer) error {
+	html.WriteString(out, btn.Title)
+	return nil
+}

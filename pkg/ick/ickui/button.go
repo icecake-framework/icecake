@@ -27,8 +27,8 @@ func (cmp *ICKButton) SetId(id string) *ICKButton {
 	return cmp
 }
 
-func (btn *ICKButton) SetTitle(htmltitle string) *ICKButton {
-	btn.ICKButton.SetTitle(htmltitle)
+func (btn *ICKButton) SetTitle(title string) *ICKButton {
+	btn.ICKButton.SetTitle(title)
 	// TODO: ick - dynamic change of button content
 	return btn
 }
