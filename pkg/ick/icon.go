@@ -15,6 +15,8 @@ type ICKIcon struct {
 	// 	- 'bi-{iconname}' for [bootstrap icons]
 	// 	- 'mdi mdi{iconname}' for [material design icons]
 	//
+	// If the Key is empty nothing is rendered
+	//
 	// [font awesome icons]: https://fontawesome.com/icons
 	// [bootstrap icons]: https://icons.getbootstrap.com/
 	// [material design icons]: https://pictogrammers.com/library/mdi/
@@ -46,6 +48,9 @@ func (icon *ICKIcon) SetColor(c TXTCOLOR) *ICKIcon {
 
 // Tag Builder used by the rendering functions.
 func (icon *ICKIcon) BuildTag() html.Tag {
+	if icon.Key == "" {
+		return *html.NewTag("", nil)
+	}
 	icon.Tag().SetTagName("span").
 		AddClassIf(icon.Text == "", "icon").
 		AddClassIf(icon.Text != "", "icon-text").
@@ -55,6 +60,9 @@ func (icon *ICKIcon) BuildTag() html.Tag {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (icon *ICKIcon) RenderContent(out io.Writer) error {
+	if icon.Key == "" {
+		return nil
+	}
 	if icon.Text == "" {
 		html.WriteString(out, `<i class="`, icon.Key, `"></i>`)
 	} else {
