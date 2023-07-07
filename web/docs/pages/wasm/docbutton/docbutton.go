@@ -24,7 +24,7 @@ func main() {
 	// static button
 	uA2 := &ickui.ICKButton{}
 	uA2.OnClick = func() { browser.Win().Alert("clicked") }
-	dom.MountId(&ickui.ICKNavbar{}, "uA2")
+	dom.MountId(uA2, "uA2")
 
 	// let's go
 	fmt.Println("Icecake initialized. Listening browser events")
