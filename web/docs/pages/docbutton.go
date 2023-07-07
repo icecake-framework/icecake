@@ -40,7 +40,7 @@ func (cmp *SectionDocButton) RenderContent(out io.Writer) error {
 	html.WriteString(out, `<div class="box spaceout mr-5">`)
 	uB0 := ick.Button("Default")
 	uB1 := ick.Button("Primary color").SetColor(ick.COLOR_PRIMARY)
-	uB2 := ick.Button("Light color").SetColor(ick.COLOR_PRIMARY).SetLight(true)
+	uB2 := ick.Button("Light color").SetColor(*ick.Color(ick.COLOR_PRIMARY).SetLight(true))
 	uB3 := ick.Button("Link color").SetColor(ick.COLOR_LINK)
 	uB4 := ick.Button("Outlined").SetColor(ick.COLOR_PRIMARY).SetOutlined(true)
 	uB5 := ick.Button("Rounded").SetColor(ick.COLOR_PRIMARY).SetRounded(true)

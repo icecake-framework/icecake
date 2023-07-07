@@ -25,11 +25,10 @@ type ICKButton struct {
 	// HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a <a> tag, otherwise it's a <button> tag.
 	HRef *url.URL
 
-	IsOutlined bool  // Outlined button style
-	IsRounded  bool  // Rounded button style
-	Color      COLOR // rendering color
-	IsLight    bool  // light color
-	SIZE             // button size
+	IsOutlined bool // Outlined button style
+	IsRounded  bool // Rounded button style
+	COLOR           // rendering color
+	SIZE            // button size
 
 	IsDisabled bool // Disabled state
 
@@ -83,13 +82,10 @@ func (btn *ICKButton) SetRounded(f bool) *ICKButton {
 	return btn
 }
 func (btn *ICKButton) SetColor(c COLOR) *ICKButton {
-	btn.Color = c
+	btn.COLOR = c
 	return btn
 }
-func (btn *ICKButton) SetLight(f bool) *ICKButton {
-	btn.IsLight = f
-	return btn
-}
+
 func (btn *ICKButton) SetSize(s SIZE) *ICKButton {
 	btn.SIZE = s
 	return btn
@@ -120,8 +116,8 @@ func (btn *ICKButton) BuildTag() html.Tag {
 		SetClassIf(btn.IsOutlined, "is-outlined").
 		SetClassIf(btn.IsRounded, "is-rounded").
 		SetClassIf(btn.isLoading, "is-loading").
-		PickClass(COLOR_OPTIONS, string(btn.Color)).
-		SetClassIf(btn.IsLight, "is-light").
+		PickClass(COLOR_OPTIONS, string(btn.COLOR)).
+		// SetClassIf(btn.LightColor, "is-light").
 		PickClass(SIZE_OPTIONS, string(btn.SIZE))
 
 	if btn.HRef != nil {

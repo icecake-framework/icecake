@@ -1,5 +1,7 @@
 package ick
 
+import "strings"
+
 type COLOR string
 
 const (
@@ -23,6 +25,25 @@ const (
 	COLOR_GREY_LIGHTER COLOR  = "is-grey-lighter"
 	COLOR_OPTIONS      string = string(COLOR_WHITE + " " + COLOR_WHITE_BIS + " " + COLOR_WHITE_TER + " " + COLOR_BLACK + " " + COLOR_BLACK_BIS + " " + COLOR_BLACK_TER + " " + COLOR_LIGHT + " " + COLOR_DARK + " " + COLOR_PRIMARY + " " + COLOR_LINK + " " + COLOR_INFO + " " + COLOR_SUCCESS + " " + COLOR_WARNING + " " + COLOR_DANGER + " " + COLOR_GREY_DARKER + " " + COLOR_GREY_DARK + " " + COLOR_GREY_LIGHT + " " + COLOR_GREY_LIGHTER)
 )
+
+func Color(c COLOR) *COLOR {
+	return &c
+}
+
+func (c *COLOR) SetLight(f bool) *COLOR {
+	if c.IsLight() != f {
+		if f {
+			*c += COLOR(" is-light")
+		} else {
+			*c = COLOR(strings.Replace(string(*c), "is-light", "", -1))
+		}
+	}
+	return c
+}
+
+func (c COLOR) IsLight() bool {
+	return strings.Contains(string(c), "is-light")
+}
 
 type SIZE string
 
