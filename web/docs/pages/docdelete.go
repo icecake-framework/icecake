@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	linkBulmaDelete     string = `<a href="https://ick.io/documentation/elements/delete/">bulma Delete</a>`
+	linkBulmaDelete     string = `<a href="https://bulma.io/documentation/elements/delete/">bulma Delete</a>`
 	hrefICKDelete_Git   string = href_GitPkg + `/ick/delete.go`
 	hrefICKDelete_GitUI string = href_GitPkg + `/ick/ickui/delete.go`
 	hrefICKDelete_Go    string = href_GoPkg + `/ick#ICKDelete`
@@ -35,7 +35,6 @@ func (cmp *SectionDocDelete) RenderContent(out io.Writer) error {
 
 	// apis
 	html.Render(out, nil, ick.Title(3, "APIs"))
-
 	b := ick.Button("").SetSize(ick.SIZE_SMALL).SetColor(ick.COLOR_LINK).SetOutlined(true)
 	html.Render(out, nil, html.Snippet("div", "class='is-flex spaceout'").AddContent(
 		b.Clone().SetTitle("ICKDelete code").ParseHRef(hrefICKDelete_Git),

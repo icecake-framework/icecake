@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	linkBulmaIcon     string = `<a href="https://ick.io/documentation/elements/icon">bulma Button</a>`
+	linkBulmaIcon     string = `<a href="https://bulma.io/documentation/elements/icon">bulma Button</a>`
 	hrefICKIcon_Git   string = href_GitPkg + `/ick/icon.go`
 	hrefICKIcon_GitUI string = href_GitPkg + `/ick/ickui/icon.go`
 	hrefICKIcon_Go    string = href_GoPkg + `/ick#ICKIcon`

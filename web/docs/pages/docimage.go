@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	linkBulmaImage string = `<a href="https://ick.io/documentation/elements/image/">bulma Image</a>`
+	linkBulmaImage string = `<a href="https://bulma.io/documentation/elements/image/">bulma Image</a>`
 )
 
 type SectionDocImage struct{ SectionDocIcecake }

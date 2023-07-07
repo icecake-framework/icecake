@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	linkBulmaNavbar string = `<a href="https://ick.io/documentation/components/navbar">bulma navbar</a>`
+	linkBulmaNavbar string = `<a href="https://bulma.io/documentation/components/navbar">bulma navbar</a>`
 )
 
 type SectionDocNavbar struct{ SectionDocIcecake }

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	linkBulmaMessage string = `<a href="https://ick.io/documentation/components/message">bulma Message</a>`
+	linkBulmaMessage string = `<a href="https://bulma.io/documentation/components/message">bulma Message</a>`
 )
 
 type SectionDocMessage struct{ SectionDocIcecake }
