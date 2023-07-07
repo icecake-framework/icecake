@@ -6,6 +6,11 @@ import (
 	"github.com/icecake-framework/icecake/pkg/html"
 )
 
+const (
+	href_GitPkg string = `https://github.com/icecake-framework/icecake/blob/main/pkg`
+	href_GoPkg  string = `https://pkg.go.dev/github.com/icecake-framework/icecake/pkg`
+)
+
 type SectionDocIcecake struct {
 	html.HTMLSnippet
 
