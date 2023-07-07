@@ -31,7 +31,7 @@ type ICKNavbarItem struct {
 	Type NAVBARITEM_TYPE
 
 	// Item Content
-	Content html.HTMLContentComposer
+	Content html.ContentComposer
 
 	// HRef defines the optional associated url link.
 	// If HRef is defined the item become an anchor link <a>, otherwise it's a <div>
@@ -47,8 +47,8 @@ type ICKNavbarItem struct {
 	items []*ICKNavbarItem // list of navbar items
 }
 
-// Ensure NavbarItem implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKNavbarItem)(nil)
+// Ensuring ICKNavbarItem implements the right interface
+var _ html.ElementComposer = (*ICKNavbarItem)(nil)
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
 func (navi ICKNavbarItem) Clone() *ICKNavbarItem {
@@ -58,7 +58,7 @@ func (navi ICKNavbarItem) Clone() *ICKNavbarItem {
 
 	if navi.Content != nil {
 		copy := clone.Clone(navi.Content)
-		c.Content = copy.(html.HTMLContentComposer)
+		c.Content = copy.(html.ContentComposer)
 	}
 
 	if navi.HRef != nil {
@@ -113,7 +113,7 @@ func (navi *ICKNavbarItem) RenderContent(out io.Writer) error {
 }
 
 // AddItem adds the item as a subitem within the navbar item
-func (navi *ICKNavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLContentComposer) *ICKNavbarItem {
+func (navi *ICKNavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.ContentComposer) *ICKNavbarItem {
 	itm := new(ICKNavbarItem)
 	itm.Key = key
 	itm.Type = itmtyp
@@ -170,8 +170,8 @@ type ICKNavbar struct {
 	HasShadow     bool // renders a shadow below the navbar
 }
 
-// Ensure Navbar implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKNavbar)(nil)
+// Ensuring ICKNavbar implements the right interface
+var _ html.ElementComposer = (*ICKNavbar)(nil)
 
 func NavBar() *ICKNavbar {
 	n := new(ICKNavbar)
@@ -192,7 +192,7 @@ func (src ICKNavbar) Clone() *ICKNavbar {
 }
 
 // AddItem adds the item to the navbar
-func (nav *ICKNavbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.HTMLContentComposer) *ICKNavbarItem {
+func (nav *ICKNavbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.ContentComposer) *ICKNavbarItem {
 	itm := new(ICKNavbarItem)
 	itm.Key = key
 	itm.Type = itmtyp

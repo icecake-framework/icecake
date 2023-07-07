@@ -63,8 +63,8 @@ type ICKImage struct {
 	NoCrop    bool     // set to true to avoid to crop the image if its size does not fit the Size property. The image may be reduced or distord.
 }
 
-// Ensure Image implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKImage)(nil)
+// Ensuring ICKImage implements the right interface
+var _ html.ElementComposer = (*ICKImage)(nil)
 
 func Image(rawUrl string, alt string, size IMG_SIZE, attrs ...string) *ICKImage {
 	img := new(ICKImage)

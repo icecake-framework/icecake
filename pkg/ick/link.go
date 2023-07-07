@@ -17,8 +17,8 @@ type ICKLink struct {
 	HRef *url.URL
 }
 
-// Ensure HTMLString implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKLink)(nil)
+// Ensuring ICKLink implements the right interface
+var _ html.ElementComposer = (*ICKLink)(nil)
 
 // A returns an HTML anchor link
 func A(attrlist ...string) *ICKLink {

@@ -14,16 +14,13 @@ import (
 // RegisterComposer registers a _composer with the unique _ickname.
 // Registering a _composer is required to enable rendering of a composer embedded into an html string with an auto-closing ick-tag.
 //
-// _css is a list of required stylesheet for the component. During the first instantiation of the component,
-// these stylesheets are included in the header of the html file as links entries:
-//
 //	<link rel="stylesheet" href="{_css[n]}">
 //
-// The _ickname must start by `ick-` followed by at least one character.
+// The ickname must start by `ick-` followed by at least one character.
 // An error is returned in the following cases:
-//   - If the _ickname has already been registered
-//   - If the _ickname does not meet the pattern "ick-*"
-//   - If the _composer does not implement the HTMLComposer interface
+//   - If the ickname has already been registered
+//   - If the ickname does not meet the pattern "ick-*"
+//   - If the composer does not implement the ElementComposer interface
 func RegisterComposer(icktagname string, composer any) (entry *ickcore.RegistryEntry, err error) {
 	// TODO: register - RegisterComposer should generate ickname automatically (see RenderSnippet), unless a same component can be registered with 2 names ?!
 
@@ -36,9 +33,9 @@ func RegisterComposer(icktagname string, composer any) (entry *ickcore.RegistryE
 	}
 
 	// must implement HTMLContentComposer at least
-	_, iscmp := composer.(HTMLContentComposer)
+	_, iscmp := composer.(ContentComposer)
 	if !iscmp {
-		err = fmt.Errorf("RegisterComposer: %s(%v) failed: must implement HTMLComposer interface", icktagname, typ.String())
+		err = fmt.Errorf("RegisterComposer: %s(%v) failed: must implement ElementComposer interface", icktagname, typ.String())
 		log.Println(err.Error())
 		return nil, err
 	}

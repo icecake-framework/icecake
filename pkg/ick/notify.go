@@ -30,8 +30,8 @@ type Notify struct {
 	// Toast bool
 }
 
-// Ensure Notify implements HTMLComposer interface
-var _ html.HTMLComposer = (*Notify)(nil)
+// Ensuring ICKNotify implements the right interface
+var _ html.ElementComposer = (*Notify)(nil)
 
 // BuildTag builds the tag used to render the html element.
 // Notify tag is a simple <div class="notification"></div>

@@ -17,15 +17,15 @@ import (
 )
 
 // HTMLString represents a string document fragment, mixing standard HTML syntax with <ick-tags/> inline components.
-// HTMLString implements HTMLcomposer interfaces and the string is rendered to an output stream with the icecake Rendering functions.
+// HTMLString implements Elementcomposer interface and the string is rendered to an output stream with the icecake Rendering functions.
 // It is part of the core icecake snippets.
 type HTMLString struct {
 	meta  ickcore.RMetaData // Rendering MetaData
 	bytes []byte
 }
 
-// Ensure HTMLString implements HTMLContentComposer interface
-var _ HTMLContentComposer = (*HTMLString)(nil)
+// Ensuring HTMLString implements the right interface
+var _ ContentComposer = (*HTMLString)(nil)
 
 // ToHTML is the HTMLString factory allowing to convert a string into a new HTMLString reday for rendering.
 // The string must contains safe string and can include icecake tags.
@@ -72,7 +72,7 @@ func (s HTMLString) IsEmpty() bool {
 // The rendering process renders an HTML comment in the following cases:
 //   - If the HTML string contains ick-tag but the ick-tagname does not correspond to a Registered composer,
 //   - If the HTML string contains ick-tag with attributes but one value of these attribute is of a bad type,
-func renderHTML(out io.Writer, parent HTMLContentComposer, htmlstr HTMLString) (err error) {
+func renderHTML(out io.Writer, parent ContentComposer, htmlstr HTMLString) (err error) {
 	const (
 		processing_NONE int = iota
 		processing_TXT
@@ -278,7 +278,7 @@ nextbyte:
 // The rendering process renders an HTML comment and return an error in the following cases:
 //   - If the HTML string contains ick-tag but the ick-tagname does not correspond to a Registered composer,
 //   - If the HTML string contains ick-tag with attributes but one value of these attribute is of a bad type,
-func unfoldick(parent HTMLContentComposer, out io.Writer, ickname string, ickattrs AttributeMap, seq int) (err error) {
+func unfoldick(parent ContentComposer, out io.Writer, ickname string, ickattrs AttributeMap, seq int) (err error) {
 
 	verbose.Debug("unfolding composer %q", ickname)
 
@@ -294,7 +294,7 @@ func unfoldick(parent HTMLContentComposer, out io.Writer, ickname string, ickatt
 		// newref.Elem().Set(reflect.ValueOf(regentry.Component()).Elem())
 
 		// get the interface of the new snippet (a composer)
-		newcmp := newref.Interface().(HTMLContentComposer)
+		newcmp := newref.Interface().(ContentComposer)
 
 		// process unfolded attributes, set value of ickcomponent field when name of attribute matches field name,
 		// otherwise set unfolded attribute to the attribute of the component.

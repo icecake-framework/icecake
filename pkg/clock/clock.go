@@ -13,7 +13,7 @@ type Clock struct {
 	TickerStep time.Duration
 
 	// The function to call at every ticker step. Set nil to ignore ticker.
-	// HACK: better to make tic a parameter of Start
+	// TODO: clock - make tic a parameter of Start
 	Tic func(*Clock)
 
 	start  time.Time    // The countdown start time

@@ -27,10 +27,10 @@ func TestRegisterComposer(t *testing.T) {
 	_, err := RegisterComposer("mysnippet", *c1)
 	assert.ErrorContains(t, err, "not by value")
 
-	// HTMLcomposer implementation
+	// Elementcomposer implementation
 	i := new(int)
 	_, err = RegisterComposer("mysnippet", i)
-	assert.ErrorContains(t, err, "must implement HTMLComposer interface")
+	assert.ErrorContains(t, err, "must implement ElementComposer interface")
 
 	// empty tag
 	_, err = RegisterComposer("ick-testsnippet1", &testcustomcomposer{})

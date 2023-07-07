@@ -24,7 +24,7 @@ func Button(title string, id string, attrs ...string) *ICKButton {
 
 func (btn *ICKButton) SetTitle(htmltitle string) *ICKButton {
 	btn.ICKButton.SetTitle(htmltitle)
-	// TODO ick - dynamic change of button content
+	// TODO: ick - dynamic change of button content
 	return btn
 }
 func (btn *ICKButton) SetOutlined(f bool) *ICKButton {

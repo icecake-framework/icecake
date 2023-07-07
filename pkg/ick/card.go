@@ -24,11 +24,11 @@ type ICKCard struct {
 	footerItem []html.HTMLString
 }
 
-// Ensure Card implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKCard)(nil)
+// Ensuring ICKCard implements the right interface
+var _ html.ElementComposer = (*ICKCard)(nil)
 
 // Card main factory
-func Card(content html.HTMLContentComposer) *ICKCard {
+func Card(content html.ContentComposer) *ICKCard {
 	c := new(ICKCard)
 	c.footerItem = make([]html.HTMLString, 0)
 	c.AddContent(content)

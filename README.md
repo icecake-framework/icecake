@@ -113,7 +113,7 @@ icecake
 | `console`     | provides helpers to raise enhanced messages in the browser console.
 | `dom`         | provides primitives to interact with the DOM of a webpage. Traditional node, element, and document's methods can be call in go here. An UISnippet struct and an UIComposer Interface are provided to allow rendering of HTMLSnippet and to handle event listening.
 | `event`       | defines all types of the dom event handlers with their methods
-| `html`        | provides an HTMLSnippet struct and an HTMLComposer Interface to allow html rendering of ick-name tags in different ways.
+| `html`        | provides an HTMLSnippet struct and an Interfaces to allow html rendering of ick-name tags in different ways.
 | `ick`         | core Snippets with html rendering
 |  └── `ickui`  | UI of core Snippets with event handler. Compiles with the wasm compiler
 | `ickcore`     | provides the render metadata provider and the global registry of Composers, this needs to be fully reworks.

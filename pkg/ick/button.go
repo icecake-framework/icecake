@@ -32,8 +32,8 @@ type ICKButton struct {
 	isLoading bool // Loading button state
 }
 
-// Ensure Button implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKButton)(nil)
+// Ensuring ICKButton implements the right interface
+var _ html.ElementComposer = (*ICKButton)(nil)
 
 func Button(htmltitle string, id string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)

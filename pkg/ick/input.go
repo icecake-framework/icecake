@@ -38,8 +38,8 @@ type InputField struct {
 	State INPUT_STATE
 }
 
-// Ensure inputfield implements HTMLComposer interface
-var _ html.HTMLComposer = (*InputField)(nil)
+// Ensuring InputField implements the right interface
+var _ html.ElementComposer = (*InputField)(nil)
 
 // BuildTag builds the tag used to render the html element.
 func (inputfield *InputField) BuildTag() html.Tag {

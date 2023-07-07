@@ -14,15 +14,21 @@ func init() {
 type ICKDelete struct {
 	html.HTMLSnippet
 
-	// the element id to remove from the DOM when the delete button is clicked
+	// The element id to remove from the DOM when the delete button is clicked
 	TargetId string
 
 	// styling
 	SIZE
 }
 
-// Ensure Delete implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKDelete)(nil)
+// Ensuring ICKDelete implements the right interface
+var _ html.ElementComposer = (*ICKDelete)(nil)
+
+func Delete(targetid string) *ICKDelete {
+	del := new(ICKDelete)
+	del.TargetId = targetid
+	return del
+}
 
 // BuildTag builds the tag used to render the html element.
 // Delete tag is a simple <button class="delete"></delete>
@@ -37,7 +43,7 @@ func (del *ICKDelete) BuildTag() html.Tag {
 	return *del.Tag()
 }
 
-// Delete renders an empty content.
+// Delete rendering is made by the tag attributes.
 func (del *ICKDelete) RenderContent(out io.Writer) error {
 	return nil
 }

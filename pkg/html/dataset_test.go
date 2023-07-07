@@ -110,8 +110,8 @@ func (s *testsnippetinfinite) RenderContent(out io.Writer) error {
 // testsnippetinfinite
 type testcustomcomposer struct{}
 
-// Ensure testcustomcomposer implements HTMLComposer interface
-var _ HTMLComposer = (*testcustomcomposer)(nil)
+// Ensure testcustomcomposer implements ElementComposer interface
+var _ ElementComposer = (*testcustomcomposer)(nil)
 
 // func (s *testcustomcomposer) Tag() *Tag                                   { return nil }
 func (s *testcustomcomposer) RMeta() *ickcore.RMetaData               { return &ickcore.RMetaData{} }

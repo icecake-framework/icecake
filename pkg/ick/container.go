@@ -24,8 +24,8 @@ type Container struct {
 	FullWidth CONTAINER_FULLWIDTH
 }
 
-// Ensure Container implements HTMLComposer interface
-var _ html.HTMLComposer = (*Container)(nil)
+// Ensuring Container implements the right interface
+var _ html.ElementComposer = (*Container)(nil)
 
 func (c *Container) BuildTag() html.Tag {
 	c.Tag().SetTagName("div").AddClass("container").PickClass(string(CFW_OPTIONS), string(c.FullWidth))

@@ -19,15 +19,15 @@ import (
 // content can be empty. If tagname is empty only the content is rendered.
 // HTMLSnippet can be instantiated by itself or it can be embedded into a struct to define a more customizable html component.
 type HTMLSnippet struct {
-	meta         ickcore.RMetaData     // Rendering MetaData.
-	tag          Tag                   // HTML Element Tag with its attributes.
-	contantstack []HTMLContentComposer // HTML composers to render within the enclosed tag.
+	meta         ickcore.RMetaData // Rendering MetaData.
+	tag          Tag               // HTML Element Tag with its attributes.
+	contantstack []ContentComposer // HTML composers to render within the enclosed tag.
 
 	// ds *DataState // a reference to a datastate that can be used for rendering.
 }
 
-// Ensure HTMLSnippet implements HTMLComposer interface
-var _ HTMLContentComposer = (*HTMLSnippet)(nil)
+// Ensuring HTMLSnippet implements the right interface
+var _ ContentComposer = (*HTMLSnippet)(nil)
 
 // Snippet returns a new HTMLSnippet with a given tag name and a map of attributes.
 func Snippet(tagname string, attrlist ...string) *HTMLSnippet {
@@ -57,7 +57,7 @@ func (src *HTMLSnippet) Clone() *HTMLSnippet {
 	to.tag = *src.tag.Clone()
 	if len(src.contantstack) > 0 {
 		copy := clone.Clone(src.contantstack)
-		to.contantstack = copy.([]HTMLContentComposer)
+		to.contantstack = copy.([]ContentComposer)
 	}
 	return to
 }
@@ -98,13 +98,13 @@ func (s HTMLSnippet) Id() string {
 // 	return s
 // }
 
-// AddContent adds one or many HTMLComposer to the rendering stack of this composer.
+// AddContent adds one or many composers to the rendering stack.
 // Returns the snippet to allow chaining calls.
 //
 // Warning: Struct embedding HTMLSnippet should be car of AddContent returns an HTMLSnippet and not the parent stuct type.
-func (snippet *HTMLSnippet) AddContent(content ...HTMLContentComposer) *HTMLSnippet {
+func (snippet *HTMLSnippet) AddContent(content ...ContentComposer) *HTMLSnippet {
 	if snippet.contantstack == nil {
-		snippet.contantstack = make([]HTMLContentComposer, 0)
+		snippet.contantstack = make([]ContentComposer, 0)
 	}
 	if len(content) > 0 {
 		for _, c := range content {
@@ -118,25 +118,14 @@ func (snippet *HTMLSnippet) AddContent(content ...HTMLContentComposer) *HTMLSnip
 
 // Clear clears the rendering stack
 func (snippet *HTMLSnippet) ClearContent() {
-	snippet.contantstack = make([]HTMLContentComposer, 0)
+	snippet.contantstack = make([]ContentComposer, 0)
 }
-
-// InsertSnippet builds and add a single snippet at the end of the content stack.
-// InsertSnippet returns the new snippet created and added to the stack.
-// func (snippet *HTMLSnippet) InsertSnippet(tagname string, attrlist ...string) *HTMLSnippet {
-// 	if snippet.contantstack == nil {
-// 		snippet.contantstack = make([]HTMLComposer, 0)
-// 	}
-// 	s := NewSnippet(tagname, attrlist...)
-// 	snippet.contantstack = append(snippet.contantstack, s)
-// 	return s
-// }
 
 // RenderSnippet writes the HTML string the tag element and the content of the composer to the writer.
 // The content is unfolded to look for sub-snippet and every sub-snippet are also written to the writer.
 // If the child request an ID, RenderSnippet generates an ID by prefixing its parent id.
 // In addition the child is appended into the list of sub-components.
-func (parent *HTMLSnippet) RenderChild(out io.Writer, childs ...HTMLContentComposer) error {
+func (parent *HTMLSnippet) RenderChild(out io.Writer, childs ...ContentComposer) error {
 	for _, child := range childs {
 		err := Render(out, parent, child)
 		if err != nil {
@@ -147,7 +136,7 @@ func (parent *HTMLSnippet) RenderChild(out io.Writer, childs ...HTMLContentCompo
 }
 
 // RenderSnippetIf renders the Snippet only if the condition is true otherwise does nothing.
-func (parent *HTMLSnippet) RenderChildIf(condition bool, out io.Writer, childs ...HTMLContentComposer) error {
+func (parent *HTMLSnippet) RenderChildIf(condition bool, out io.Writer, childs ...ContentComposer) error {
 	if !condition {
 		return nil
 	}

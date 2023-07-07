@@ -15,7 +15,7 @@ type ICKCard struct {
 var _ dom.UIComposer = (*ICKCard)(nil)
 
 // Card main factory
-func Card(content html.HTMLContentComposer) *ICKCard {
+func Card(content html.ContentComposer) *ICKCard {
 	c := new(ICKCard)
 	c.ICKCard = *ick.Card(content)
 	return c

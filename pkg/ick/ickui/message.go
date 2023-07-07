@@ -18,7 +18,7 @@ type ICKMessage struct {
 var _ dom.UIComposer = (*ICKMessage)(nil)
 
 // Message factory
-func Message(cnt html.HTMLContentComposer) *ICKMessage {
+func Message(cnt html.ContentComposer) *ICKMessage {
 	msg := new(ICKMessage)
 	msg.ICKMessage = *ick.Message(cnt)
 	return msg

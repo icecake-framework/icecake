@@ -8,8 +8,8 @@ import (
 
 type ICKSpinner struct{ html.HTMLSnippet }
 
-// Ensure Hero implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKSpinner)(nil)
+// Ensuring ICKSpinner implements the right interface
+var _ html.ElementComposer = (*ICKSpinner)(nil)
 
 func Spinner() *ICKSpinner {
 	return new(ICKSpinner)

@@ -29,20 +29,20 @@ type Hero struct {
 
 	Height HERO_HEIGHT // the height of the hero section,
 
-	InsideHead html.HTMLContentComposer
+	InsideHead html.ContentComposer
 
 	ContainerAttr html.AttributeMap // The attributes map to setup to the hero's container, allowing text centering
 
 	Title    ICKTitle
 	Subtitle ICKTitle
 
-	CTA html.HTMLContentComposer // Call To Action
+	CTA html.ContentComposer // Call To Action
 
-	InsideFoot html.HTMLContentComposer
+	InsideFoot html.ContentComposer
 }
 
-// Ensure Hero implements HTMLComposer interface
-var _ html.HTMLComposer = (*Hero)(nil)
+// Ensuring Hero implements the right interface
+var _ html.ElementComposer = (*Hero)(nil)
 
 // Tag Builder used by the rendering functions.
 func (msg *Hero) BuildTag() html.Tag {

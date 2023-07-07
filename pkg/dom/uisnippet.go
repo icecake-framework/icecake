@@ -12,7 +12,7 @@ import (
 )
 
 type UIComposer interface {
-	html.HTMLComposer
+	html.ElementComposer
 
 	Wrap(js.JSValueProvider)
 
@@ -22,7 +22,7 @@ type UIComposer interface {
 }
 
 type Composer interface {
-	html.HTMLContentComposer
+	html.ContentComposer
 	UIComposer
 }
 
@@ -61,17 +61,21 @@ func (ui *UI) RemoveListeners() {
 // Nothing is done with the parent but its IsMounted RMeta is turned on in case of success.
 func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
 	if parent.RMeta().IsMounted {
-		console.Warnf("mountSnippetTree: parent:%q is already mounted", parent.RMeta().VirtualId)
+		console.Warnf("mountSnippetTree: parent:%s id:%q is already mounted", reflect.TypeOf(parent).String(), parent.RMeta().VirtualId)
 		return
 	}
 
 	// mount children
-	if embedded := parent.RMeta().Embedded(); embedded != nil {
+	embedded := parent.RMeta().Embedded()
+	// DEBUG: console.Warnf("mountSnippetTree: %v children", len(embedded))
+	console.Warnf("mountSnippetTree: %v children", len(embedded))
+	if embedded != nil {
 		for _, emb := range embedded {
+			// DEBUG: console.Warnf("mountSnippetTree: %+v child %s", emb, reflect.TypeOf(emb).String())
 			if child, ok := emb.(UIComposer); ok {
 				childid := child.RMeta().Id
 				if childid != "" {
-					console.Logf("mountSnippetTree: parent:%q is mounting %v id:%s", parent.RMeta().VirtualId, reflect.TypeOf(child).String(), childid)
+					console.Logf("mountSnippetTree: parent:%v is mounting %v id:%q", reflect.TypeOf(parent).String(), reflect.TypeOf(child).String(), childid)
 					errm := TryMountId(child, childid)
 					if errm != nil && err == nil {
 						err = errm

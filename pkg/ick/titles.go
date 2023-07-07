@@ -23,8 +23,8 @@ type ICKTitle struct {
 	Size int
 }
 
-// Ensure ICKTitle implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKTitle)(nil)
+// Ensuring ICKTitle implements the right interface
+var _ html.ElementComposer = (*ICKTitle)(nil)
 
 func Title(size int, htmltitle string, attrs ...string) *ICKTitle {
 	msg := new(ICKTitle)

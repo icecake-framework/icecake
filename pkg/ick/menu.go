@@ -47,8 +47,8 @@ type IckMenuItem struct {
 	IsActive bool
 }
 
-// Ensure NavbarItem implements HTMLComposer interface
-var _ html.HTMLComposer = (*IckMenuItem)(nil)
+// Ensuring ICKMenuItem implements the right interface
+var _ html.ElementComposer = (*IckMenuItem)(nil)
 
 // ParseHRef tries to parse rawUrl to HRef ignoring error.
 func (mnui *IckMenuItem) ParseHRef(rawUrl string) *IckMenuItem {
@@ -109,8 +109,8 @@ type IckMenu struct {
 	items []*IckMenuItem // list of Menu items
 }
 
-// Ensure Menu implements HTMLComposer interface
-var _ html.HTMLComposer = (*IckMenu)(nil)
+// Ensuring ICKMenu implements the right interface
+var _ html.ElementComposer = (*IckMenu)(nil)
 
 // Clone clones this Menu and all its items and subitem, keeping their attributes their item index and their key.
 func (src IckMenu) Clone() *IckMenu {

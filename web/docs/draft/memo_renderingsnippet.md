@@ -14,25 +14,22 @@ Then somewhere in your code you need to call one HTML rendering method or/and to
 
 > NOTA: custom HTML tag of the icecake framework always starts by `ick-` so we use to call them the `ick-tag`. For example the core icecake button has the ick-tag `ick-button`.
 
-### Settingup a custom HTMLSnippet
-
-
 
 ### Rendering the HTML string of the snippet
 
-**``HTMLComposer`` interface:**
+**``ElementComposer`` interface:**
 
-- ``WriteSnippet(writer, HTMLComposer)`` WriteSnippet writes the HTML string of the composer, its tag element and its body, to the writer. The body is unfolded to look for sub-snippet and ever sub-snippet are also written to the writer.
+- ``WriteSnippet(writer, ElementComposer)`` WriteSnippet writes the HTML string of the composer, its tag element and its body, to the writer. The body is unfolded to look for sub-snippet and ever sub-snippet are also written to the writer.
 
 - ``UnfoldHTML(writer, HTMLString, DataState)`` is used to unfold an HTML string without creating an enclosing tag. 
 If one property of a component is not a simple text string but if it's an HTML String and if this string can contains `ick-tag` then UnfoldHTML can be used to . 
 
-- ``RenderSnippet(writer, HTMLComposer)`` TO COME.
+- ``RenderSnippet(writer, ElementComposer)`` TO COME.
 
 
 **``HTMLSnippet`` methods:**
 
-- ``HTMLSnippet.WriteChildSnippet(HTMLComposer)`` WriteChildSnippet writes the HTML string of the composer, its tag element and its body, to the writer. The body is unfolded to look for sub-snippet and ever sub-snippet are also written to the writer. If the child request an ID, WriteChildSnippet generates an ID by prefixing its parent id. In addition the child is appended into the list of sub-components.
+- ``HTMLSnippet.WriteChildSnippet(ElementComposer)`` WriteChildSnippet writes the HTML string of the composer, its tag element and its body, to the writer. The body is unfolded to look for sub-snippet and ever sub-snippet are also written to the writer. If the child request an ID, WriteChildSnippet generates an ID by prefixing its parent id. In addition the child is appended into the list of sub-components.
 
 - ``HTMLSnippet.String()``
 

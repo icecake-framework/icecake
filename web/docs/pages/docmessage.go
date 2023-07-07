@@ -20,21 +20,20 @@ func (sec *SectionDocMessage) RenderContent(out io.Writer) error {
 		`</div>`)
 
 	// usages
-	u1 := ick.Button("reset", "btnreset", `class="mb-5"`).
+	ux := html.Snippet("div", `id="boxusage" class="box mr-5"`).AddContent(ick.Spinner())
+	btnreset := ick.Button("reset", "btnreset", `class="mb-5"`).
 		SetColor(ick.COLOR_PRIMARY).
 		SetOutlined(true).
 		SetDisabled(true)
-	u2 := html.Snippet("div", `class="box mr-5"`).AddContent(ick.Spinner())
-	u2.Tag().SetId("boxusage")
-	html.Render(out, nil, u2, u1)
+	html.Render(out, nil, ux, btnreset)
 
 	// apis
 	html.Render(out, nil, ick.Title(4, "ICKMessage API"))
 	html.WriteString(out, `<div class="block">`+
-		`<p><code>Message(content html.HTMLComposer) *ICKMessage</code> is the main Message factory.</p>`+
-		`<p><code>.SetHeader(header html.HTMLString, candelete bool)</code> set a header with or without the delete button.</p>`+
+		`<p><code>Message(c html.ElementComposer) *ICKMessage</code> is the main Message factory.</p>`+
+		`<p><code>.SetHeader(h html.HTMLString, candelete bool)</code> set a header with or without the delete button.</p>`+
 		`<p>The Message is an HTMLSnippet so you can use <code>AddContent</code> to setup the content of the message.</p>`+
-		`<p><code>.AddContent(cmp html.HTMLComposer) error</code> Stack content inside.</p>`+
+		`<p><code>.AddContent(c html.ElementComposer) error</code> Stack content inside.</p>`+
 		`</div>`)
 
 	// rendering

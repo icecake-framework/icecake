@@ -33,10 +33,10 @@ type ICKMessage struct {
 	SIZE
 }
 
-// Ensure Message implements HTMLComposer interface
-var _ html.HTMLComposer = (*ICKMessage)(nil)
+// Ensuring ICKMessage implements the right interface
+var _ html.ElementComposer = (*ICKMessage)(nil)
 
-func Message(cnt html.HTMLContentComposer) *ICKMessage {
+func Message(cnt html.ContentComposer) *ICKMessage {
 	msg := new(ICKMessage)
 	msg.AddContent(cnt)
 	return msg

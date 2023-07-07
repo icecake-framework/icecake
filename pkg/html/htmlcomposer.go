@@ -11,7 +11,7 @@ import (
 // maxDEEP is the maximum HTML string unfolding levels
 const maxDEEP int = 25
 
-type HTMLContentComposer interface {
+type ContentComposer interface {
 
 	// Meta returns a reference to render meta data
 	ickcore.RMetaProvider
@@ -21,10 +21,10 @@ type HTMLContentComposer interface {
 	RenderContent(out io.Writer) error
 }
 
-// HTMLComposer interface combines TagBuilder interfaces and HTMLContentComposer interfaces
-type HTMLComposer interface {
+// ElementComposer interface
+type ElementComposer interface {
 	TagBuilder
-	HTMLContentComposer
+	ContentComposer
 }
 
 // Render renders the HTML string of the composers to out, including its tag element its properties and its content.
@@ -48,7 +48,7 @@ type HTMLComposer interface {
 // If the parent is not nil, the snippet is added to its embedded stack of sub-components.
 //
 // Returns rendering errors, typically with the writer, or if there's too many recursive rendering.
-func Render(out io.Writer, parent ickcore.RMetaProvider, cmps ...HTMLContentComposer) error {
+func Render(out io.Writer, parent ickcore.RMetaProvider, cmps ...ContentComposer) error {
 	for _, cmp := range cmps {
 		err := render(out, parent, cmp)
 		if err != nil {
@@ -58,7 +58,7 @@ func Render(out io.Writer, parent ickcore.RMetaProvider, cmps ...HTMLContentComp
 	return nil
 }
 
-func render(out io.Writer, parent ickcore.RMetaProvider, cmp HTMLContentComposer) error {
+func render(out io.Writer, parent ickcore.RMetaProvider, cmp ContentComposer) error {
 
 	// nothing to render
 	if cmp == nil || reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {

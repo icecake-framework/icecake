@@ -33,8 +33,8 @@ func main() {
 	// front rendering
 	boxusage := dom.Id("boxusage")
 	boxusage.InsertText(dom.INSERT_BODY, "")
-	u1 := ickui.Message(html.ToHTML("This is an informative message.")).SetColor(ick.COLOR_INFO)
-	boxusage.InsertSnippet(dom.INSERT_LAST_CHILD, u1)
+	u0 := ickui.Message(html.ToHTML("This is an informative message.")).SetColor(ick.COLOR_INFO)
+	boxusage.InsertSnippet(dom.INSERT_LAST_CHILD, u0)
 
 	ResetBoxUsage()
 
@@ -46,14 +46,14 @@ func main() {
 	<-c
 }
 
-func OnDeleteU2(del *ickui.ICKDelete) {
+func OnDeleteU1(del *ickui.ICKDelete) {
 	_btnreset.SetDisabled(false)
 }
 
 func ResetBoxUsage() {
-	u2 := ickui.Message(html.ToHTML("Click on the delete button to close this warning.")).SetColor(ick.COLOR_WARNING)
-	u2.SetHeader(*html.ToHTML("Warning")).SetDeletable("msgu2")
-	u2.BtnDelete.OnDelete = OnDeleteU2
-	dom.Id("boxusage").InsertSnippet(dom.INSERT_LAST_CHILD, u2)
+	u1 := ickui.Message(html.ToHTML("Click on the delete button to close this warning.")).SetColor(ick.COLOR_WARNING)
+	u1.SetHeader(*html.ToHTML("Warning")).SetDeletable("msgu2")
+	u1.BtnDelete.OnDelete = OnDeleteU1
+	dom.Id("boxusage").InsertSnippet(dom.INSERT_LAST_CHILD, u1)
 	_btnreset.SetDisabled(true)
 }
