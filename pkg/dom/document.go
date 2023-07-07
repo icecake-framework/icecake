@@ -100,6 +100,9 @@ func WrapId(ui UIComposer, elemid string) UIComposer {
 // Returns an error if elemid is not in the DOM or if the type does not match or ui ick does not implement .
 func TryWrapId(ui UIComposer, elemid string) error {
 
+	// DEBUG: console.Warnf("TryWrapId: %v to %s", elemid, reflect.TypeOf(ui).String())
+	// console.Warnf("TryWrapId: %v to %s", elemid, reflect.TypeOf(ui).String())
+
 	if elemid == "" {
 		return fmt.Errorf("WrapById: unable to wrap an empty Id")
 	}
