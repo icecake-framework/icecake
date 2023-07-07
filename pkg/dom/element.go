@@ -686,13 +686,13 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 	return CastElements(elems)
 }
 
-// InsertSnippet unfolds and renders the html of the _snippet and write it into the DOM.
-// The _snippet and all its embedded components are wrapped with their DOM element and their listeners are added to the DOM.
-// _snippet can be either an HTMLComposer or an UIComposer.
+// InsertSnippet unfolds and renders the html of the composer and write it into the DOM.
+// The composer and all its embedded components are wrapped with their DOM element and their listeners are added to the DOM.
+// Composer can be either a simple html ElementComposer or an UIComposer.
 //
 // Returns an error if _elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
 // Returns an error if WriteSnippet or mounting process fail.
-func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...Composer) (err error) {
+func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...html.ElementComposer) (errx error) {
 	if !elem.IsDefined() {
 		return console.Errorf("Element:InsertSnippet failed on undefined element")
 	}
@@ -707,7 +707,7 @@ func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...Composer) (err er
 			continue
 		}
 
-		IsInserted := false
+		isin := false
 		out.Reset()
 
 		// if the composer is a tag builder then create an element from the composer and insert it into the dom
@@ -715,7 +715,7 @@ func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...Composer) (err er
 		if tb, istb := cmp.(html.TagBuilder); istb {
 			tag := html.BuildTag(tb)
 			if tag.HasRendering() {
-				IsInserted = true
+				isin = true
 				tagn, _ := tag.TagName()
 				newe := CreateElement(tagn)
 				for attrn, attrv := range tag.AttributeMap {
@@ -723,43 +723,45 @@ func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...Composer) (err er
 				}
 
 				// Render the content
-				err = cmp.RenderContent(out)
-				if err != nil {
-					cmp.RMeta().RError = err
+				errx = cmp.RenderContent(out)
+				if errx != nil {
+					cmp.RMeta().RError = errx
 					break
 				}
 				newe.Set("innerHTML", out.String())
 				elem.InsertElement(where, newe)
-				cmp.Wrap(newe)
-				cmp.AddListeners()
-				err = mountSnippetTree(cmp)
-				if err != nil {
+				if ui, is := cmp.(UIComposer); is {
+					ui.Wrap(newe)
+					ui.AddListeners()
+				}
+				errx = mountSnippetTree(cmp)
+				if errx != nil {
 					break
 				}
 			}
 		}
 
-		if !IsInserted {
+		if !isin {
 			// otherwise insert the rendered snippet html into the dom
 			custodian := &ickcore.RMetaData{}
-			err = html.Render(out, custodian, cmp)
-			if err != nil {
+			errx = html.Render(out, custodian, cmp)
+			if errx != nil {
 				break
 			}
 			elem.InsertRawHTML(where, out.String())
 
 			// mount every embedded components with an ID
-			err = mountSnippetTree(custodian)
-			if err != nil {
+			errx = mountSnippetTree(custodian)
+			if errx != nil {
 				break
 			}
 		}
 	}
 
-	if err != nil {
-		console.Errorf(err.Error())
+	if errx != nil {
+		console.Errorf(errx.Error())
 	}
-	return err
+	return errx
 }
 
 // TODO: dom - handle Element.InsertRawHTML exceptions
@@ -822,7 +824,8 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) {
 	case INSERT_OUTER:
 		_me.Set("replaceWith", _elem.Value())
 	case INSERT_BODY:
-		_me.Set("innerText", "") // HACK
+		// HACK: element.InsertElement - maybe a better way to replace the content
+		_me.Set("innerText", "")
 		_me.Call("append", _elem.Value())
 	}
 }
