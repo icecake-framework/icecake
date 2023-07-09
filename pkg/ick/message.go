@@ -31,6 +31,8 @@ type ICKMessage struct {
 
 	// SIZE define the size of the message
 	SIZE
+
+	//TODO: ICKMessage - handle Notify style (toast)
 }
 
 // Ensuring ICKMessage implements the right interface
@@ -54,6 +56,7 @@ func (msg *ICKMessage) BuildTag() html.Tag {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (msg *ICKMessage) RenderContent(out io.Writer) error {
+	//TODO: ICKMessage - handle delete button without header
 
 	if !msg.Header.IsEmpty() {
 		html.RenderString(out, `<div class="message-header">`)
