@@ -15,7 +15,7 @@ func ExampleTag() {
 	}
 
 	// create a new div tag
-	tag := NewTag("div", ParseAttributes(`class="example dark"`))
+	tag := NewTag("div", `class="example dark"`)
 
 	out := new(bytes.Buffer)
 	render(out, *tag, "example1")
