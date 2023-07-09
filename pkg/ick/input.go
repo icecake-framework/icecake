@@ -51,9 +51,9 @@ func (inputfield *InputField) BuildTag() html.Tag {
 func (cmp *InputField) RenderContent(out io.Writer) error {
 	// <label>
 	if !cmp.Label.IsEmpty() {
-		html.WriteString(out, `<label class="label">`)
-		cmp.RenderChild(out, &cmp.Label)
-		html.WriteString(out, `</label>`)
+		html.RenderString(out, `<label class="label">`)
+		html.RenderChild(out, cmp, &cmp.Label)
+		html.RenderString(out, `</label>`)
 	}
 
 	// <div control>
@@ -77,16 +77,16 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 		subinput.Tag().SetBool("readonly", true)
 	}
 	subcontrol.Push(subinput)
-	cmp.RenderChild(out, subcontrol)
+	html.RenderChild(out, cmp, subcontrol)
 
 	// <p help>
 	if !cmp.Help.IsEmpty() {
-		subhelp := html.Snippet("p", `class="help"`).SetBody(&cmp.Help)
+		subhelp := html.Snippet("p", `class="help"`, &cmp.Help)
 		subhelp.Tag().
 			SetClassIf(cmp.State == INPUT_SUCCESS, "is-success").
 			SetClassIf(cmp.State == INPUT_WARNING, "is-warning").
 			SetClassIf(cmp.State == INPUT_ERROR, "is-danger")
-		cmp.RenderChild(out, subhelp)
+		html.RenderChild(out, cmp, subhelp)
 	}
 
 	return nil

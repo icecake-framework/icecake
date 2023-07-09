@@ -322,7 +322,7 @@ func unfoldick(parent ContentComposer, out io.Writer, ickname string, ickattrs A
 
 		// render the composer found
 		if err == nil {
-			err = Render(out, parent, newcmp)
+			err = RenderChild(out, parent, newcmp)
 		}
 
 	} else {
@@ -330,7 +330,7 @@ func unfoldick(parent ContentComposer, out io.Writer, ickname string, ickattrs A
 	}
 
 	if err != nil {
-		WriteString(out, "<!--", err.Error(), "-->")
+		RenderString(out, "<!--", err.Error(), "-->")
 	}
 
 	return err

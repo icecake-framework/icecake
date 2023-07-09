@@ -91,12 +91,12 @@ func (s *testsnippet4) BuildTag() Tag {
 }
 
 func (s *testsnippet4) RenderContent(out io.Writer) error {
-	WriteStringIf(s.Text != "", out, s.Text)
-	s.RenderChild(out, &s.HTML)
-	WriteStringIf(s.I != 0, out, fmt.Sprintf("%v", s.I))
-	WriteStringIf(s.F != 0, out, fmt.Sprintf("%v", s.F))
-	WriteStringIf(s.D != 0, out, fmt.Sprintf("%v", s.D+(time.Hour*1)))
-	WriteStringIf(s.U != nil, out, fmt.Sprintf("<a href='%v'></a>", s.U))
+	RenderStringIf(s.Text != "", out, s.Text)
+	RenderChild(out, s, &s.HTML)
+	RenderStringIf(s.I != 0, out, fmt.Sprintf("%v", s.I))
+	RenderStringIf(s.F != 0, out, fmt.Sprintf("%v", s.F))
+	RenderStringIf(s.D != 0, out, fmt.Sprintf("%v", s.D+(time.Hour*1)))
+	RenderStringIf(s.U != nil, out, fmt.Sprintf("<a href='%v'></a>", s.U))
 	return nil
 }
 
@@ -104,7 +104,7 @@ func (s *testsnippet4) RenderContent(out io.Writer) error {
 type testsnippetinfinite struct{ BareSnippet }
 
 func (s *testsnippetinfinite) RenderContent(out io.Writer) error {
-	return s.RenderChild(out, ToHTML("<ick-testinfinite/>"))
+	return RenderChild(out, s, ToHTML("<ick-testinfinite/>"))
 }
 
 // testsnippetinfinite

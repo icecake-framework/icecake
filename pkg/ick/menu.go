@@ -86,14 +86,14 @@ func (mnui *IckMenuItem) BuildTag() html.Tag {
 func (mnui *IckMenuItem) RenderContent(out io.Writer) error {
 	switch mnui.Type {
 	case MENUIT_LABEL:
-		html.WriteString(out, mnui.Text)
+		html.RenderString(out, mnui.Text)
 	case MENUIT_FOOTER:
-		mnui.RenderChild(out, html.ToHTML(mnui.Text))
+		html.RenderChild(out, mnui, html.ToHTML(mnui.Text))
 	default:
 		item := A().SetHRef(mnui.HRef)
 		item.Push(html.ToHTML(mnui.Text))
 		item.Tag().SetClassIf(mnui.IsActive, "is-active")
-		mnui.RenderChild(out, item)
+		html.RenderChild(out, mnui, item)
 	}
 	return nil
 }
@@ -203,26 +203,26 @@ func (mnu *IckMenu) RenderContent(out io.Writer) error {
 			switch lastlevel {
 			case 0:
 			case 1: // close upper list
-				html.WriteString(out, "</ul>")
+				html.RenderString(out, "</ul>")
 			case 2: // close upper lists
-				html.WriteString(out, "</li></ul></ul>")
+				html.RenderString(out, "</li></ul></ul>")
 			}
 			lastlevel = 0
 		case MENUIT_LINK:
 			switch lastlevel {
 			case 0: // open 1st list
-				html.WriteString(out, `<ul class="menu-list">`)
+				html.RenderString(out, `<ul class="menu-list">`)
 			case 1:
 			case 2: // close upper list, back to 1st list
-				html.WriteString(out, "</li></ul>")
+				html.RenderString(out, "</li></ul>")
 			}
 			lastlevel = 1
 		case MENUIT_NESTEDLINK:
 			switch lastlevel {
 			case 0: // open 1st list and 2nd one
-				html.WriteString(out, "<ul><li><ul>")
+				html.RenderString(out, "<ul><li><ul>")
 			case 1: // open 2nd list
-				html.WriteString(out, "<li><ul>")
+				html.RenderString(out, "<li><ul>")
 			case 2:
 			}
 			lastlevel = 2
@@ -230,15 +230,15 @@ func (mnu *IckMenu) RenderContent(out io.Writer) error {
 			continue
 		}
 
-		mnu.RenderChild(out, item)
+		html.RenderChild(out, mnu, item)
 	}
 
 	// close the menu
 	switch lastlevel {
 	case 1:
-		html.WriteString(out, "</ul>")
+		html.RenderString(out, "</ul>")
 	case 2:
-		html.WriteString(out, "</ul></ul>")
+		html.RenderString(out, "</ul></ul>")
 	}
 
 	mnutag.RenderClosing(out)
@@ -250,14 +250,14 @@ func (mnu *IckMenu) RenderContent(out io.Writer) error {
 		if item.Type == MENUIT_FOOTER {
 			if !hasfooter {
 				foottag.RenderOpening(out)
-				html.WriteString(out, `<ul class="menu-list">`)
+				html.RenderString(out, `<ul class="menu-list">`)
 				hasfooter = true
 			}
-			mnu.RenderChild(out, item)
+			html.RenderChild(out, mnu, item)
 		}
 	}
 	if hasfooter {
-		html.WriteString(out, `</ul>`)
+		html.RenderString(out, `</ul>`)
 		foottag.RenderClosing(out)
 	}
 	return nil

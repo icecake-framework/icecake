@@ -10,7 +10,7 @@ import (
 type SectionDocOverview struct{ SectionDocIcecake }
 
 func (sec *SectionDocOverview) RenderContent(out io.Writer) error {
-	html.Render(out, nil, ick.Title(3, "Overview"))
+	html.RenderChild(out, sec, ick.Title(3, "Overview"))
 
 	return nil
 }

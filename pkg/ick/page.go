@@ -173,14 +173,14 @@ func (pg Page) WriteFile(outputpath string) (err error) {
 func (pg *Page) RenderContent(out io.Writer) (err error) {
 
 	// <!doctype>
-	html.WriteString(out, `<!doctype html><html lang="`, pg.Lang, `">`)
+	html.RenderString(out, `<!doctype html><html lang="`, pg.Lang, `">`)
 
 	// <head>
-	html.WriteString(out, `<head>`)
-	html.WriteStringIf(pg.Title != "", out, "<title>", pg.Title, "</title>")
-	html.WriteStringIf(pg.Description != "", out, `<meta name="description" content="`+pg.Description+`">`)
+	html.RenderString(out, `<head>`)
+	html.RenderStringIf(pg.Title != "", out, "<title>", pg.Title, "</title>")
+	html.RenderStringIf(pg.Description != "", out, `<meta name="description" content="`+pg.Description+`">`)
 	for _, item := range pg.HeadItems {
-		if err = html.Render(out, nil, &item); err != nil {
+		if err = html.RenderChild(out, nil, &item); err != nil {
 			return err
 		}
 	}
@@ -199,25 +199,25 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 				}
 			}
 		}
-		html.WriteStringIf(!duplicate, out, `<link rel="stylesheet" href="`+strrcssf+`">`)
+		html.RenderStringIf(!duplicate, out, `<link rel="stylesheet" href="`+strrcssf+`">`)
 	}
 
 	// required css styles
 	rcssstyle := html.RequiredCSSStyle()
-	html.WriteStringIf(rcssstyle != "", out, `<style>`, rcssstyle, `</style>`)
+	html.RenderStringIf(rcssstyle != "", out, `<style>`, rcssstyle, `</style>`)
 
-	html.WriteString(out, "</head>")
+	html.RenderString(out, "</head>")
 
 	// <body>
 	pg.body.Tag().SetTagName("body")
-	html.Render(out, pg, &pg.body)
+	html.RenderChild(out, pg, &pg.body)
 
 	// wasm script, if any
 	// must be loaded at the end of the page because the wasm code interacts with the loading/loaded )DOM
-	html.Render(out, nil, pg.WasmScript())
+	html.RenderChild(out, nil, pg.WasmScript())
 
 	// <closing>
-	html.WriteString(out, "</html>")
+	html.RenderString(out, "</html>")
 
 	return nil
 }

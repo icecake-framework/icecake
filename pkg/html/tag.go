@@ -113,15 +113,15 @@ func (tag *Tag) ParseAttributes(alists ...string) AttributeMap {
 func (tag *Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
 	if tag.tagname != "" {
 		stratt := tag.AttributeString()
-		_, err = WriteString(out, "<", tag.tagname)
+		_, err = RenderString(out, "<", tag.tagname)
 		if err != nil {
 			return
 		}
-		_, err = WriteStringIf(stratt != "", out, " ", tag.AttributeString())
+		_, err = RenderStringIf(stratt != "", out, " ", tag.AttributeString())
 		if err != nil {
 			return
 		}
-		_, err = WriteString(out, ">")
+		_, err = RenderString(out, ">")
 		if err != nil {
 			return
 		}
@@ -135,7 +135,7 @@ func (tag *Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
 // errors mays occurs from the writer only.
 func (tag *Tag) RenderClosing(out io.Writer) (err error) {
 	if tag.tagname != "" && !tag.selfClosing {
-		_, err = WriteString(out, "</", tag.tagname, ">")
+		_, err = RenderString(out, "</", tag.tagname, ">")
 	}
 	return
 }

@@ -4,18 +4,18 @@ import (
 	"io"
 )
 
-// WriteStringIf writes one or many strings to w only if the condition is true.
+// RenderStringIf writes one or many strings to w only if the condition is true.
 // Returns the number of bytes written and errors from the writer.
-func WriteStringIf(condition bool, w io.Writer, ss ...string) (n int, err error) {
+func RenderStringIf(condition bool, w io.Writer, ss ...string) (n int, err error) {
 	if !condition {
 		return 0, nil
 	}
-	return WriteString(w, ss...)
+	return RenderString(w, ss...)
 }
 
-// WriteString writes one or many strings to w.
+// RenderString writes one or many strings to w.
 // Returns the number of bytes written and errors from the writer.
-func WriteString(w io.Writer, ss ...string) (n int, err error) {
+func RenderString(w io.Writer, ss ...string) (n int, err error) {
 	nn := 0
 	for _, s := range ss {
 		nn, err = io.WriteString(w, s)

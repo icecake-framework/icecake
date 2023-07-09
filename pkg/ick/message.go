@@ -56,24 +56,24 @@ func (msg *ICKMessage) BuildTag() html.Tag {
 func (msg *ICKMessage) RenderContent(out io.Writer) error {
 
 	if !msg.Header.IsEmpty() {
-		html.WriteString(out, `<div class="message-header">`)
-		msg.RenderChild(out, html.Snippet("span").SetBody(&msg.Header))
+		html.RenderString(out, `<div class="message-header">`)
+		html.RenderChild(out, msg, html.Snippet("span", "", &msg.Header))
 		if msg.CanDelete {
 			id := msg.Id()
 			if id == "" {
 				verbose.Debug("ICKMessage: Rendering Deletable Message without TargetId")
-				msg.RenderChild(out, html.ToHTML(`<ick-delete/>`))
+				html.RenderChild(out, msg, html.ToHTML(`<ick-delete/>`))
 			} else {
-				msg.RenderChild(out, html.ToHTML(`<ick-delete id="del`+id+`" TargetId='`+id+`'/>`))
+				html.RenderChild(out, msg, html.ToHTML(`<ick-delete id="del`+id+`" TargetId='`+id+`'/>`))
 			}
 		}
-		html.WriteString(out, `</div>`)
+		html.RenderString(out, `</div>`)
 	}
 
 	if msg.Msg.HasContent() {
-		html.WriteString(out, `<div class="message-body">`)
+		html.RenderString(out, `<div class="message-body">`)
 		msg.Msg.RenderStack(out, msg)
-		html.WriteString(out, `</div>`)
+		html.RenderString(out, `</div>`)
 	}
 
 	return nil

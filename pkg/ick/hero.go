@@ -54,26 +54,28 @@ func (msg *Hero) BuildTag() html.Tag {
 func (msg *Hero) RenderContent(out io.Writer) error {
 
 	if msg.InsideHead != nil {
-		msg.RenderChild(out, html.Snippet("div", `class="hero-head"`).SetBody(msg.InsideHead))
+		html.RenderChild(out, msg, html.Snippet("div", `class="hero-head"`, msg.InsideHead))
 	}
 
-	html.WriteString(out, `<div class="hero-body">`)
+	html.RenderString(out, `<div class="hero-body">`)
 
 	cont := new(Container)
 	cont.Tag().AttributeMap = msg.ContainerAttr.Clone()
 	contag := cont.BuildTag()
 	contag.RenderOpening(out)
 
-	msg.RenderChild(out, &msg.Title, &msg.Subtitle)
+	html.RenderChild(out, msg, &msg.Title, &msg.Subtitle)
 
-	msg.RenderChildIf(msg.CTA != nil, out, msg.CTA)
+	if msg.CTA != nil {
+		html.RenderChild(out, msg, msg.CTA)
+	}
 
 	contag.RenderClosing(out)
 
-	html.WriteString(out, `</div>`)
+	html.RenderString(out, `</div>`)
 
 	if msg.InsideFoot != nil {
-		msg.RenderChild(out, html.Snippet("div", `class="hero-foor"`).SetBody(msg.InsideFoot))
+		html.RenderChild(out, msg, html.Snippet("div", `class="hero-foor"`, msg.InsideFoot))
 	}
 
 	return nil

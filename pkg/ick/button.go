@@ -143,10 +143,10 @@ func (btn *ICKButton) BuildTag() html.Tag {
 func (btn *ICKButton) RenderContent(out io.Writer) error {
 	has := btn.OpeningIcon.Key != "" || btn.ClosingIcon.Key != ""
 
-	html.Render(out, nil, &btn.OpeningIcon)
-	html.WriteStringIf(has, out, "<span>")
-	html.WriteString(out, btn.Title)
-	html.WriteStringIf(has, out, "</span>")
-	html.Render(out, nil, &btn.ClosingIcon)
+	html.RenderChild(out, btn, &btn.OpeningIcon)
+	html.RenderStringIf(has, out, "<span>")
+	html.RenderString(out, btn.Title)
+	html.RenderStringIf(has, out, "</span>")
+	html.RenderChild(out, btn, &btn.ClosingIcon)
 	return nil
 }

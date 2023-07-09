@@ -119,6 +119,6 @@ func (image *ICKImage) RenderContent(out io.Writer) error {
 		SetClassIf(image.IsRounded, "is-rounded").
 		SetAttributeIf(image.Alt != "", "alt", image.Alt)
 
-	image.RenderChild(out, img)
+	html.RenderChild(out, image, img)
 	return nil
 }

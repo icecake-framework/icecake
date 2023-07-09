@@ -27,7 +27,7 @@ type ElementComposer interface {
 	ContentComposer
 }
 
-// Render renders the HTML string of the composers to out, including its tag element its properties and its content.
+// RenderChild renders the HTML string of the composers to out, including its tag element its properties and its content.
 // Rendering the content can renders child-snippets recursively. This can be done maxDEEP times max to avoid infinite loop.
 //
 // If composer is a also a TagBuilder the output looks like this:
@@ -48,9 +48,13 @@ type ElementComposer interface {
 // If the parent is not nil, the snippet is added to its embedded stack of sub-components.
 //
 // Returns rendering errors, typically with the writer, or if there's too many recursive rendering.
-func Render(out io.Writer, parent ickcore.RMetaProvider, cmps ...ContentComposer) error {
-	for _, cmp := range cmps {
-		err := render(out, parent, cmp)
+func RenderChild(out io.Writer, parent ickcore.RMetaProvider, child ContentComposer, siblings ...ContentComposer) error {
+	err := render(out, parent, child)
+	if err != nil {
+		return err
+	}
+	for _, s := range siblings {
+		err := render(out, parent, s)
 		if err != nil {
 			return err
 		}

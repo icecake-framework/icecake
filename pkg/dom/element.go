@@ -744,7 +744,7 @@ func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...html.ElementCompo
 		if !isin {
 			// otherwise insert the rendered snippet html into the dom
 			custodian := &ickcore.RMetaData{}
-			errx = html.Render(out, custodian, cmp)
+			errx = html.RenderChild(out, custodian, cmp)
 			if errx != nil {
 				break
 			}

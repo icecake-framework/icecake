@@ -105,9 +105,9 @@ func (navi *ICKNavbarItem) RenderContent(out io.Writer) error {
 		if navi.ImageSrc != nil {
 			img := html.Snippet("img", `width="auto" height="28"`)
 			img.Tag().SetURL("src", navi.ImageSrc)
-			navi.RenderChild(out, img)
+			html.RenderChild(out, navi, img)
 		}
-		navi.RenderChild(out, navi.Content)
+		html.RenderChild(out, navi, navi.Content)
 	}
 	return nil
 }
@@ -173,8 +173,9 @@ type ICKNavbar struct {
 // Ensuring ICKNavbar implements the right interface
 var _ html.ElementComposer = (*ICKNavbar)(nil)
 
-func NavBar() *ICKNavbar {
+func NavBar(attrs ...string) *ICKNavbar {
 	n := new(ICKNavbar)
+	n.Tag().ParseAttributes(attrs...)
 	return n
 }
 
@@ -248,33 +249,39 @@ func (nav *ICKNavbar) BuildTag() html.Tag {
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (nav *ICKNavbar) RenderContent(out io.Writer) error {
 	// brand area
-	html.WriteString(out, `<div class="navbar-brand">`)
+	html.RenderString(out, `<div class="navbar-brand">`)
 
 	// brand items
 	for _, item := range nav.items {
-		nav.RenderChildIf(item.Type == NAVBARIT_BRAND, out, item)
+		if item.Type == NAVBARIT_BRAND {
+			html.RenderChild(out, nav, item)
+		}
 	}
 	// burger
-	html.WriteString(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
-	html.WriteString(out, `</div>`)
+	html.RenderString(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
+	html.RenderString(out, `</div>`)
 
 	// menu area
 	// the burger id is required for flipping it
-	html.WriteString(out, `<div class="navbar-menu">`)
+	html.RenderString(out, `<div class="navbar-menu">`)
 
-	html.WriteString(out, `<div class="navbar-start">`)
+	html.RenderString(out, `<div class="navbar-start">`)
 	for _, item := range nav.items {
-		nav.RenderChildIf(item.Type == NAVBARIT_START, out, item)
+		if item.Type == NAVBARIT_START {
+			html.RenderChild(out, nav, item)
+		}
 	}
-	html.WriteString(out, `</div>`)
+	html.RenderString(out, `</div>`)
 
-	html.WriteString(out, `<div class="navbar-end">`)
+	html.RenderString(out, `<div class="navbar-end">`)
 	for _, item := range nav.items {
-		nav.RenderChildIf(item.Type == NAVBARIT_END, out, item)
+		if item.Type == NAVBARIT_END {
+			html.RenderChild(out, nav, item)
+		}
 	}
-	html.WriteString(out, `</div>`)
+	html.RenderString(out, `</div>`)
 
-	html.WriteString(out, `</div>`) // navbar-menu
+	html.RenderString(out, `</div>`) // navbar-menu
 
 	return nil
 }

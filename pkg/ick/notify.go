@@ -43,7 +43,7 @@ func (notify *Notify) BuildTag() html.Tag {
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (notify *Notify) RenderContent(out io.Writer) error {
 	notify.Delete.TargetId = notify.Id()
-	notify.RenderChild(out, &notify.Delete)
-	notify.RenderChild(out, &notify.Message)
+	html.RenderChild(out, notify, &notify.Delete)
+	html.RenderChild(out, notify, &notify.Message)
 	return nil
 }

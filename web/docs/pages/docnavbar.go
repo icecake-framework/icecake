@@ -15,26 +15,26 @@ type SectionDocNavbar struct{ SectionDocIcecake }
 
 func (sec *SectionDocNavbar) RenderContent(out io.Writer) error {
 	sec.RenderHead(out, "Navbar", "Navbar.go", "ICKNavbar")
-	html.WriteString(out, `<div class="block">`+
+
+	html.RenderString(out, `<div class="block">`+
 		`<p>ICKNavbar is an icecake snippet providing the HTML rendering for a `, linkBulmaNavbar, `, with extra features and usefull go wasm APIs.</p>`+
 		`<p>The navbar is an horizontal bar containing items and sub items.`+
 		`The navbar is splitted in three areas: the brand area, the start area stacked on the left, and the end area stacked on the right.</p>`+
 		`</div>`)
 
 	// usages
-	html.WriteString(out, `<div id="boxusage" class="box mr-5">`)
-	us1 := new(ick.ICKNavbar)
-	us1.Tag().AddStyle("border: solid 1px;")
-	us1.AddItem("", ick.NAVBARIT_BRAND, html.ToHTML("BRAND"))
-	us1.AddItem("", ick.NAVBARIT_START, html.ToHTML("Home"))
-	us1.AddItem("", ick.NAVBARIT_START, html.ToHTML("Second Item"))
-	us1.AddItem("", ick.NAVBARIT_END, html.ToHTML("Last Item"))
-	html.Render(out, sec, us1)
-	html.WriteString(out, `</div>`)
+	html.RenderString(out, `<div id="boxusage" class="box mr-5">`)
+	bar := ick.NavBar(`style="border: solid 1px;"`)
+	bar.AddItem("", ick.NAVBARIT_BRAND, html.ToHTML("BRAND"))
+	bar.AddItem("", ick.NAVBARIT_START, html.ToHTML("Home"))
+	bar.AddItem("", ick.NAVBARIT_START, html.ToHTML("Second Item"))
+	bar.AddItem("", ick.NAVBARIT_END, html.ToHTML("Last Item"))
+	html.RenderChild(out, sec, bar)
+	html.RenderString(out, `</div>`)
 
 	//Styling
-	html.Render(out, nil, ick.Title(4, "Styling"))
-	html.WriteString(out, `<div class="block">`+
+	html.RenderChild(out, sec, ick.Title(4, "Styling"))
+	html.RenderString(out, `<div class="block">`+
 		`</div>`)
 
 	return nil

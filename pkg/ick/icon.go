@@ -64,11 +64,11 @@ func (icon *ICKIcon) RenderContent(out io.Writer) error {
 		return nil
 	}
 	if icon.Text == "" {
-		html.WriteString(out, `<i class="`, icon.Key, `"></i>`)
+		html.RenderString(out, `<i class="`, icon.Key, `"></i>`)
 	} else {
-		s := html.Snippet("span", `class="icon"`).SetBody(html.ToHTML(`<i class="` + icon.Key + `"></i>`))
-		html.Render(out, nil, s)
-		html.WriteString(out, `<span>`+icon.Text+`</span>`)
+		html.RenderChild(out, icon,
+			html.Snippet("span", `class="icon"`, html.ToHTML(`<i class="`+icon.Key+`"></i>`)))
+		html.RenderString(out, `<span>`+icon.Text+`</span>`)
 	}
 	return nil
 }

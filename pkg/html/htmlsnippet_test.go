@@ -15,46 +15,46 @@ func TestComposeBasics(t *testing.T) {
 
 	// empty snippet
 	s00 := new(ICKSnippet)
-	err := Render(out, nil, s00)
+	err := RenderChild(out, nil, s00)
 	require.NoError(t, err)
 	require.Empty(t, out)
 
 	// unregistered snippet with a simple tagname and an empty body
 	ickcore.ResetRegistry()
-	s0 := Snippet("span")
-	err = Render(out, nil, s0)
+	s0 := Snippet("span", "")
+	err = RenderChild(out, nil, s0)
 	require.NoError(t, err)
 	assert.Equal(t, `<span></span>`, out.String())
 
 	// force id, setup classes, attributes and style
 	out.Reset()
 	s0.Tag().SetTabIndex(1).AddStyle("color=red;").SetId("helloworld").AddClass("test")
-	Render(out, nil, s0)
+	RenderChild(out, nil, s0)
 	assert.Equal(t, `<span id="helloworld" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
 	// The same but when registered, with forced id
 	out.Reset()
 	ickcore.AddRegistryEntry("ick-testsnippet0", &BareSnippet{})
-	Render(out, nil, s0)
+	RenderChild(out, nil, s0)
 	assert.Equal(t, `<span id="helloworld" class="test" style="color=red;" tabindex=1></span>`, out.String())
 
 	// The same but when registered, without id
 	out.Reset()
 	s0.Tag().SetId("")
-	Render(out, nil, s0)
+	RenderChild(out, nil, s0)
 	assert.Equal(t, `<span class="test" style="color=red;" tabindex=1></span>`, out.String())
 
 	// unregistered snippet with a simple body and no tagname
 	out.Reset()
 	s1 := ToHTML(`Hello World`)
-	Render(out, nil, s1)
+	RenderChild(out, nil, s1)
 	assert.Equal(t, "Hello World", out.String())
 
 	// snippet with a tagname and default attributes
 	out.Reset()
 	ickcore.AddRegistryEntry("ick-testsnippet2", &testsnippet2{})
 	s2 := new(testsnippet2)
-	Render(out, nil, s2)
+	RenderChild(out, nil, s2)
 	assert.Equal(t, `<div name="testsnippet2" class="ts2a ts2b" a2 style="display=test;" tabindex=2></div>`, out.String())
 
 	// snippet with a tagname, default attributes and custom attributes
@@ -62,13 +62,13 @@ func TestComposeBasics(t *testing.T) {
 	out.Reset()
 	s2 = new(testsnippet2)
 	s2.Tag().SetTabIndex(1).AddStyle("color=red;").SetAttribute("a3", "").SetId("tst").AddClass("ts2c")
-	Render(out, nil, s2)
+	RenderChild(out, nil, s2)
 	assert.Equal(t, `<div id="tst" name="testsnippet2" class="ts2a ts2b" a2 a3 style="display=test;" tabindex=2></div>`, out.String())
 
 	// update custom attributes on an existing component
 	out.Reset()
 	s2.Tag().SetTabIndex(3).AddStyle("color=blue;").SetAttribute("a4", "").AddClass("ts2a ts2d").RemoveClass("ts2c").RemoveAttribute("a3")
-	Render(out, nil, s2)
+	RenderChild(out, nil, s2)
 	assert.Equal(t, `<div id="tst" name="testsnippet2" class="ts2a ts2b" a2 a4 style="display=test;" tabindex=2></div>`, out.String())
 }
 
@@ -470,8 +470,8 @@ func TestSnippetId_2(t *testing.T) {
 
 	out := new(bytes.Buffer)
 
-	s := Snippet("div", "noid").SetBody(ToHTML("<i>test</i>"))
-	err := Render(out, nil, s)
+	s := Snippet("div", "noid", ToHTML("<i>test</i>"))
+	err := RenderChild(out, nil, s)
 	require.NoError(t, err)
 	require.Equal(t, `<div noid><i>test</i></div>`, out.String())
 }

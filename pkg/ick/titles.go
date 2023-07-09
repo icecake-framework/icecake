@@ -72,6 +72,6 @@ func (msg *ICKTitle) BuildTag() html.Tag {
 
 // BuildTag returns tag <div class="message {classes}" {attributes}>
 func (msg *ICKTitle) RenderContent(out io.Writer) error {
-	_, err := html.WriteString(out, msg.Title)
+	_, err := html.RenderString(out, msg.Title)
 	return err
 }

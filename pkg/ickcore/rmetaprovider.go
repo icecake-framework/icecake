@@ -18,13 +18,13 @@ type ComposerMap map[string]RMetaProvider
 
 // RMetaData is rendering metadata for a single HTMLContentComposer
 type RMetaData struct {
+	Deep      int           // deepness of the HTMLContentComposer
 	VirtualId string        // virtual id allocated to an HTMLContentComposer, always one
 	Id        string        // the id allocated to the HTMLContentComposer if any
 	Parent    RMetaProvider // optional parent, may be an orphan
-	Deep      int           // deepness of the HTMLContentComposer
 	IsRender  bool          // Indicates the HTMLContentComposer has been rendered at least once
-	RError    error         // rendering error if any
 	IsMounted bool          // Indicates the HTMLContentComposer has been mounted
+	RError    error         // rendering error if any
 
 	childs ComposerMap // embedded child content composer
 }

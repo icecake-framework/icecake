@@ -31,8 +31,9 @@ type ICKCard struct {
 var _ html.ElementComposer = (*ICKCard)(nil)
 
 // Card main factory
-func Card(content html.ContentComposer) *ICKCard {
+func Card(content html.ContentComposer, attrs ...string) *ICKCard {
 	c := new(ICKCard)
+	c.Tag().ParseAttributes(attrs...)
 	c.footerItem = make([]html.HTMLString, 0)
 	c.Body.Push(content)
 	return c
@@ -65,31 +66,31 @@ func (card *ICKCard) BuildTag() html.Tag {
 func (card *ICKCard) RenderContent(out io.Writer) error {
 
 	if !card.Title.IsEmpty() {
-		html.WriteString(out, `<header class="card-header">`, `<p class="card-header-title">`)
-		card.RenderChild(out, &card.Title)
-		html.WriteString(out, `</p></header>`)
+		html.RenderString(out, `<header class="card-header">`, `<p class="card-header-title">`)
+		html.RenderChild(out, card, &card.Title)
+		html.RenderString(out, `</p></header>`)
 	}
 
 	if card.Image != nil {
-		html.WriteString(out, `<div class="card-image">`)
-		card.RenderChild(out, card.Image)
-		html.WriteString(out, `</div>`)
+		html.RenderString(out, `<div class="card-image">`)
+		html.RenderChild(out, card, card.Image)
+		html.RenderString(out, `</div>`)
 	}
 
 	if card.Body.HasContent() {
-		html.WriteString(out, `<div class="card-content">`)
+		html.RenderString(out, `<div class="card-content">`)
 		card.Body.RenderStack(out, card)
-		html.WriteString(out, `</div>`)
+		html.RenderString(out, `</div>`)
 	}
 
 	if len(card.footerItem) > 0 {
-		html.WriteString(out, `<div class="card-footer">`)
+		html.RenderString(out, `<div class="card-footer">`)
 		for _, item := range card.footerItem {
-			html.WriteString(out, `<span class="card-footer-item">`)
-			card.RenderChild(out, &item)
-			html.WriteString(out, `</span>`)
+			html.RenderString(out, `<span class="card-footer-item">`)
+			html.RenderChild(out, card, &item)
+			html.RenderString(out, `</span>`)
 		}
-		html.WriteString(out, `</div>`)
+		html.RenderString(out, `</div>`)
 	}
 	return nil
 }
