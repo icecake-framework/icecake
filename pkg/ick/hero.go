@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	html.RegisterComposer("ick-hero", &Hero{})
+	html.RegisterComposer("ick-hero", &ICKHero{})
 }
 
 // The height of the hero section
@@ -24,7 +24,7 @@ const (
 	HH_OPTIONS                 string      = string(HH_SMALL + " " + HH_MEDIUM + " " + HH_LARGE + " " + HH_HALFHEIGHT + " " + HH_FULLFHEIGHT + " " + HH_FULLFHEIGHT_WITH_NAVBAR)
 )
 
-type Hero struct {
+type ICKHero struct {
 	html.BareSnippet
 
 	Height HERO_HEIGHT // the height of the hero section,
@@ -36,22 +36,27 @@ type Hero struct {
 	Title    ICKTitle
 	Subtitle ICKTitle
 
-	CTA html.ContentComposer // Call To Action
+	CTA ICKButton
 
 	InsideFoot html.ContentComposer
 }
 
 // Ensuring Hero implements the right interface
-var _ html.ElementComposer = (*Hero)(nil)
+var _ html.ElementComposer = (*ICKHero)(nil)
+
+func Hero() *ICKHero {
+	hero := new(ICKHero)
+	return hero
+}
 
 // Tag Builder used by the rendering functions.
-func (msg *Hero) BuildTag() html.Tag {
+func (msg *ICKHero) BuildTag() html.Tag {
 	msg.Tag().SetTagName("section").AddClass("hero").PickClass(HH_OPTIONS, string(msg.Height))
 	return *msg.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (msg *Hero) RenderContent(out io.Writer) error {
+func (msg *ICKHero) RenderContent(out io.Writer) error {
 
 	if msg.InsideHead != nil {
 		html.RenderChild(out, msg, html.Snippet("div", `class="hero-head"`, msg.InsideHead))
@@ -64,11 +69,7 @@ func (msg *Hero) RenderContent(out io.Writer) error {
 	contag := cont.BuildTag()
 	contag.RenderOpening(out)
 
-	html.RenderChild(out, msg, &msg.Title, &msg.Subtitle)
-
-	if msg.CTA != nil {
-		html.RenderChild(out, msg, msg.CTA)
-	}
+	html.RenderChild(out, msg, &msg.Title, &msg.Subtitle, &msg.CTA)
 
 	contag.RenderClosing(out)
 
