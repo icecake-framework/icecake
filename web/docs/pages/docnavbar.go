@@ -32,10 +32,5 @@ func (sec *SectionDocNavbar) RenderContent(out io.Writer) error {
 	html.RenderChild(out, sec, bar)
 	html.RenderString(out, `</div>`)
 
-	//Styling
-	html.RenderChild(out, sec, ick.Title(4, "Styling"))
-	html.RenderString(out, `<div class="block">`+
-		`</div>`)
-
 	return nil
 }
