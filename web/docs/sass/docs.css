@@ -4169,7 +4169,7 @@ button.dropdown-item.is-active {
   color: hsl(0, 0%, 21%);
 }
 .menu-list a.is-active {
-  background-color: #DB0690;
+  background-color: #058ED9;
   color: #fff;
 }
 .menu-list li ul {
@@ -10285,7 +10285,7 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
 /* ICKNotify */
 /* ICKNavbar */
 a.navbar-item.is-active {
-  border-bottom: 2px solid #DB0690;
+  border-bottom: 2px solid #058ED9;
 }
 
 .ickcropimage img {

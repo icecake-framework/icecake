@@ -13,7 +13,7 @@ func DocNavbar() *ick.ICKNavbar {
 	nav.AddItem("docs", ick.NAVBARIT_START, html.ToHTML(`Docs`)).ParseHRef("/docoverview.html")
 
 	btngit := ick.Button("GitHub").ParseHRef("https://github.com/icecake-framework/icecake")
-	btngit.SetColor(ick.COLOR_PRIMARY).SetOutlined(true)
+	btngit.SetColor(ick.COLOR_LINK).SetOutlined(true)
 
 	nav.AddItem("", ick.NAVBARIT_END, btngit)
 	nav.AddItem("", ick.NAVBARIT_END, html.ToHTML("<small>Alpha</small>"))
