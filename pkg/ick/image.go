@@ -107,7 +107,7 @@ func (img *ICKImage) SetNoCrop(f bool) *ICKImage {
 func (fig *ICKImage) BuildTag() html.Tag {
 	fig.Tag().SetTagName("figure").
 		AddClass("image").
-		AddClassIf(!fig.NoCrop, "cropimage").
+		AddClassIf(!fig.NoCrop, "ickcropimage").
 		PickClass(IMG_SIZE_OPTIONS, string(fig.Size))
 	return *fig.Tag()
 }

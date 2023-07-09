@@ -7,12 +7,8 @@ import (
 	"github.com/icecake-framework/icecake/pkg/html"
 )
 
-//go:embed "notify.css"
-var notifycss string
-
 func init() {
 	html.RegisterComposer("ick-notify", &Notify{})
-	html.RequireCSSStyle("ick-notify", notifycss)
 }
 
 type Notify struct {

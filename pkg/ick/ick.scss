@@ -1,0 +1,48 @@
+/* ICKNotify */
+// .icknotify {
+//     opacity: 0;
+//     transition: opacity 450ms linear;
+// }
+
+// .icknotify.toast {
+//     position: fixed;
+//     bottom: 0;
+//     right: 0;
+//     margin: 2rem;
+// }
+
+// .icknotify.show {
+//     opacity: 1;
+// }
+
+/* ICKNavbar */
+a.navbar-item.is-active {
+    border-bottom: 2px solid $link;
+}
+
+// ICKImage
+.ickcropimage img {
+    height: 100%;
+    object-fit: cover;
+}
+
+// Helpers
+.spaceout>*:not(:last-child) {
+    margin-right: 1.25rem;
+
+    @include touch {
+        margin-right: 0.5rem;
+    }
+}
+
+.spaceout>* {
+    margin-bottom: 1.25rem;
+
+    @include touch {
+        margin-right: 0.5rem;
+    }
+}
+
+.spaceout {
+    padding-bottom: 0;
+}

@@ -1,35 +1,14 @@
 @charset "utf-8";
 
-$primary: #48acf0;
+$primary: #058ED9;
+$link: #DB0690;
+
+$info: #D7EBFF;
+$success: #90DB06;
+$warning: #ffd100;
+$danger: #DB0906;
+
 
 @import "../../../../../bulma/bulma.sass";
 
-
-.spaceout>*:not(:last-child) {
-    margin-right: 1.25rem;
-
-    @include touch {
-        margin-right: 0.5rem;
-    }
-}
-
-.spaceout>* {
-    margin-bottom: 1.25rem;
-
-    @include touch {
-        margin-right: 0.5rem;
-    }
-}
-
-.spaceout {
-    padding-bottom: 0;
-}
-
-a.navbar-item.is-active {
-    border-bottom: 2px solid $link;
-}
-
-.cropimage img {
-    height: 100%;
-    object-fit: cover;
-}
+@import "../../../pkg/ick/ick.scss";
