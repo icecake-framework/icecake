@@ -18,15 +18,18 @@ type Tag struct {
 }
 
 // Tag factory setting the tag named and allowing to assign an existing map of attibutes.
-func NewTag(name string, amap AttributeMap) *Tag {
+func NewTag(name string, attrs ...string) *Tag {
 	tag := new(Tag)
-	if amap == nil {
-		tag.AttributeMap = make(AttributeMap)
-	} else {
-		tag.AttributeMap = amap
-	}
+	tag.AttributeMap = make(AttributeMap)
+	tag.ParseAttributes(attrs...)
 	tag.SetTagName(name)
 	return tag
+}
+
+func EmptyTag() Tag {
+	tag := new(Tag)
+	tag.AttributeMap = make(AttributeMap)
+	return *tag
 }
 
 // BuildTag get a tag from the TagBuilder then set up name attribute and RMeta id
