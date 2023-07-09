@@ -38,12 +38,12 @@ func main() {
 	pgindex.AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
 
 	// ... with a hero section
-	hero := &ick.Hero{
+	hero := &ick.ICKHero{
 		Height:        ick.HH_FULLFHEIGHT_WITH_NAVBAR,
 		Title:         *ick.Title(2, "Develop SPA and Static Websites in Go."),
 		Subtitle:      *ick.Title(4, "Pure Go Web Assembly Framework"),
 		ContainerAttr: html.ParseAttributes(`class="has-text-centered ` + string(ick.CFW_MAXDESKTOP) + `"`),
-		CTA:           ick.Button("Read doc").SetId("cta").ParseHRef("/docoverview.html").SetColor(ick.COLOR_PRIMARY),
+		CTA:           *ick.Button("Read doc").SetId("cta").ParseHRef("/docoverview.html").SetColor(ick.COLOR_PRIMARY),
 	}
 
 	pgindex.Body().Push(
@@ -52,9 +52,9 @@ func main() {
 		docs.DocFooter())
 
 	// menu for each pages unless home
-	menu := ick.IckMenu{}
-	menu.MenuTag().SetTagName("nav").AddClass("is-small")
-	menu.Tag().SetId("docmenu").AddClass("p-2").AddStyle("background-color:#fdfdfd;")
+	menu := ick.Menu("docmenu", `class="p-2`, `style="background-color:#fdfdfd;"`).
+		SetType(ick.MENUTYP_NAV).
+		SetSize(ick.SIZE_SMALL)
 	menu.AddItem("", ick.MENUIT_LABEL, "General")
 	menu.AddItem("docoverview", ick.MENUIT_LINK, "Overview").ParseHRef("/docoverview.html")
 	menu.AddItem("", ick.MENUIT_LABEL, "Composers")
@@ -70,7 +70,7 @@ func main() {
 	menu.AddItem("docmenu", ick.MENUIT_LINK, "Menu").ParseHRef("/docmenu.html")
 	menu.AddItem("docmessage", ick.MENUIT_LINK, "Message").ParseHRef("/docmessage.html")
 	menu.AddItem("docnavbar", ick.MENUIT_LINK, "Navbar").ParseHRef("/docnavbar.html")
-	menu.AddItem("docnotify", ick.MENUIT_LINK, "Notify").ParseHRef("/docnotify.html")
+	menu.AddItem("docinput", ick.MENUIT_LINK, "Input").ParseHRef("/docinput.html")
 	menu.AddItem("docicon", ick.MENUIT_LINK, "Icon").ParseHRef("/docicon.html")
 	menu.AddItem("", ick.MENUIT_FOOTER, "Alpha 4")
 
@@ -84,7 +84,7 @@ func main() {
 	addPageDoc(web, menu.Clone(), "docmenu")
 	addPageDoc(web, menu.Clone(), "docmessage")
 	addPageDoc(web, menu.Clone(), "docnavbar")
-	addPageDoc(web, menu.Clone(), "docnotify")
+	addPageDoc(web, menu.Clone(), "docinput")
 	addPageDoc(web, menu.Clone(), "docicon")
 
 	// required files
@@ -111,7 +111,7 @@ func main() {
 	fmt.Println(n, "pages generated in ", time.Since(start))
 }
 
-func addPageDoc(web *ick.WebSite, menu *ick.IckMenu, pgkey string) {
+func addPageDoc(web *ick.WebSite, menu *ick.ICKMenu, pgkey string) {
 	pg := web.AddPage("en", pgkey)
 	pg.AddHeadItem("meta", "charset=UTF-8")
 	pg.AddHeadItem("meta", `http-equiv="X-UA-Compatible" content="IE=edge"`)

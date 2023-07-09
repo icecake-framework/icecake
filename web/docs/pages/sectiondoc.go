@@ -23,27 +23,27 @@ func SectionDoc(section string) html.ContentComposer {
 	switch section {
 	case "docoverview":
 		s := new(SectionDocOverview)
-		s.Title = "overview - icecake framework documentation"
+		s.Title = "Overview - icecake framework documentation"
 		return s
 	case "docbutton":
 		s := new(SectionDocButton)
-		s.Title = "button snippet - icecake framework documentation"
+		s.Title = "Button snippet - icecake framework documentation"
 		return s
 	case "doccard":
 		s := new(SectionDocCard)
-		s.Title = "card snippet - icecake framework documentation"
+		s.Title = "Card snippet - icecake framework documentation"
 		return s
 	case "docdelete":
 		s := new(SectionDocDelete)
-		s.Title = "delete snippet - icecake framework documentation"
+		s.Title = "Delete snippet - icecake framework documentation"
 		return s
 	case "dochero":
 		s := new(SectionDocHero)
-		s.Title = "hero snippet - icecake framework documentation"
+		s.Title = "Hero snippet - icecake framework documentation"
 		return s
 	case "docimage":
 		s := new(SectionDocImage)
-		s.Title = "image Snippet - icecake framework documentation"
+		s.Title = "Image Snippet - icecake framework documentation"
 		return s
 	case "docmenu":
 		s := new(SectionDocMenu)
@@ -57,9 +57,9 @@ func SectionDoc(section string) html.ContentComposer {
 		s := new(SectionDocNavbar)
 		s.Title = "Navbar Snippet - icecake framework documentation"
 		return s
-	case "docnotify":
-		s := new(SectionDocNotify)
-		s.Title = "Notify Snippet - icecake framework documentation"
+	case "docinput":
+		s := new(SectionDocInput)
+		s.Title = "Input Snippet - icecake framework documentation"
 		return s
 	case "docicon":
 		s := new(SectionDocIcon)

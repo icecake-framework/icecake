@@ -6,7 +6,7 @@ import (
 )
 
 type InputField struct {
-	ick.InputField
+	ick.ICKInputField
 	DOM dom.Element
 }
 

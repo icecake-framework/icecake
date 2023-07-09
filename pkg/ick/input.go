@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	html.RegisterComposer("ick-input", &InputField{})
+	html.RegisterComposer("ick-input", &ICKInputField{})
 }
 
 type INPUT_STATE string
@@ -21,7 +21,7 @@ const (
 	INPUT_READONLY INPUT_STATE = "readlonly"
 )
 
-type InputField struct {
+type ICKInputField struct {
 	html.BareSnippet
 
 	Label       html.HTMLString // Optional
@@ -31,24 +31,27 @@ type InputField struct {
 	// The input value
 	Value string
 
-	// icon left
-
-	IsRounded bool // Rounded style
-
 	State INPUT_STATE
 }
 
 // Ensuring InputField implements the right interface
-var _ html.ElementComposer = (*InputField)(nil)
+var _ html.ElementComposer = (*ICKInputField)(nil)
+
+func InputField() *ICKInputField {
+	n := new(ICKInputField)
+	return n
+}
+
+/******************************************************************************/
 
 // BuildTag builds the tag used to render the html element.
-func (inputfield *InputField) BuildTag() html.Tag {
+func (inputfield *ICKInputField) BuildTag() html.Tag {
 	inputfield.Tag().SetTagName("div").AddClass("field")
 	return *inputfield.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (cmp *InputField) RenderContent(out io.Writer) error {
+func (cmp *ICKInputField) RenderContent(out io.Writer) error {
 	// <label>
 	if !cmp.Label.IsEmpty() {
 		html.RenderString(out, `<label class="label">`)
@@ -63,7 +66,6 @@ func (cmp *InputField) RenderContent(out io.Writer) error {
 	// <input>
 	subinput := html.Snippet("input", `class="input" type="text"`)
 	subinput.Tag().
-		SetClassIf(cmp.IsRounded, "is-rounded").
 		SetAttributeIf(cmp.Value != "", "value", cmp.Value).
 		SetAttributeIf(cmp.PlaceHolder != "", "placeholder", cmp.PlaceHolder)
 	switch cmp.State {
