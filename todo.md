@@ -1,4 +1,4 @@
-- TODO: provide a snippet of the wasm and icecake status  
+- TODO: provide a snippet to render the wasm and icecake status  
 - TODO: handle required css per page and not globally
 - TODO: provide ick saas files. Handle it at component level
 - TODO: enable unfolding ick-tag with a body, closed by </ick>

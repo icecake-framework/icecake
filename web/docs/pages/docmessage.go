@@ -40,7 +40,9 @@ func (sec *SectionDocMessage) RenderContent(out io.Writer) error {
 			SetHeader(*ickcore.ToHTML("Icecake Message")).
 			SetDeletable("msgr3"),
 		ick.Message(nil).SetHeader(*ickcore.ToHTML("Only header")).
-			SetDeletable("msgr4"))
+			SetDeletable("msgr4"),
+		ick.Message(ickcore.ToHTML("This is a deletable message.<br>Two lines")).
+			SetDeletable("msgr5"))
 	ickcore.RenderString(out, `</div>`)
 
 	// styling

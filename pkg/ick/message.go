@@ -87,28 +87,36 @@ func (msg *ICKMessage) BuildTag() ickcore.Tag {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (msg *ICKMessage) RenderContent(out io.Writer) error {
-	//TODO: ICKMessage - handle delete button without header
-
 	if msg.Header.NeedRendering() {
 		ickcore.RenderString(out, `<div class="message-header">`)
 		ickcore.RenderChild(out, msg, Elem("span", "", &msg.Header))
 		if msg.CanDelete {
-			id := msg.Tag().Id()
-			if id == "" {
-				verbose.Debug("ICKMessage: Rendering Deletable Message without TargetId")
-				ickcore.RenderChild(out, msg, ickcore.ToHTML(`<ick-delete/>`))
-			} else {
-				ickcore.RenderChild(out, msg, ickcore.ToHTML(`<ick-delete id="del`+id+`" TargetId='`+id+`'/>`))
-			}
+			msg.RenderDelete(out)
 		}
 		ickcore.RenderString(out, `</div>`)
 	}
 
 	if msg.Msg.NeedRendering() {
-		ickcore.RenderString(out, `<div class="message-body">`)
+		ickcore.RenderString(out, `<div class="message-body pr-4 is-flex is-align-items-top is-justify-content-space-between">`)
+		ickcore.RenderString(out, `<span>`)
 		msg.Msg.RenderStack(out, msg)
+		ickcore.RenderString(out, `</span>`)
+		if msg.CanDelete && !msg.Header.NeedRendering() {
+			msg.RenderDelete(out)
+		}
 		ickcore.RenderString(out, `</div>`)
 	}
 
+	return nil
+}
+
+func (msg *ICKMessage) RenderDelete(out io.Writer) error {
+	id := msg.Tag().Id()
+	if id == "" {
+		verbose.Debug("ICKMessage: Rendering Deletable Message without TargetId")
+		ickcore.RenderChild(out, msg, ickcore.ToHTML(`<ick-delete/>`))
+	} else {
+		ickcore.RenderChild(out, msg, ickcore.ToHTML(`<ick-delete id="del`+id+`" TargetId='`+id+`'/>`))
+	}
 	return nil
 }
