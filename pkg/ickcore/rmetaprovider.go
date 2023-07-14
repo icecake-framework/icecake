@@ -44,7 +44,7 @@ func (rmeta *RMetaData) RMeta() *RMetaData {
 //   - the dot "-" seperator is added followed by the cmpname if any
 //
 // - the cmpname is added
-// XXX
+// TODO: ickcore - GenerateVirtualId need to be reworked
 func (rmeta *RMetaData) GenerateVirtualId(cmp RMetaProvider) string {
 	prefix := "orphan"
 	if rmeta.Parent != nil {
@@ -81,6 +81,10 @@ func (rmeta *RMetaData) GenerateVirtualId(cmp RMetaProvider) string {
 	}
 
 	rmeta.VirtualId = prefix + body + suffix
+
+	// verbose id information
+	verbose.Debug(" vid: %s --> id:%s", rmeta.VirtualId, cmpid)
+
 	return rmeta.VirtualId
 }
 
@@ -93,16 +97,18 @@ func (rmeta *RMetaData) Embed(child RMetaProvider) {
 	if rmeta.childs == nil {
 		rmeta.childs = make(ComposerMap, 1)
 	}
+	child.RMeta().Parent = rmeta
 	key := child.RMeta().TagId
 	if key == "" {
 		key = child.RMeta().VirtualId
 	}
-	if _, f := rmeta.childs[key]; f {
-		verbose.Println(verbose.WARNING, "Embed: duplicate child id:%q for parent id:%q", key, rmeta.VirtualId)
+	if key != "" {
+		if _, f := rmeta.childs[key]; f {
+			verbose.Printf(verbose.WARNING, "Embed: duplicate child id:%q for parent id:%q\n", key, rmeta.VirtualId)
+		}
+		rmeta.childs[key] = child
+		// verbose.Debug("embedded (%v) %q", reflect.TypeOf(subcmp).String(), id)
 	}
-	rmeta.childs[key] = child
-	child.RMeta().Parent = rmeta
-	// verbose.Debug("embedded (%v) %q", reflect.TypeOf(subcmp).String(), id)
 }
 
 // Embedded returns the map of embedded components, keyed by their id.

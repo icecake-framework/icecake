@@ -76,10 +76,7 @@ func render(out io.Writer, parent RMetaProvider, cmp Composer) error {
 	}
 
 	// generate the virtual id
-	cmp.RMeta().GenerateVirtualId(cmp)
-
-	// verbose id information
-	//verbose.Debug(" vid:%s --> id:%s", virtualid, cmpid)
+	//cmp.RMeta().GenerateVirtualId(cmp)
 
 	// render openingtag
 	if cmptag != nil {
