@@ -21,7 +21,7 @@ type ICKButton struct {
 	ickcore.BareSnippet
 
 	OpeningIcon ICKIcon // optional opening icon
-	Title       string  // simple title string
+	Title       string  // html string
 	ClosingIcon ICKIcon // optional closing icon
 
 	// HRef defines the associated url link. HRef can be nil. If HRef is defined then the rendered element is a <a> tag, otherwise it's a <button> tag.

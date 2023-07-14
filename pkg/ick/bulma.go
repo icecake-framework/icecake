@@ -5,6 +5,7 @@ import "strings"
 type COLOR string
 
 const (
+	COLOR_NONE         COLOR  = ""
 	COLOR_WHITE        COLOR  = "is-white"
 	COLOR_WHITE_BIS    COLOR  = "is-white-bis"
 	COLOR_WHITE_TER    COLOR  = "is-white-ter"

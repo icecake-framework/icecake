@@ -3,6 +3,7 @@ package dom
 import (
 	// "bytes"
 
+	"bytes"
 	"reflect"
 
 	"github.com/icecake-framework/icecake/pkg/console"
@@ -55,6 +56,18 @@ func (ui *UI) Wrap(jsvp js.JSValueProvider) {
 // Usually RemoveListeners does not need to be overloaded because every listeners added to the Element are automatically removed.
 func (ui *UI) RemoveListeners() {
 	ui.DOM.RemoveListeners()
+}
+
+func (ui *UI) RefreshContent(cmp ickcore.ContentComposer) (errx error) {
+	out := new(bytes.Buffer)
+	errx = cmp.RenderContent(out)
+	if errx == nil {
+		ui.DOM.InsertRawHTML(INSERT_BODY, out.String())
+	}
+
+	// mount every embedded components with an ID
+	errx = mountSnippetTree(cmp)
+	return errx
 }
 
 // mountSnippetTree addlisteners to the snippet and looks recursively for every childs with an id and add listeners to each of them.

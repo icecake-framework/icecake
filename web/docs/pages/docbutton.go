@@ -28,6 +28,14 @@ func (sec *SectionDocButton) RenderContent(out io.Writer) error {
 		ick.Button("Trigger Event").SetId("uA2"))
 	ickcore.RenderString(out, `</div>`)
 
+	ickcore.RenderChild(out, sec,
+		ick.Elem("div", `id="boxusage" class="box"`, ick.Spinner()),
+		ick.Button("reset", `class="mb-5"`).
+			SetId("btnreset").
+			SetColor(ick.COLOR_PRIMARY).
+			SetOutlined(true).
+			SetDisabled(true))
+
 	// styling
 	ickcore.RenderChild(out, sec, ick.Title(4, "Styling"))
 	ickcore.RenderString(out, `<div class="box spaceout">`)

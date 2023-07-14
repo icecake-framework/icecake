@@ -29,7 +29,16 @@ func (cmp *ICKButton) SetId(id string) *ICKButton {
 
 func (btn *ICKButton) SetTitle(title string) *ICKButton {
 	btn.ICKButton.SetTitle(title)
-	// TODO: ick - dynamic change of button content
+	btn.UI.RefreshContent(btn)
+	return btn
+}
+func (btn *ICKButton) SetIcon(icon ick.ICKIcon, closing bool) *ICKButton {
+	if closing {
+		btn.ClosingIcon = icon
+	} else {
+		btn.OpeningIcon = icon
+	}
+	btn.UI.RefreshContent(btn)
 	return btn
 }
 func (btn *ICKButton) SetOutlined(f bool) *ICKButton {
