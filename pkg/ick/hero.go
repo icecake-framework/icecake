@@ -31,10 +31,10 @@ type ICKHero struct {
 
 	InsideHead ickcore.ContentComposer
 
-	ContainerAttr ickcore.AttributeMap // The attributes map to setup to the hero's container, allowing text centering
-
 	Title    ICKTitle
 	Subtitle ICKTitle
+	Centered bool
+	CWidth   CONTAINER_WIDTH
 
 	CTA ICKButton
 
@@ -51,33 +51,29 @@ func Hero() *ICKHero {
 }
 
 // Tag Builder used by the rendering functions.
-func (msg *ICKHero) BuildTag() ickcore.Tag {
-	msg.Tag().SetTagName("section").AddClass("hero").PickClass(HH_OPTIONS, string(msg.Height))
-	return *msg.Tag()
+func (h *ICKHero) BuildTag() ickcore.Tag {
+	h.Tag().SetTagName("section").AddClass("hero").PickClass(HH_OPTIONS, string(h.Height))
+	return *h.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (msg *ICKHero) RenderContent(out io.Writer) error {
+func (h *ICKHero) RenderContent(out io.Writer) error {
 
-	if msg.InsideHead != nil {
-		ickcore.RenderChild(out, msg, Elem("div", `class="hero-head"`, msg.InsideHead))
+	if h.InsideHead != nil {
+		ickcore.RenderChild(out, h, Elem("div", `class="hero-head"`, h.InsideHead))
 	}
 
 	ickcore.RenderString(out, `<div class="hero-body">`)
 
-	cont := new(Container)
-	cont.Tag().AttributeMap = msg.ContainerAttr.Clone()
-	contag := cont.BuildTag()
-	contag.RenderOpening(out)
-
-	ickcore.RenderChild(out, msg, &msg.Title, &msg.Subtitle, &msg.CTA)
-
-	contag.RenderClosing(out)
+	c := Container(h.CWidth)
+	c.Tag().AddClassIf(h.Centered, "has-text-centered")
+	c.Append(&h.Title, &h.Subtitle, &h.CTA)
+	ickcore.RenderChild(out, h, c)
 
 	ickcore.RenderString(out, `</div>`)
 
-	if msg.InsideFoot != nil {
-		ickcore.RenderChild(out, msg, Elem("div", `class="hero-foor"`, msg.InsideFoot))
+	if h.InsideFoot != nil {
+		ickcore.RenderChild(out, h, Elem("div", `class="hero-foot"`, h.InsideFoot))
 	}
 
 	return nil

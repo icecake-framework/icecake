@@ -26,11 +26,11 @@ func (sec *SectionDocHero) RenderContent(out io.Writer) error {
 			CTA:      *ick.Button("Call To Action"),
 		},
 		&ick.ICKHero{
-			Height:        ick.HH_SMALL,
-			Title:         *ick.Title(4, "Value proposition"),
-			Subtitle:      *ick.SubTitle(6, "Killing features"),
-			CTA:           *ick.Button("Call To Action"),
-			ContainerAttr: ickcore.ParseAttributes(`class="has-text-centered"`),
+			Height:   ick.HH_SMALL,
+			Title:    *ick.Title(4, "Value proposition"),
+			Subtitle: *ick.SubTitle(6, "Killing features"),
+			CTA:      *ick.Button("Call To Action"),
+			Centered: true,
 		})
 
 	ickcore.RenderString(out, `</div>`)

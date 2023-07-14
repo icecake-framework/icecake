@@ -39,11 +39,12 @@ func main() {
 
 	// ... with a hero section
 	hero := &ick.ICKHero{
-		Height:        ick.HH_FULLFHEIGHT_WITH_NAVBAR,
-		Title:         *ick.Title(2, "Develop SPA and Static Websites in Go."),
-		Subtitle:      *ick.Title(4, "Pure Go Web Assembly Framework"),
-		ContainerAttr: ickcore.ParseAttributes(`class="has-text-centered ` + string(ick.CFW_MAXDESKTOP) + `"`),
-		CTA:           *ick.Button("Read doc").SetId("cta").ParseHRef("/docoverview.html").SetColor(ick.COLOR_PRIMARY),
+		Height:   ick.HH_FULLFHEIGHT_WITH_NAVBAR,
+		Title:    *ick.Title(2, "Develop SPA and Static Websites in Go."),
+		Subtitle: *ick.Title(4, "Pure Go Web Assembly Framework"),
+		Centered: true,
+		CWidth:   ick.CONTWIDTH_MAXDESKTOP,
+		CTA:      *ick.Button("Read doc").SetId("cta").ParseHRef("/docoverview.html").SetColor(ick.COLOR_PRIMARY),
 	}
 
 	pgindex.Body().Append(
