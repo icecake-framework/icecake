@@ -3,25 +3,25 @@ package ick
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/lolorenzo777/verbose"
 )
 
 func init() {
-	html.RegisterComposer("ick-message", &ICKMessage{})
+	ickcore.RegisterComposer("ick-message", &ICKMessage{})
 }
 
 // ICKMessage is an icecake snippet providing the HTML rendering for a [bulma message].
 //
 // [bulma message]: https://bulma.io/documentation/components/message/
 type ICKMessage struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	// optional header to display on top of the message
-	Header html.HTMLString
+	Header ickcore.HTMLString
 
 	// the body of the message
-	Msg html.ContentStack
+	Msg ickcore.ContentStack
 
 	// set to true to display the delete button and allow user to delete the message
 	CanDelete bool
@@ -36,56 +36,17 @@ type ICKMessage struct {
 }
 
 // Ensuring ICKMessage implements the right interface
-var _ html.ElementComposer = (*ICKMessage)(nil)
+var _ ickcore.ContentComposer = (*ICKMessage)(nil)
+var _ ickcore.TagBuilder = (*ICKMessage)(nil)
 
-func Message(cnt html.ContentComposer) *ICKMessage {
+func Message(cnt ickcore.ContentComposer) *ICKMessage {
 	msg := new(ICKMessage)
 	msg.Msg.Push(cnt)
 	return msg
 }
 
-// BuildTag returns tag <div class="message {classes}" {attributes}>
-func (msg *ICKMessage) BuildTag() html.Tag {
-	msg.Tag().
-		SetTagName("div").
-		AddClass("message").
-		PickClass(COLOR_OPTIONS, string(msg.COLOR)).
-		PickClass(SIZE_OPTIONS, string(msg.SIZE))
-	return *msg.Tag()
-}
-
-// RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (msg *ICKMessage) RenderContent(out io.Writer) error {
-	//TODO: ICKMessage - handle delete button without header
-
-	if !msg.Header.IsEmpty() {
-		html.RenderString(out, `<div class="message-header">`)
-		html.RenderChild(out, msg, html.Snippet("span", "", &msg.Header))
-		if msg.CanDelete {
-			id := msg.Id()
-			if id == "" {
-				verbose.Debug("ICKMessage: Rendering Deletable Message without TargetId")
-				html.RenderChild(out, msg, html.ToHTML(`<ick-delete/>`))
-			} else {
-				html.RenderChild(out, msg, html.ToHTML(`<ick-delete id="del`+id+`" TargetId='`+id+`'/>`))
-			}
-		}
-		html.RenderString(out, `</div>`)
-	}
-
-	if msg.Msg.HasContent() {
-		html.RenderString(out, `<div class="message-body">`)
-		msg.Msg.RenderStack(out, msg)
-		html.RenderString(out, `</div>`)
-	}
-
-	return nil
-}
-
-/******************************************************************************/
-
 // SetHeader set a message header
-func (msg *ICKMessage) SetHeader(header html.HTMLString) *ICKMessage {
+func (msg *ICKMessage) SetHeader(header ickcore.HTMLString) *ICKMessage {
 	msg.Header = header
 	return msg
 }
@@ -110,4 +71,44 @@ func (msg *ICKMessage) SetColor(c COLOR) *ICKMessage {
 func (msg *ICKMessage) SetSize(s SIZE) *ICKMessage {
 	msg.SIZE = s
 	return msg
+}
+
+/******************************************************************************/
+
+// BuildTag returns tag <div class="message {classes}" {attributes}>
+func (msg *ICKMessage) BuildTag() ickcore.Tag {
+	msg.Tag().
+		SetTagName("div").
+		AddClass("message").
+		PickClass(COLOR_OPTIONS, string(msg.COLOR)).
+		PickClass(SIZE_OPTIONS, string(msg.SIZE))
+	return *msg.Tag()
+}
+
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
+func (msg *ICKMessage) RenderContent(out io.Writer) error {
+	//TODO: ICKMessage - handle delete button without header
+
+	if msg.Header.NeedRendering() {
+		ickcore.RenderString(out, `<div class="message-header">`)
+		ickcore.RenderChild(out, msg, Elem("span", "", &msg.Header))
+		if msg.CanDelete {
+			id := msg.Tag().Id()
+			if id == "" {
+				verbose.Debug("ICKMessage: Rendering Deletable Message without TargetId")
+				ickcore.RenderChild(out, msg, ickcore.ToHTML(`<ick-delete/>`))
+			} else {
+				ickcore.RenderChild(out, msg, ickcore.ToHTML(`<ick-delete id="del`+id+`" TargetId='`+id+`'/>`))
+			}
+		}
+		ickcore.RenderString(out, `</div>`)
+	}
+
+	if msg.Msg.NeedRendering() {
+		ickcore.RenderString(out, `<div class="message-body">`)
+		msg.Msg.RenderStack(out, msg)
+		ickcore.RenderString(out, `</div>`)
+	}
+
+	return nil
 }

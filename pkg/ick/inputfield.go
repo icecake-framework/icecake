@@ -3,11 +3,11 @@ package ick
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 func init() {
-	html.RegisterComposer("ick-input", &ICKInputField{})
+	ickcore.RegisterComposer("ick-input", &ICKInputField{})
 }
 
 type INPUT_STATE string
@@ -22,11 +22,11 @@ const (
 )
 
 type ICKInputField struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
-	Label       html.HTMLString // Optional
-	PlaceHolder string          // Optional
-	Help        html.HTMLString // Optional
+	Label       ickcore.HTMLString // Optional
+	PlaceHolder string             // Optional
+	Help        ickcore.HTMLString // Optional
 
 	// The input value
 	Value string
@@ -35,7 +35,8 @@ type ICKInputField struct {
 }
 
 // Ensuring InputField implements the right interface
-var _ html.ElementComposer = (*ICKInputField)(nil)
+var _ ickcore.ContentComposer = (*ICKInputField)(nil)
+var _ ickcore.TagBuilder = (*ICKInputField)(nil)
 
 func InputField() *ICKInputField {
 	n := new(ICKInputField)
@@ -44,8 +45,12 @@ func InputField() *ICKInputField {
 
 /******************************************************************************/
 
+func (inputfield *ICKInputField) NeedRendering() bool {
+	return true
+}
+
 // BuildTag builds the tag used to render the html element.
-func (inputfield *ICKInputField) BuildTag() html.Tag {
+func (inputfield *ICKInputField) BuildTag() ickcore.Tag {
 	inputfield.Tag().SetTagName("div").AddClass("field")
 	return *inputfield.Tag()
 }
@@ -53,18 +58,14 @@ func (inputfield *ICKInputField) BuildTag() html.Tag {
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (cmp *ICKInputField) RenderContent(out io.Writer) error {
 	// <label>
-	if !cmp.Label.IsEmpty() {
-		html.RenderString(out, `<label class="label">`)
-		html.RenderChild(out, cmp, &cmp.Label)
-		html.RenderString(out, `</label>`)
+	if cmp.Label.NeedRendering() {
+		ickcore.RenderString(out, `<label class="label">`)
+		ickcore.RenderChild(out, cmp, &cmp.Label)
+		ickcore.RenderString(out, `</label>`)
 	}
 
-	// <div control>
-	subcontrol := html.Snippet("div", `class="control"`)
-	subcontrol.Tag().SetClassIf(cmp.State == INPUT_LOADING, "is-loading")
-
 	// <input>
-	subinput := html.Snippet("input", `class="input" type="text"`)
+	subinput := Elem("input", `class="input" type="text"`)
 	subinput.Tag().
 		SetAttributeIf(cmp.Value != "", "value", cmp.Value).
 		SetAttributeIf(cmp.PlaceHolder != "", "placeholder", cmp.PlaceHolder)
@@ -78,17 +79,20 @@ func (cmp *ICKInputField) RenderContent(out io.Writer) error {
 	case "readonly":
 		subinput.Tag().SetBool("readonly", true)
 	}
-	subcontrol.Push(subinput)
-	html.RenderChild(out, cmp, subcontrol)
+
+	// <div control>
+	subcontrol := Elem("div", `class="control"`).Append(subinput)
+	subcontrol.Tag().SetClassIf(cmp.State == INPUT_LOADING, "is-loading")
+	ickcore.RenderChild(out, cmp, subcontrol)
 
 	// <p help>
-	if !cmp.Help.IsEmpty() {
-		subhelp := html.Snippet("p", `class="help"`, &cmp.Help)
+	if cmp.Help.NeedRendering() {
+		subhelp := Elem("p", `class="help"`, &cmp.Help)
 		subhelp.Tag().
 			SetClassIf(cmp.State == INPUT_SUCCESS, "is-success").
 			SetClassIf(cmp.State == INPUT_WARNING, "is-warning").
 			SetClassIf(cmp.State == INPUT_ERROR, "is-danger")
-		html.RenderChild(out, cmp, subhelp)
+		ickcore.RenderChild(out, cmp, subhelp)
 	}
 
 	return nil

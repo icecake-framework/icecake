@@ -1,4 +1,4 @@
-package html
+package ickcore
 
 import (
 	"errors"
@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/icecake-framework/icecake/internal/helper"
-	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/pkg/namingpattern"
 	"github.com/lolorenzo777/verbose"
 	"golang.org/x/exp/slices"
@@ -25,12 +24,12 @@ import (
 type AttributeMap map[string]string // map of HTML tag attributes
 
 // Clone clones the attribute map
-func (src AttributeMap) Clone() AttributeMap {
-	to := make(AttributeMap, len(src))
-	for k, v := range src {
-		to[k] = v
+func (amap AttributeMap) Clone() AttributeMap {
+	c := make(AttributeMap, len(amap))
+	for k, v := range amap {
+		c[k] = v
 	}
-	return src
+	return amap
 }
 
 // AttributeString returns the formated list of attributes, ready to use to generate the tag element.
@@ -240,7 +239,7 @@ func (amap AttributeMap) SetId(id string) AttributeMap {
 // SetUniqueId sets or overwrites the id attribute by generating a unique id starting with the prefix.
 // "ick-" is used to prefix the returned id if prefix is empty.
 func (amap AttributeMap) SetUniqueId(prefix string) {
-	_, uid := ickcore.GetUniqueId(prefix)
+	_, uid := GetUniqueId(prefix)
 	amap.saveAttribute("id", uid, true)
 }
 

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/icecake-framework/icecake/internal/helper"
-	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/ick"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/web/docs"
 	webdocs "github.com/icecake-framework/icecake/web/docs/pages"
 	"github.com/lolorenzo777/verbose"
@@ -42,11 +42,11 @@ func main() {
 		Height:        ick.HH_FULLFHEIGHT_WITH_NAVBAR,
 		Title:         *ick.Title(2, "Develop SPA and Static Websites in Go."),
 		Subtitle:      *ick.Title(4, "Pure Go Web Assembly Framework"),
-		ContainerAttr: html.ParseAttributes(`class="has-text-centered ` + string(ick.CFW_MAXDESKTOP) + `"`),
+		ContainerAttr: ickcore.ParseAttributes(`class="has-text-centered ` + string(ick.CFW_MAXDESKTOP) + `"`),
 		CTA:           *ick.Button("Read doc").SetId("cta").ParseHRef("/docoverview.html").SetColor(ick.COLOR_PRIMARY),
 	}
 
-	pgindex.Body().Push(
+	pgindex.Body().Append(
 		docs.DocNavbar().SetActiveItem("home"),
 		hero,
 		docs.DocFooter())
@@ -88,8 +88,8 @@ func main() {
 	addPageDoc(web, menu.Clone(), "docicon")
 
 	// required files
-	html.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css")
-	html.RequireCSSFile("/assets/docs.css")
+	ickcore.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css")
+	ickcore.RequireCSSFile("/assets/docs.css")
 
 	// copy assets
 	err := web.CopyToAssets("./web/docs/assets/", "./web/docs/sass/docs.css", "./web/docs/sass/docs.css.map")
@@ -118,11 +118,11 @@ func addPageDoc(web *ick.WebSite, menu *ick.ICKMenu, pgkey string) {
 	pg.AddHeadItem("meta", `name="viewport" content="width=device-width, initial-scale=1.0"`)
 	pg.AddHeadItem("script", `type="text/javascript" src="/assets/icecake.js"`)
 
-	inside := html.Snippet("div", `class="columns is-mobile mb-0 pb-0"`,
-		html.Snippet("div", `class="column is-narrow mb-0 pb-0"`, menu.SetActiveItem(pgkey)),
-		html.Snippet("div", `class="column mb-0 pb-0"`, webdocs.SectionDoc(pgkey)))
+	inside := ick.Elem("div", `class="columns is-mobile mb-0 pb-0"`,
+		ick.Elem("div", `class="column is-narrow mb-0 pb-0"`, menu.SetActiveItem(pgkey)),
+		ick.Elem("div", `class="column mb-0 pb-0"`, webdocs.SectionDoc(pgkey)))
 
-	pg.Body().Push(
+	pg.Body().Append(
 		docs.DocNavbar().SetActiveItem("docs"),
 		inside,
 		docs.DocFooter())

@@ -5,7 +5,7 @@ import (
 	"net/url"
 
 	"github.com/huandu/go-clone"
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 type NAVBARITEM_TYPE string
@@ -21,7 +21,7 @@ const (
 //
 // [bulma navbar item]: https://bulma.io/documentation/components/navbar/#navbar-item
 type ICKNavbarItem struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	// Optional Key allows to access a specific navbaritem, whatever it's level in the hierarchy, directly from the navbar.
 	Key string
@@ -31,7 +31,7 @@ type ICKNavbarItem struct {
 	Type NAVBARITEM_TYPE
 
 	// Item Content
-	Content html.ContentComposer
+	Content ickcore.ContentComposer
 
 	// HRef defines the optional associated url link.
 	// If HRef is defined the item become an anchor link <a>, otherwise it's a <div>
@@ -48,17 +48,19 @@ type ICKNavbarItem struct {
 }
 
 // Ensuring ICKNavbarItem implements the right interface
-var _ html.ElementComposer = (*ICKNavbarItem)(nil)
+var _ ickcore.ContentComposer = (*ICKNavbarItem)(nil)
+var _ ickcore.TagBuilder = (*ICKNavbarItem)(nil)
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
 func (navi ICKNavbarItem) Clone() *ICKNavbarItem {
 	c := new(ICKNavbarItem)
+	c.BareSnippet = *navi.BareSnippet.Clone()
 	c.Key = navi.Key
 	c.Type = navi.Type
 
 	if navi.Content != nil {
 		copy := clone.Clone(navi.Content)
-		c.Content = copy.(html.ContentComposer)
+		c.Content = copy.(ickcore.ContentComposer)
 	}
 
 	if navi.HRef != nil {
@@ -83,7 +85,7 @@ func (navi ICKNavbarItem) Clone() *ICKNavbarItem {
 //   - it's <hr> for a NAVBARIT_DIVIDER item type, otherwise
 //   - it's <a> when an HRef is provided,
 //   - it's <div> in other cases
-func (navi *ICKNavbarItem) BuildTag() html.Tag {
+func (navi *ICKNavbarItem) BuildTag() ickcore.Tag {
 	if navi.Type == NAVBARIT_DIVIDER {
 		navi.Tag().
 			SetTagName("hr").
@@ -103,17 +105,17 @@ func (navi *ICKNavbarItem) BuildTag() html.Tag {
 func (navi *ICKNavbarItem) RenderContent(out io.Writer) error {
 	if navi.Type != NAVBARIT_DIVIDER {
 		if navi.ImageSrc != nil {
-			img := html.Snippet("img", `width="auto" height="28"`)
+			img := Elem("img", `width="auto" height="28"`)
 			img.Tag().SetURL("src", navi.ImageSrc)
-			html.RenderChild(out, navi, img)
+			ickcore.RenderChild(out, navi, img)
 		}
-		html.RenderChild(out, navi, navi.Content)
+		ickcore.RenderChild(out, navi, navi.Content)
 	}
 	return nil
 }
 
 // AddItem adds the item as a subitem within the navbar item
-func (navi *ICKNavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.ContentComposer) *ICKNavbarItem {
+func (navi *ICKNavbarItem) AddItem(key string, itmtyp NAVBARITEM_TYPE, content ickcore.ContentComposer) *ICKNavbarItem {
 	itm := new(ICKNavbarItem)
 	itm.Key = key
 	itm.Type = itmtyp
@@ -161,7 +163,7 @@ func (navi *ICKNavbarItem) ParseImageSrc(rawUrl string) *ICKNavbarItem {
 //
 // [bulma navbar]: https://bulma.io/documentation/components/navbar
 type ICKNavbar struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	items []*ICKNavbarItem // list of navbar items
 
@@ -171,7 +173,8 @@ type ICKNavbar struct {
 }
 
 // Ensuring ICKNavbar implements the right interface
-var _ html.ElementComposer = (*ICKNavbar)(nil)
+var _ ickcore.ContentComposer = (*ICKNavbar)(nil)
+var _ ickcore.TagBuilder = (*ICKNavbar)(nil)
 
 func NavBar(attrs ...string) *ICKNavbar {
 	n := new(ICKNavbar)
@@ -181,19 +184,19 @@ func NavBar(attrs ...string) *ICKNavbar {
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
 func (src ICKNavbar) Clone() *ICKNavbar {
-	clone := new(ICKNavbar)
-	clone.BareSnippet = *src.BareSnippet.Clone()
-	clone.IsTransparent = src.IsTransparent
-	clone.HasShadow = src.HasShadow
-	clone.items = make([]*ICKNavbarItem, len(src.items))
+	c := new(ICKNavbar)
+	c.BareSnippet = *src.BareSnippet.Clone()
+	c.IsTransparent = src.IsTransparent
+	c.HasShadow = src.HasShadow
+	c.items = make([]*ICKNavbarItem, len(src.items))
 	for i, itm := range src.items {
-		clone.items[i] = itm.Clone()
+		c.items[i] = itm.Clone()
 	}
-	return clone
+	return c
 }
 
 // AddItem adds the item to the navbar
-func (nav *ICKNavbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content html.ContentComposer) *ICKNavbarItem {
+func (nav *ICKNavbar) AddItem(key string, itmtyp NAVBARITEM_TYPE, content ickcore.ContentComposer) *ICKNavbarItem {
 	itm := new(ICKNavbarItem)
 	itm.Key = key
 	itm.Type = itmtyp
@@ -235,8 +238,12 @@ func (nav *ICKNavbar) Item(key string) *ICKNavbarItem {
 	return nil
 }
 
+func (nav *ICKNavbar) NeedRendering() bool {
+	return len(nav.items) > 0
+}
+
 // BuildTag builds the tag used to render the html element.
-func (nav *ICKNavbar) BuildTag() html.Tag {
+func (nav *ICKNavbar) BuildTag() ickcore.Tag {
 	nav.Tag().
 		SetTagName("nav").
 		SetAttribute("role", "navigation").
@@ -249,39 +256,39 @@ func (nav *ICKNavbar) BuildTag() html.Tag {
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (nav *ICKNavbar) RenderContent(out io.Writer) error {
 	// brand area
-	html.RenderString(out, `<div class="navbar-brand">`)
+	ickcore.RenderString(out, `<div class="navbar-brand">`)
 
 	// brand items
 	for _, item := range nav.items {
 		if item.Type == NAVBARIT_BRAND {
-			html.RenderChild(out, nav, item)
+			ickcore.RenderChild(out, nav, item)
 		}
 	}
 	// burger
-	html.RenderString(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `<a class="navbar-burger" role="button">`, `<span></span><span></span><span></span>`, `</a>`)
+	ickcore.RenderString(out, `</div>`)
 
 	// menu area
 	// the burger id is required for flipping it
-	html.RenderString(out, `<div class="navbar-menu">`)
+	ickcore.RenderString(out, `<div class="navbar-menu">`)
 
-	html.RenderString(out, `<div class="navbar-start">`)
+	ickcore.RenderString(out, `<div class="navbar-start">`)
 	for _, item := range nav.items {
 		if item.Type == NAVBARIT_START {
-			html.RenderChild(out, nav, item)
+			ickcore.RenderChild(out, nav, item)
 		}
 	}
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `</div>`)
 
-	html.RenderString(out, `<div class="navbar-end">`)
+	ickcore.RenderString(out, `<div class="navbar-end">`)
 	for _, item := range nav.items {
 		if item.Type == NAVBARIT_END {
-			html.RenderChild(out, nav, item)
+			ickcore.RenderChild(out, nav, item)
 		}
 	}
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `</div>`)
 
-	html.RenderString(out, `</div>`) // navbar-menu
+	ickcore.RenderString(out, `</div>`) // navbar-menu
 
 	return nil
 }

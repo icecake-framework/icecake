@@ -1,4 +1,4 @@
-package html
+package ickcore
 
 import (
 	"net/url"

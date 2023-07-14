@@ -3,8 +3,8 @@ package webdocs
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/ick"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 const (
@@ -13,13 +13,17 @@ const (
 )
 
 type SectionDocIcecake struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	Title       string
 	Description string
 }
 
-func SectionDoc(section string) html.ContentComposer {
+// Ensuring docFooter implements the right interface
+var _ ickcore.ContentComposer = (*SectionDocIcecake)(nil)
+var _ ickcore.TagBuilder = (*SectionDocIcecake)(nil)
+
+func SectionDoc(section string) ickcore.ContentComposer {
 	switch section {
 	case "docoverview":
 		s := new(SectionDocOverview)
@@ -71,13 +75,17 @@ func SectionDoc(section string) html.ContentComposer {
 	return s
 }
 
-func (cmp *SectionDocIcecake) BuildTag() html.Tag {
+func (cmp *SectionDocIcecake) NeedRendering() bool {
+	return true
+}
+
+func (cmp *SectionDocIcecake) BuildTag() ickcore.Tag {
 	cmp.Tag().SetTagName("section").AddClass("py-5 px-5")
 	return *cmp.Tag()
 }
 
 func (cmp *SectionDocIcecake) RenderContent(out io.Writer) error {
-	html.RenderString(out, `<p>default section</p>`)
+	ickcore.RenderString(out, `<p>default section</p>`)
 
 	return nil
 }
@@ -89,10 +97,10 @@ func (sec *SectionDocIcecake) RenderHead(out io.Writer, title string, gitpkg str
 	hrefICK_Go := href_GoPkg + `/ick#` + gostruct
 	hrefICK_GoUI := href_GoPkg + `/ick/ickui#` + gostruct
 
-	// html.Render(out, nil, ick.Title(3, "APIs"))
+	// ickcore.Render(out, nil, ick.Title(3, "APIs"))
 
-	html.RenderString(out, `<div class="is-flex is-justify-content-space-between">`)
-	html.RenderChild(out, sec, ick.Title(3, title, `style="white-space: nowrap;"`))
+	ickcore.RenderString(out, `<div class="is-flex is-justify-content-space-between">`)
+	ickcore.RenderChild(out, sec, ick.Title(3, title, `style="white-space: nowrap;"`))
 
 	b := ick.Button("").
 		SetSize(ick.SIZE_SMALL).
@@ -100,12 +108,12 @@ func (sec *SectionDocIcecake) RenderHead(out io.Writer, title string, gitpkg str
 		SetOutlined(true).
 		SetIcon(*ick.Icon("bi bi-box-arrow-up-right", `class="is-hidden-touch"`), true)
 
-	html.RenderChild(out, sec, html.Snippet("div", "class='is-flex is-justify-content-flex-end spaceout'",
+	ickcore.RenderChild(out, sec, ick.Elem("div", "class='is-flex is-justify-content-flex-end spaceout'",
 		b.Clone().SetTitle(gostruct+" code").ParseHRef(hrefICK_Git).SetIcon(*ick.Icon("bi bi-github"), false),
 		b.Clone().SetTitle("UI code").ParseHRef(hrefICK_GitUI).SetIcon(*ick.Icon("bi bi-github"), false),
 		b.Clone().SetTitle(gostruct+" Go pkg").ParseHRef(hrefICK_Go).SetIcon(*ick.Icon("bi bi-book"), false),
 		b.Clone().SetTitle("UI Go pkg").ParseHRef(hrefICK_GoUI).SetIcon(*ick.Icon("bi bi-book"), false),
 	))
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `</div>`)
 	return nil
 }

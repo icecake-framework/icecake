@@ -3,11 +3,11 @@ package ick
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 func init() {
-	html.RegisterComposer("ick-hero", &ICKHero{})
+	ickcore.RegisterComposer("ick-hero", &ICKHero{})
 }
 
 // The height of the hero section
@@ -25,24 +25,25 @@ const (
 )
 
 type ICKHero struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	Height HERO_HEIGHT // the height of the hero section,
 
-	InsideHead html.ContentComposer
+	InsideHead ickcore.ContentComposer
 
-	ContainerAttr html.AttributeMap // The attributes map to setup to the hero's container, allowing text centering
+	ContainerAttr ickcore.AttributeMap // The attributes map to setup to the hero's container, allowing text centering
 
 	Title    ICKTitle
 	Subtitle ICKTitle
 
 	CTA ICKButton
 
-	InsideFoot html.ContentComposer
+	InsideFoot ickcore.ContentComposer
 }
 
 // Ensuring Hero implements the right interface
-var _ html.ElementComposer = (*ICKHero)(nil)
+var _ ickcore.ContentComposer = (*ICKHero)(nil)
+var _ ickcore.TagBuilder = (*ICKHero)(nil)
 
 func Hero() *ICKHero {
 	hero := new(ICKHero)
@@ -50,7 +51,7 @@ func Hero() *ICKHero {
 }
 
 // Tag Builder used by the rendering functions.
-func (msg *ICKHero) BuildTag() html.Tag {
+func (msg *ICKHero) BuildTag() ickcore.Tag {
 	msg.Tag().SetTagName("section").AddClass("hero").PickClass(HH_OPTIONS, string(msg.Height))
 	return *msg.Tag()
 }
@@ -59,24 +60,24 @@ func (msg *ICKHero) BuildTag() html.Tag {
 func (msg *ICKHero) RenderContent(out io.Writer) error {
 
 	if msg.InsideHead != nil {
-		html.RenderChild(out, msg, html.Snippet("div", `class="hero-head"`, msg.InsideHead))
+		ickcore.RenderChild(out, msg, Elem("div", `class="hero-head"`, msg.InsideHead))
 	}
 
-	html.RenderString(out, `<div class="hero-body">`)
+	ickcore.RenderString(out, `<div class="hero-body">`)
 
 	cont := new(Container)
 	cont.Tag().AttributeMap = msg.ContainerAttr.Clone()
 	contag := cont.BuildTag()
 	contag.RenderOpening(out)
 
-	html.RenderChild(out, msg, &msg.Title, &msg.Subtitle, &msg.CTA)
+	ickcore.RenderChild(out, msg, &msg.Title, &msg.Subtitle, &msg.CTA)
 
 	contag.RenderClosing(out)
 
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `</div>`)
 
 	if msg.InsideFoot != nil {
-		html.RenderChild(out, msg, html.Snippet("div", `class="hero-foor"`, msg.InsideFoot))
+		ickcore.RenderChild(out, msg, Elem("div", `class="hero-foor"`, msg.InsideFoot))
 	}
 
 	return nil

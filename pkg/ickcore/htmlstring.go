@@ -1,4 +1,4 @@
-package html
+package ickcore
 
 import (
 	"errors"
@@ -11,7 +11,6 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/pkg/namingpattern"
 	"github.com/lolorenzo777/verbose"
 )
@@ -20,7 +19,7 @@ import (
 // HTMLString implements Elementcomposer interface and the string is rendered to an output stream with the icecake Rendering functions.
 // It is part of the core icecake snippets.
 type HTMLString struct {
-	meta  ickcore.RMetaData // Rendering MetaData
+	meta  RMetaData // Rendering MetaData
 	bytes []byte
 }
 
@@ -38,7 +37,7 @@ func ToHTML(s string) *HTMLString {
 
 // Meta provides a reference to the RenderingMeta object associated with this composer.
 // This is required by the icecake rendering process.
-func (h *HTMLString) RMeta() *ickcore.RMetaData {
+func (h *HTMLString) RMeta() *RMetaData {
 	return &h.meta
 }
 
@@ -55,9 +54,9 @@ func (h HTMLString) Bytes() []byte {
 	return b
 }
 
-// String returns the content
-func (s HTMLString) IsEmpty() bool {
-	return s.bytes == nil || len(s.bytes) == 0
+// NeedRendering
+func (s HTMLString) NeedRendering() bool {
+	return s.bytes != nil && len(s.bytes) > 0
 }
 
 // RenderHTML lookups for ick-tags in the htmlstring and unfold each of them into out.
@@ -278,12 +277,12 @@ nextbyte:
 // The rendering process renders an HTML comment and return an error in the following cases:
 //   - If the HTML string contains ick-tag but the ick-tagname does not correspond to a Registered composer,
 //   - If the HTML string contains ick-tag with attributes but one value of these attribute is of a bad type,
-func unfoldick(parent ContentComposer, out io.Writer, ickname string, ickattrs AttributeMap, seq int) (err error) {
+func unfoldick(parent RMetaProvider, out io.Writer, ickname string, ickattrs AttributeMap, seq int) (err error) {
 
 	verbose.Debug("unfolding composer %q", ickname)
 
 	// does this tag refer to a registered component ?
-	regentry := ickcore.GetRegistryEntry(ickname)
+	regentry := GetRegistryEntry(ickname)
 	if regentry.Component() != nil {
 
 		// clone the registered snippet (a composer)
@@ -293,8 +292,8 @@ func unfoldick(parent ContentComposer, out io.Writer, ickname string, ickattrs A
 		// warning: pointers are copied by ref and not by value
 		// newref.Elem().Set(reflect.ValueOf(regentry.Component()).Elem())
 
-		// get the interface of the new snippet (a composer)
-		newcmp := newref.Interface().(ContentComposer)
+		// get the interface of the new snippet
+		newcmp := newref.Interface().(Composer)
 
 		// process unfolded attributes, set value of ickcomponent field when name of attribute matches field name,
 		// otherwise set unfolded attribute to the attribute of the component.
@@ -342,7 +341,7 @@ func updateproperty(prop reflect.Value, value string) (err error) {
 	typ := prop.Type().String()
 	verbose.Debug("property type:%s value:%v", typ, value)
 	switch typ {
-	case "html.HTMLString":
+	case "ickcore.HTMLString":
 		s := ToHTML(value)
 		prop.Set(reflect.ValueOf(*s))
 	case "time.Duration":

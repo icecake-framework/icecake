@@ -3,11 +3,11 @@ package docs
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 func init() {
-	html.RequireCSSStyle("docsFooter", docsFooterStyle)
+	ickcore.RequireCSSStyle("docsFooter", docsFooterStyle)
 }
 
 /******************************************************************************
@@ -26,16 +26,23 @@ const docsFooterStyle string = `.myfooter-title {
 }
 `
 
-type docFooter struct{ html.BareSnippet }
+type docFooter struct {
+	ickcore.BareSnippet
+}
 
 // Ensuring docFooter implements the right interface
-var _ html.ElementComposer = (*docFooter)(nil)
+var _ ickcore.ContentComposer = (*docFooter)(nil)
+var _ ickcore.TagBuilder = (*docFooter)(nil)
 
 func DocFooter() *docFooter {
 	return new(docFooter)
 }
 
-func (footer *docFooter) BuildTag() html.Tag {
+func (s docFooter) NeedRendering() bool {
+	return true
+}
+
+func (footer *docFooter) BuildTag() ickcore.Tag {
 	footer.Tag().SetTagName("footer").AddClass("footer")
 	return *footer.Tag()
 }
@@ -50,24 +57,24 @@ func (footer *docFooter) RenderContent(out io.Writer) error {
 		`<a href="https://github.com/icecake-framework/icecake">Contribute</a> on GitHub`,
 	}
 
-	html.RenderString(out, `<div class="container"><div class="columns">`)
+	ickcore.RenderString(out, `<div class="container"><div class="columns">`)
 
 	// 1st column
-	html.RenderString(out, `<div class="column is-8">`)
-	html.RenderString(out, `<h4 class="myfooter-title">`, `<strong>IceCake</strong> by Lolorenzo`, `</h4>`)
-	html.RenderString(out, `<div class="myfooter-info">`, `Source code licences `, hrefMIT, `</div>`)
-	html.RenderString(out, `<div class="myfooter-info">`, `Website content licensed `, hrefCCBY, `</div>`)
-	html.RenderString(out, `<br><div class="myfooter-info">Wasm code: <span id="icecake-status"></span></div>`)
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `<div class="column is-8">`)
+	ickcore.RenderString(out, `<h4 class="myfooter-title">`, `<strong>IceCake</strong> by Lolorenzo`, `</h4>`)
+	ickcore.RenderString(out, `<div class="myfooter-info">`, `Source code licences `, hrefMIT, `</div>`)
+	ickcore.RenderString(out, `<div class="myfooter-info">`, `Website content licensed `, hrefCCBY, `</div>`)
+	ickcore.RenderString(out, `<br><div class="myfooter-info">Wasm code: <span id="icecake-status"></span></div>`)
+	ickcore.RenderString(out, `</div>`)
 
 	// 2nd column
-	html.RenderString(out, `<div class="column is-4">`)
-	html.RenderString(out, `<h4 class="myfooter-title">`, `<strong>Links</strong>`, `</h4>`)
+	ickcore.RenderString(out, `<div class="column is-4">`)
+	ickcore.RenderString(out, `<h4 class="myfooter-title">`, `<strong>Links</strong>`, `</h4>`)
 	for _, hrefLink := range hrefLinks {
-		html.RenderString(out, `<p class="myfooter-link">`, hrefLink, `</p>`)
+		ickcore.RenderString(out, `<p class="myfooter-link">`, hrefLink, `</p>`)
 	}
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `</div>`)
 
-	html.RenderString(out, `</div></div>`)
+	ickcore.RenderString(out, `</div></div>`)
 	return nil
 }

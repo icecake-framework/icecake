@@ -1,31 +1,14 @@
-package html
+package ickcore
 
 import (
 	"io"
 	"reflect"
 
-	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/lolorenzo777/verbose"
 )
 
 // maxDEEP is the maximum HTML string unfolding levels
 const maxDEEP int = 25
-
-type ContentComposer interface {
-
-	// Meta returns a reference to render meta data
-	ickcore.RMetaProvider
-
-	// RenderContent writes the HTML string corresponding to the content of the HTML element.
-	// Return an error to stops the rendering process.
-	RenderContent(out io.Writer) error
-}
-
-// ElementComposer interface
-type ElementComposer interface {
-	TagBuilder
-	ContentComposer
-}
 
 // RenderChild renders the HTML string of the composers to out, including its tag element its properties and its content.
 // Rendering the content can renders child-snippets recursively. This can be done maxDEEP times max to avoid infinite loop.
@@ -48,7 +31,7 @@ type ElementComposer interface {
 // If the parent is not nil, the snippet is added to its embedded stack of sub-components.
 //
 // Returns rendering errors, typically with the writer, or if there's too many recursive rendering.
-func RenderChild(out io.Writer, parent ickcore.RMetaProvider, child ContentComposer, siblings ...ContentComposer) error {
+func RenderChild(out io.Writer, parent RMetaProvider, child Composer, siblings ...Composer) error {
 	err := render(out, parent, child)
 	if err != nil {
 		return err
@@ -62,11 +45,16 @@ func RenderChild(out io.Writer, parent ickcore.RMetaProvider, child ContentCompo
 	return nil
 }
 
-func render(out io.Writer, parent ickcore.RMetaProvider, cmp ContentComposer) error {
+func render(out io.Writer, parent RMetaProvider, cmp Composer) error {
 
 	// nothing to render
 	if cmp == nil || reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {
 		verbose.Printf(verbose.WARNING, "Render: empty composer %s\n", reflect.TypeOf(cmp).String())
+		return nil
+	}
+
+	if !cmp.NeedRendering() {
+		verbose.Printf(verbose.WARNING, "Render: composer %s does not need rendering\n", reflect.TypeOf(cmp).String())
 		return nil
 	}
 
@@ -103,10 +91,12 @@ func render(out io.Writer, parent ickcore.RMetaProvider, cmp ContentComposer) er
 	}
 
 	// Render the content
-	err := cmp.RenderContent(out)
-	if err != nil {
-		cmp.RMeta().RError = err
-		return err
+	if cc, iscc := cmp.(ContentComposer); iscc {
+		err := cc.RenderContent(out)
+		if err != nil {
+			cmp.RMeta().RError = err
+			return err
+		}
 	}
 
 	// Render closingtag

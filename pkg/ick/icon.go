@@ -3,11 +3,11 @@ package ick
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 type ICKIcon struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	// Key is the icon key that will be added to the <class attribute of the <i> element.
 	// Format of this key depends on the icon provider:
@@ -27,7 +27,8 @@ type ICKIcon struct {
 }
 
 // Ensuring ICKIcon implements the right interface
-var _ html.ElementComposer = (*ICKIcon)(nil)
+var _ ickcore.ContentComposer = (*ICKIcon)(nil)
+var _ ickcore.TagBuilder = (*ICKIcon)(nil)
 
 func Icon(key string, attrs ...string) *ICKIcon {
 	i := &ICKIcon{Key: key}
@@ -46,11 +47,12 @@ func (icon *ICKIcon) SetColor(c TXTCOLOR) *ICKIcon {
 
 /******************************************************************************/
 
+func (icon *ICKIcon) NeedRendering() bool {
+	return icon.Key != ""
+}
+
 // Tag Builder used by the rendering functions.
-func (icon *ICKIcon) BuildTag() html.Tag {
-	if icon.Key == "" {
-		return *html.NewTag("", nil)
-	}
+func (icon *ICKIcon) BuildTag() ickcore.Tag {
 	icon.Tag().SetTagName("span").
 		AddClassIf(icon.Text == "", "icon").
 		AddClassIf(icon.Text != "", "icon-text").
@@ -60,15 +62,12 @@ func (icon *ICKIcon) BuildTag() html.Tag {
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
 func (icon *ICKIcon) RenderContent(out io.Writer) error {
-	if icon.Key == "" {
-		return nil
-	}
 	if icon.Text == "" {
-		html.RenderString(out, `<i class="`, icon.Key, `"></i>`)
+		ickcore.RenderString(out, `<i class="`, icon.Key, `"></i>`)
 	} else {
-		html.RenderChild(out, icon,
-			html.Snippet("span", `class="icon"`, html.ToHTML(`<i class="`+icon.Key+`"></i>`)))
-		html.RenderString(out, `<span>`+icon.Text+`</span>`)
+		ickcore.RenderChild(out, icon,
+			Elem("span", `class="icon"`, ickcore.ToHTML(`<i class="`+icon.Key+`"></i>`)))
+		ickcore.RenderString(out, `<span>`+icon.Text+`</span>`)
 	}
 	return nil
 }

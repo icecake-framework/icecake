@@ -3,51 +3,52 @@ package ick
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 func init() {
-	html.RegisterComposer("ick-card", &ICKCard{})
+	ickcore.RegisterComposer("ick-card", &ICKCard{})
 }
 
 // The card is an HTMLSnippet. Use AddContent to setup the content of the card
 type ICKCard struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	// Optional title to display in the head of the card
-	Title html.HTMLString
+	Title ickcore.HTMLString
 
 	// the body of the card
-	Body html.ContentStack
+	Body ickcore.ContentStack
 
 	// Optional image to display on top of the card
 	Image *ICKImage
 
 	// optional Footer items
-	footerItem []html.HTMLString
+	footerItem []ickcore.HTMLString
 }
 
 // Ensuring ICKCard implements the right interface
-var _ html.ElementComposer = (*ICKCard)(nil)
+var _ ickcore.ContentComposer = (*ICKCard)(nil)
+var _ ickcore.TagBuilder = (*ICKCard)(nil)
 
 // Card main factory
-func Card(content html.ContentComposer, attrs ...string) *ICKCard {
+func Card(content ickcore.ContentComposer, attrs ...string) *ICKCard {
 	c := new(ICKCard)
 	c.Tag().ParseAttributes(attrs...)
-	c.footerItem = make([]html.HTMLString, 0)
+	c.footerItem = make([]ickcore.HTMLString, 0)
 	c.Body.Push(content)
 	return c
 }
 
 func (card *ICKCard) SetTitle(title string) *ICKCard {
-	card.Title = *html.ToHTML(title)
+	card.Title = *ickcore.ToHTML(title)
 	return card
 }
 func (card *ICKCard) SetImage(image ICKImage) *ICKCard {
 	card.Image = &image
 	return card
 }
-func (card *ICKCard) AddFooterItem(item html.HTMLString) *ICKCard {
+func (card *ICKCard) AddFooterItem(item ickcore.HTMLString) *ICKCard {
 	card.footerItem = append(card.footerItem, item)
 	return card
 }
@@ -56,7 +57,7 @@ func (card *ICKCard) AddFooterItem(item html.HTMLString) *ICKCard {
 
 // BuildTag builds the tag used to render the html element.
 // Card Tag is a simple <div class="card"></div>
-func (card *ICKCard) BuildTag() html.Tag {
+func (card *ICKCard) BuildTag() ickcore.Tag {
 	card.Tag().SetTagName("div").AddClass("card")
 	return *card.Tag()
 }
@@ -65,32 +66,32 @@ func (card *ICKCard) BuildTag() html.Tag {
 // Card rendering renders the optional header withe the Title, the optional Image, the content, and a slice of footers
 func (card *ICKCard) RenderContent(out io.Writer) error {
 
-	if !card.Title.IsEmpty() {
-		html.RenderString(out, `<header class="card-header">`, `<p class="card-header-title">`)
-		html.RenderChild(out, card, &card.Title)
-		html.RenderString(out, `</p></header>`)
+	if card.Title.NeedRendering() {
+		ickcore.RenderString(out, `<header class="card-header">`, `<p class="card-header-title">`)
+		ickcore.RenderChild(out, card, &card.Title)
+		ickcore.RenderString(out, `</p></header>`)
 	}
 
 	if card.Image != nil {
-		html.RenderString(out, `<div class="card-image">`)
-		html.RenderChild(out, card, card.Image)
-		html.RenderString(out, `</div>`)
+		ickcore.RenderString(out, `<div class="card-image">`)
+		ickcore.RenderChild(out, card, card.Image)
+		ickcore.RenderString(out, `</div>`)
 	}
 
-	if card.Body.HasContent() {
-		html.RenderString(out, `<div class="card-content">`)
+	if card.Body.NeedRendering() {
+		ickcore.RenderString(out, `<div class="card-content">`)
 		card.Body.RenderStack(out, card)
-		html.RenderString(out, `</div>`)
+		ickcore.RenderString(out, `</div>`)
 	}
 
 	if len(card.footerItem) > 0 {
-		html.RenderString(out, `<div class="card-footer">`)
+		ickcore.RenderString(out, `<div class="card-footer">`)
 		for _, item := range card.footerItem {
-			html.RenderString(out, `<span class="card-footer-item">`)
-			html.RenderChild(out, card, &item)
-			html.RenderString(out, `</span>`)
+			ickcore.RenderString(out, `<span class="card-footer-item">`)
+			ickcore.RenderChild(out, card, &item)
+			ickcore.RenderString(out, `</span>`)
 		}
-		html.RenderString(out, `</div>`)
+		ickcore.RenderString(out, `</div>`)
 	}
 	return nil
 }

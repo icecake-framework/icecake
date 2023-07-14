@@ -3,8 +3,8 @@ package webdocs
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/ick"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 const (
@@ -17,21 +17,21 @@ type SectionDocButton struct {
 
 func (sec *SectionDocButton) RenderContent(out io.Writer) error {
 	sec.RenderHead(out, "Button", "button.go", "ICKButton")
-	html.RenderString(out, `<div class="block">`+
+	ickcore.RenderString(out, `<div class="block">`+
 		`<p>ICKButton is an icecake snippet providing the HTML rendering for a `, linkBulmaButton, ` with extra features and usefull Go APIs.</p>`+
 		`</div>`)
 
 	// usages
-	html.RenderString(out, `<div class="box spaceout">`)
-	html.RenderChild(out, sec,
+	ickcore.RenderString(out, `<div class="box spaceout">`)
+	ickcore.RenderChild(out, sec,
 		ick.Button("Click Link").ParseHRef("/"),
 		ick.Button("Trigger Event").SetId("uA2"))
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `</div>`)
 
 	// styling
-	html.RenderChild(out, sec, ick.Title(4, "Styling"))
-	html.RenderString(out, `<div class="box spaceout">`)
-	html.RenderChild(out, sec,
+	ickcore.RenderChild(out, sec, ick.Title(4, "Styling"))
+	ickcore.RenderString(out, `<div class="box spaceout">`)
+	ickcore.RenderChild(out, sec,
 		ick.Button("Default"),
 		ick.Button("Primary color").SetColor(ick.COLOR_PRIMARY),
 		ick.Button("Light color").SetColor(*ick.Color(ick.COLOR_PRIMARY).SetLight(true)),
@@ -42,16 +42,16 @@ func (sec *SectionDocButton) RenderContent(out io.Writer) error {
 		ick.Button("Large").SetSize(ick.SIZE_LARGE),
 		ick.Button("with opening icons").SetIcon(*ick.Icon("bi bi-check2-square"), false),
 		ick.Button("with closing icons").SetIcon(*ick.Icon("bi bi-box-arrow-up-right"), true))
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `</div>`)
 
 	// states
-	html.RenderChild(out, sec, ick.Title(4, "State"))
-	html.RenderString(out, `<div class="box spaceout">`)
-	html.RenderChild(out, sec,
+	ickcore.RenderChild(out, sec, ick.Title(4, "State"))
+	ickcore.RenderString(out, `<div class="box spaceout">`)
+	ickcore.RenderChild(out, sec,
 		ick.Button("Standard").SetColor(ick.COLOR_PRIMARY),
 		ick.Button("Loading").SetColor(ick.COLOR_PRIMARY).SetLoading(true),
 		ick.Button("Disabled").SetColor(ick.COLOR_PRIMARY).SetDisabled(true))
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `</div>`)
 
 	return nil
 }

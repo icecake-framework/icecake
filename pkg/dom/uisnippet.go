@@ -6,13 +6,13 @@ import (
 	"reflect"
 
 	"github.com/icecake-framework/icecake/pkg/console"
-	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/pkg/js"
 )
 
 type UIComposer interface {
-	html.ElementComposer
+	ickcore.TagBuilder
+	ickcore.ContentComposer
 
 	Wrap(js.JSValueProvider)
 
@@ -21,10 +21,10 @@ type UIComposer interface {
 	RemoveListeners()
 }
 
-type Composer interface {
-	html.ContentComposer
-	UIComposer
-}
+// type Composer interface {
+// 	ickcore.ContentComposer
+// 	UIComposer
+// }
 
 /*****************************************************************************/
 
@@ -73,7 +73,7 @@ func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
 		for _, emb := range embedded {
 			// DEBUG: console.Warnf("mountSnippetTree: %+v child %s", emb, reflect.TypeOf(emb).String())
 			if child, ok := emb.(UIComposer); ok {
-				childid := child.RMeta().Id
+				childid := child.RMeta().TagId
 				if childid != "" {
 					console.Logf("mountSnippetTree: parent:%v is mounting %v id:%q", reflect.TypeOf(parent).String(), reflect.TypeOf(child).String(), childid)
 					errm := TryMountId(child, childid)

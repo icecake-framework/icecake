@@ -3,8 +3,8 @@ package ickui
 import (
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/dom"
-	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/ick"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 type ICKMessage struct {
@@ -18,7 +18,7 @@ type ICKMessage struct {
 var _ dom.UIComposer = (*ICKMessage)(nil)
 
 // Message factory
-func Message(cnt html.ContentComposer) *ICKMessage {
+func Message(cnt ickcore.ContentComposer) *ICKMessage {
 	msg := new(ICKMessage)
 	msg.ICKMessage = *ick.Message(cnt)
 	return msg

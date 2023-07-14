@@ -19,8 +19,8 @@ type ComposerMap map[string]RMetaProvider
 // RMetaData is rendering metadata for a single HTMLContentComposer
 type RMetaData struct {
 	Deep      int           // deepness of the HTMLContentComposer
-	VirtualId string        // virtual id allocated to an HTMLContentComposer, always one
-	Id        string        // the id allocated to the HTMLContentComposer if any
+	VirtualId string        // virtual id allocated to a Composer, always one
+	TagId     string        // the id allocated to the Composer if any
 	Parent    RMetaProvider // optional parent, may be an orphan
 	IsRender  bool          // Indicates the HTMLContentComposer has been rendered at least once
 	IsMounted bool          // Indicates the HTMLContentComposer has been mounted
@@ -44,6 +44,7 @@ func (rmeta *RMetaData) RMeta() *RMetaData {
 //   - the dot "-" seperator is added followed by the cmpname if any
 //
 // - the cmpname is added
+// XXX
 func (rmeta *RMetaData) GenerateVirtualId(cmp RMetaProvider) string {
 	prefix := "orphan"
 	if rmeta.Parent != nil {
@@ -58,7 +59,7 @@ func (rmeta *RMetaData) GenerateVirtualId(cmp RMetaProvider) string {
 	cmpname = strings.ToLower(cmpname)
 
 	body := cmpname
-	cmpid := cmp.RMeta().Id
+	cmpid := cmp.RMeta().TagId
 	if cmpid != "" {
 		body = cmpid
 		if toporphan {
@@ -83,6 +84,8 @@ func (rmeta *RMetaData) GenerateVirtualId(cmp RMetaProvider) string {
 	return rmeta.VirtualId
 }
 
+// func (rmeta *RMetaData) NeedRendering() bool { return true }
+
 // Embed adds child to the map of embedded components.
 // If a child with the same key has already been embedded it's replaced and a warning is raised in verbose mode.
 // The key is the id of the html element if any otherwise it's its virtual id.
@@ -90,7 +93,7 @@ func (rmeta *RMetaData) Embed(child RMetaProvider) {
 	if rmeta.childs == nil {
 		rmeta.childs = make(ComposerMap, 1)
 	}
-	key := child.RMeta().Id
+	key := child.RMeta().TagId
 	if key == "" {
 		key = child.RMeta().VirtualId
 	}

@@ -1,10 +1,10 @@
-package html
+package ickcore
 
 import (
 	"io"
+	"reflect"
 
 	"github.com/huandu/go-clone"
-	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 // ContentStack is a stack of ContentComposer than can easily be embedded into any custom snippet.
@@ -29,8 +29,8 @@ func (c *ContentStack) ClearContent() {
 	}
 }
 
-// HasContent returns true is the content stack is not nil and it contains at least on item
-func (c *ContentStack) HasContent() bool {
+// NeedRendering returns true is the content stack is not nil and it contains at least on item
+func (c *ContentStack) NeedRendering() bool {
 	return c != nil && c.Stack != nil && len(c.Stack) > 0
 }
 
@@ -44,7 +44,7 @@ func (c *ContentStack) Push(content ...ContentComposer) {
 	}
 	if len(content) > 0 {
 		for _, cmp := range content {
-			if cmp != nil {
+			if cmp != nil && reflect.TypeOf(cmp).Kind() == reflect.Ptr && !reflect.ValueOf(cmp).IsNil() {
 				c.Stack = append(c.Stack, cmp)
 			}
 		}
@@ -53,7 +53,7 @@ func (c *ContentStack) Push(content ...ContentComposer) {
 
 // RenderStack writes the HTML string corresponding to the content of the HTML element.
 // The default implementation for an HTMLSnippet snippet is to render all the internal stack of composers inside an enclosed HTML tag.
-func (c *ContentStack) RenderStack(out io.Writer, parent ickcore.RMetaProvider) (err error) {
+func (c *ContentStack) RenderStack(out io.Writer, parent RMetaProvider) (err error) {
 	if c.Stack != nil && len(c.Stack) > 0 {
 		for _, child := range c.Stack {
 			err := RenderChild(out, parent, child)

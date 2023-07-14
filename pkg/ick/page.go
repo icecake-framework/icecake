@@ -8,14 +8,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/lolorenzo777/verbose"
 )
 
 type HeadItem struct {
 	// TODO: HeadItem base on baresnippet
-	html.ICKSnippet
+	ICKElem
 }
 
 func NewHeadItem(tagname string) *HeadItem {
@@ -33,7 +32,7 @@ type Page struct {
 	Description string     // the html "head/meta description" value.
 	HeadItems   []HeadItem // the list of tags in the section <head>
 
-	body html.ICKSnippet // The tagname is forced to "body" during rendering.
+	body ICKElem // The tagname is forced to "body" during rendering.
 
 	url  *url.URL // relative url of the html page.
 	wasm *url.URL // relative url of the html page.
@@ -60,11 +59,11 @@ func (pg *Page) RMeta() *ickcore.RMetaData {
 }
 
 // WasmScript returns the wasm script to be added ad the end of the page to enable loading of a wasm code
-func (pg *Page) WasmScript() *html.HTMLString {
+func (pg *Page) WasmScript() *ickcore.HTMLString {
 	if pg.wasm == nil || pg.wasm.Path == "" {
 		return nil
 	}
-	s := html.ToHTML(`<script src="/assets/wasm_exec.js"></script>
+	s := ickcore.ToHTML(`<script src="/assets/wasm_exec.js"></script>
 		<script>
 			const goWasm = new Go()
 			WebAssembly.instantiateStreaming(fetch("` + pg.wasm.Path + `"), goWasm.importObject)
@@ -100,7 +99,7 @@ func (pg *Page) ParseURL(rawHTMLUrl string) (err error) {
 
 // Body returns the HTMLSnippet used to render the body tag.
 // Attributes can be setup. The tag will be forced to body during rendering.
-func (pg *Page) Body() *html.ICKSnippet {
+func (pg *Page) Body() *ICKElem {
 	return &pg.body
 }
 
@@ -173,20 +172,20 @@ func (pg Page) WriteFile(outputpath string) (err error) {
 func (pg *Page) RenderContent(out io.Writer) (err error) {
 
 	// <!doctype>
-	html.RenderString(out, `<!doctype html><html lang="`, pg.Lang, `">`)
+	ickcore.RenderString(out, `<!doctype html><html lang="`, pg.Lang, `">`)
 
 	// <head>
-	html.RenderString(out, `<head>`)
-	html.RenderStringIf(pg.Title != "", out, "<title>", pg.Title, "</title>")
-	html.RenderStringIf(pg.Description != "", out, `<meta name="description" content="`+pg.Description+`">`)
+	ickcore.RenderString(out, `<head>`)
+	ickcore.RenderStringIf(pg.Title != "", out, "<title>", pg.Title, "</title>")
+	ickcore.RenderStringIf(pg.Description != "", out, `<meta name="description" content="`+pg.Description+`">`)
 	for _, item := range pg.HeadItems {
-		if err = html.RenderChild(out, nil, &item); err != nil {
+		if err = ickcore.RenderChild(out, nil, &item); err != nil {
 			return err
 		}
 	}
 
 	// required css files, checking for duplicate
-	rcssfs := html.RequiredCSSFile()
+	rcssfs := ickcore.RequiredCSSFile()
 	for _, rcssf := range rcssfs {
 		strrcssf := rcssf.String()
 		duplicate := false
@@ -199,25 +198,25 @@ func (pg *Page) RenderContent(out io.Writer) (err error) {
 				}
 			}
 		}
-		html.RenderStringIf(!duplicate, out, `<link rel="stylesheet" href="`+strrcssf+`">`)
+		ickcore.RenderStringIf(!duplicate, out, `<link rel="stylesheet" href="`+strrcssf+`">`)
 	}
 
 	// required css styles
-	rcssstyle := html.RequiredCSSStyle()
-	html.RenderStringIf(rcssstyle != "", out, `<style>`, rcssstyle, `</style>`)
+	rcssstyle := ickcore.RequiredCSSStyle()
+	ickcore.RenderStringIf(rcssstyle != "", out, `<style>`, rcssstyle, `</style>`)
 
-	html.RenderString(out, "</head>")
+	ickcore.RenderString(out, "</head>")
 
 	// <body>
 	pg.body.Tag().SetTagName("body")
-	html.RenderChild(out, pg, &pg.body)
+	ickcore.RenderChild(out, pg, &pg.body)
 
 	// wasm script, if any
 	// must be loaded at the end of the page because the wasm code interacts with the loading/loaded )DOM
-	html.RenderChild(out, nil, pg.WasmScript())
+	ickcore.RenderChild(out, nil, pg.WasmScript())
 
 	// <closing>
-	html.RenderString(out, "</html>")
+	ickcore.RenderString(out, "</html>")
 
 	return nil
 }

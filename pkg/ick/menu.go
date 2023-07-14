@@ -4,11 +4,11 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 // func init() {
-// 	html.RegisterComposer("ick-menu", &Menu{})
+// 	ickcore.RegisterComposer("ick-menu", &Menu{})
 // }
 
 type MENUITEM_TYPE string
@@ -26,7 +26,7 @@ const (
 //
 // [bulma navbar item]: https://bulma.io/documentation/components/navbar/#navbar-item
 type IckMenuItem struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	// Optional Key allows to access a specific navbaritem, whatever it's level in the hierarchy, directly from the navbar.
 	Key string
@@ -48,7 +48,8 @@ type IckMenuItem struct {
 }
 
 // Ensuring ICKMenuItem implements the right interface
-var _ html.ElementComposer = (*IckMenuItem)(nil)
+var _ ickcore.ContentComposer = (*IckMenuItem)(nil)
+var _ ickcore.TagBuilder = (*IckMenuItem)(nil)
 
 // ParseHRef tries to parse rawUrl to HRef ignoring error.
 func (mnui *IckMenuItem) ParseHRef(rawUrl string) *IckMenuItem {
@@ -58,20 +59,21 @@ func (mnui *IckMenuItem) ParseHRef(rawUrl string) *IckMenuItem {
 
 // Clone clones this navbar and all its items and subitem, keeping their attributes their item index and their key.
 func (mnui IckMenuItem) Clone() *IckMenuItem {
-	m := new(IckMenuItem)
-	m.Key = mnui.Key
-	m.Type = mnui.Type
-	m.Text = mnui.Text
+	c := new(IckMenuItem)
+	c.BareSnippet = *mnui.BareSnippet.Clone()
+	c.Key = mnui.Key
+	c.Type = mnui.Type
+	c.Text = mnui.Text
 	if mnui.HRef != nil {
-		m.HRef = new(url.URL)
-		*m.HRef = *mnui.HRef
+		c.HRef = new(url.URL)
+		*c.HRef = *mnui.HRef
 	}
-	m.IsActive = mnui.IsActive
-	return m
+	c.IsActive = mnui.IsActive
+	return c
 }
 
 // BuildTag builds the tag used to render the html element.
-func (mnui *IckMenuItem) BuildTag() html.Tag {
+func (mnui *IckMenuItem) BuildTag() ickcore.Tag {
 	if mnui.Type == MENUIT_LABEL {
 		mnui.Tag().SetTagName("p").AddClass("menu-label")
 	} else {
@@ -86,14 +88,13 @@ func (mnui *IckMenuItem) BuildTag() html.Tag {
 func (mnui *IckMenuItem) RenderContent(out io.Writer) error {
 	switch mnui.Type {
 	case MENUIT_LABEL:
-		html.RenderString(out, mnui.Text)
+		ickcore.RenderString(out, mnui.Text)
 	case MENUIT_FOOTER:
-		html.RenderChild(out, mnui, html.ToHTML(mnui.Text))
+		ickcore.RenderChild(out, mnui, ickcore.ToHTML(mnui.Text))
 	default:
-		item := A().SetHRef(mnui.HRef)
-		item.Push(html.ToHTML(mnui.Text))
+		item := Link(ickcore.ToHTML(mnui.Text)).SetHRef(mnui.HRef)
 		item.Tag().SetClassIf(mnui.IsActive, "is-active")
-		html.RenderChild(out, mnui, item)
+		ickcore.RenderChild(out, mnui, item)
 	}
 	return nil
 }
@@ -110,7 +111,7 @@ const (
 //
 // [bulma menu]: https://bulma.io/documentation/components/menu
 type ICKMenu struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	MENU_TYPE
 	SIZE
@@ -119,7 +120,8 @@ type ICKMenu struct {
 }
 
 // Ensuring ICKMenu implements the right interface
-var _ html.ElementComposer = (*ICKMenu)(nil)
+var _ ickcore.ContentComposer = (*ICKMenu)(nil)
+var _ ickcore.TagBuilder = (*ICKMenu)(nil)
 
 func Menu(id string, attrs ...string) *ICKMenu {
 	n := new(ICKMenu)
@@ -130,15 +132,15 @@ func Menu(id string, attrs ...string) *ICKMenu {
 
 // Clone clones this Menu and all its items and subitem, keeping their attributes their item index and their key.
 func (src ICKMenu) Clone() *ICKMenu {
-	clone := new(ICKMenu)
-	clone.BareSnippet = *src.BareSnippet.Clone()
-	clone.MENU_TYPE = src.MENU_TYPE
-	clone.SIZE = src.SIZE
-	clone.items = make([]*IckMenuItem, len(src.items))
+	c := new(ICKMenu)
+	c.BareSnippet = *src.BareSnippet.Clone()
+	c.MENU_TYPE = src.MENU_TYPE
+	c.SIZE = src.SIZE
+	c.items = make([]*IckMenuItem, len(src.items))
 	for i, itm := range src.items {
-		clone.items[i] = itm.Clone()
+		c.items[i] = itm.Clone()
 	}
-	return clone
+	return c
 }
 
 func (mnu *ICKMenu) SetType(t MENU_TYPE) *ICKMenu {
@@ -191,8 +193,12 @@ func (mnu *ICKMenu) Item(key string) *IckMenuItem {
 	return nil
 }
 
+func (mnu *ICKMenu) NeedRendering() bool {
+	return len(mnu.items) > 0
+}
+
 // BuildTag builds the tag used to render the html element.
-func (mnu *ICKMenu) BuildTag() html.Tag {
+func (mnu *ICKMenu) BuildTag() ickcore.Tag {
 	mnu.Tag().SetTagName("div")
 
 	// set style height if there's a footer
@@ -212,7 +218,7 @@ func (mnu *ICKMenu) RenderContent(out io.Writer) error {
 	if typ == "" {
 		typ = MENUTYP_MENU
 	}
-	mnutag := html.NewTag(string(typ), `class="menu" role="navigation"`)
+	mnutag := ickcore.NewTag(string(typ), `class="menu" role="navigation"`)
 	mnutag.AddClass(string(mnu.SIZE))
 	mnutag.RenderOpening(out)
 
@@ -223,26 +229,26 @@ func (mnu *ICKMenu) RenderContent(out io.Writer) error {
 			switch lastlevel {
 			case 0:
 			case 1: // close upper list
-				html.RenderString(out, "</ul>")
+				ickcore.RenderString(out, "</ul>")
 			case 2: // close upper lists
-				html.RenderString(out, "</li></ul></ul>")
+				ickcore.RenderString(out, "</li></ul></ul>")
 			}
 			lastlevel = 0
 		case MENUIT_LINK:
 			switch lastlevel {
 			case 0: // open 1st list
-				html.RenderString(out, `<ul class="menu-list">`)
+				ickcore.RenderString(out, `<ul class="menu-list">`)
 			case 1:
 			case 2: // close upper list, back to 1st list
-				html.RenderString(out, "</li></ul>")
+				ickcore.RenderString(out, "</li></ul>")
 			}
 			lastlevel = 1
 		case MENUIT_NESTEDLINK:
 			switch lastlevel {
 			case 0: // open 1st list and 2nd one
-				html.RenderString(out, "<ul><li><ul>")
+				ickcore.RenderString(out, "<ul><li><ul>")
 			case 1: // open 2nd list
-				html.RenderString(out, "<li><ul>")
+				ickcore.RenderString(out, "<li><ul>")
 			case 2:
 			}
 			lastlevel = 2
@@ -250,35 +256,35 @@ func (mnu *ICKMenu) RenderContent(out io.Writer) error {
 			continue
 		}
 
-		html.RenderChild(out, mnu, item)
+		ickcore.RenderChild(out, mnu, item)
 	}
 
 	// close the menu
 	switch lastlevel {
 	case 1:
-		html.RenderString(out, "</ul>")
+		ickcore.RenderString(out, "</ul>")
 	case 2:
-		html.RenderString(out, "</ul></ul>")
+		ickcore.RenderString(out, "</ul></ul>")
 	}
 
 	mnutag.RenderClosing(out)
 
 	// add footer
 	hasfooter := false
-	foottag := html.NewTag("div")
+	foottag := ickcore.NewTag("div")
 	foottag.AddClass(string(mnu.SIZE))
 	for _, item := range mnu.items {
 		if item.Type == MENUIT_FOOTER {
 			if !hasfooter {
 				foottag.RenderOpening(out)
-				html.RenderString(out, `<ul class="menu-list">`)
+				ickcore.RenderString(out, `<ul class="menu-list">`)
 				hasfooter = true
 			}
-			html.RenderChild(out, mnu, item)
+			ickcore.RenderChild(out, mnu, item)
 		}
 	}
 	if hasfooter {
-		html.RenderString(out, `</ul>`)
+		ickcore.RenderString(out, `</ul>`)
 		foottag.RenderClosing(out)
 	}
 	return nil

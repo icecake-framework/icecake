@@ -4,7 +4,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 // ICKTitle is an icecake snippet providing the HTML rendering for a [bulma title].
@@ -12,7 +12,7 @@ import (
 //
 // [bulma title]: https://bulma.io/documentation/elements/title/
 type ICKTitle struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	Title string
 
@@ -27,7 +27,8 @@ type ICKTitle struct {
 }
 
 // Ensuring ICKTitle implements the right interface
-var _ html.ElementComposer = (*ICKTitle)(nil)
+var _ ickcore.ContentComposer = (*ICKTitle)(nil)
+var _ ickcore.TagBuilder = (*ICKTitle)(nil)
 
 func Title(size int, title string, attrs ...string) *ICKTitle {
 	msg := new(ICKTitle)
@@ -45,33 +46,31 @@ func SubTitle(size int, title string, attrs ...string) *ICKTitle {
 	return msg
 }
 
-// BuildTag returns tag <div class="message {classes}" {attributes}>
-func (msg *ICKTitle) BuildTag() html.Tag {
-	if msg.Size < 1 {
-		msg.Size = 1
-	} else if msg.Size > 6 {
-		msg.Size = 6
+func (t *ICKTitle) BuildTag() ickcore.Tag {
+	if t.Size < 1 {
+		t.Size = 1
+	} else if t.Size > 6 {
+		t.Size = 6
 	}
-	ssiz := strconv.Itoa(msg.Size)
+	ssiz := strconv.Itoa(t.Size)
 
-	if msg.Heading {
-		msg.Tag().SetTagName("h" + ssiz)
+	if t.Heading {
+		t.Tag().SetTagName("h" + ssiz)
 	} else {
-		msg.Tag().SetTagName("p")
+		t.Tag().SetTagName("p")
 	}
 
-	if !msg.IsSubtitle {
-		msg.Tag().AddClass("title")
+	if !t.IsSubtitle {
+		t.Tag().AddClass("title")
 	} else {
-		msg.Tag().AddClass("subtitle")
+		t.Tag().AddClass("subtitle")
 	}
-	msg.Tag().AddClass("is-" + ssiz)
+	t.Tag().AddClass("is-" + ssiz)
 
-	return *msg.Tag()
+	return *t.Tag()
 }
 
-// BuildTag returns tag <div class="message {classes}" {attributes}>
-func (msg *ICKTitle) RenderContent(out io.Writer) error {
-	_, err := html.RenderString(out, msg.Title)
+func (t *ICKTitle) RenderContent(out io.Writer) error {
+	_, err := ickcore.RenderString(out, t.Title)
 	return err
 }

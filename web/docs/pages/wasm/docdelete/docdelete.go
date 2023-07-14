@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	"github.com/icecake-framework/icecake/pkg/dom"
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/ick/ickui"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 var _btnreset = &ickui.ICKButton{}
@@ -46,7 +47,7 @@ func ResetBoxUsage() {
 	btndel := ickui.Delete("deleteme")
 	btndel.Tag().SetId("btndelu1")
 	btndel.OnDelete = OnDeleteU1
-	u1 := html.Snippet("div", `id="deleteme"`, html.ToHTML("Click on the delete button to delete this text &rarr; "), btndel)
+	u1 := ick.Elem("div", `id="deleteme"`, ickcore.ToHTML("Click on the delete button to delete this text &rarr; "), btndel)
 	dom.Id("boxusage").InsertSnippet(dom.INSERT_BODY, u1)
 	_btnreset.SetDisabled(true)
 }

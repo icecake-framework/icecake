@@ -1,6 +1,8 @@
 package ick
 
-import "github.com/icecake-framework/icecake/pkg/html"
+import (
+	"github.com/icecake-framework/icecake/pkg/ickcore"
+)
 
 type CONTAINER_FULLWIDTH string
 
@@ -20,14 +22,15 @@ const (
 // [bulma container]: https://bulma.io/documentation/layout/container/
 // TODO: ick - rework Container
 type Container struct {
-	html.ICKSnippet
+	ICKElem
 	FullWidth CONTAINER_FULLWIDTH
 }
 
 // Ensuring Container implements the right interface
-var _ html.ElementComposer = (*Container)(nil)
+var _ ickcore.ContentComposer = (*Container)(nil)
+var _ ickcore.TagBuilder = (*Container)(nil)
 
-func (c *Container) BuildTag() html.Tag {
+func (c *Container) BuildTag() ickcore.Tag {
 	c.Tag().SetTagName("div").AddClass("container").PickClass(string(CFW_OPTIONS), string(c.FullWidth))
 	return *c.Tag()
 }

@@ -3,16 +3,16 @@ package ick
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/lolorenzo777/verbose"
 )
 
 func init() {
-	html.RegisterComposer("ick-delete", &ICKDelete{})
+	ickcore.RegisterComposer("ick-delete", &ICKDelete{})
 }
 
 type ICKDelete struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	// The element id to remove from the DOM when the delete button is clicked
 	TargetId string
@@ -22,7 +22,8 @@ type ICKDelete struct {
 }
 
 // Ensuring ICKDelete implements the right interface
-var _ html.ElementComposer = (*ICKDelete)(nil)
+var _ ickcore.ContentComposer = (*ICKDelete)(nil)
+var _ ickcore.TagBuilder = (*ICKDelete)(nil)
 
 func Delete(targetid string) *ICKDelete {
 	del := new(ICKDelete)
@@ -30,9 +31,11 @@ func Delete(targetid string) *ICKDelete {
 	return del
 }
 
+/******************************************************************************/
+
 // BuildTag builds the tag used to render the html element.
 // Delete tag is a simple <button class="delete"></delete>
-func (del *ICKDelete) BuildTag() html.Tag {
+func (del *ICKDelete) BuildTag() ickcore.Tag {
 	del.Tag().
 		SetTagName("button").
 		AddClass("delete").

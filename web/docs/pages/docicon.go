@@ -3,8 +3,8 @@ package webdocs
 import (
 	"io"
 
-	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/ick"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 const (
@@ -22,21 +22,21 @@ type SectionDocIcon struct {
 func (sec *SectionDocIcon) RenderContent(out io.Writer) error {
 	sec.RenderHead(out, "Icon", "icon.go", "ICKIcon")
 
-	html.RenderString(out, `<div class="block">`+
+	ickcore.RenderString(out, `<div class="block">`+
 		`<p>ICKIcon is an icecake snippet providing the HTML rendering for a `, linkBulmaIcon, ` with extra features and usefull Go APIs.</p>`+
 		`</div>`)
 
 	// usages
-	html.RenderString(out, `<div class="box spaceout">`)
+	ickcore.RenderString(out, `<div class="box spaceout">`)
 	// uA1 := ick.Button("Click Link").ParseHRef("#")
 	// uA2 := ick.Button("Trigger Event").SetId("uA2")
-	// html.Render(out, cmp, uA1, uA2)
-	html.RenderString(out, `</div>`)
+	// ickcore.Render(out, cmp, uA1, uA2)
+	ickcore.RenderString(out, `</div>`)
 
 	// styling
-	html.RenderChild(out, sec, ick.Title(4, "Styling"))
-	html.RenderString(out, `<div class="box spaceout">`)
-	html.RenderChild(out, sec,
+	ickcore.RenderChild(out, sec, ick.Title(4, "Styling"))
+	ickcore.RenderString(out, `<div class="box spaceout">`)
+	ickcore.RenderChild(out, sec,
 		ick.Icon("bi bi-rocket"),
 		ick.Icon("bi bi-rocket", `style="font-size:Smaller;"`),
 		ick.Icon("bi bi-rocket", `style="font-size:larger;"`),
@@ -46,7 +46,7 @@ func (sec *SectionDocIcon) RenderContent(out io.Writer) error {
 		ick.Icon("bi bi-rocket").SetColor(ick.TXTCOLOR_DANGER),
 		ick.Icon("bi bi-rocket").SetColor(ick.TXTCOLOR_SUCCESS),
 		ick.Icon("bi bi-rocket"))
-	html.RenderString(out, `</div>`)
+	ickcore.RenderString(out, `</div>`)
 
 	return nil
 }

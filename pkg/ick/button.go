@@ -4,11 +4,11 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 func init() {
-	html.RegisterComposer("ick-button", &ICKButton{})
+	ickcore.RegisterComposer("ick-button", &ICKButton{})
 }
 
 // ICKButton is an UISnippet registered with the ick-tag `ick-button`.
@@ -18,7 +18,7 @@ func init() {
 //
 // The IsDisabled property is directly handled by the embedded UISnippet.
 type ICKButton struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	OpeningIcon ICKIcon // optional opening icon
 	Title       string  // simple title string
@@ -40,7 +40,8 @@ type ICKButton struct {
 }
 
 // Ensuring ICKButton implements the right interface
-var _ html.ElementComposer = (*ICKButton)(nil)
+var _ ickcore.ContentComposer = (*ICKButton)(nil)
+var _ ickcore.TagBuilder = (*ICKButton)(nil)
 
 func Button(htmltitle string, attrs ...string) *ICKButton {
 	btn := new(ICKButton)
@@ -49,12 +50,16 @@ func Button(htmltitle string, attrs ...string) *ICKButton {
 	return btn
 }
 
+func (btn *ICKButton) NeedRendering() bool {
+	return btn.OpeningIcon.NeedRendering() || btn.Title != "" || btn.ClosingIcon.NeedRendering()
+}
+
 // Clone clones the snippet, without the rendering metadata
 func (btn *ICKButton) Clone() *ICKButton {
-	to := new(ICKButton)
-	*to = *btn
-	to.BareSnippet = *btn.BareSnippet.Clone()
-	return to
+	c := new(ICKButton)
+	*c = *btn
+	c.BareSnippet = *btn.BareSnippet.Clone()
+	return c
 }
 
 func (btn *ICKButton) SetId(id string) *ICKButton {
@@ -117,7 +122,7 @@ func (btn *ICKButton) SetLoading(f bool) *ICKButton {
 
 // BuildTag builds the tag used to render the html element.
 // The tagname depends on the button type.
-func (btn *ICKButton) BuildTag() html.Tag {
+func (btn *ICKButton) BuildTag() ickcore.Tag {
 	if btn.HRef != nil && btn.HRef.String() != "" {
 		btn.Tag().SetTagName("a")
 	} else {
@@ -143,10 +148,10 @@ func (btn *ICKButton) BuildTag() html.Tag {
 func (btn *ICKButton) RenderContent(out io.Writer) error {
 	has := btn.OpeningIcon.Key != "" || btn.ClosingIcon.Key != ""
 
-	html.RenderChild(out, btn, &btn.OpeningIcon)
-	html.RenderStringIf(has, out, "<span>")
-	html.RenderString(out, btn.Title)
-	html.RenderStringIf(has, out, "</span>")
-	html.RenderChild(out, btn, &btn.ClosingIcon)
+	ickcore.RenderChild(out, btn, &btn.OpeningIcon)
+	ickcore.RenderStringIf(has, out, "<span>")
+	ickcore.RenderString(out, btn.Title)
+	ickcore.RenderStringIf(has, out, "</span>")
+	ickcore.RenderChild(out, btn, &btn.ClosingIcon)
 	return nil
 }

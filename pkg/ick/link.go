@@ -1,29 +1,34 @@
 package ick
 
 import (
+	"io"
 	"net/url"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
 // ICKLink represents an HTML anchor link.
 // It is part of the core icecake snippets.
 type ICKLink struct {
-	html.ICKSnippet
+	ickcore.BareSnippet
 
 	// HRef defines the associated url link.
 	// if nil the <a> tag is rendered without href attribute.
 	// Usually HRef is created calling TryParseHRef
 	HRef *url.URL
+
+	Body ickcore.ContentStack // HTML Element body. A stack of content composers to render.
 }
 
 // Ensuring ICKLink implements the right interface
-var _ html.ElementComposer = (*ICKLink)(nil)
+var _ ickcore.ContentComposer = (*ICKLink)(nil)
+var _ ickcore.TagBuilder = (*ICKLink)(nil)
 
-// A returns an HTML anchor link
-func A(attrlist ...string) *ICKLink {
+// Link returns an HTML anchor link
+func Link(child ickcore.ContentComposer, attrlist ...string) *ICKLink {
 	lnk := new(ICKLink)
 	lnk.Tag().SetTagName("a").ParseAttributes(attrlist...)
+	lnk.Body.Push(child)
 	return lnk
 }
 
@@ -44,10 +49,23 @@ func (lnk *ICKLink) SetHRef(href *url.URL) *ICKLink {
 	return lnk
 }
 
+/******************************************************************************/
+
+func (lnk *ICKLink) NeedRendering() bool {
+	return true
+	// return lnk.HRef != nil && lnk.HRef.String() != ""
+}
+
 // BuildTag builds the tag used to render the html element.
-func (lnk *ICKLink) BuildTag() html.Tag {
+func (lnk *ICKLink) BuildTag() ickcore.Tag {
 	if lnk.HRef != nil {
 		lnk.Tag().SetAttribute("href", lnk.HRef.String())
 	}
 	return *lnk.Tag()
+}
+
+// RenderContent writes the HTML string corresponding to the content of the HTML element.
+// The default implementation for an HTMLSnippet snippet is to render all the internal stack of composers inside an enclosed HTML tag.
+func (lnk *ICKLink) RenderContent(out io.Writer) error {
+	return lnk.Body.RenderStack(out, lnk)
 }

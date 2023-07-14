@@ -4,18 +4,23 @@
 
 	. RMeta() *RMetaData
 
-**html.TagBuilder**
+**ickcore.Composer**
 	- RMetaProvider
 
-	. BuildTag() Tag
+	. NeedRendering() bool
+
+**ickcore.TagBuilder**
+	- Composer
+
 	. SetAttribute(name string, value string)
+	. BuildTag() Tag
 
-**html.ContentComposer**
-	- RMetaProvider
+**ickcore.ContentComposer**
+	- Composer
 
 	. RenderContent(out io.Writer) error
 
-**html.ElementComposer**
+**ickcore.ElementComposer**
 	- TagBuilder
 	- ContentComposer
 

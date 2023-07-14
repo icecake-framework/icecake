@@ -1,9 +1,7 @@
-package html
+package ickcore
 
 import (
 	"io"
-	"reflect"
-	"strings"
 
 	"github.com/icecake-framework/icecake/internal/helper"
 )
@@ -32,37 +30,15 @@ func EmptyTag() Tag {
 	return *tag
 }
 
-// BuildTag get a tag from the TagBuilder then set up name attribute and RMeta id
-func BuildTag(tb TagBuilder) Tag {
-	tag := tb.BuildTag()
-
-	if tag.HasRendering() {
-		// force property name
-		if !tag.NoName {
-			cmpname := reflect.TypeOf(tb).Elem().Name()
-			cmpname = strings.ToLower(cmpname)
-			tag.SetAttribute("name", cmpname)
-		}
-		tb.RMeta().Id = tag.Id()
-	}
-
-	return tag
-}
-
 // clone clones the tag
-func (src Tag) Clone() *Tag {
-	to := new(Tag)
-	to.AttributeMap = src.AttributeMap.Clone()
-	to.NoName = src.NoName
-	to.tagname = src.tagname
-	to.selfClosing = src.selfClosing
-	return to
-}
-
-// HasRendering returns if the tag can be rendered or not.
-// A tag without name won't be rendered.
-func (tag Tag) HasRendering() bool {
-	return tag.tagname != ""
+func (tag Tag) Clone() *Tag {
+	c := new(Tag)
+	c.AttributeMap = tag.AttributeMap.Clone()
+	delete(c.AttributeMap, "id")
+	c.NoName = tag.NoName
+	c.tagname = tag.tagname
+	c.selfClosing = tag.selfClosing
+	return c
 }
 
 // TagName returns the name of the tag and it's selfclosing flag
@@ -109,6 +85,11 @@ func (tag *Tag) ParseAttributes(alists ...string) AttributeMap {
 	return tag.AttributeMap
 }
 
+// IsEmpty return if the tag has something to render or not
+func (tag Tag) IsEmpty() bool {
+	return tag.tagname == ""
+}
+
 // RenderOpening renders the HTML string of the opening tag including all the attributes.
 // if the tag name is empty, nothing is rendered and there's no error.
 // Returns selfclosed if the rendered opening tag as been closed too.
@@ -116,15 +97,17 @@ func (tag *Tag) ParseAttributes(alists ...string) AttributeMap {
 func (tag *Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
 	if tag.tagname != "" {
 		stratt := tag.AttributeString()
-		_, err = RenderString(out, "<", tag.tagname)
+		_, err = io.WriteString(out, "<"+tag.tagname)
 		if err != nil {
 			return
 		}
-		_, err = RenderStringIf(stratt != "", out, " ", tag.AttributeString())
-		if err != nil {
-			return
+		if stratt != "" {
+			_, err = io.WriteString(out, " "+tag.AttributeString())
+			if err != nil {
+				return
+			}
 		}
-		_, err = RenderString(out, ">")
+		_, err = io.WriteString(out, ">")
 		if err != nil {
 			return
 		}
@@ -138,7 +121,7 @@ func (tag *Tag) RenderOpening(out io.Writer) (selfclosed bool, err error) {
 // errors mays occurs from the writer only.
 func (tag *Tag) RenderClosing(out io.Writer) (err error) {
 	if tag.tagname != "" && !tag.selfClosing {
-		_, err = RenderString(out, "</", tag.tagname, ">")
+		_, err = io.WriteString(out, "</"+tag.tagname+">")
 	}
 	return
 }

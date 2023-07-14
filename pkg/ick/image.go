@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/icecake-framework/icecake/pkg/html"
+	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/lolorenzo777/verbose"
 )
 
@@ -13,7 +13,7 @@ import (
 ******************************************************************************/
 
 func init() {
-	html.RegisterComposer("ick-image", &ICKImage{})
+	ickcore.RegisterComposer("ick-image", &ICKImage{})
 }
 
 type IMG_SIZE string
@@ -54,7 +54,7 @@ const (
 //
 // [bulma image]: https://bulma.io/documentation/elements/image/
 type ICKImage struct {
-	html.BareSnippet
+	ickcore.BareSnippet
 
 	Src       *url.URL // the url for the source of the image
 	Alt       string   // the alternative text
@@ -64,7 +64,8 @@ type ICKImage struct {
 }
 
 // Ensuring ICKImage implements the right interface
-var _ html.ElementComposer = (*ICKImage)(nil)
+var _ ickcore.ContentComposer = (*ICKImage)(nil)
+var _ ickcore.TagBuilder = (*ICKImage)(nil)
 
 func Image(rawUrl string, alt string, size IMG_SIZE, attrs ...string) *ICKImage {
 	img := new(ICKImage)
@@ -103,22 +104,26 @@ func (img *ICKImage) SetNoCrop(f bool) *ICKImage {
 
 /******************************************************************************/
 
+func (img *ICKImage) NeedRendering() bool {
+	return img.Src != nil && img.Src.String() != ""
+}
+
 // BuildTag builds the tag used to render the html element.
-func (fig *ICKImage) BuildTag() html.Tag {
-	fig.Tag().SetTagName("figure").
+func (img *ICKImage) BuildTag() ickcore.Tag {
+	img.Tag().SetTagName("figure").
 		AddClass("image").
-		AddClassIf(!fig.NoCrop, "ickcropimage").
-		PickClass(IMG_SIZE_OPTIONS, string(fig.Size))
-	return *fig.Tag()
+		AddClassIf(!img.NoCrop, "ickcropimage").
+		PickClass(IMG_SIZE_OPTIONS, string(img.Size))
+	return *img.Tag()
 }
 
 // RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (image *ICKImage) RenderContent(out io.Writer) error {
-	img := html.Snippet("img", `role="img" focusable="false"`)
-	img.Tag().SetURL("src", image.Src).
-		SetClassIf(image.IsRounded, "is-rounded").
-		SetAttributeIf(image.Alt != "", "alt", image.Alt)
+func (img *ICKImage) RenderContent(out io.Writer) error {
+	i := Elem("img", `role="img" focusable="false"`)
+	i.Tag().SetURL("src", img.Src).
+		SetClassIf(img.IsRounded, "is-rounded").
+		SetAttributeIf(img.Alt != "", "alt", img.Alt)
 
-	html.RenderChild(out, image, img)
+	ickcore.RenderChild(out, img, i)
 	return nil
 }

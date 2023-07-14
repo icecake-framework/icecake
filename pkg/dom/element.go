@@ -11,7 +11,6 @@ import (
 
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/event"
-	"github.com/icecake-framework/icecake/pkg/html"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/pkg/js"
 )
@@ -692,70 +691,66 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 //
 // Returns an error if _elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
 // Returns an error if WriteSnippet or mounting process fail.
-func (elem *Element) InsertSnippet(where INSERT_WHERE, cmps ...html.ElementComposer) (errx error) {
+func (elem *Element) InsertSnippet(where INSERT_WHERE, cmp ickcore.RMetaProvider) (errx error) {
 	if !elem.IsDefined() {
 		return console.Errorf("Element:InsertSnippet failed on undefined element")
 	}
 
+	// nothing to render ?
+	if cmp == nil || reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {
+		console.Warnf("InsertSnippet: empty composer %s\n", reflect.TypeOf(cmp).String())
+		return nil
+	}
+
 	// rendering html of the composers. custodian embeds all direct childrens.
+	rendering := false
 	out := new(bytes.Buffer)
-	for _, cmp := range cmps {
 
-		// nothing to render ?
-		if cmp == nil || reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {
-			console.Warnf("InsertSnippet: empty composer %s\n", reflect.TypeOf(cmp).String())
-			continue
-		}
+	// if the composer is a tag builder then create an element from the composer and insert it into the dom
+	// then wrap it. By this way interacting with the DOM of the UIcomposer is possible event if it has no id.
+	if tb, istb := cmp.(ickcore.TagBuilder); istb {
+		tag := ickcore.BuildTag(tb)
+		if !tag.IsEmpty() {
+			rendering = true
+			tagn, _ := tag.TagName()
+			newe := CreateElement(tagn)
+			for attrn, attrv := range tag.AttributeMap {
+				newe.SetAttribute(attrn, attrv)
+			}
 
-		isin := false
-		out.Reset()
-
-		// if the composer is a tag builder then create an element from the composer and insert it into the dom
-		// then wrap it. By this way interacting with the DOM of the UIcomposer is possible event if it has no id.
-		if tb, istb := cmp.(html.TagBuilder); istb {
-			tag := html.BuildTag(tb)
-			if tag.HasRendering() {
-				isin = true
-				tagn, _ := tag.TagName()
-				newe := CreateElement(tagn)
-				for attrn, attrv := range tag.AttributeMap {
-					newe.SetAttribute(attrn, attrv)
-				}
-
-				// Render the content
-				errx = cmp.RenderContent(out)
+			// Render the html content
+			if cc, iscc := cmp.(ickcore.ContentComposer); iscc {
+				errx = cc.RenderContent(out)
 				if errx != nil {
 					cmp.RMeta().RError = errx
-					break
-				}
-				newe.Set("innerHTML", out.String())
-				elem.InsertElement(where, newe)
-				if ui, is := cmp.(UIComposer); is {
-					ui.Wrap(newe)
-					ui.AddListeners()
-				}
-				errx = mountSnippetTree(cmp)
-				if errx != nil {
-					break
+				} else {
+					newe.Set("innerHTML", out.String())
+					elem.InsertElement(where, newe)
+					// mount the UI composer
+					if ui, is := cmp.(UIComposer); is {
+						ui.Wrap(newe)
+						ui.AddListeners()
+					}
+					errx = mountSnippetTree(cmp)
 				}
 			}
 		}
-
-		if !isin {
-			// otherwise insert the rendered snippet html into the dom
-			custodian := &ickcore.RMetaData{}
-			errx = html.RenderChild(out, custodian, cmp)
-			if errx != nil {
-				break
-			}
+	} else if cc, iscc := cmp.(ickcore.ContentComposer); iscc && cc.NeedRendering() {
+		// otherwise insert the rendered snippet html into the dom
+		rendering = true
+		custodian := &ickcore.RMetaData{}
+		errx = ickcore.RenderChild(out, custodian, cc)
+		if errx == nil {
 			elem.InsertRawHTML(where, out.String())
-
-			// mount every embedded components with an ID
-			errx = mountSnippetTree(custodian)
-			if errx != nil {
-				break
-			}
 		}
+
+		// mount every embedded components with an ID
+		errx = mountSnippetTree(custodian)
+	}
+
+	// nor a tag builder, nor a simple contentcomposer, nothing to render
+	if !rendering {
+		console.Logf("InsertSnippet: composer %s does not need rendering\n", reflect.TypeOf(cmp).String())
 	}
 
 	if errx != nil {
