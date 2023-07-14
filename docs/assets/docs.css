@@ -2726,8 +2726,8 @@ a.tag:hover {
   border-color: hsl(0, 0%, 71%);
 }
 .select select:focus, .textarea:focus, .input:focus, .select select.is-focused, .is-focused.textarea, .is-focused.input, .select select:active, .textarea:active, .input:active, .select select.is-active, .is-active.textarea, .is-active.input {
-  border-color: #DB0690;
-  box-shadow: 0 0 0 0.125em rgba(219, 6, 144, 0.25);
+  border-color: #058ED9;
+  box-shadow: 0 0 0 0.125em rgba(5, 142, 217, 0.25);
 }
 .select select[disabled], [disabled].textarea, [disabled].input, fieldset[disabled] .select select, .select fieldset[disabled] select, fieldset[disabled] .textarea, fieldset[disabled] .input {
   background-color: hsl(0, 0%, 96%);
@@ -2899,7 +2899,7 @@ a.tag:hover {
   height: 2.5em;
 }
 .select:not(.is-multiple):not(.is-loading)::after {
-  border-color: #DB0690;
+  border-color: #058ED9;
   right: 1.125em;
   z-index: 4;
 }

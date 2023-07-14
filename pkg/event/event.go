@@ -595,9 +595,9 @@ func (_this *PointerEvent) IsPrimary() bool {
 type INPUT_EVENT string
 
 const (
+	INPUT_ONBEFOREINPUT INPUT_EVENT = "beforeinput" // Fired when the value of an <input>, <select>, or <textarea> element is about to be modified.
 	INPUT_ONINPUT       INPUT_EVENT = "input"       // Fired when the value of an <input>, <select>, or <textarea> element has been changed.
 	INPUT_ONCHANGE      INPUT_EVENT = "change"      // Fired when the value of an <input>, <select>, or <textarea> element has been changed and committed by the user.
-	INPUT_ONBEFOREINPUT INPUT_EVENT = "beforeinput" // Fired when the value of an <input>, <select>, or <textarea> element is about to be modified.
 )
 
 type InputEvent struct {

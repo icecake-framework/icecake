@@ -1,14 +1,9 @@
 package ickui
 
-import (
-	"github.com/icecake-framework/icecake/pkg/dom"
-	"github.com/icecake-framework/icecake/pkg/ick"
-)
-
-type InputField struct {
-	ick.ICKInputField
-	DOM dom.Element
-}
+// type InputField struct {
+// 	ick.ICKInputField
+// 	DOM dom.Element
+// }
 
 // func (input *InputField) AddListeners() {
 

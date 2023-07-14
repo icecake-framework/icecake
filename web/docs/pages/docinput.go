@@ -13,10 +13,13 @@ func (sec *SectionDocInput) RenderContent(out io.Writer) error {
 	sec.RenderHead(out, "InputField", "input.go", "ICKInput")
 
 	// usages
-	ickcore.RenderString(out, `<div class="box">`)
 	ickcore.RenderChild(out, sec,
-		ick.InputField())
-	ickcore.RenderString(out, `</div>`)
+		ick.Elem("div", `id="boxusage" class="box"`, ick.Spinner()),
+		ick.Button("reset", `class="mb-5"`).
+			SetId("btnreset").
+			SetColor(ick.COLOR_PRIMARY).
+			SetOutlined(true).
+			SetDisabled(true))
 
 	return nil
 }

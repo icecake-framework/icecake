@@ -146,9 +146,11 @@ func (amap AttributeMap) setAttribute(name string, value string, update bool) (u
 // SetAttributeIf SetAttribute if the condition is true, otherwise remove the attribute.
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
-func (amap AttributeMap) SetAttributeIf(condition bool, name string, value string) AttributeMap {
+func (amap AttributeMap) SetAttributeIf(condition bool, name string, valueiftrue string, valueiffalse ...string) AttributeMap {
 	if condition {
-		amap.SetAttribute(name, value)
+		amap.SetAttribute(name, valueiftrue)
+	} else if len(valueiffalse) > 0 {
+		amap.SetAttribute(name, valueiffalse[0])
 	} else {
 		amap.RemoveAttribute(name)
 	}

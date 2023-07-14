@@ -691,7 +691,7 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 //
 // Returns an error if _elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
 // Returns an error if WriteSnippet or mounting process fail.
-func (elem *Element) InsertSnippet(where INSERT_WHERE, cmp ickcore.RMetaProvider) (errx error) {
+func (elem *Element) InsertSnippet(where INSERT_WHERE, cmp ickcore.Composer) (errx error) {
 	if !elem.IsDefined() {
 		return console.Errorf("Element:InsertSnippet failed on undefined element")
 	}
