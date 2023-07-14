@@ -13,8 +13,14 @@ import (
 )
 
 type HeadItem struct {
-	// TODO: HeadItem base on baresnippet
-	ICKElem
+	ickcore.BareSnippet
+}
+
+var _ ickcore.TagBuilder = (*HeadItem)(nil)
+
+func (hi *HeadItem) BuildTag() ickcore.Tag {
+	hi.Tag().NoName = true
+	return *hi.Tag()
 }
 
 func NewHeadItem(tagname string) *HeadItem {
