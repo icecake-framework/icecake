@@ -148,10 +148,14 @@ func (btn *ICKButton) BuildTag() ickcore.Tag {
 func (btn *ICKButton) RenderContent(out io.Writer) error {
 	has := btn.OpeningIcon.Key != "" || btn.ClosingIcon.Key != ""
 
-	ickcore.RenderChild(out, btn, &btn.OpeningIcon)
+	if btn.OpeningIcon.NeedRendering() {
+		ickcore.RenderChild(out, btn, &btn.OpeningIcon)
+	}
 	ickcore.RenderStringIf(has, out, "<span>")
 	ickcore.RenderString(out, btn.Title)
 	ickcore.RenderStringIf(has, out, "</span>")
-	ickcore.RenderChild(out, btn, &btn.ClosingIcon)
+	if btn.ClosingIcon.NeedRendering() {
+		ickcore.RenderChild(out, btn, &btn.ClosingIcon)
+	}
 	return nil
 }
