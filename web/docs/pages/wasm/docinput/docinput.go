@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/icecake-framework/icecake/pkg/dom"
-	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/ick/ickui"
 	"github.com/lolorenzo777/verbose"
 )
@@ -46,24 +45,18 @@ func RenderBoxUsage() {
 	boxusage := dom.Id("boxusage")
 	boxusage.InsertText(dom.INSERT_BODY, "")
 
-	ii := make([]*ickui.ICKInputField, 9)
-	ii[0] = ickui.InputField("in-u0", "", "input")
-	ii[1] = ickui.InputField("in-u1", "initial value", "input with initial value")
-	ii[2] = ickui.InputField("in-u2", "readonly", "input readonly").SetReadOnly(true)
-	ii[3] = ickui.InputField("in-u3", "", "loading input").SetState(ickui.INPUT_LOADING)
-	ii[4] = ickui.InputField("in-u4", "", "disabled input").SetState(ickui.INPUT_DISABLED)
-	ii[5] = ickui.InputField("in-u5", "", "static readonly input").SetState(ickui.INPUT_STATIC).SetReadOnly(true)
-	ii[6] = ickui.InputField("in-u6", "", "email").
-		SetIcon(*ick.Icon("bi bi-envelope-at").SetColor(ick.TXTCOLOR_INFO_DARK), false).
-		SetIcon(*ick.Icon("bi bi-info-circle").SetColor(ick.TXTCOLOR_INFO_DARK), true)
-	ii[7] = ickui.InputField("in-u8", "", "password").SetHidden(true)
-	ii[8] = ickui.InputField("in-u7", "", "e.g. bob").
+	u1 := ickui.InputField("in-u1", "", "e.g. bob").
 		SetLabel("Enter your pseudo").
 		SetHelp("Only alphabetic letters")
+	dom.Id("boxusage").InsertSnippet(dom.INSERT_LAST_CHILD, u1)
 
-	for _, c := range ii {
-		dom.Id("boxusage").InsertSnippet(dom.INSERT_LAST_CHILD, c)
-	}
+	u2 := ickui.InputField("in-u2", "", "password").
+		SetHidden(true).
+		SetCanToggleVisibility(true).
+		SetLabel("Enter your password").
+		SetHelp("Must be 12 characters long or more and must contains lowercase, uppercase, digit and symbol")
+
+	dom.Id("boxusage").InsertSnippet(dom.INSERT_LAST_CHILD, u2)
 
 	_btnreset.SetDisabled(true)
 }
