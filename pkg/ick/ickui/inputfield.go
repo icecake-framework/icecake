@@ -1,202 +1,224 @@
 package ickui
 
 import (
-	"io"
-
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
-)
-
-func init() {
-	ickcore.RegisterComposer("ick-input", &ICKInputField{})
-}
-
-type INPUT_STATE string
-
-const (
-	INPUT_STD      INPUT_STATE = "" // the default input state
-	INPUT_SUCCESS  INPUT_STATE = "success"
-	INPUT_WARNING  INPUT_STATE = "warning"
-	INPUT_ERROR    INPUT_STATE = "error"
-	INPUT_LOADING  INPUT_STATE = "loading"
-	INPUT_DISABLED INPUT_STATE = "disabled"
-	INPUT_STATIC   INPUT_STATE = "static"
+	"github.com/lolorenzo777/verbose"
 )
 
 type ICKInputField struct {
-	ickcore.BareSnippet
+	ick.ICKInputField
 	dom.UI
 
-	// Optional label above the value
-	Label string
+	OnChange func(me *ICKInputField, newvalue string)
 
-	OpeningIcon ick.ICKIcon // optional opening icon
-	Value       string      // The input value
-	IsHidden    bool        // Entered characters are hidden
-	ClosingIcon ick.ICKIcon // optional closing icon
-
-	// Optional PlaceHolder string
-	PlaceHolder string
-
-	// Optional help text
-	Help string
-
-	// Input state: INPUT_STD, INPUT_SUCCESS, INPUT_WARNING, INPUT_ERROR, INPUT_LOADING
-	State INPUT_STATE
-
-	// ReadOnly input field
-	IsReadOnly bool
-
-	// TODO: ickui - ICKInputField add an icon to show/hide incase of hidden field
+	btnToggleVisibility ICKButton
 }
 
 // Ensuring InputField implements the right interface
 var _ ickcore.ContentComposer = (*ICKInputField)(nil)
 var _ ickcore.TagBuilder = (*ICKInputField)(nil)
+var _ dom.UIComposer = (*ICKInputField)(nil)
 
 func InputField(id string, value string, placeholder string, attrs ...string) *ICKInputField {
 	n := new(ICKInputField)
-	n.Tag().SetId(id)
-	n.Value = value
-	n.PlaceHolder = placeholder
-	n.Tag().ParseAttributes(attrs...)
+	n.ICKInputField = *ick.InputField(id, value, placeholder, attrs...)
 	return n
 }
 
 func (in *ICKInputField) SetLabel(lbl string) *ICKInputField {
-	in.Label = lbl
+	in.ICKInputField.SetLabel(lbl)
+	if !in.UI.DOM.IsInDOM() {
+		return in
+	}
+
+	in.RefreshLabel()
 	return in
 }
 
 func (in *ICKInputField) SetHelp(help string) *ICKInputField {
-	in.Help = help
+	in.ICKInputField.SetHelp(help)
+	if !in.UI.DOM.IsInDOM() {
+		return in
+	}
+
+	in.RefreshHelp()
+	return in
+}
+
+func (in *ICKInputField) SetCanToggleVisibility(can bool) *ICKInputField {
+	in.ICKInputField.SetCanToggleVisibility(can)
+	if !in.UI.DOM.IsInDOM() {
+		return in
+	}
+
+	etggctrl := dom.Id(in.Tag().SubId("togglecontrol"))
+	if can {
+		// setup = add the togglecontrol if it does not exist yet otherwise does nothing
+		if !etggctrl.IsDefined() {
+			subtogglecontrol := ick.Elem("div", `class="control"`).SetId(in.Tag().SubId("togglecontrol"))
+			if in.IsHidden {
+				in.btnToggleVisibility.ICKButton = *ick.BtnVisibilityVisible.Clone()
+			} else {
+				in.btnToggleVisibility.ICKButton = *ick.BtnVisibilityHidden.Clone()
+			}
+			in.btnToggleVisibility.Tag().AddClass("is-right").SetId(in.Tag().SubId("btntoggvis"))
+			in.btnToggleVisibility.OnClick = in.ToggleVisibility
+			subtogglecontrol.Append(&in.btnToggleVisibility)
+			dom.Id(in.Tag().SubId("input")).InsertSnippet(dom.INSERT_AFTER_ME, subtogglecontrol)
+		}
+	} else {
+		// unset = remove the togglecontrol
+		etggctrl.Remove()
+	}
+
 	return in
 }
 
 func (in *ICKInputField) SetReadOnly(ro bool) *ICKInputField {
-	in.IsReadOnly = ro
+	in.ICKInputField.SetReadOnly(ro)
+	if !in.UI.DOM.IsInDOM() {
+		return in
+	}
+
+	dom.Id(in.Tag().SubId("input")).
+		SetAttributeIf(in.IsReadOnly, "readonly", "")
 	return in
 }
 
 func (in *ICKInputField) SetHidden(h bool) *ICKInputField {
-	in.IsHidden = h
+	in.ICKInputField.SetHidden(h)
+	if !in.UI.DOM.IsInDOM() {
+		return in
+	}
+
+	dom.Id(in.Tag().SubId("input")).
+		SetAttributeIf(!in.IsHidden, "type", "text", "password")
 	return in
 }
-func (in *ICKInputField) SetState(st INPUT_STATE) *ICKInputField {
-	in.State = st
+
+func (in *ICKInputField) SetState(st ick.INPUT_STATE) *ICKInputField {
+	in.ICKInputField.SetState(st)
+	if !in.UI.DOM.IsInDOM() {
+		return in
+	}
+
+	dom.Id(in.Tag().SubId("input")).
+		SetAttributeIf(in.State == ick.INPUT_DISABLED, "disabled", "").
+		AddClassIf(in.State == ick.INPUT_STATIC, "is-static", "")
+	dom.Id(in.Tag().SubId("control")).
+		SetClassIf(in.State == ick.INPUT_LOADING, "is-loading")
 	return in
 }
+
 func (in *ICKInputField) SetDisabled(f bool) *ICKInputField {
-	if f {
-		in.State = INPUT_DISABLED
-	} else {
-		in.State = INPUT_STD
+	in.ICKInputField.SetDisabled(f)
+	if !in.UI.DOM.IsInDOM() {
+		return in
 	}
-	in.Tag().SetDisabled(f)
+
+	dom.Id(in.Tag().SubId("input")).
+		SetAttributeIf(in.State == ick.INPUT_DISABLED, "disabled", "")
 	return in
 }
+
 func (in *ICKInputField) SetIcon(icon ick.ICKIcon, closing bool) *ICKInputField {
-	if closing {
-		in.ClosingIcon = icon
-	} else {
-		in.OpeningIcon = icon
+	in.ICKInputField.SetIcon(icon, closing)
+	if !in.UI.DOM.IsInDOM() {
+		return in
 	}
+	// XXX
 	return in
 }
 
 /******************************************************************************/
 
-// BuildTag builds the tag used to render the html element.
-func (in *ICKInputField) BuildTag() ickcore.Tag {
-	in.Tag().SetTagName("div").AddClass("field")
-	return *in.Tag()
+func (in *ICKInputField) RefreshLabel() {
+	lblid := in.Tag().SubId("label")
+	if in.Label == "" {
+		// no label = remove it from the dom if any
+		dom.Id(lblid).Remove()
+	} else if !dom.Id(lblid).IsDefined() {
+		// label not yet in the dom = insert it before the control
+		sublbl := ick.Elem("label", `class="label"`, ickcore.ToHTML(in.Label))
+		sublbl.SetId(lblid)
+		dom.Id(in.Tag().SubId("control")).InsertSnippet(dom.INSERT_BEFORE_ME, sublbl)
+	} else {
+		// label already in the dom = update it
+		isin := dom.Id(lblid).InnerHTML()
+		if isin != in.Label {
+			dom.Id(lblid).InsertSnippet(dom.INSERT_BODY, ickcore.ToHTML(in.Label))
+		}
+	}
 }
 
-// RenderContent writes the HTML string corresponding to the content of the HTML element.
-func (in *ICKInputField) RenderContent(out io.Writer) error {
-
-	cmpid := in.Tag().Id()
-	if cmpid == "" {
-		console.Logf("ICKInputField.RenderContent: id missing")
-	}
-
-	// <label>
-	if in.Label != "" {
-		sublbl := ick.Elem("label", `class="label"`, ickcore.ToHTML(in.Label))
-		if cmpid != "" {
-			sublbl.SetId(cmpid + ".label")
-		}
-		ickcore.RenderChild(out, in, sublbl)
-	}
-
-	// <input>
-	subinput := ick.Elem("input", `class="input"`)
-	subinput.Tag().
-		SetAttributeIf(!in.IsHidden, "type", "text", "password").
-		SetAttributeIf(in.Value != "", "value", in.Value).
-		SetAttributeIf(in.PlaceHolder != "", "placeholder", in.PlaceHolder).
-		SetAttributeIf(in.IsReadOnly, "readonly", "").
-		SetAttributeIf(in.State == INPUT_DISABLED, "disabled", "").
-		AddClassIf(in.State == INPUT_STATIC, "is-static", "")
-	if cmpid != "" {
-		subinput.SetId(cmpid + ".input")
-	}
-
-	// <div control>
-	subcontrol := ick.Elem("div", `class="control"`)
-	subcontrol.Tag().
-		SetClassIf(in.State == INPUT_LOADING, "is-loading").
-		SetClassIf(in.OpeningIcon.NeedRendering(), "has-icons-left").
-		SetClassIf(in.ClosingIcon.NeedRendering(), "has-icons-right")
-
-	if in.OpeningIcon.NeedRendering() {
-		in.OpeningIcon.Tag().AddClass("is-left")
-		subcontrol.Append(&in.OpeningIcon)
-	}
-	subcontrol.Append(subinput)
-	if in.ClosingIcon.NeedRendering() {
-		in.ClosingIcon.Tag().AddClass("is-right")
-		subcontrol.Append(&in.ClosingIcon)
-	}
-	ickcore.RenderChild(out, in, subcontrol)
-
-	// <p help>
-	if in.Help != "" {
+func (in *ICKInputField) RefreshHelp() {
+	helpid := in.Tag().SubId("help")
+	if in.Help == "" {
+		// no help = remove it from the dom if any
+		dom.Id(helpid).Remove()
+	} else if !dom.Id(helpid).IsDefined() {
+		// help not yet in the dom = insert it after the control
 		subhelp := ick.Elem("p", `class="help"`, ickcore.ToHTML(in.Help))
-		subhelp.Tag().
-			SetClassIf(in.State == INPUT_SUCCESS, "is-success").
-			SetClassIf(in.State == INPUT_WARNING, "is-warning").
-			SetClassIf(in.State == INPUT_ERROR, "is-danger")
-		if cmpid != "" {
-			subhelp.SetId(cmpid + ".help")
+		subhelp.SetId(helpid)
+		dom.Id(in.Tag().SubId("control")).InsertSnippet(dom.INSERT_AFTER_ME, subhelp)
+	} else {
+		// help already in the dom = update it
+		isin := dom.Id(helpid).InnerHTML()
+		if isin != in.Help {
+			dom.Id(helpid).InsertSnippet(dom.INSERT_BODY, ickcore.ToHTML(in.Help))
 		}
-		ickcore.RenderChild(out, in, subhelp)
 	}
-
-	return nil
 }
 
 func (in *ICKInputField) AddListeners() {
-	in.UI.DOM.AddInputEvent(event.INPUT_ONBEFOREINPUT, in.OnBeforeInputEvent)
-	in.UI.DOM.AddInputEvent(event.INPUT_ONINPUT, in.OnInputEvent)
-	in.UI.DOM.AddInputEvent(event.INPUT_ONCHANGE, in.OnChangeEvent)
+	// DEBUG: console.Warnf("ICKInputField.AddListeners: %q", in.DOM.Id())
+	console.Warnf("ICKInputField.AddListeners: %q", in.DOM.Id())
+
+	// in.UI.DOM.AddInputEvent(event.INPUT_ONBEFOREINPUT, in.OnBeforeInputEvent)
+	// in.UI.DOM.AddInputEvent(event.INPUT_ONINPUT, in.OnInputEvent)
+	dom.Id(in.Tag().SubId("input")).AddInputEvent(event.INPUT_ONCHANGE, in.OnChangeEvent)
+
+	in.btnToggleVisibility.OnClick = in.ToggleVisibility
+	dom.TryMountId(&in.btnToggleVisibility, in.Tag().SubId("btntoggvis"))
 }
 
 func (in *ICKInputField) OnBeforeInputEvent(*event.InputEvent, *dom.Element) {
 	console.Warnf("OnBeforeInputEvent")
 }
+
 func (in *ICKInputField) OnInputEvent(*event.InputEvent, *dom.Element) {
 	console.Warnf("OnInputEvent")
 
 }
-func (in *ICKInputField) OnChangeEvent(*event.InputEvent, *dom.Element) {
-	console.Warnf("OnChangeEvent")
 
+func (in *ICKInputField) OnChangeEvent(*event.InputEvent, *dom.Element) {
+	in.Value = dom.Id(in.Tag().SubId("input")).GetString("value")
+	if in.OnChange != nil {
+		in.OnChange(in, in.Value)
+	}
+	console.Warnf("OnChangeEvent: %+v", in.Value)
 }
 
 func (in *ICKInputField) RemoveListeners() {
+	in.btnToggleVisibility.RemoveListeners()
 	in.UI.RemoveListeners()
+}
+
+func (in *ICKInputField) ToggleVisibility() {
+	verbose.Debug("ToggleVisibility")
+
+	if in.IsHidden {
+		in.SetHidden(false)
+		in.btnToggleVisibility.OpeningIcon = *ick.BtnVisibilityHidden.OpeningIcon.Clone()
+		in.btnToggleVisibility.UI.RefreshContent(&in.btnToggleVisibility)
+	} else {
+		in.SetHidden(true)
+		in.btnToggleVisibility.OpeningIcon = *ick.BtnVisibilityVisible.OpeningIcon.Clone()
+		in.btnToggleVisibility.UI.RefreshContent(&in.btnToggleVisibility)
+	}
+	dom.Id(in.Tag().SubId("input")).Focus()
 }
