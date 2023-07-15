@@ -76,6 +76,12 @@ func (btn *ICKButton) ParseHRef(rawurl string) *ICKButton {
 	return btn
 }
 
+// ParseHRef parses rawurl to HRef. HRef stays nil in case of error.
+func (btn *ICKButton) SetHRef(u url.URL) *ICKButton {
+	btn.HRef = &u
+	return btn
+}
+
 func (btn *ICKButton) SetTitle(title string) *ICKButton {
 	btn.Title = title
 	return btn

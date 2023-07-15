@@ -153,9 +153,19 @@ func (navi *ICKNavbarItem) ParseHRef(rawUrl string) *ICKNavbarItem {
 	return navi
 }
 
+func (navi *ICKNavbarItem) SetHRef(u url.URL) *ICKNavbarItem {
+	navi.HRef = &u
+	return navi
+}
+
 // ParseImageSrc tries to parse rawUrl to image src ignoring error.
 func (navi *ICKNavbarItem) ParseImageSrc(rawUrl string) *ICKNavbarItem {
 	navi.ImageSrc, _ = url.Parse(rawUrl)
+	return navi
+}
+
+func (navi *ICKNavbarItem) SetImageSrc(u url.URL) *ICKNavbarItem {
+	navi.ImageSrc = &u
 	return navi
 }
 

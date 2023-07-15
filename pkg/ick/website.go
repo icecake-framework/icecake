@@ -1,6 +1,7 @@
 package ick
 
 import (
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -11,8 +12,8 @@ import (
 type WebSite struct {
 	pages map[string]*Page
 
-	OutPath string // output path where generated websites files will be saved
-
+	OutPath string   // output path where generated websites files will be saved
+	WebURL  *url.URL // website URL
 }
 
 func NewWebSite(outpath string) *WebSite {
@@ -20,7 +21,39 @@ func NewWebSite(outpath string) *WebSite {
 	w.pages = make(map[string]*Page)
 	w.OutPath = outpath
 
+	uenv := os.Getenv("WEB_URL")
+	if uenv != "" {
+		if uu, err := url.Parse(uenv); err != nil {
+			verbose.Error("WEB_URL parameter", err)
+		} else {
+			w.WebURL = uu
+		}
+	}
+
 	return w
+}
+
+func (w WebSite) ToAbsURL(rawurl string) *url.URL {
+	if rawurl == "" {
+		return nil
+	}
+	u, err := url.Parse(rawurl)
+	if err != nil {
+		verbose.Error("MakeAbsURL:", err)
+		return nil
+	}
+	if w.WebURL != nil {
+		u = w.WebURL.JoinPath(u.String())
+	}
+	return u
+}
+
+func (w WebSite) ToAbsURLString(rawurl string) string {
+	u := w.ToAbsURL(rawurl)
+	if u == nil {
+		return ""
+	}
+	return u.String()
 }
 
 func (w *WebSite) CopyToAssets(srcs ...string) error {
@@ -37,7 +70,7 @@ func (w *WebSite) CopyToAssets(srcs ...string) error {
 }
 
 func (w *WebSite) AddPage(lang string, rawUrl string) *Page {
-	pg := NewPage(lang, rawUrl)
+	pg := NewPage(w, lang, rawUrl)
 	if pg == nil {
 		return nil
 	}

@@ -5,12 +5,16 @@ import (
 	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
-func DocNavbar() *ick.ICKNavbar {
+func DocNavbar(pg *ick.Page) *ick.ICKNavbar {
 	nav := &ick.ICKNavbar{HasShadow: true}
 	nav.Tag().SetId("topbar")
-	nav.AddItem("", ick.NAVBARIT_BRAND, ickcore.ToHTML(`<span class="title pl-2">Icecake</span>`)).ParseHRef("/").ParseImageSrc("/assets/icecake-color.svg")
-	nav.AddItem("home", ick.NAVBARIT_START, ickcore.ToHTML(`Home`)).ParseHRef("/")
-	nav.AddItem("docs", ick.NAVBARIT_START, ickcore.ToHTML(`Docs`)).ParseHRef("/docoverview.html")
+	nav.AddItem("", ick.NAVBARIT_BRAND, ickcore.ToHTML(`<span class="title pl-2">Icecake</span>`)).
+		SetHRef(*pg.ToAbsURL("/")).
+		SetImageSrc(*pg.ToAbsURL("/assets/icecake-color.svg"))
+	nav.AddItem("home", ick.NAVBARIT_START, ickcore.ToHTML(`Home`)).
+		SetHRef(*pg.ToAbsURL("/"))
+	nav.AddItem("docs", ick.NAVBARIT_START, ickcore.ToHTML(`Docs`)).
+		SetHRef(*pg.ToAbsURL("/docoverview.html"))
 
 	btngit := ick.Button("GitHub").ParseHRef("https://github.com/icecake-framework/icecake")
 	btngit.SetColor(ick.COLOR_LINK).SetOutlined(true)

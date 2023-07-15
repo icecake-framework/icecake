@@ -3,6 +3,7 @@ package docs
 import (
 	"io"
 
+	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
 )
 
@@ -28,17 +29,18 @@ const docsFooterStyle string = `.myfooter-title {
 
 type docFooter struct {
 	ickcore.BareSnippet
+	page *ick.Page
 }
 
 // Ensuring docFooter implements the right interface
 var _ ickcore.ContentComposer = (*docFooter)(nil)
 var _ ickcore.TagBuilder = (*docFooter)(nil)
 
-func DocFooter() *docFooter {
-	return new(docFooter)
+func DocFooter(pg *ick.Page) *docFooter {
+	return &docFooter{page: pg}
 }
 
-func (s docFooter) NeedRendering() bool {
+func (footer docFooter) NeedRendering() bool {
 	return true
 }
 
@@ -52,8 +54,8 @@ func (footer *docFooter) RenderContent(out io.Writer) error {
 	hrefMIT := `<a href="https://opensource.org/licenses/mit-license.php" rel="license">MIT</a>`
 	hrefCCBY := `<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>`
 	hrefLinks := []string{
-		`<a href="/">Home</a>`,
-		`<a href="/overview">Docs</a>`,
+		`<a href="` + footer.page.ToAbsURLString("/") + `">Home</a>`,
+		`<a href="` + footer.page.ToAbsURLString("/docoverview.html") + `">Docs</a>`,
 		`<a href="https://github.com/icecake-framework/icecake">Contribute</a> on GitHub`,
 	}
 

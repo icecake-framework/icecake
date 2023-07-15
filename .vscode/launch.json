@@ -18,7 +18,7 @@
             ]
         },
         {
-            "name": "Makedocs",
+            "name": "makedocs",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -30,6 +30,7 @@
                 "./docs",
                 "--verbose",
                 "--debug",
+                "--env=./web/docs/configs/prod"
             ]
         },
         {

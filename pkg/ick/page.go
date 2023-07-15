@@ -32,6 +32,7 @@ func NewHeadItem(tagname string) *HeadItem {
 // An HTML5 file with its content.
 type Page struct {
 	meta ickcore.RMetaData // Rendering MetaData.
+	*WebSite
 
 	Lang        string     // the html "lang" value.
 	Title       string     // the html "head/title" value.
@@ -46,8 +47,9 @@ type Page struct {
 
 // NewPage is the Page factory, seeting up the lang for the doctype tag, and the url of the page.
 // Return nil if unable to parse the url of the page.
-func NewPage(lang string, rawUrl string) *Page {
+func NewPage(w *WebSite, lang string, rawUrl string) *Page {
 	pg := new(Page)
+	pg.WebSite = w
 	pg.Lang = lang
 	pg.HeadItems = make([]HeadItem, 0)
 	err := pg.ParseURL(rawUrl)
@@ -69,7 +71,11 @@ func (pg *Page) WasmScript() *ickcore.HTMLString {
 	if pg.wasm == nil || pg.wasm.Path == "" {
 		return nil
 	}
-	s := ickcore.ToHTML(`<script src="/assets/wasm_exec.js"></script>
+	jswasm := "/assets/wasm_exec.js"
+	if pg.WebSite != nil {
+		jswasm = pg.WebSite.ToAbsURLString(jswasm)
+	}
+	s := ickcore.ToHTML(`<script src="` + jswasm + `"></script>
 		<script>
 			const goWasm = new Go()
 			WebAssembly.instantiateStreaming(fetch("` + pg.wasm.Path + `"), goWasm.importObject)
@@ -115,6 +121,18 @@ func (pg Page) RelURL() *url.URL {
 		return &url.URL{}
 	}
 	return &url.URL{Path: pg.url.Path}
+}
+
+// AbsURL returns the absolute URL of the page, excluding the query and the fragments if any.
+func (pg Page) AbsURL() *url.URL {
+	if pg.url == nil {
+		return &url.URL{}
+	}
+	u := &url.URL{Path: pg.url.Path}
+	if pg.WebSite != nil && pg.WebSite.WebURL != nil {
+		u = pg.WebSite.WebURL.JoinPath(u.String())
+	}
+	return u
 }
 
 // AddHeadItem add a line in the <head> section of the HtmlFile

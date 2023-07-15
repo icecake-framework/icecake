@@ -10,7 +10,7 @@ import (
 
 func TestCoreHtmlFile(t *testing.T) {
 
-	dft := NewPage("en", "")
+	dft := NewPage(nil, "en", "")
 	out := new(bytes.Buffer)
 	err := dft.RenderContent(out)
 	require.NoError(t, err)
