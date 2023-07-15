@@ -226,6 +226,17 @@ func (amap AttributeMap) Id() string {
 	return amap["id"]
 }
 
+// SubId build an id with the id attribute followed by a dot and by the provided is string.
+// Returns an empty string if the id attribute or the provided id is empty.
+func (amap AttributeMap) SubId(id string) string {
+	id = strings.Trim(id, " ")
+	aid := amap["id"]
+	if aid == "" || id == "" {
+		return ""
+	}
+	return aid + "." + id
+}
+
 // SetId sets or overwrites the id attribute. In HTML5 id is case sensitive.
 // blanks at the ends of the id are automatically trimmed.
 // if id is empty, the id attribute is removed.
