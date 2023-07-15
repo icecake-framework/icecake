@@ -177,7 +177,7 @@ func (_v JSValue) Get(_pname string) JSValue {
 	}
 	jsret := val(_v.jsvalue.Get(_pname))
 	if !jsret.IsDefined() {
-		console.Warnf("get %q returns an undefined js value\n", _pname)
+		console.Warnf("get %q returned an undefined js value\n", _pname)
 	}
 	return jsret
 }

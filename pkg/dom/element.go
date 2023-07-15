@@ -83,15 +83,17 @@ func (e *Element) IsDefined() bool {
 	return e.JSValue.IsDefined()
 }
 
-// Remove removes the element from the DOM.
+// Remove removes the element and its listeners from the DOM. Does nothing if e is not defined.
 //
-// https://developer.mozilla.org/en-US/docs/Web/API/Element/remove
-func (_elem *Element) Remove() {
-	if !_elem.IsDefined() {
+// See [Web Api Element.Remove].
+//
+// [Web Api Element.Remove]: https://developer.mozilla.org/en-US/docs/Web/API/Element/remove
+func (e *Element) Remove() {
+	if !e.IsDefined() {
 		return
 	}
-	_elem.RemoveListeners()
-	_elem.Call("remove")
+	e.RemoveListeners()
+	e.Call("remove")
 }
 
 /******************************************************************************
@@ -111,6 +113,9 @@ func (elem *Element) TagName() string {
 
 // AttributeString returns the formated list of attributes, ready to use to generate the tag element.
 func (elem *Element) AttributeString() string {
+	if !elem.IsDefined() {
+		return ""
+	}
 	str := ""
 	jsa := elem.Get("attributes")
 	len := jsa.GetInt("length")
@@ -135,6 +140,9 @@ func (elem *Element) AttributeString() string {
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
 func (elem *Element) Attribute(aname string) (string, bool) {
+	if !elem.IsDefined() {
+		return "", false
+	}
 	aname = strings.Trim(aname, " ")
 	attr := elem.Call("getAttribute", aname)
 	if attr.IsDefined() && attr.String() != "" {
@@ -143,9 +151,9 @@ func (elem *Element) Attribute(aname string) (string, bool) {
 	return "", false
 }
 
-// func (_elem *Element) CreateAttribute(key string, _value any) *Element {
-// 	_elem.setAttribute(key, _value, false)
-// 	return _elem
+// func (elem *Element) CreateAttribute(key string, _value any) *Element {
+// 	elem.setAttribute(key, _value, false)
+// 	return elem
 // }
 
 // SetAttribute creates an attribute in the map and set its value.
@@ -161,6 +169,9 @@ func (elem *Element) SetAttribute(key string, value string) *Element {
 }
 
 func (elem *Element) setAttribute(key string, value string, update bool) error {
+	if !elem.IsDefined() {
+		return nil
+	}
 	key = strings.Trim(key, " ")
 	switch strings.ToLower(key) {
 	case "id":
@@ -198,9 +209,11 @@ func (elem *Element) setAttribute(key string, value string, update bool) error {
 // SetAttributeIf SetAttribute if the condition is true, otherwise remove the attribute.
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
-func (elem *Element) SetAttributeIf(condition bool, aname string, value string) *Element {
+func (elem *Element) SetAttributeIf(condition bool, aname string, valueiftrue string, valueiffalse ...string) *Element {
 	if condition {
-		elem.SetAttribute(aname, value)
+		elem.SetAttribute(aname, valueiftrue)
+	} else if len(valueiffalse) > 0 {
+		elem.SetAttribute(aname, valueiffalse[0])
 	} else {
 		elem.RemoveAttribute(aname)
 	}
@@ -212,6 +225,9 @@ func (elem *Element) SetAttributeIf(condition bool, aname string, value string) 
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
 func (elem *Element) RemoveAttribute(aname string) *Element {
+	if !elem.IsDefined() {
+		return elem
+	}
 	aname = strings.Trim(aname, " ")
 	elem.Call("removeAttribute", aname)
 	return elem
@@ -222,6 +238,9 @@ func (elem *Element) RemoveAttribute(aname string) *Element {
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive
 func (elem *Element) ToggleAttribute(aname string) *Element {
+	if !elem.IsDefined() {
+		return elem
+	}
 	aname = strings.Trim(aname, " ")
 	found := elem.Call("hasAttribute", aname).Bool()
 	if found {
@@ -252,6 +271,9 @@ func (elem *Element) Id() string {
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/id
 func (elem *Element) SetId(id string) *Element {
+	if !elem.IsDefined() {
+		return elem
+	}
 	id = strings.Trim(id, " ")
 	elem.Set("id", id)
 	return elem
@@ -275,6 +297,9 @@ func (elem *Element) Name() string {
 // blanks at the ends of the id are automatically trimmed.
 // if name is empty, the name attribute is removed.
 func (elem *Element) SetName(name string) *Element {
+	if !elem.IsDefined() {
+		return elem
+	}
 	name = strings.Trim(name, " ")
 	if name == "" {
 		elem.Call("removeAttribute", name)
@@ -284,16 +309,22 @@ func (elem *Element) SetName(name string) *Element {
 	return elem
 }
 
-// Classes returns the class object related to _elem.
-// If _elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of _elem.
+// Classes returns the class object related to elem.
+// If elem is defined, the class object is wrapped with the DOMTokenList collection of the class attribute of elem.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-func (_elem *Element) Classes() string {
-	return _elem.Get("className").String()
+func (elem *Element) Classes() string {
+	if !elem.IsDefined() {
+		return ""
+	}
+	return elem.Get("className").String()
 }
 
 // HasClass returns if the class exists in the list of classes.
 func (elem *Element) HasClass(class string) bool {
+	if !elem.IsDefined() {
+		return false
+	}
 	class = strings.Trim(class, " ")
 	if class == "" {
 		return false
@@ -305,6 +336,9 @@ func (elem *Element) HasClass(class string) bool {
 // Each lists class string can be either a single class or a string of multiple classes separated by spaces.
 // Duplicates are not inserted twice.
 func (elem *Element) AddClass(lists ...string) *Element {
+	if !elem.IsDefined() {
+		return elem
+	}
 	for _, list := range lists {
 		listf := strings.Fields(list)
 		callp := make([]any, len(listf))
@@ -351,6 +385,9 @@ func (elem *Element) PickClass(classlist string, picked string) *Element {
 
 // ResetClass removes all classes by removing the class attribute
 func (elem *Element) ResetClass() *Element {
+	if !elem.IsDefined() {
+		return elem
+	}
 	elem.Call("removeAttribute", "classList")
 	return elem
 }
@@ -358,6 +395,9 @@ func (elem *Element) ResetClass() *Element {
 // RemoveClass removes each class in lists strings from the class attribute.
 // Each lists class string can be either a single class or a string of multiple classes separated by spaces.
 func (elem *Element) RemoveClass(lists ...string) *Element {
+	if !elem.IsDefined() {
+		return elem
+	}
 	for _, list := range lists {
 		listf := strings.Fields(string(list))
 		callp := make([]any, len(listf))
@@ -392,6 +432,9 @@ func (elem *Element) SwitchClasses(remove string, new string) *Element {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (elem *Element) TabIndex() (idx int) {
+	if !elem.IsDefined() {
+		return 0
+	}
 	found := elem.Call("hasAttribute", "tabindex").Bool()
 	if found {
 		sidx := elem.Call("getAttribute", "tabindex").String()
@@ -412,12 +455,18 @@ func (elem *Element) TabIndex() (idx int) {
 //
 // https://developer.mozilla.org/fr/docs/Web/HTML/Global_attributes/tabindex
 func (elem *Element) SetTabIndex(index int) *Element {
+	if !elem.IsDefined() {
+		return elem
+	}
 	elem.Call("setAttribute", "tabindex", strconv.Itoa(index))
 	return elem
 }
 
 // Style returns the style attribute
 func (elem *Element) Style() (style string) {
+	if !elem.IsDefined() {
+		return ""
+	}
 	found := elem.Call("hasAttribute", "style").Bool()
 	if found {
 		style = elem.Call("getAttribute", "style").String()
@@ -427,6 +476,9 @@ func (elem *Element) Style() (style string) {
 
 // SetStyle sets or overwrites the style attribute.
 func (elem *Element) SetStyle(style string) *Element {
+	if !elem.IsDefined() {
+		return elem
+	}
 	elem.Call("setAttribute", "style", style)
 	return elem
 }
@@ -435,6 +487,9 @@ func (elem *Element) SetStyle(style string) *Element {
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name are case sensitive.
 func (elem *Element) AttributeIsTrue(aname string) bool {
+	if !elem.IsDefined() {
+		return false
+	}
 	aname = strings.Trim(aname, " ")
 	found := elem.Call("hasAttribute", aname).Bool()
 	if found {
@@ -450,8 +505,8 @@ func (elem *Element) AttributeIsTrue(aname string) bool {
 //
 // Blanks at the ends of the name are automatically trimmed. Attribute's name is case sensitive.
 func (elem *Element) SetBool(aname string, f bool) *Element {
-	aname = strings.Trim(aname, " ")
 	if elem.IsDefined() && elem.IsInDOM() {
+		aname = strings.Trim(aname, " ")
 		if f {
 			elem.Call("setAttribute", aname, "")
 		} else {
@@ -478,11 +533,11 @@ func (elem *Element) SetDisabled(f bool) *Element {
 // To insert the HTML into the document rather than replace the contents of an element, use the method insertAdjacentHTML().
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
-func (_elem *Element) InnerHTML() string {
-	if !_elem.IsDefined() {
+func (elem *Element) InnerHTML() string {
+	if !elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _elem.GetString("innerHTML")
+	return elem.GetString("innerHTML")
 }
 
 // OuterHTML gets the serialized HTML fragment describing the element including its descendants.
@@ -492,20 +547,20 @@ func (_elem *Element) InnerHTML() string {
 // or to replace the contents of an element, use the innerHTML property instead.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/outerHTML
-func (_elem *Element) OuterHTML() string {
-	if !_elem.IsDefined() {
+func (elem *Element) OuterHTML() string {
+	if !elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _elem.GetString("outerHTML")
+	return elem.GetString("outerHTML")
 }
 
 // ChildElementCount returns the number of child elements of this element.
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/childElementCount
-func (_elem *Element) ChildrenCount() int {
-	if !_elem.IsDefined() {
+func (elem *Element) ChildrenCount() int {
+	if !elem.IsDefined() {
 		return 0
 	}
-	return _elem.GetInt("childElementCount")
+	return elem.GetInt("childElementCount")
 }
 
 // Children returns a live HTMLCollection which contains all of the child elements of the element upon which it was called.
@@ -513,43 +568,43 @@ func (_elem *Element) ChildrenCount() int {
 // Includes only element nodes. To get all child nodes, including non-element nodes like text and comment nodes, use Node.Children
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/children
-func (_elem *Element) Children() []*Element {
-	if !_elem.IsDefined() {
+func (elem *Element) Children() []*Element {
+	if !elem.IsDefined() {
 		return make([]*Element, 0)
 	}
-	elems := _elem.Get("children")
+	elems := elem.Get("children")
 	return CastElements(elems)
 }
 
 // GetElementsByTagName returns a live HTMLCollection of elements with the given tag name.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByTagName
-func (_elem *Element) ChildrenByTagName(_tagName string) []*Element {
-	if !_elem.IsDefined() {
+func (elem *Element) ChildrenByTagName(_tagName string) []*Element {
+	if !elem.IsDefined() {
 		return make([]*Element, 0)
 	}
-	elems := _elem.Call("getElementsByTagName", _tagName)
+	elems := elem.Call("getElementsByTagName", _tagName)
 	return CastElements(elems)
 }
 
 // GetElementsByClassName returns a live HTMLCollection which contains every descendant element which has the specified class name or names.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByClassName
-func (_elem *Element) ChildrenByClassName(_classNames string) []*Element {
-	if !_elem.IsDefined() {
+func (elem *Element) ChildrenByClassName(_classNames string) []*Element {
+	if !elem.IsDefined() {
 		return make([]*Element, 0)
 	}
-	elems := _elem.Call("getElementsByClassName", _classNames)
+	elems := elem.Call("getElementsByClassName", _classNames)
 	return CastElements(elems)
 }
 
 // ChildrenMatching make a slice of Element, scaning recursively every children of this Element.
 // Only nodes having data attribites matching _data like "data-myvalue"
-func (_root *Element) ChildrenByData(_data string, _value string) []*Element {
-	if !_root.IsDefined() || !_root.HasChildren() {
+func (root *Element) ChildrenByData(_data string, _value string) []*Element {
+	if !root.IsDefined() || !root.HasChildren() {
 		return make([]*Element, 0)
 	}
-	return _root.childrenMatching(999, func(e *Element) bool {
+	return root.childrenMatching(999, func(e *Element) bool {
 		v, found := e.Attribute(_data)
 		if found {
 			if v != _value {
@@ -562,17 +617,17 @@ func (_root *Element) ChildrenByData(_data string, _value string) []*Element {
 
 // ChildrenMatching make a slice of Element, scaning recursively every children of this Element.
 // Only nodes matching the optional _match function are included.
-func (_root *Element) ChildrenMatching(_match func(*Element) bool) []*Element {
-	if !_root.IsDefined() || !_root.HasChildren() {
+func (root *Element) ChildrenMatching(_match func(*Element) bool) []*Element {
+	if !root.IsDefined() || !root.HasChildren() {
 		return make([]*Element, 0)
 	}
-	return _root.childrenMatching(999, _match)
+	return root.childrenMatching(999, _match)
 }
 
-func (_root *Element) childrenMatching(_deepmax int, _match func(*Element) bool) []*Element {
+func (root *Element) childrenMatching(_deepmax int, _match func(*Element) bool) []*Element {
 	nodes := make([]*Element, 0)
 
-	for _, scan := range _root.Children() {
+	for _, scan := range root.Children() {
 		// apply the filter to children if not too deep and the type node is selected
 		if scan.HasChildren() {
 			if _deepmax > 0 {
@@ -599,22 +654,22 @@ func (_root *Element) childrenMatching(_deepmax int, _match func(*Element) bool)
 // FirstElementChild  returns an element's first child Element, or null if there are no child elements.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/firstElementChild
-func (_elem *Element) ChildFirst() *Element {
-	if !_elem.IsDefined() {
+func (elem *Element) ChildFirst() *Element {
+	if !elem.IsDefined() {
 		return new(Element)
 	}
-	child := _elem.Get("firstElementChild")
+	child := elem.Get("firstElementChild")
 	return CastElement(child)
 }
 
 // LastElementChild returns an element's last child Element, or null if there are no child elements.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/lastElementChild
-func (_elem *Element) ChildLast() *Element {
-	if !_elem.IsDefined() {
+func (elem *Element) ChildLast() *Element {
+	if !elem.IsDefined() {
 		return new(Element)
 	}
-	child := _elem.Get("lastElementChild")
+	child := elem.Get("lastElementChild")
 	return CastElement(child)
 }
 
@@ -622,22 +677,22 @@ func (_elem *Element) ChildLast() *Element {
 // or null if the specified element is the first one in the list.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/previousElementSibling
-func (_elem *Element) SiblingPrevious() *Element {
-	if !_elem.IsDefined() {
+func (elem *Element) SiblingPrevious() *Element {
+	if !elem.IsDefined() {
 		return new(Element)
 	}
-	sibling := _elem.Get("previousElementSibling")
+	sibling := elem.Get("previousElementSibling")
 	return CastElement(sibling)
 }
 
 // NextElementSibling returns the element immediately following the specified one in its parent's children list, or null if the specified element is the last one in the list.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/nextElementSibling
-func (_elem *Element) SiblingNext() *Element {
-	if !_elem.IsDefined() {
+func (elem *Element) SiblingNext() *Element {
+	if !elem.IsDefined() {
 		return new(Element)
 	}
-	sibling := _elem.Get("nextElementSibling")
+	sibling := elem.Get("nextElementSibling")
 	return CastElement(sibling)
 }
 
@@ -645,19 +700,19 @@ func (_elem *Element) SiblingNext() *Element {
 // it finds a node that matches the specified CSS selector.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/closest
-func (_elem *Element) SelectorClosest(_selectors string) *Element {
-	if !_elem.IsDefined() {
+func (elem *Element) SelectorClosest(_selectors string) *Element {
+	if !elem.IsDefined() {
 		return new(Element)
 	}
-	elem := _elem.Call("closest", _selectors)
-	return CastElement(elem)
+	e := elem.Call("closest", _selectors)
+	return CastElement(e)
 }
 
 // Matches tests whether the element would be selected by the specified CSS selector.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/matches
-func (_elem *Element) SelectorMatches(_selectors string) bool {
-	ok := _elem.Call("matches", _selectors)
+func (elem *Element) SelectorMatches(_selectors string) bool {
+	ok := elem.Call("matches", _selectors)
 	return ok.Bool()
 }
 
@@ -665,23 +720,23 @@ func (_elem *Element) SelectorMatches(_selectors string) bool {
 // that matches the specified group of selectors.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector
-func (_elem *Element) SelectorQueryFirst(_selectors string) *Element {
-	if !_elem.IsDefined() {
+func (elem *Element) SelectorQueryFirst(_selectors string) *Element {
+	if !elem.IsDefined() {
 		return new(Element)
 	}
-	elem := _elem.Call("querySelector", _selectors)
-	return CastElement(elem)
+	e := elem.Call("querySelector", _selectors)
+	return CastElement(e)
 }
 
 // QuerySelectorAll returns a static (not live) NodeList representing a list of elements matching
 // the specified group of selectors which are descendants of the element on which the method was called.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll
-func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
-	if !_elem.IsDefined() {
+func (elem *Element) SelectorQueryAll(_selectors string) []*Element {
+	if !elem.IsDefined() {
 		return make([]*Element, 0)
 	}
-	elems := _elem.Call("querySelectorAll", _selectors)
+	elems := elem.Call("querySelectorAll", _selectors)
 	return CastElements(elems)
 }
 
@@ -689,7 +744,7 @@ func (_elem *Element) SelectorQueryAll(_selectors string) []*Element {
 // The composer and all its embedded components are wrapped with their DOM element and their listeners are added to the DOM.
 // Composer can be either a simple html ElementComposer or an UIComposer.
 //
-// Returns an error if _elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
+// Returns an error if elem in not in the DOM or the _snippet has an Id and it's already in the DOM.
 // Returns an error if WriteSnippet or mounting process fail.
 func (elem *Element) InsertSnippet(where INSERT_WHERE, cmp ickcore.Composer) (errx error) {
 	if !elem.IsDefined() {
@@ -803,25 +858,25 @@ func (_me *Element) InsertText(_where INSERT_WHERE, _format string, _value ...an
 	}
 }
 
-func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) {
+func (_me *Element) InsertElement(_where INSERT_WHERE, elem *Element) {
 	if !_me.IsDefined() {
 		return
 	}
 	switch _where {
 	case INSERT_BEFORE_ME:
-		_me.Call("insertAdjacentElement", "beforebegin", _elem.Value())
+		_me.Call("insertAdjacentElement", "beforebegin", elem.Value())
 	case INSERT_FIRST_CHILD:
-		_me.Call("prepend", _elem.Value())
+		_me.Call("prepend", elem.Value())
 	case INSERT_LAST_CHILD:
-		_me.Call("append", _elem.Value())
+		_me.Call("append", elem.Value())
 	case INSERT_AFTER_ME:
-		_me.Call("insertAdjacentElement", "afterend", _elem.Value())
+		_me.Call("insertAdjacentElement", "afterend", elem.Value())
 	case INSERT_OUTER:
-		_me.Set("replaceWith", _elem.Value())
+		_me.Set("replaceWith", elem.Value())
 	case INSERT_BODY:
 		// HACK: element.InsertElement - maybe a better way to replace the content
 		_me.Set("innerText", "")
-		_me.Call("append", _elem.Value())
+		_me.Call("append", elem.Value())
 	}
 }
 
@@ -830,14 +885,14 @@ func (_me *Element) InsertElement(_where INSERT_WHERE, _elem *Element) {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTop
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollWidth
-func (_elem *Element) ScrollRect() (_rect Rect) {
-	if !_elem.IsDefined() {
+func (elem *Element) ScrollRect() (_rect Rect) {
+	if !elem.IsDefined() {
 		return
 	}
-	_rect.X = _elem.GetFloat("scrollLeft")
-	_rect.Y = _elem.GetFloat("scrollTop")
-	_rect.Width = _elem.GetFloat("scrollWidth")
-	_rect.Height = _elem.GetFloat("scrollHeight")
+	_rect.X = elem.GetFloat("scrollLeft")
+	_rect.Y = elem.GetFloat("scrollTop")
+	_rect.Width = elem.GetFloat("scrollWidth")
+	_rect.Height = elem.GetFloat("scrollHeight")
 	return _rect
 }
 
@@ -847,25 +902,25 @@ func (_elem *Element) ScrollRect() (_rect Rect) {
 //
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientTop
 //   - https://developer.mozilla.org/en-US/docs/Web/API/Element/clientLeft
-func (_elem *Element) ClientRect() (_rect Rect) {
-	if !_elem.IsDefined() {
+func (elem *Element) ClientRect() (_rect Rect) {
+	if !elem.IsDefined() {
 		return
 	}
-	_rect.X = _elem.GetFloat("clientLeft")
-	_rect.Y = _elem.GetFloat("clientTop")
-	_rect.Width = _elem.GetFloat("clientWidth")
-	_rect.Height = _elem.GetFloat("clientHeight")
+	_rect.X = elem.GetFloat("clientLeft")
+	_rect.Y = elem.GetFloat("clientTop")
+	_rect.Width = elem.GetFloat("clientWidth")
+	_rect.Height = elem.GetFloat("clientHeight")
 	return _rect
 }
 
 // GetBoundingClientRect eturns a DOMRect object providing information about the size of an element and its position relative to the viewport.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-func (_elem *Element) BoundingClientRect() (_rect Rect) {
-	if !_elem.IsDefined() {
+func (elem *Element) BoundingClientRect() (_rect Rect) {
+	if !elem.IsDefined() {
 		return
 	}
-	jsrect := _elem.Call("getBoundingClientRect")
+	jsrect := elem.Call("getBoundingClientRect")
 
 	_rect.X = jsrect.GetFloat("x")
 	_rect.Y = jsrect.GetFloat("y")
@@ -877,20 +932,20 @@ func (_elem *Element) BoundingClientRect() (_rect Rect) {
 // ScrollIntoView scrolls the element's ancestor containers such that the element on which scrollIntoView() is called is visible to the user.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
-func (_elem *Element) ScrollIntoView() *Element {
-	if !_elem.IsDefined() {
+func (elem *Element) ScrollIntoView() *Element {
+	if !elem.IsDefined() {
 		return &Element{}
 	}
-	_elem.Call("scrollIntoView")
-	return _elem
+	elem.Call("scrollIntoView")
+	return elem
 }
 
 // AccessKey A string indicating the single-character keyboard key to give access to the button.
-func (_elem *Element) AccessKey() string {
-	if !_elem.IsDefined() {
+func (elem *Element) AccessKey() string {
+	if !elem.IsDefined() {
 		return UNDEFINED_NODE
 	}
-	return _elem.GetString("accessKey")
+	return elem.GetString("accessKey")
 }
 
 // AccessKey A string indicating the single-character keyboard key to give access to the button.
@@ -945,13 +1000,13 @@ func (_htmle *Element) Blur() *Element {
 
 // AddFullscreenChange is adding doing AddEventListener for 'FullscreenChange' on target.
 // This method is returning allocated javascript function that need to be released.
-func (_elem *Element) AddFullscreenEvent(_evttyp event.FULLSCREEN_EVENT, _listener func(*event.Event, *Element)) {
-	if !_elem.IsDefined() || !_elem.IsInDOM() {
+func (elem *Element) AddFullscreenEvent(_evttyp event.FULLSCREEN_EVENT, _listener func(*event.Event, *Element)) {
+	if !elem.IsDefined() || !elem.IsInDOM() {
 		console.Warnf("AddFullscreenEvent not listening on nil Element")
 		return
 	}
-	evh := makehandler_Element_Event(_listener)
-	_elem.addListener(string(_evttyp), evh)
+	evh := makehandlerElement_Event(_listener)
+	elem.addListener(string(_evttyp), evh)
 }
 
 // AddGenericEvent adds Event Listener for a GENERIC_EVENT  on target.
@@ -961,7 +1016,7 @@ func (_htmle *Element) AddGenericEvent(_evttyp event.GENERIC_EVENT, _listener fu
 		console.Warnf("AddGenericEvent failed: nil Element or not in DOM")
 		return
 	}
-	jsevh := makehandler_Element_Event(_listener)
+	jsevh := makehandlerElement_Event(_listener)
 	_htmle.addListener(string(_evttyp), jsevh)
 }
 
@@ -972,7 +1027,7 @@ func (_htmle *Element) AddMouseEvent(_evttyp event.MOUSE_EVENT, listener func(*e
 		console.Warnf("AddMouseEvent failed: nil Element or not in DOM")
 		return
 	}
-	evh := makehandler_Element_MouseEvent(listener)
+	evh := makehandlerElement_MouseEvent(listener)
 	_htmle.addListener(string(_evttyp), evh)
 }
 
@@ -1048,7 +1103,7 @@ func (_htmle *Element) AddWheelEvent(_listener func(*event.WheelEvent, *Element)
 *******************************************************************************/
 
 // Event generic
-func makehandler_Element_Event(_listener func(*event.Event, *Element)) syscalljs.Func {
+func makehandlerElement_Event(_listener func(*event.Event, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastEvent(value)
@@ -1066,7 +1121,7 @@ func makehandler_Element_Event(_listener func(*event.Event, *Element)) syscalljs
 }
 
 // MouseEvent
-func makehandler_Element_MouseEvent(listener func(*event.MouseEvent, *Element)) syscalljs.Func {
+func makehandlerElement_MouseEvent(listener func(*event.MouseEvent, *Element)) syscalljs.Func {
 	fn := func(this js.JSValue, args []js.JSValue) any {
 		value := args[0]
 		evt := event.CastMouseEvent(value)

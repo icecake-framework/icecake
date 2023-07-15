@@ -175,9 +175,9 @@ func (_node *Node) BaseURI() string {
 }
 
 // IsInDOM returns a boolean indicating whether the node is within a Document object.
+// Returns false if the node is not defined.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/isConnected
-// func (_node Node) IsConnected() bool {
 func (n Node) IsInDOM() bool {
 	if !n.JSValue.IsDefined() {
 		return false

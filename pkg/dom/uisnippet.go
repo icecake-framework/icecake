@@ -9,6 +9,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/pkg/js"
+	"github.com/lolorenzo777/verbose"
 )
 
 type UIComposer interface {
@@ -80,14 +81,19 @@ func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
 
 	// mount children
 	embedded := parent.RMeta().Embedded()
-	// DEBUG: console.Warnf("mountSnippetTree: %v children", len(embedded))
-	console.Warnf("mountSnippetTree: %v children", len(embedded))
+	if len(embedded) > 0 {
+		// DEBUG: verbose.Debug("mountSnippetTree: %v children in %s", len(embedded), reflect.TypeOf(parent).String())
+		verbose.Debug("mountSnippetTree: %v children in %s", len(embedded), reflect.TypeOf(parent).String())
+	}
+	n := 0
 	if embedded != nil {
 		for _, emb := range embedded {
-			// DEBUG: console.Warnf("mountSnippetTree: %+v child %s", emb, reflect.TypeOf(emb).String())
+			// DEBUG: verbose.Debug("mountSnippetTree: %s --> %+v", reflect.TypeOf(emb).String(), emb)
+			// verbose.Debug("mountSnippetTree: %s --> %+v", reflect.TypeOf(emb).String(), emb)
 			if child, ok := emb.(UIComposer); ok {
 				childid := child.RMeta().TagId
 				if childid != "" {
+					n++
 					console.Logf("mountSnippetTree: parent:%v is mounting %v id:%q", reflect.TypeOf(parent).String(), reflect.TypeOf(child).String(), childid)
 					errm := TryMountId(child, childid)
 					if errm != nil && err == nil {
@@ -98,6 +104,10 @@ func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
 			}
 		}
 	}
+	if len(embedded) > 0 && n == 0 {
+		verbose.Debug("mountSnippetTree: %s --> no UIComposer", reflect.TypeOf(parent).String())
+	}
+
 	if err == nil {
 		parent.RMeta().IsMounted = true
 	}
