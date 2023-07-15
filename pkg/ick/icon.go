@@ -36,6 +36,15 @@ func Icon(key string, attrs ...string) *ICKIcon {
 	return i
 }
 
+func (icon ICKIcon) Clone() *ICKIcon {
+	c := new(ICKIcon)
+	c.BareSnippet = *icon.BareSnippet.Clone()
+	c.Key = icon.Key
+	c.Text = icon.Text
+	c.Color = icon.Color
+	return c
+}
+
 func (icon *ICKIcon) SetText(t string) *ICKIcon {
 	icon.Text = t
 	return icon
