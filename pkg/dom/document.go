@@ -57,9 +57,9 @@ func Doc() Document {
 }
 
 // Id returns the Element found in the doc with the _elementId attribute.
-// returns an undefined Element if the id is not found.
-func Id(elementId string) *Element {
-	return Doc().ChildById(elementId)
+// Returns an undefined Element if the id is not found, never nil.
+func Id(elementid string) *Element {
+	return Doc().ChildById(elementid)
 }
 
 // MountId wraps the elemid to the uicomposer and add its listeners and to it and to all its childs.
@@ -107,17 +107,14 @@ func TryWrapId(ui UIComposer, elemid string) error {
 		return fmt.Errorf("WrapById: unable to wrap an empty Id")
 	}
 
-	e := Doc().ChildById(elemid)
-	if !e.IsDefined() {
+	ejs := Doc().Call("getElementById", elemid)
+	if !ejs.Truthy() || CastNode(ejs).NodeType() != NT_ELEMENT {
 		return fmt.Errorf("WrapById: unable to found Id %q", elemid)
 	}
+	elem := CastElement(ejs)
 
-	aname, _ := e.Attribute("name")
-	// if !has || !strings.HasPrefix(aname, "ick-") {
-	// 	return fmt.Errorf("WrapById: Id %q is not an icecake rendered element", elemid)
-	// }
-	ickname := aname // strings.ToLower(aname[4:])
-	// DEBUG: console.Warnf("%s %s %s", elemid, aname, ickname)
+	aname, _ := elem.Attribute("name")
+	ickname := aname
 
 	if reflect.ValueOf(ui).Kind() != reflect.Ptr {
 		return fmt.Errorf("WrapById: %v is not a pointer", ui)
@@ -134,7 +131,7 @@ func TryWrapId(ui UIComposer, elemid string) error {
 		return fmt.Errorf("WrapById: Id %q with name %q does not match snippet type %q", elemid, ickname, icktype)
 	}
 
-	ui.Wrap(e)
+	ui.Wrap(elem)
 	return nil
 }
 
@@ -422,7 +419,7 @@ func (_doc Document) ChildrenByName(elementName string) []*Element {
 
 // ChildById calls GetElementById and returns an Element object representing the element whose id property matches the specified string.
 // Since element IDs are required to be unique if specified, they're a useful way to get access to a specific element quickly.
-// If the id is not found, returns an undefined element.
+// If the id is not found, returns an undefined element, not nil
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
 func (doc Document) ChildById(elementId string) *Element {
