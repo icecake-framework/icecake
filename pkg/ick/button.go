@@ -157,9 +157,9 @@ func (btn *ICKButton) RenderContent(out io.Writer) error {
 	if btn.OpeningIcon.NeedRendering() {
 		ickcore.RenderChild(out, btn, &btn.OpeningIcon)
 	}
-	ickcore.RenderStringIf(has, out, "<span>")
-	ickcore.RenderString(out, btn.Title)
-	ickcore.RenderStringIf(has, out, "</span>")
+	ickcore.RenderStringIf(has && btn.Title != "", out, "<span>")
+	ickcore.RenderStringIf(btn.Title != "", out, btn.Title)
+	ickcore.RenderStringIf(has && btn.Title != "", out, "</span>")
 	if btn.ClosingIcon.NeedRendering() {
 		ickcore.RenderChild(out, btn, &btn.ClosingIcon)
 	}
