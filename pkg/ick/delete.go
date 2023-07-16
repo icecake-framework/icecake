@@ -25,9 +25,13 @@ type ICKDelete struct {
 var _ ickcore.ContentComposer = (*ICKDelete)(nil)
 var _ ickcore.TagBuilder = (*ICKDelete)(nil)
 
-func Delete(targetid string) *ICKDelete {
+func Delete(id string, targetid string) *ICKDelete {
 	del := new(ICKDelete)
+	del.Tag().SetId(id)
 	del.TargetId = targetid
+	if targetid == "" {
+		verbose.Debug("Delete factory: TargetId missing")
+	}
 	return del
 }
 

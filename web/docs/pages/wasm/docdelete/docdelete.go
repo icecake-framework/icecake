@@ -39,15 +39,15 @@ func main() {
 	<-c
 }
 
-func OnDeleteU1(del *ickui.ICKDelete) {
-	_btnreset.SetDisabled(false)
-}
-
 func ResetBoxUsage() {
-	btndel := ickui.Delete("deleteme")
-	btndel.Tag().SetId("btndelu1")
+	btndel := ickui.Delete("btndelu1", "deleteme")
 	btndel.OnDelete = OnDeleteU1
 	u1 := ick.Elem("div", `id="deleteme"`, ickcore.ToHTML("Click on the delete button to delete this text &rarr; "), btndel)
 	dom.Id("boxusage").InsertSnippet(dom.INSERT_BODY, u1)
+
 	_btnreset.SetDisabled(true)
+}
+
+func OnDeleteU1(del *ickui.ICKDelete) {
+	_btnreset.SetDisabled(false)
 }

@@ -24,9 +24,9 @@ type ICKDelete struct {
 // Ensure Button implements UIComposer interface
 var _ dom.UIComposer = (*ICKDelete)(nil)
 
-func Delete(targetid string) *ICKDelete {
+func Delete(id string, targetid string) *ICKDelete {
 	del := new(ICKDelete)
-	del.ICKDelete = *ick.Delete(targetid)
+	del.ICKDelete = *ick.Delete(id, targetid)
 	return del
 }
 
