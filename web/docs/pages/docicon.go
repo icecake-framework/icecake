@@ -8,11 +8,7 @@ import (
 )
 
 const (
-	linkBulmaIcon     string = `<a href="https://bulma.io/documentation/elements/icon">bulma Button</a>`
-	hrefICKIcon_Git   string = href_GitPkg + `/ick/icon.go`
-	hrefICKIcon_GitUI string = href_GitPkg + `/ick/ickui/icon.go`
-	hrefICKIcon_Go    string = href_GoPkg + `/ick#ICKIcon`
-	hrefICKIcon_GoUI  string = href_GoPkg + `/ick/ickui#ICKIcon`
+	linkBulmaIcon string = `<a href="https://bulma.io/documentation/elements/icon">bulma Icon</a>`
 )
 
 type SectionDocIcon struct {
@@ -25,13 +21,6 @@ func (sec *SectionDocIcon) RenderContent(out io.Writer) error {
 	ickcore.RenderString(out, `<div class="block">`+
 		`<p>ICKIcon is an icecake snippet providing the HTML rendering for a `, linkBulmaIcon, ` with extra features and usefull Go APIs.</p>`+
 		`</div>`)
-
-	// usages
-	ickcore.RenderString(out, `<div class="box spaceout">`)
-	// uA1 := ick.Button("Click Link").ParseHRef("#")
-	// uA2 := ick.Button("Trigger Event").SetId("uA2")
-	// ickcore.Render(out, cmp, uA1, uA2)
-	ickcore.RenderString(out, `</div>`)
 
 	// styling
 	ickcore.RenderChild(out, sec, ick.Title(4, "Styling"))
