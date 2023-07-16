@@ -130,7 +130,27 @@ func (in *ICKInputField) SetIcon(icon ick.ICKIcon, closing bool) *ICKInputField 
 	if !in.UI.DOM.IsInDOM() {
 		return in
 	}
-	// XXX
+	var eicon *dom.Element
+	var where dom.INSERT_WHERE
+	if closing {
+		eicon = dom.Id(in.Tag().SubId("cicon"))
+		where = dom.INSERT_AFTER_ME
+	} else {
+		eicon = dom.Id(in.Tag().SubId("oicon"))
+		where = dom.INSERT_BEFORE_ME
+	}
+	if eicon.IsDefined() {
+		// replace
+		if !icon.NeedRendering() {
+			eicon.Remove()
+		} else {
+			eicon.InsertSnippet(dom.INSERT_OUTER, &icon)
+		}
+	} else if icon.NeedRendering() {
+		// add
+		dom.Id(in.Tag().SubId("input")).InsertSnippet(where, &icon)
+	}
+
 	return in
 }
 
