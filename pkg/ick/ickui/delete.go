@@ -30,6 +30,16 @@ func Delete(id string, targetid string) *ICKDelete {
 	return del
 }
 
+func (del *ICKDelete) SetSize(sz ick.SIZE) *ICKDelete {
+	del.ICKDelete.SetSize(sz)
+	if del.DOM.IsInDOM() {
+		del.DOM.PickClass(ick.SIZE_OPTIONS, string(del.SIZE))
+	}
+	return del
+}
+
+/******************************************************************************/
+
 // Wrap implements the JSValueWrapper to enable wrapping of a dom.Element usually
 // to wrap embedded component instantiated during unfolding an html string.
 // Does not need to be overloaded by the component embedding UISnippet.
