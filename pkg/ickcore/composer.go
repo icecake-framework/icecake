@@ -55,3 +55,9 @@ type ContentComposer interface {
 	// Return an error to stops the rendering process.
 	RenderContent(out io.Writer) error
 }
+
+type TagProvider interface {
+	TagBuilder
+
+	Tag() *Tag
+}
