@@ -74,8 +74,9 @@ func (ui *UI) RefreshContent(cmp ickcore.ContentComposer) (errx error) {
 // mountSnippetTree addlisteners to the snippet and looks recursively for every childs with an id and add listeners to each of them.
 // Nothing is done with the parent but its IsMounted RMeta is turned on in case of success.
 func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
+	parenttype := reflect.TypeOf(parent).String()
 	if parent.RMeta().IsMounted {
-		console.Warnf("mountSnippetTree: parent:%s id:%q is already mounted", reflect.TypeOf(parent).String(), parent.RMeta().VirtualId)
+		verbose.Printf(verbose.ALERT, "mountSnippetTree: parent:%s id:%q is already mounted", parenttype, parent.RMeta().VirtualId)
 		return
 	}
 
@@ -83,7 +84,7 @@ func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
 	embedded := parent.RMeta().Embedded()
 	if len(embedded) > 0 {
 		// DEBUG: verbose.Debug("mountSnippetTree: %v children in %s", len(embedded), reflect.TypeOf(parent).String())
-		verbose.Debug("mountSnippetTree: %v children in %s", len(embedded), reflect.TypeOf(parent).String())
+		verbose.Debug("mountSnippetTree: %v children in %s", len(embedded), parenttype)
 	}
 	n := 0
 	if embedded != nil {
@@ -94,7 +95,7 @@ func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
 				childid := child.RMeta().TagId
 				if childid != "" {
 					n++
-					console.Logf("mountSnippetTree: parent:%v is mounting %v id:%q", reflect.TypeOf(parent).String(), reflect.TypeOf(child).String(), childid)
+					verbose.Debug("mountSnippetTree: parent:%v is mounting %v id:%q", parenttype, reflect.TypeOf(child).String(), childid)
 					errm := TryMountId(child, childid)
 					if errm != nil && err == nil {
 						err = errm
@@ -105,7 +106,7 @@ func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
 		}
 	}
 	if len(embedded) > 0 && n == 0 {
-		verbose.Debug("mountSnippetTree: %s --> no UIComposer", reflect.TypeOf(parent).String())
+		verbose.Debug("mountSnippetTree: %s --> no UIComposer", parenttype)
 	}
 
 	if err == nil {

@@ -1,12 +1,14 @@
 package ickui
 
 import (
+	"errors"
+
 	"github.com/icecake-framework/icecake/pkg/clock"
-	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/js"
+	"github.com/lolorenzo777/verbose"
 )
 
 type ICKDelete struct {
@@ -45,25 +47,25 @@ func (del *ICKDelete) SetSize(sz ick.SIZE) *ICKDelete {
 // Does not need to be overloaded by the component embedding UISnippet.
 func (del *ICKDelete) Wrap(jsvp js.JSValueProvider) {
 	if del.UI.Wrap(jsvp); !del.DOM.IsInDOM() {
-		console.Errorf("ICKDelete.Wrap: failed")
+		verbose.Error("ICKDelete.Wrap:", errors.New("not in DOM"))
 		return
 	}
 	t, has := del.DOM.Attribute("data-targetid")
-	console.Warnf("ICKDelete.Wrap: data-targetid=%q", t)
+	verbose.Debug("ICKDelete.Wrap: data-targetid=%q", t)
 	if has {
 		del.TargetId = t
 	}
 }
 
 func (del *ICKDelete) AddListeners() {
-	console.Warnf("ICKDelete.AddListeners: targetid=%q", del.TargetId)
+	verbose.Debug("ICKDelete.AddListeners: targetid=%q", del.TargetId)
 	if del.TargetId != "" {
 		del.DOM.AddMouseEvent(event.MOUSE_ONCLICK, func(*event.MouseEvent, *dom.Element) {
 			del.RemoveTarget()
 		})
 		del.Clock.Start(del.RemoveTarget)
 	} else {
-		console.Warnf("ICKDelete.AddListeners: missing TargetID")
+		verbose.Println(verbose.WARNING, "ICKDelete.AddListeners: missing TargetID")
 	}
 }
 

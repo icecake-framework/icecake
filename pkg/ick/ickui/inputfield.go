@@ -1,12 +1,10 @@
 package ickui
 
 import (
-	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/dom"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
-	"github.com/lolorenzo777/verbose"
 )
 
 type ICKInputField struct {
@@ -206,23 +204,11 @@ func (in *ICKInputField) RefreshHelp(help string) {
 
 func (in *ICKInputField) AddListeners() {
 	// DEBUG: console.Warnf("ICKInputField.AddListeners: %q", in.DOM.Id())
-	console.Warnf("ICKInputField.AddListeners: %q", in.DOM.Id())
-
-	// in.UI.DOM.AddInputEvent(event.INPUT_ONBEFOREINPUT, in.OnBeforeInputEvent)
-	// in.UI.DOM.AddInputEvent(event.INPUT_ONINPUT, in.OnInputEvent)
+	// console.Warnf("ICKInputField.AddListeners: %q", in.DOM.Id())
 	dom.Id(in.Tag().SubId("input")).AddInputEvent(event.INPUT_ONCHANGE, in.OnChangeEvent)
 
 	in.btnToggleVisibility.OnClick = in.ToggleVisibility
 	dom.TryMountId(&in.btnToggleVisibility, in.Tag().SubId("btntoggvis"))
-}
-
-func (in *ICKInputField) OnBeforeInputEvent(*event.InputEvent, *dom.Element) {
-	console.Warnf("OnBeforeInputEvent")
-}
-
-func (in *ICKInputField) OnInputEvent(*event.InputEvent, *dom.Element) {
-	console.Warnf("OnInputEvent")
-
 }
 
 func (in *ICKInputField) OnChangeEvent(*event.InputEvent, *dom.Element) {
@@ -230,7 +216,7 @@ func (in *ICKInputField) OnChangeEvent(*event.InputEvent, *dom.Element) {
 	if in.OnChange != nil {
 		in.OnChange(in, in.Value)
 	}
-	console.Warnf("OnChangeEvent: %+v", in.Value)
+	// console.Warnf("OnChangeEvent: %+v", in.Value)
 }
 
 func (in *ICKInputField) RemoveListeners() {
@@ -239,7 +225,7 @@ func (in *ICKInputField) RemoveListeners() {
 }
 
 func (in *ICKInputField) ToggleVisibility() {
-	verbose.Debug("ToggleVisibility")
+	// verbose.Debug("ToggleVisibility")
 
 	if in.IsHidden {
 		in.SetHidden(false)

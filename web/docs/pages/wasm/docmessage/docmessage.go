@@ -7,7 +7,6 @@ import (
 	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/ick/ickui"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
-	"github.com/lolorenzo777/verbose"
 )
 
 var _btnreset = &ickui.ICKButton{}
@@ -16,8 +15,8 @@ var _btnreset = &ickui.ICKButton{}
 func main() {
 	c := make(chan struct{})
 	fmt.Println("Go/WASM loaded. Icecake initializing...")
-	verbose.IsOn = true
-	verbose.IsDebugging = true
+	// verbose.IsOn = true
+	// verbose.IsDebugging = true
 
 	ests := dom.Id("icecake-status")
 	if ests.IsDefined() {
