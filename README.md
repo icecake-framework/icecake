@@ -8,6 +8,8 @@ Icecake is an experimental project aiming to implement web assembly technologies
 - web assembly [see wasm doc](https://developer.mozilla.org/fr/docs/WebAssembly)
 - fullstack in go (no JS) [see this post to use wasm in GO](https://tutorialedge.net/golang/writing-frontend-web-framework-webassembly-go/)
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/icecake-framework/icecake.svg)](https://pkg.go.dev/github.com/icecake-framework/icecake)
+
 ## Why
 
 Ealy 2023 webassembly generated code is smoosly becoming the new standard for running frontend web applications. But although [webassembly source code for front can be easily written in C++, C# or Rust](https://www.webassemblyman.com/webassembly_front_end_web_development.html), there's still few solutions to write it in GO.
