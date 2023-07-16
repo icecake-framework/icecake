@@ -46,15 +46,19 @@ func RenderChild(out io.Writer, parent RMetaProvider, child Composer, siblings .
 }
 
 func render(out io.Writer, parent RMetaProvider, cmp Composer) error {
+	cmptyp := ""
+	if cmp != nil {
+		cmptyp = reflect.TypeOf(cmp).String()
+	}
 
 	// nothing to render
 	if cmp == nil || reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {
-		verbose.Printf(verbose.WARNING, "Render: empty composer %s\n", reflect.TypeOf(cmp).String())
+		verbose.Printf(verbose.WARNING, "Render: empty composer %s\n", cmptyp)
 		return nil
 	}
 
 	if !cmp.NeedRendering() {
-		verbose.Printf(verbose.WARNING, "Render: composer %s does not need rendering\n", reflect.TypeOf(cmp).String())
+		verbose.Printf(verbose.WARNING, "Render: composer %s does not need rendering\n", cmptyp)
 		return nil
 	}
 
@@ -66,7 +70,7 @@ func render(out io.Writer, parent RMetaProvider, cmp Composer) error {
 		}
 		cmp.RMeta().Deep = parent.RMeta().Deep + 1
 	}
-	verbose.Printf(verbose.INFO, "rendering L.%v composer %s\n", deep, reflect.TypeOf(cmp).String())
+	verbose.Printf(verbose.INFO, "rendering L.%v composer %s\n", deep, cmptyp)
 
 	// build the tag
 	var tag Tag
