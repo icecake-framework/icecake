@@ -45,7 +45,7 @@ func (in *ICKInputField) SetHelp(help string) *ICKInputField {
 		return in
 	}
 
-	in.RefreshHelp()
+	in.RefreshHelp(help)
 	return in
 }
 
@@ -106,11 +106,21 @@ func (in *ICKInputField) SetState(st ick.INPUT_STATE) *ICKInputField {
 		return in
 	}
 
-	dom.Id(in.Tag().SubId("input")).
-		SetAttributeIf(in.State == ick.INPUT_DISABLED, "disabled", "").
-		AddClassIf(in.State == ick.INPUT_STATIC, "is-static", "")
 	dom.Id(in.Tag().SubId("control")).
 		SetClassIf(in.State == ick.INPUT_LOADING, "is-loading")
+
+	dom.Id(in.Tag().SubId("input")).
+		SetAttributeIf(in.State == ick.INPUT_DISABLED, "disabled", "").
+		AddClassIf(in.State == ick.INPUT_STATIC, "is-static", "").
+		SetClassIf(in.State == ick.INPUT_SUCCESS, "is-success").
+		SetClassIf(in.State == ick.INPUT_WARNING, "is-warning").
+		SetClassIf(in.State == ick.INPUT_ERROR, "is-danger")
+
+	dom.Id(in.Tag().SubId("help")).
+		SetClassIf(in.State == ick.INPUT_SUCCESS, "is-success").
+		SetClassIf(in.State == ick.INPUT_WARNING, "is-warning").
+		SetClassIf(in.State == ick.INPUT_ERROR, "is-danger")
+
 	return in
 }
 
@@ -175,21 +185,21 @@ func (in *ICKInputField) RefreshLabel() {
 	}
 }
 
-func (in *ICKInputField) RefreshHelp() {
+func (in *ICKInputField) RefreshHelp(help string) {
 	helpid := in.Tag().SubId("help")
-	if in.Help == "" {
+	if help == "" {
 		// no help = remove it from the dom if any
 		dom.Id(helpid).Remove()
 	} else if !dom.Id(helpid).IsDefined() {
 		// help not yet in the dom = insert it after the control
-		subhelp := ick.Elem("p", `class="help"`, ickcore.ToHTML(in.Help))
+		subhelp := ick.Elem("p", `class="help"`, ickcore.ToHTML(help))
 		subhelp.SetId(helpid)
 		dom.Id(in.Tag().SubId("control")).InsertSnippet(dom.INSERT_AFTER_ME, subhelp)
 	} else {
 		// help already in the dom = update it
 		isin := dom.Id(helpid).InnerHTML()
-		if isin != in.Help {
-			dom.Id(helpid).InsertSnippet(dom.INSERT_BODY, ickcore.ToHTML(in.Help))
+		if isin != help {
+			dom.Id(helpid).InsertSnippet(dom.INSERT_BODY, ickcore.ToHTML(help))
 		}
 	}
 }

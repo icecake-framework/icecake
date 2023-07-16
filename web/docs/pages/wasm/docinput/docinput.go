@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/icecake-framework/icecake/pkg/dom"
+	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/ick/ickui"
 	"github.com/lolorenzo777/verbose"
 )
@@ -55,8 +56,22 @@ func RenderBoxUsage() {
 		SetCanToggleVisibility(true).
 		SetLabel("Enter your password").
 		SetHelp("Must be 12 characters long or more and must contains lowercase, uppercase, digit and symbol")
+	u2.OnChange = OnChangeU2
 
 	dom.Id("boxusage").InsertSnippet(dom.INSERT_LAST_CHILD, u2)
 
 	_btnreset.SetDisabled(true)
+}
+
+func OnChangeU2(in *ickui.ICKInputField, newvalue string) {
+	if len(newvalue) == 0 {
+		in.RefreshHelp("Password is required")
+		in.SetState(ick.INPUT_ERROR)
+	} else if len(newvalue) < 12 {
+		in.RefreshHelp("Your password is too short")
+		in.SetState(ick.INPUT_ERROR)
+	} else {
+		in.RefreshHelp(in.Help)
+		in.SetState(ick.INPUT_STD)
+	}
 }
