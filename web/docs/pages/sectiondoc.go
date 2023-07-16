@@ -109,10 +109,18 @@ func (sec *SectionDocIcecake) RenderHead(out io.Writer, title string, gitpkg str
 		SetIcon(*ick.Icon("bi bi-box-arrow-up-right", `class="is-hidden-touch"`), true)
 
 	ickcore.RenderChild(out, sec, ick.Elem("div", "class='is-flex is-justify-content-flex-end spaceout'",
-		b.Clone().SetTitle(gostruct+" code").ParseHRef(hrefICK_Git).SetIcon(*ick.Icon("bi bi-github"), false),
-		b.Clone().SetTitle("UI code").ParseHRef(hrefICK_GitUI).SetIcon(*ick.Icon("bi bi-github"), false),
-		b.Clone().SetTitle(gostruct+" Go pkg").ParseHRef(hrefICK_Go).SetIcon(*ick.Icon("bi bi-book"), false),
-		b.Clone().SetTitle("UI Go pkg").ParseHRef(hrefICK_GoUI).SetIcon(*ick.Icon("bi bi-book"), false),
+		b.Clone().SetTitle(gostruct+`<span class="is-hidden-touch"> code</span>`).
+			ParseHRef(hrefICK_Git).
+			SetIcon(*ick.Icon("bi bi-github"), false),
+		b.Clone().SetTitle(`UI<span class="is-hidden-touch"> code</span>`).
+			ParseHRef(hrefICK_GitUI).
+			SetIcon(*ick.Icon("bi bi-github"), false),
+		b.Clone().SetTitle(gostruct+`<span class="is-hidden-touch"> Go pkg</span>`).
+			ParseHRef(hrefICK_Go).
+			SetIcon(*ick.Icon("bi bi-book"), false),
+		b.Clone().SetTitle(`UI<span class="is-hidden-touch"> Go pkg</span>`).
+			ParseHRef(hrefICK_GoUI).
+			SetIcon(*ick.Icon("bi bi-book"), false),
 	))
 	ickcore.RenderString(out, `</div>`)
 	return nil
