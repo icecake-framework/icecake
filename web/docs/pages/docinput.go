@@ -10,7 +10,7 @@ import (
 type SectionDocInput struct{ SectionDocIcecake }
 
 func (sec *SectionDocInput) RenderContent(out io.Writer) error {
-	sec.RenderHead(out, "ICKInputField", "inputfield.go", "ICKInputField")
+	sec.RenderHead(out, "InputField", "inputfield.go", "ICKInputField")
 
 	// usages
 	ickcore.RenderChild(out, sec,
