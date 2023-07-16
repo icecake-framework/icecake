@@ -49,15 +49,13 @@ func (msg *ICKMessage) SetSize(s ick.SIZE) *ICKMessage {
 // AddListeners adds the listener to the embedded delete button, if any.
 func (msg *ICKMessage) AddListeners() {
 	console.Warnf("ICKMessage.AddListeners")
-	if msg.DOM.Id() != dom.UNDEFINED_NODE {
-		msg.BtnDelete.RemoveListeners()
-		// Mount the button only if it's in the DOM
-		if btndelid := "del" + msg.DOM.Id(); dom.Doc().IsInDOM(btndelid) {
-			if err := dom.TryMountId(&msg.BtnDelete, btndelid); err != nil {
-				console.Errorf("ICKMessage.AddListeners: %s", err.Error())
-			}
-		}
+
+	if !msg.DOM.IsInDOM() {
+		console.Errorf("ICKMessage.AddListeners NOT IN DOM")
 	}
+
+	dom.TryMountId(&msg.BtnDelete, msg.Tag().SubId("btndel"))
+
 }
 
 // RemoveListeners remove delete button listeners

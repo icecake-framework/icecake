@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/icecake-framework/icecake/pkg/ickcore"
-	"github.com/lolorenzo777/verbose"
 )
 
 func init() {
@@ -91,7 +90,8 @@ func (msg *ICKMessage) RenderContent(out io.Writer) error {
 		ickcore.RenderString(out, `<div class="message-header">`)
 		ickcore.RenderChild(out, msg, Elem("span", "", &msg.Header))
 		if msg.CanDelete {
-			msg.RenderDelete(out)
+			// msg.RenderDelete(out)
+			ickcore.RenderChild(out, msg, Delete(msg.Tag().SubId("btndel"), msg.Tag().Id()))
 		}
 		ickcore.RenderString(out, `</div>`)
 	}
@@ -102,21 +102,11 @@ func (msg *ICKMessage) RenderContent(out io.Writer) error {
 		msg.Msg.RenderStack(out, msg)
 		ickcore.RenderString(out, `</span>`)
 		if msg.CanDelete && !msg.Header.NeedRendering() {
-			msg.RenderDelete(out)
+			// msg.RenderDelete(out)
+			ickcore.RenderChild(out, msg, Delete(msg.Tag().SubId("btndel"), msg.Tag().Id()))
 		}
 		ickcore.RenderString(out, `</div>`)
 	}
 
-	return nil
-}
-
-func (msg *ICKMessage) RenderDelete(out io.Writer) error {
-	id := msg.Tag().Id()
-	if id == "" {
-		verbose.Debug("ICKMessage: Rendering Deletable Message without TargetId")
-		ickcore.RenderChild(out, msg, ickcore.ToHTML(`<ick-delete/>`))
-	} else {
-		ickcore.RenderChild(out, msg, ickcore.ToHTML(`<ick-delete id="del`+id+`" TargetId='`+id+`'/>`))
-	}
 	return nil
 }
