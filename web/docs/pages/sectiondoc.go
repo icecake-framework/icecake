@@ -63,11 +63,15 @@ func SectionDoc(section string) ickcore.ContentComposer {
 		return s
 	case "docinput":
 		s := new(SectionDocInput)
-		s.Title = "Input Snippet - icecake framework documentation"
+		s.Title = "Input Field Snippet - icecake framework documentation"
 		return s
 	case "docicon":
 		s := new(SectionDocIcon)
 		s.Title = "Icon Snippet - icecake framework documentation"
+		return s
+	case "doctaglabel":
+		s := new(SectionDocTagLabel)
+		s.Title = "Tag Label Snippet - icecake framework documentation"
 		return s
 	}
 	s := new(SectionDocIcecake)

@@ -145,8 +145,8 @@ type SIZE string
 
 const (
 	SIZE_SMALL   SIZE   = "is-small"
-	SIZE_STD     SIZE   = ""
+	SIZE_STD     SIZE   = "is-normal"
 	SIZE_MEDIUM  SIZE   = "is-medium"
 	SIZE_LARGE   SIZE   = "is-large"
-	SIZE_OPTIONS string = string(SIZE_SMALL + " " + SIZE_MEDIUM + " " + SIZE_LARGE)
+	SIZE_OPTIONS string = string(SIZE_STD + " " + SIZE_SMALL + " " + SIZE_MEDIUM + " " + SIZE_LARGE)
 )

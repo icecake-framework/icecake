@@ -3,4 +3,4 @@
 - TODO: provide ick saas files. Handle it at component level
 - TODO: enable unfolding ick-tag with a body, closed by </ick>
 - TODO: enable to process standard tag or any tag like <h1> or <mytip/> and to add it some modifiers (with the TagBuilder)
-
+- TODO: dom.UI.RefreshContent must update the tag itself if required
