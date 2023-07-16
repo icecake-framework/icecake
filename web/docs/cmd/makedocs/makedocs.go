@@ -89,6 +89,7 @@ func main() {
 	menu.AddItem("docinput", ick.MENUIT_LINK, "Input").HRef = web.ToAbsURL("/docinput.html")
 	menu.AddItem("docicon", ick.MENUIT_LINK, "Icon").HRef = web.ToAbsURL("/docicon.html")
 	menu.AddItem("doctaglabel", ick.MENUIT_LINK, "Tag Label").HRef = web.ToAbsURL("/doctaglabel.html")
+	menu.AddItem("docmedia", ick.MENUIT_LINK, "media").HRef = web.ToAbsURL("/docmedia.html")
 	menu.AddItem("", ick.MENUIT_FOOTER, "Alpha 4")
 
 	// page docs
@@ -104,6 +105,7 @@ func main() {
 	addPageDoc(web, menu.Clone(), "docinput")
 	addPageDoc(web, menu.Clone(), "docicon")
 	addPageDoc(web, menu.Clone(), "doctaglabel")
+	addPageDoc(web, menu.Clone(), "docmedia")
 
 	// required files
 	ickcore.RequireCSSFile("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css")

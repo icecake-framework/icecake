@@ -49,6 +49,7 @@ tasks:
       - GOARCH=wasm GOOS=js go build -o ./docs/docdelete.wasm ./web/docs/pages/wasm/docdelete/
       - GOARCH=wasm GOOS=js go build -o ./docs/docicon.wasm ./web/docs/pages/wasm/docicon/
       - GOARCH=wasm GOOS=js go build -o ./docs/doctaglabel.wasm ./web/docs/pages/wasm/doctaglabel/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docmedia.wasm ./web/docs/pages/wasm/docmedia/
 
   # task -t ./build/Taskfile.yaml dev_framework
   dev_framework:

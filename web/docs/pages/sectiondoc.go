@@ -73,6 +73,10 @@ func SectionDoc(section string) ickcore.ContentComposer {
 		s := new(SectionDocTagLabel)
 		s.Title = "Tag Label Snippet - icecake framework documentation"
 		return s
+	case "docmedia":
+		s := new(SectionDocMedia)
+		s.Title = "Media Snippet - icecake framework documentation"
+		return s
 	}
 	s := new(SectionDocIcecake)
 	s.Title = "icecake framework documentation"
