@@ -27,7 +27,7 @@ var _ ickcore.TagBuilder = (*ICKLink)(nil)
 // Link returns an HTML anchor link
 func Link(child ickcore.ContentComposer, attrlist ...string) *ICKLink {
 	lnk := new(ICKLink)
-	lnk.Tag().SetTagName("a").ParseAttributes(attrlist...)
+	lnk.Tag().ParseAttributes(attrlist...)
 	lnk.Body.Push(child)
 	return lnk
 }
@@ -51,13 +51,9 @@ func (lnk *ICKLink) SetHRef(href *url.URL) *ICKLink {
 
 /******************************************************************************/
 
-func (lnk *ICKLink) NeedRendering() bool {
-	return true
-	// return lnk.HRef != nil && lnk.HRef.String() != ""
-}
-
 // BuildTag builds the tag used to render the html element.
 func (lnk *ICKLink) BuildTag() ickcore.Tag {
+	lnk.Tag().SetTagName("a")
 	if lnk.HRef != nil {
 		lnk.Tag().SetAttribute("href", lnk.HRef.String())
 	}
