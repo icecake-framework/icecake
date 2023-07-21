@@ -51,9 +51,15 @@ func (btn *ICKButton) SetRounded(f bool) *ICKButton {
 	btn.DOM.SetClassIf(f, "is-rounded")
 	return btn
 }
-func (btn *ICKButton) SetDisabled(disabled bool) {
+func (btn *ICKButton) SetDisabled(disabled bool) *ICKButton {
 	btn.ICKButton.SetDisabled(disabled)
 	btn.DOM.SetDisabled(disabled)
+	return btn
+}
+func (btn *ICKButton) SetSize(sz ick.SIZE) *ICKButton {
+	btn.ICKButton.SetSize(sz)
+	btn.DOM.PickClass(ick.SIZE_OPTIONS, string(btn.SIZE))
+	return btn
 }
 func (btn *ICKButton) SetLoading(f bool) *ICKButton {
 	btn.ICKButton.SetLoading(f)
