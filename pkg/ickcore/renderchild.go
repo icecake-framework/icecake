@@ -70,7 +70,7 @@ func render(out io.Writer, parent RMetaProvider, cmp Composer) error {
 		}
 		cmp.RMeta().Deep = parent.RMeta().Deep + 1
 	}
-	verbose.Printf(verbose.INFO, "rendering L.%v composer %s\n", deep, cmptyp)
+	verbose.Debug("rendering L.%v composer %s\n", deep, cmptyp)
 
 	// build the tag
 	var tag Tag
@@ -80,7 +80,7 @@ func render(out io.Writer, parent RMetaProvider, cmp Composer) error {
 	}
 
 	// generate the virtual id
-	//cmp.RMeta().GenerateVirtualId(cmp)
+	cmp.RMeta().GenerateVirtualId(cmp)
 
 	// render openingtag
 	if cmptag != nil {
@@ -115,6 +115,8 @@ func render(out io.Writer, parent RMetaProvider, cmp Composer) error {
 	if parent != nil {
 		parent.RMeta().Embed(cmp)
 	}
+
+	// DEBUG:	verbose.Debug("render: %+v", cmp)
 
 	return nil
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/pkg/js"
+	"github.com/lolorenzo777/verbose"
 )
 
 type Rect struct {
@@ -752,8 +753,17 @@ func (elem *Element) InsertSnippet(where INSERT_WHERE, cmp ickcore.Composer) (er
 	}
 
 	// nothing to render ?
+	cmptyp := ""
+	if cmp != nil {
+		cmptyp = reflect.TypeOf(cmp).String()
+	}
 	if cmp == nil || reflect.TypeOf(cmp).Kind() != reflect.Ptr || reflect.ValueOf(cmp).IsNil() {
-		console.Warnf("InsertSnippet: empty composer %s\n", reflect.TypeOf(cmp).String())
+		console.Warnf("InsertSnippet: empty composer %s\n", cmptyp)
+		return nil
+	}
+
+	if !cmp.NeedRendering() {
+		verbose.Printf(verbose.WARNING, "InsertSnippet: composer %s does not need rendering\n", cmptyp)
 		return nil
 	}
 
@@ -761,37 +771,40 @@ func (elem *Element) InsertSnippet(where INSERT_WHERE, cmp ickcore.Composer) (er
 	rendering := false
 	out := new(bytes.Buffer)
 
-	// if the composer is a tag builder then create an element from the composer and insert it into the dom
-	// then wrap it. By this way interacting with the DOM of the UIcomposer is possible event if it has no id.
-	if tb, istb := cmp.(ickcore.TagBuilder); istb {
-		tag := ickcore.BuildTag(tb)
-		if !tag.IsEmpty() {
-			rendering = true
-			tagn, _ := tag.TagName()
-			newe := CreateElement(tagn)
-			for attrn, attrv := range tag.AttributeMap {
-				newe.SetAttribute(attrn, attrv)
+	var tag ickcore.Tag
+	tb, isnetb := cmp.(ickcore.TagBuilder)
+	if isnetb {
+		tag = ickcore.BuildTag(tb)
+		isnetb = !tag.IsEmpty()
+	}
+	if isnetb {
+		// if the composer is a tag builder then create an element from the composer and insert it into the dom
+		// then wrap it. By this way interacting with the DOM of the UIcomposer is possible event if it has no id.
+		verbose.Debug("InsertSnippet: rendering L.0 composer %s\n", cmptyp)
+		rendering = true
+		tagn, _ := tag.TagName()
+		newe := CreateElement(tagn)
+		for attrn, attrv := range tag.AttributeMap {
+			newe.SetAttribute(attrn, attrv)
+		}
+
+		// Render the html content
+		if cc, iscc := cmp.(ickcore.ContentComposer); iscc {
+			errx = cc.RenderContent(out)
+			if errx != nil {
+				cmp.RMeta().RError = errx
+			} else {
+				cc.RMeta().IsRender = true
+				newe.Set("innerHTML", out.String())
+				elem.InsertElement(where, newe)
+				_, errx = mountSnippet(cmp, newe)
 			}
 
-			// Render the html content
-			if cc, iscc := cmp.(ickcore.ContentComposer); iscc {
-				errx = cc.RenderContent(out)
-				if errx != nil {
-					cmp.RMeta().RError = errx
-				} else {
-					newe.Set("innerHTML", out.String())
-					elem.InsertElement(where, newe)
-					// mount the UI composer
-					if ui, is := cmp.(UIComposer); is {
-						ui.Wrap(newe)
-						ui.AddListeners()
-					}
-					errx = mountSnippetTree(cmp)
-				}
-			}
+			// DEBUG: verbose.Debug("InsertSnippet: %+v", cc)
 		}
 	} else if cc, iscc := cmp.(ickcore.ContentComposer); iscc && cc.NeedRendering() {
 		// otherwise insert the rendered snippet html into the dom
+		verbose.Printf(verbose.INFO, "InsertSnippet: inserting content")
 		rendering = true
 		custodian := &ickcore.RMetaData{}
 		errx = ickcore.RenderChild(out, custodian, cc)
@@ -800,7 +813,7 @@ func (elem *Element) InsertSnippet(where INSERT_WHERE, cmp ickcore.Composer) (er
 		}
 
 		// mount every embedded components with an ID
-		errx = mountSnippetTree(custodian)
+		_, errx = mountSnippet(custodian, nil)
 	}
 
 	// nor a tag builder, nor a simple contentcomposer, nothing to render

@@ -82,8 +82,7 @@ func (rmeta *RMetaData) GenerateVirtualId(cmp RMetaProvider) string {
 
 	rmeta.VirtualId = prefix + body + suffix
 
-	// verbose id information
-	verbose.Debug(" vid: %s --> id:%s", rmeta.VirtualId, cmpid)
+	// DEBUG: verbose.Debug("GenerateVirtualId: vid=%s, id=%s", rmeta.VirtualId, cmpid)
 
 	return rmeta.VirtualId
 }
@@ -92,7 +91,7 @@ func (rmeta *RMetaData) GenerateVirtualId(cmp RMetaProvider) string {
 
 // Embed adds child to the map of embedded components.
 // If a child with the same key has already been embedded it's replaced and a warning is raised in verbose mode.
-// The key is the id of the html element if any otherwise it's its virtual id.
+// The key is the id of the html element if any, otherwise it's its virtual id.
 func (rmeta *RMetaData) Embed(child RMetaProvider) {
 	if rmeta.childs == nil {
 		rmeta.childs = make(ComposerMap, 1)
@@ -107,7 +106,8 @@ func (rmeta *RMetaData) Embed(child RMetaProvider) {
 			verbose.Printf(verbose.WARNING, "Embed: duplicate child id:%q for parent id:%q\n", key, rmeta.VirtualId)
 		}
 		rmeta.childs[key] = child
-		// verbose.Debug("embedded (%v) %q", reflect.TypeOf(subcmp).String(), id)
+	} else {
+		verbose.Debug("Embed: %v key missing", reflect.TypeOf(child).String())
 	}
 }
 

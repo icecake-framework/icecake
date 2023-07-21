@@ -64,52 +64,62 @@ func Id(elementid string) *Element {
 
 // MountId wraps the elemid to the uicomposer and add its listeners and to it and to all its childs.
 // Returns ui to allow chaining calls.
-
-func MountId(ui UIComposer, elemid string) UIComposer {
-	if err := TryMountId(ui, elemid); err != nil {
+func MountId(ui UIComposer, id string) (*Element, UIComposer) {
+	e, err := TryMountId(ui, id)
+	if err != nil {
 		verbose.Error("MountId", err)
 	}
-	return nil
+	return e, ui
 }
 
 // TryMountId wraps the elemid to the uicomposer and add its listeners and to it and to all its childs.
 // Returns wrapping errors.
-func TryMountId(ui UIComposer, elemid string) (err error) {
-	if err = TryWrapId(ui, elemid); err != nil {
-		return err
+func TryMountId(ui UIComposer, id string) (*Element, error) {
+	e, err := TryCastId(ui, id)
+	if err != nil {
+		return nil, err
 	}
-	ui.AddListeners()
-	if err = mountSnippetTree(ui); err != nil {
-		return err
+	_, err = mountSnippet(ui, e)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return e, nil
 }
 
 // WrapId looks for elemid into the DOM and wrap it to ui if its type corresponds to the attribute name of the element.
 // Returns ui to allow chaining calls.
 //
 // If elemid is not in the DOM or if the type does not match or if ui does not implement, a message is logged out if verbose mode is on.
-func WrapId(ui UIComposer, elemid string) UIComposer {
-	if err := TryWrapId(ui, elemid); err != nil {
+func WrapId(ui UIComposer, id string) (*Element, UIComposer) {
+	e, err := TryWrapId(ui, id)
+	if err != nil {
 		verbose.Error("WrapId", err)
 	}
-	return ui
+	return e, ui
 }
 
 // TryWrapId looks for elemid into the DOM and wrap it to ui if its type corresponds to the attribute name of the element.
 // Returns an error if elemid is not in the DOM or if the type does not match or ui ick does not implement .
-func TryWrapId(ui UIComposer, elemid string) error {
+func TryWrapId(ui UIComposer, id string) (*Element, error) {
+	e, err := TryCastId(ui, id)
+	if err != nil {
+		return nil, err
+	}
+	ui.Wrap(e)
+	return e, nil
+}
 
-	// DEBUG: console.Warnf("TryWrapId: %v to %s", elemid, reflect.TypeOf(ui).String())
-	// console.Warnf("TryWrapId: %v to %s", elemid, reflect.TypeOf(ui).String())
+func TryCastId(ui UIComposer, id string) (*Element, error) {
+	// DEBUG: console.Warnf("TryCastId: %v to %s", elemid, reflect.TypeOf(ui).String())
+	// console.Warnf("TryCastId: %v to %s", elemid, reflect.TypeOf(ui).String())
 
-	if elemid == "" {
-		return fmt.Errorf("WrapById: unable to wrap an empty Id")
+	if id == "" {
+		return nil, fmt.Errorf("TryCastId: unable to cast an empty Id")
 	}
 
-	ejs := Doc().Call("getElementById", elemid)
+	ejs := Doc().Call("getElementById", id)
 	if !ejs.Truthy() || CastNode(ejs).NodeType() != NT_ELEMENT {
-		return fmt.Errorf("WrapById: unable to found Id %q", elemid)
+		return nil, fmt.Errorf("TryCastId: unable to found Id %q", id)
 	}
 	elem := CastElement(ejs)
 
@@ -117,7 +127,7 @@ func TryWrapId(ui UIComposer, elemid string) error {
 	ickname := aname
 
 	if reflect.ValueOf(ui).Kind() != reflect.Ptr {
-		return fmt.Errorf("WrapById: %v is not a pointer", ui)
+		return nil, fmt.Errorf("TryCastId: %v is not a pointer", ui)
 	}
 
 	icktype := reflect.TypeOf(ui).String()
@@ -128,11 +138,9 @@ func TryWrapId(ui UIComposer, elemid string) error {
 
 	icktype = strings.ToLower(icktype)
 	if ickname != icktype {
-		return fmt.Errorf("WrapById: Id %q with name %q does not match snippet type %q", elemid, ickname, icktype)
+		return nil, fmt.Errorf("TryCastId: Id %q with name %q does not match composer type %q", id, ickname, icktype)
 	}
-
-	ui.Wrap(elem)
-	return nil
+	return elem, nil
 }
 
 // CreateElement creates the HTML element specified by tagName, or an HTMLUnknownElement if tagName isn't recognized.

@@ -59,70 +59,81 @@ func (ui *UI) RemoveListeners() {
 	ui.DOM.RemoveListeners()
 }
 
+// RefreshContent renders the cmp's content and re-insert it into the DOM.
+// RefreshContent removes and re-add all listeners
 func (ui *UI) RefreshContent(cmp ickcore.ContentComposer) (errx error) {
+	unmountSnippet(cmp)
 	out := new(bytes.Buffer)
 	errx = cmp.RenderContent(out)
 	if errx == nil {
 		ui.DOM.InsertRawHTML(INSERT_BODY, out.String())
 	}
-
-	// mount every embedded components with an ID
-	errx = mountSnippetTree(cmp)
+	_, errx = mountSnippet(cmp, &ui.DOM)
 	return errx
 }
 
-// mountSnippetTree addlisteners to the snippet and looks recursively for every childs with an id and add listeners to each of them.
-// Nothing is done with the parent but its IsMounted RMeta is turned on in case of success.
-func mountSnippetTree(parent ickcore.RMetaProvider) (err error) {
-	parenttype := reflect.TypeOf(parent).String()
-	if parent.RMeta().IsMounted {
-		verbose.Printf(verbose.ALERT, "mountSnippetTree: parent:%s id:%q is already mounted", parenttype, parent.RMeta().VirtualId)
+// mountSnippet addlisteners to the cmp snippet and looks recursively for every childs with an id and add listeners to each of them.
+func mountSnippet(cmp ickcore.RMetaProvider, elem *Element) (mounted int, err error) {
+	cmptype := reflect.TypeOf(cmp).String()
+	if cmp.RMeta().IsMounted {
+		verbose.Printf(verbose.ALERT, "mountSnippet: %s(vid:%q) is already mounted", cmptype, cmp.RMeta().VirtualId)
 		return
 	}
 
-	// mount children
-	embedded := parent.RMeta().Embedded()
-	if len(embedded) > 0 {
-		// DEBUG: verbose.Debug("mountSnippetTree: %v children in %s", len(embedded), reflect.TypeOf(parent).String())
-		verbose.Debug("mountSnippetTree: %v children in %s", len(embedded), parenttype)
+	// mount the composer
+	mounted = 0
+	if ui, is := cmp.(UIComposer); is && elem.IsDefined() {
+		verbose.Debug("mountSnippet: mounting %s", cmptype)
+		mounted = 1
+		ui.Wrap(elem)
+		ui.AddListeners()
+		ui.RMeta().IsMounted = true
 	}
-	n := 0
-	if embedded != nil {
+
+	// mount children
+	var errm error
+	embedded := cmp.RMeta().Embedded()
+	if embedded != nil && len(embedded) > 0 {
+		// DEBUG: verbose.Debug("mountSnippet: %v children in %s", len(embedded), cmptype)
+
 		for _, emb := range embedded {
-			// DEBUG: verbose.Debug("mountSnippetTree: %s --> %+v", reflect.TypeOf(emb).String(), emb)
-			// verbose.Debug("mountSnippetTree: %s --> %+v", reflect.TypeOf(emb).String(), emb)
-			if child, ok := emb.(UIComposer); ok {
-				childid := child.RMeta().TagId
-				if childid != "" {
-					n++
-					verbose.Debug("mountSnippetTree: parent:%v is mounting %v id:%q", parenttype, reflect.TypeOf(child).String(), childid)
-					errm := TryMountId(child, childid)
+
+			// DEBUG: verbose.Debug("mountSnippet: %s --> %+v", reflect.TypeOf(emb).String(), emb)
+
+			var e *Element
+			if childid := emb.RMeta().TagId; childid != "" {
+				if child, ok := emb.(UIComposer); ok {
+					e, errm = TryCastId(child, childid)
 					if errm != nil && err == nil {
 						err = errm
+						continue
 					}
-
 				}
 			}
+
+			var m int
+			m, errm = mountSnippet(emb, e)
+			if errm != nil && err == nil {
+				err = errm
+			}
+			mounted += m
 		}
 	}
-	if len(embedded) > 0 && n == 0 {
-		verbose.Debug("mountSnippetTree: %s --> no UIComposer", parenttype)
-	}
-
-	if err == nil {
-		parent.RMeta().IsMounted = true
-	}
-	return err
+	return mounted, err
 }
 
-// unmountSnippetTree remove listeners recusrively for every embedded child
-func unmountSnippetTree(parent ickcore.RMetaProvider) {
-	if embedded := parent.RMeta().Embedded(); embedded != nil {
+// unmountSnippet remove listeners recusrively for every embedded child
+func unmountSnippet(cmp ickcore.RMetaProvider) {
+	if ui, is := cmp.(UIComposer); is {
+		ui.RemoveListeners()
+	}
+	if embedded := cmp.RMeta().Embedded(); embedded != nil {
 		for _, sub := range embedded {
 			if child, ok := sub.(UIComposer); ok {
 				child.RemoveListeners()
-				unmountSnippetTree(child)
+				unmountSnippet(child)
 			}
 		}
 	}
+	cmp.RMeta().IsMounted = false
 }

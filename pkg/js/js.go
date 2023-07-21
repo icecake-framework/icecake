@@ -6,6 +6,7 @@ import (
 	"syscall/js"
 
 	"github.com/icecake-framework/icecake/pkg/console"
+	"github.com/lolorenzo777/verbose"
 )
 
 // TYPE represents the JavaScript type of a Value.
@@ -73,7 +74,7 @@ func (_v JSValue) New(args ...any) JSValue {
 
 func (_v *JSValue) Wrap(_jsvp JSValueProvider) {
 	if _v.jsvalue.Truthy() {
-		console.Warnf("wrapping an already wrapped jsvalue")
+		verbose.Debug("wrapping an already wrapped jsvalue")
 	}
 	_v.jsvalue = _jsvp.Value().jsvalue
 }
