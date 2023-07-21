@@ -30,7 +30,7 @@
                 "./docs",
                 "--verbose",
                 "--debug",
-                "--env=./web/docs/configs/dev"
+                "--env=./web/docs/configs/prod"
             ]
         },
         {

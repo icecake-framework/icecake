@@ -70,7 +70,7 @@ func render(out io.Writer, parent RMetaProvider, cmp Composer) error {
 		}
 		cmp.RMeta().Deep = parent.RMeta().Deep + 1
 	}
-	verbose.Debug("rendering L.%v composer %s\n", deep, cmptyp)
+	verbose.Debug("rendering L.%v composer %s", deep, cmptyp)
 
 	// build the tag
 	var tag Tag
