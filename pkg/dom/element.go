@@ -365,11 +365,17 @@ func (elem *Element) AddClassIf(condition bool, addlist ...string) *Element {
 }
 
 // SetClassIf adds each c classe to the class attribute if the condition is true, otherwise remove them.
-func (elem *Element) SetClassIf(condition bool, lists ...string) *Element {
+func (elem *Element) SetClassIf(condition bool, classiftrue string, classiffalse ...string) *Element {
 	if condition {
-		elem.AddClass(lists...)
+		elem.AddClass(classiftrue)
+		if len(classiffalse) > 0 {
+			elem.RemoveClass(classiffalse[0])
+		}
 	} else {
-		elem.RemoveClass(lists...)
+		elem.RemoveClass(classiftrue)
+		if len(classiffalse) > 0 {
+			elem.AddClass(classiffalse[0])
+		}
 	}
 	return elem
 }

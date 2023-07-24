@@ -350,11 +350,17 @@ func (amap AttributeMap) AddClassIf(condition bool, addlist ...string) Attribute
 
 // SetClassIf adds each c classe to the class attribute if the condition is true, otherwise remove them.
 // Duplicates are not inserted twice.
-func (amap AttributeMap) SetClassIf(condition bool, lists ...string) AttributeMap {
+func (amap AttributeMap) SetClassIf(condition bool, classiftrue string, classiffalse ...string) AttributeMap {
 	if condition {
-		amap.AddClass(lists...)
+		amap.AddClass(classiftrue)
+		if len(classiffalse) > 0 {
+			amap.RemoveClass(classiffalse[0])
+		}
 	} else {
-		amap.RemoveClass(lists...)
+		amap.RemoveClass(classiftrue)
+		if len(classiffalse) > 0 {
+			amap.AddClass(classiffalse[0])
+		}
 	}
 	return amap
 }
