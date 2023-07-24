@@ -2,12 +2,14 @@ package dom
 
 import (
 	"fmt"
+	"net/url"
 
 	syscalljs "syscall/js"
 
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/js"
+	"github.com/lolorenzo777/verbose"
 )
 
 const (
@@ -167,11 +169,16 @@ func (_node *Node) NodeName() string {
 // BaseURI returns the absolute base URL of the document containing the node.
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/Node/baseURI
-func (_node *Node) BaseURI() string {
+func (_node *Node) BaseURI() *url.URL {
 	if !_node.IsDefined() {
-		return UNDEFINED_NODE
+		return nil
 	}
-	return _node.GetString("baseURI")
+	uri := _node.GetString("baseURI")
+	u, err := url.Parse(uri)
+	if err != nil {
+		verbose.Error("Node.BaseURI", err)
+	}
+	return u
 }
 
 // IsInDOM returns a boolean indicating whether the node is within a Document object.
