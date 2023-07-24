@@ -59,6 +59,12 @@ func (s HTMLString) NeedRendering() bool {
 	return s.bytes != nil && len(s.bytes) > 0
 }
 
+// Writer interface
+func (s *HTMLString) Write(p []byte) (n int, err error) {
+	s.bytes = append(s.bytes, p...)
+	return len(p), nil
+}
+
 // RenderHTML lookups for ick-tags in the htmlstring and unfold each of them into out.
 //
 // htmlstring is a string combining usual HTML text and ick-tags. HTML content is transfered to the output without control and without changes.
