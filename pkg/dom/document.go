@@ -62,14 +62,14 @@ func Id(elementid string) *Element {
 	return Doc().ChildById(elementid)
 }
 
-// MountId wraps the elemid to the uicomposer and add its listeners and to it and to all its childs.
-// Returns ui to allow chaining calls.
-func MountId(ui UIComposer, id string) (*Element, UIComposer) {
+// MountId wraps the id to the uicomposer and add its listeners and to it and to all its childs.
+// Returns wrapped element
+func MountId(ui UIComposer, id string) *Element {
 	e, err := TryMountId(ui, id)
 	if err != nil {
 		verbose.Error("MountId", err)
 	}
-	return e, ui
+	return e
 }
 
 // TryMountId wraps the elemid to the uicomposer and add its listeners and to it and to all its childs.
@@ -138,7 +138,7 @@ func TryCastId(ui UIComposer, id string) (*Element, error) {
 
 	icktype = strings.ToLower(icktype)
 	if ickname != icktype {
-		return nil, fmt.Errorf("TryCastId: Id %q with name %q does not match composer type %q", id, ickname, icktype)
+		return nil, fmt.Errorf("TryCastId: Id %q with name attribute %q does not match composer type %q", id, ickname, icktype)
 	}
 	return elem, nil
 }
