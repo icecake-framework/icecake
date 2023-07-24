@@ -1,6 +1,9 @@
 package namingpattern
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestIsValidHTMLName(t *testing.T) {
 
@@ -37,6 +40,19 @@ func TestIsValidHTMLName(t *testing.T) {
 		}
 	}
 
+}
+
+func ExampleMakeValidName() {
+	fmt.Println(MakeValidName("john"))
+	fmt.Println(MakeValidName("john Doe"))
+	fmt.Println(MakeValidName("john>Doe_À"))
+	fmt.Println(MakeValidName("1john"))
+
+	// Output:
+	// john
+	// john_Doe
+	// john_Doe_À
+	// _john
 }
 
 func TestCompilechartset(t *testing.T) {

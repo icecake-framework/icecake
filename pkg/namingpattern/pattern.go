@@ -25,8 +25,8 @@ var (
 //	returns FALSE if s is empty
 //
 // must be trimed before, if required
-func IsValidName(name string) bool {
-	if name == "" {
+func IsValidName(n string) bool {
+	if n == "" {
 		return false
 	}
 
@@ -34,13 +34,30 @@ func IsValidName(name string) bool {
 		new()
 	}
 
-	for i, c := range name {
+	for i, c := range n {
 		r := rune(c)
 		if (i == 0 && !isValidRune(&nameCharset0, r)) || (i > 0 && !isValidRune(&nameCharsetN, r)) {
 			return false
 		}
 	}
 	return true
+}
+
+// MakeValidName convert any invalid char in name into "_"
+func MakeValidName(n string) string {
+	if nameCharset0 == nil {
+		new()
+	}
+	v := ""
+	for i, c := range n {
+		r := rune(c)
+		if (i == 0 && !isValidRune(&nameCharset0, r)) || (i > 0 && !isValidRune(&nameCharsetN, r)) {
+			v += "_"
+		} else {
+			v += string(c)
+		}
+	}
+	return v
 }
 
 func IsValidNameRune(r rune, first bool) bool {
