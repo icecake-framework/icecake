@@ -18,7 +18,7 @@ type ICKCard struct {
 	Title ickcore.HTMLString
 
 	// the body of the card
-	Body ickcore.ContentStack
+	Body ICKElem // rendered as <div class="card-content">
 
 	// Optional image to display on top of the card
 	Image *ICKImage
@@ -36,7 +36,7 @@ func Card(content ickcore.ContentComposer, attrs ...string) *ICKCard {
 	c := new(ICKCard)
 	c.Tag().ParseAttributes(attrs...)
 	c.footerItem = make([]ickcore.HTMLString, 0)
-	c.Body.Push(content)
+	c.Body.Append(content)
 	return c
 }
 
@@ -59,6 +59,7 @@ func (card *ICKCard) AddFooterItem(item ickcore.HTMLString) *ICKCard {
 // Card Tag is a simple <div class="card"></div>
 func (card *ICKCard) BuildTag() ickcore.Tag {
 	card.Tag().SetTagName("div").AddClass("card")
+	card.Body.Tag().SetTagName("div").AddClass("card-content")
 	return *card.Tag()
 }
 
@@ -78,11 +79,7 @@ func (card *ICKCard) RenderContent(out io.Writer) error {
 		ickcore.RenderString(out, `</div>`)
 	}
 
-	if card.Body.NeedRendering() {
-		ickcore.RenderString(out, `<div class="card-content">`)
-		card.Body.RenderStack(out, card)
-		ickcore.RenderString(out, `</div>`)
-	}
+	ickcore.RenderChild(out, card, &card.Body)
 
 	if len(card.footerItem) > 0 {
 		ickcore.RenderString(out, `<div class="card-footer">`)
