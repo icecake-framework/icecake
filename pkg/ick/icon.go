@@ -31,6 +31,7 @@ var _ ickcore.ContentComposer = (*ICKIcon)(nil)
 var _ ickcore.TagBuilder = (*ICKIcon)(nil)
 
 func Icon(key string, attrs ...string) *ICKIcon {
+	// TODO: ICKIcon - check key validity
 	i := &ICKIcon{Key: key}
 	i.Tag().ParseAttributes(attrs...)
 	return i
