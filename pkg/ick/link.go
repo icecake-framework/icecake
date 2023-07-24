@@ -28,6 +28,7 @@ var _ ickcore.TagBuilder = (*ICKLink)(nil)
 func Link(child ickcore.ContentComposer, attrlist ...string) *ICKLink {
 	lnk := new(ICKLink)
 	lnk.Tag().ParseAttributes(attrlist...)
+	lnk.Tag().NoName = true
 	lnk.Body.Push(child)
 	return lnk
 }
