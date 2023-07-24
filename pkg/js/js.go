@@ -73,7 +73,7 @@ func (_v JSValue) New(args ...any) JSValue {
 }
 
 func (_v *JSValue) Wrap(_jsvp JSValueProvider) {
-	if _v.jsvalue.Truthy() {
+	if _v.jsvalue.Truthy() && !_v.jsvalue.Equal(_jsvp.Value().jsvalue) {
 		verbose.Debug("wrapping an already wrapped jsvalue")
 	}
 	_v.jsvalue = _jsvp.Value().jsvalue

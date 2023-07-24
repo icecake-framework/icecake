@@ -43,7 +43,7 @@ func (ui *UI) AddListeners() {}
 // to wrap embedded component instantiated during unfolding an html string.
 // Does not need to be overloaded by the component embedding UISnippet.
 func (ui *UI) Wrap(jsvp js.JSValueProvider) {
-	if ui.DOM.Value().Truthy() {
+	if ui.DOM.Value().Truthy() && !ui.DOM.Value().Equal(jsvp.Value()) {
 		console.Warnf("UI.wrap: UI element %q already wrapped", ui.DOM.Id())
 	}
 	ui.DOM.JSValue = jsvp.Value()
