@@ -18,7 +18,7 @@
             ]
         },
         {
-            "name": "makedocs",
+            "name": "makedocs dev",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -30,6 +30,20 @@
                 "./docs",
                 "--verbose",
                 "--debug",
+                "--env=./web/docs/configs/dev"
+            ]
+        },
+        {
+            "name": "makedocs prod",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/web/docs/cmd/makedocs",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "--output",
+                "./docs",
                 "--env=./web/docs/configs/prod"
             ]
         },
