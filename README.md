@@ -43,7 +43,7 @@ In parallel we're doing many refactoring to make code more coder friendly.
 
 ## Tech
 
-- Go 1.20 and it's wasm compiler
+- Go 1.21 and it's wasm compiler
 - based on the ``syscall/js`` package
 - Snippets use [Bulma](https://bulma.io/) CSS framework. Bulma is a pure CSS framework without any JS code.
 

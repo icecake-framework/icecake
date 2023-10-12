@@ -12,6 +12,7 @@ tasks:
     cmds:
       - rm -rf ./website
       - mkdir -p ./website
+      - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./web/static
       - cp -R ./web/static/** ./website/
       - GOARCH=wasm GOOS=js go build -o ./website/static/spa.wasm ./web/wasm/
       - go build -o ./website/icecake ./cmd/icecake/icecake.go
@@ -76,6 +77,7 @@ tasks:
       - "./examples/**/static/**/*"
     cmds: 
       - mkdir -p ./tmp/website
+      - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./web/static
       - cp -R ./web/static/** ./tmp/website/
       - find ./examples -type f | xargs -i cp {} ./tmp/website/
 
