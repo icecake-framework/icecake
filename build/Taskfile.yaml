@@ -7,6 +7,9 @@ interval: '1000ms'
 
 tasks:
 
+# -----------------------------
+# prod
+
   build_website:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
@@ -17,6 +20,15 @@ tasks:
       #- GOARCH=wasm GOOS=js go build -o ./website/static/spa.wasm ./web/wasm/
       #- go build -o ./website/icecake ./cmd/icecake/icecake.go
 
+# -----------------------------
+# tests
+
+  # task -t ./build/Taskfile.yaml test_wasm 
+  test_wasm:
+    dir: '{{.USER_WORKING_DIR}}/internal/testswasm'
+    cmds:
+      - GOARCH=wasm GOOS=js go build -o ./tests.wasm 
+
   unit_test:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
@@ -24,13 +36,39 @@ tasks:
       # - GOARCH=wasm GOOS=js go test -cover ./web/...
       - GOARCH=wasm GOOS=js go test ./web/wasm/wasm_test.go
 
-  # task -t ./build/Taskfile.yaml dev_wasm
-  dev_wasm:
+# -----------------------------
+# dev
+
+  # task -t ./build/Taskfile.yaml dev
+  dev_front:
     dir: '{{.USER_WORKING_DIR}}'
     sources: 
-      - "web/wasm/main.go"
+      - "pkg/**/*"
+      - "website/spa/wasm/main.go"
     cmds: 
-      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/
+      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./website/spa/wasm/
+
+  # task -t ./build/Taskfile.yaml dev_static
+  dev_static: 
+    dir: '{{.USER_WORKING_DIR}}'
+    sources: 
+      - "./web/static/**/*"
+      - "./examples/**/static/**/*"
+    cmds: 
+      - mkdir -p ./tmp/website
+      - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./web/static
+      - cp -R ./web/static/** ./tmp/website/
+      - find ./examples -type f | xargs -i cp {} ./tmp/website/
+
+  # task -t ./build/Taskfile.yaml dev_back
+  dev_back:
+    dir: '{{.USER_WORKING_DIR}}'
+    ignore_error: true
+    cmds: 
+      - go run ./cmd/icecake/icecake.go --env=./configs/dev
+
+# -----------------------------
+# makedoc
 
   # task -t ./build/Taskfile.yaml makedocwebsite
   makedocwebsite:
@@ -40,7 +78,7 @@ tasks:
       - mkdir -p ./docs/assets
       - cp ./website/docs/CNAME ./docs/
       - cp ./website/docs/favicon.ico ./docs/
-      - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./website/docs/static
+      - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./website/docs/assets
       - GOARCH=wasm GOOS=js go build -o ./docs/index.wasm ./website/docs/pages/wasm/index/
       - GOARCH=wasm GOOS=js go build -o ./docs/docoverview.wasm ./website/docs/pages/wasm/docoverview/
       - GOARCH=wasm GOOS=js go build -o ./docs/docbutton.wasm ./website/docs/pages/wasm/docbutton/
@@ -57,66 +95,3 @@ tasks:
       - GOARCH=wasm GOOS=js go build -o ./docs/doctaglabel.wasm ./website/docs/pages/wasm/doctaglabel/
       - GOARCH=wasm GOOS=js go build -o ./docs/docmedia.wasm ./website/docs/pages/wasm/docmedia/
       - go run ./website/docs/cmd/makedocs/ -verbose -env="./website/docs/configs/prod" -output="./docs"
-
-
-  # task -t ./build/Taskfile.yaml dev_framework
-  dev_framework:
-    dir: '{{.USER_WORKING_DIR}}'
-    sources: 
-      - "pkg/framework/**/*"
-      - "pkg/webclientsdk/**/*"
-    cmds: 
-      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/
-
-  # task -t ./build/Taskfile.yaml dev_components
-  dev_components:
-    dir: '{{.USER_WORKING_DIR}}'
-    sources: 
-      - "web/components/**/*"
-    cmds: 
-      - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/
-
-  # task -t ./build/Taskfile.yaml dev_static
-  dev_static: 
-    dir: '{{.USER_WORKING_DIR}}'
-    sources: 
-      - "./web/static/**/*"
-      - "./examples/**/static/**/*"
-    cmds: 
-      - mkdir -p ./tmp/website
-      - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./web/static
-      - cp -R ./web/static/** ./tmp/website/
-      - find ./examples -type f | xargs -i cp {} ./tmp/website/
-
-  # task -t ./build/Taskfile.yaml test_wasm 
-  test_wasm:
-    dir: '{{.USER_WORKING_DIR}}/internal/testswasm'
-    cmds:
-      - GOARCH=wasm GOOS=js go build -o ./tests.wasm 
-
-  # EXAMPLE=example3 task -t ./build/Taskfile.yaml build_example
-  build_example:
-    dir: '{{.USER_WORKING_DIR}}/examples'
-    sources: 
-      - "./{{.EXAMPLE}}/wasm/*.*"
-      - "./../pkg/**/*"
-      - "./../assets/*"
-    cmds:
-      - cp -R ./../assets/icecake.js ./website
-      - GOARCH=wasm GOOS=js go build -o ./website/{{.EXAMPLE}}.wasm ./{{.EXAMPLE}}/wasm/
-
-  # task -t ./build/Taskfile.yaml dev_front --watch 
-  dev_front:
-    dir: '{{.USER_WORKING_DIR}}'
-    deps: 
-      - task: dev_static
-      - task: dev_components
-      - task: dev_framework
-      - task: dev_wasm
-
-  # task -t ./build/Taskfile.yaml dev_back
-  dev_back:
-    dir: '{{.USER_WORKING_DIR}}'
-    ignore_error: true
-    cmds: 
-      - go run ./cmd/icecake/icecake.go --env=./configs/dev
