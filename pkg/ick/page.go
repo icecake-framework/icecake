@@ -182,7 +182,7 @@ func (pg Page) WriteFile(outputpath string) (err error) {
 		}
 		verbose.Error(fmt.Sprintf("WriteFile %s", outputpath), err)
 		if err == nil {
-			verbose.Println(verbose.INFO, absfilename, "successfully written\n")
+			verbose.Println(verbose.INFO, absfilename, "successfully written")
 		}
 	}()
 
