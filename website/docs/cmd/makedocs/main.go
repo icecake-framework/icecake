@@ -10,8 +10,8 @@ import (
 	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
-	"github.com/icecake-framework/icecake/web/docs"
-	webdocs "github.com/icecake-framework/icecake/web/docs/pages"
+	"github.com/icecake-framework/icecake/website/docs"
+	webdocs "github.com/icecake-framework/icecake/website/docs/pages"
 	"github.com/joho/godotenv"
 	"github.com/lolorenzo777/verbose"
 )
@@ -112,7 +112,7 @@ func main() {
 	ickcore.RequireCSSFile(web.ToAbsURLString("/assets/docs.css"))
 
 	// copy assets
-	err := web.CopyToAssets("./web/docs/assets/", "./web/docs/sass/docs.css", "./web/docs/sass/docs.css.map")
+	err := web.CopyToAssets("./website/docs/assets/", "./website/docs/sass/docs.css", "./website/docs/sass/docs.css.map")
 	if err != nil {
 		fmt.Println("makedoc fails: ", err.Error())
 		os.Exit(1)

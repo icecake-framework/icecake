@@ -10,12 +10,12 @@ tasks:
   build_website:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
-      - rm -rf ./website
-      - mkdir -p ./website
-      - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./web/static
-      - cp -R ./web/static/** ./website/
-      - GOARCH=wasm GOOS=js go build -o ./website/static/spa.wasm ./web/wasm/
-      - go build -o ./website/icecake ./cmd/icecake/icecake.go
+      #- rm -rf ./website
+      #- mkdir -p ./website
+      #- cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./web/static
+      #- cp -R ./web/static/** ./website/
+      #- GOARCH=wasm GOOS=js go build -o ./website/static/spa.wasm ./web/wasm/
+      #- go build -o ./website/icecake ./cmd/icecake/icecake.go
 
   unit_test:
     dir: '{{.USER_WORKING_DIR}}'
@@ -32,25 +32,32 @@ tasks:
     cmds: 
       - GOARCH=wasm GOOS=js go build -o ./tmp/website/spa.wasm ./web/wasm/
 
-  # task -t ./build/Taskfile.yaml doc_wasm
-  doc_wasm:
+  # task -t ./build/Taskfile.yaml makedocwebsite
+  makedocwebsite:
     dir: '{{.USER_WORKING_DIR}}'
     cmds: 
-      - GOARCH=wasm GOOS=js go build -o ./docs/index.wasm ./web/docs/pages/wasm/index/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docoverview.wasm ./web/docs/pages/wasm/docoverview/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docbutton.wasm ./web/docs/pages/wasm/docbutton/
-      - GOARCH=wasm GOOS=js go build -o ./docs/doccard.wasm ./web/docs/pages/wasm/doccard/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docmenu.wasm ./web/docs/pages/wasm/docmenu/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docmessage.wasm ./web/docs/pages/wasm/docmessage/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docnavbar.wasm ./web/docs/pages/wasm/docnavbar/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docnotify.wasm ./web/docs/pages/wasm/docnotify/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docimage.wasm ./web/docs/pages/wasm/docimage/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docinput.wasm ./web/docs/pages/wasm/docinput/
-      - GOARCH=wasm GOOS=js go build -o ./docs/dochero.wasm ./web/docs/pages/wasm/dochero/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docdelete.wasm ./web/docs/pages/wasm/docdelete/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docicon.wasm ./web/docs/pages/wasm/docicon/
-      - GOARCH=wasm GOOS=js go build -o ./docs/doctaglabel.wasm ./web/docs/pages/wasm/doctaglabel/
-      - GOARCH=wasm GOOS=js go build -o ./docs/docmedia.wasm ./web/docs/pages/wasm/docmedia/
+      - rm -rf ./docs
+      - mkdir -p ./docs/assets
+      - cp ./website/docs/CNAME ./docs/
+      - cp ./website/docs/favicon.ico ./docs/
+      - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./website/docs/static
+      - GOARCH=wasm GOOS=js go build -o ./docs/index.wasm ./website/docs/pages/wasm/index/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docoverview.wasm ./website/docs/pages/wasm/docoverview/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docbutton.wasm ./website/docs/pages/wasm/docbutton/
+      - GOARCH=wasm GOOS=js go build -o ./docs/doccard.wasm ./website/docs/pages/wasm/doccard/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docmenu.wasm ./website/docs/pages/wasm/docmenu/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docmessage.wasm ./website/docs/pages/wasm/docmessage/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docnavbar.wasm ./website/docs/pages/wasm/docnavbar/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docnotify.wasm ./website/docs/pages/wasm/docnotify/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docimage.wasm ./website/docs/pages/wasm/docimage/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docinput.wasm ./website/docs/pages/wasm/docinput/
+      - GOARCH=wasm GOOS=js go build -o ./docs/dochero.wasm ./website/docs/pages/wasm/dochero/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docdelete.wasm ./website/docs/pages/wasm/docdelete/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docicon.wasm ./website/docs/pages/wasm/docicon/
+      - GOARCH=wasm GOOS=js go build -o ./docs/doctaglabel.wasm ./website/docs/pages/wasm/doctaglabel/
+      - GOARCH=wasm GOOS=js go build -o ./docs/docmedia.wasm ./website/docs/pages/wasm/docmedia/
+      - go run ./website/docs/cmd/makedocs/ -verbose -env="./website/docs/configs/prod" -output="./docs"
+
 
   # task -t ./build/Taskfile.yaml dev_framework
   dev_framework:
