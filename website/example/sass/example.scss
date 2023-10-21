@@ -1,0 +1,19 @@
+@charset "utf-8";
+
+$primary: #058ED9;
+$link: #DB0690;
+
+$info: #D7EBFF;
+$success: #90DB06;
+$warning: #ffd100;
+$danger: #DB0906;
+
+$menu-item-active-background-color: $primary;
+
+$input-focus-border-color: $primary;
+$input-focus-box-shadow-color: rgba($primary, 0.25);
+$input-arrow: $primary;
+
+@import "../../../../../bulma/bulma.sass";
+
+@import "../../../pkg/ick/ick.scss";
