@@ -11,7 +11,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/js"
-	"github.com/lolorenzo777/verbose"
+	"github.com/larry868/verbose"
 )
 
 /******************************************************************************

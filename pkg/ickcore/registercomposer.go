@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/icecake-framework/icecake/internal/helper"
-	"github.com/lolorenzo777/verbose"
+	"github.com/larry868/verbose"
 )
 
 // RegisterComposer registers a _composer with the unique _ickname.

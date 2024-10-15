@@ -9,7 +9,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/console"
 	"github.com/icecake-framework/icecake/pkg/ickcore"
 	"github.com/icecake-framework/icecake/pkg/js"
-	"github.com/lolorenzo777/verbose"
+	"github.com/larry868/verbose"
 )
 
 type UIComposer interface {

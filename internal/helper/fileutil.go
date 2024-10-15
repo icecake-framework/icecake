@@ -8,7 +8,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/lolorenzo777/verbose"
+	"github.com/larry868/verbose"
 	"github.com/otiai10/copy"
 )
 

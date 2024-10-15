@@ -13,7 +13,7 @@ import (
 	"github.com/icecake-framework/icecake/website/docs"
 	webdocs "github.com/icecake-framework/icecake/website/docs/pages"
 	"github.com/joho/godotenv"
-	"github.com/lolorenzo777/verbose"
+	"github.com/larry868/verbose"
 )
 
 func main() {

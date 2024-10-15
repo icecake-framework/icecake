@@ -4,7 +4,7 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/lolorenzo777/verbose"
+	"github.com/larry868/verbose"
 )
 
 // maxDEEP is the maximum HTML string unfolding levels

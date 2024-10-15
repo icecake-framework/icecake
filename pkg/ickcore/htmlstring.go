@@ -12,7 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/icecake-framework/icecake/pkg/namingpattern"
-	"github.com/lolorenzo777/verbose"
+	"github.com/larry868/verbose"
 )
 
 // HTMLString represents a string document fragment, mixing standard HTML syntax with <ick-tags/> inline components.

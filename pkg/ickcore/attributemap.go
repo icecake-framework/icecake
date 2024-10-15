@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/icecake-framework/icecake/internal/helper"
 	"github.com/icecake-framework/icecake/pkg/namingpattern"
-	"github.com/lolorenzo777/verbose"
-	"golang.org/x/exp/slices"
+	"github.com/larry868/verbose"
 )
 
 // AttributeMap represents a list of valid HTML tag attributes, providing methods to easily set, update and extract each.

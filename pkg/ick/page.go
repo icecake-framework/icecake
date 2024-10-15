@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/icecake-framework/icecake/pkg/ickcore"
-	"github.com/lolorenzo777/verbose"
+	"github.com/larry868/verbose"
 )
 
 type HeadItem struct {

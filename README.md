@@ -4,7 +4,7 @@
 
 :warning: This code is an Alpha version with work in progress.
 
-Icecake is an experimental framework designed to build Web Assembly(WASM) SPA 100% in GO (no JS): 
+Icecake is an experimental framework designed to build Web Assembly(WASM) SPA 100% fullstack in GO:
 - [see wasm doc](https://developer.mozilla.org/fr/docs/WebAssembly)
 - [see this post to use wasm in GO](https://tutorialedge.net/golang/writing-frontend-web-framework-webassembly-go/)
 
@@ -22,7 +22,7 @@ Sources of inspiration:
 
 ## Tech
 
-- Go 1.21 and it's wasm compiler
+- Go 1.23 and it's wasm compiler
 - based on the ``syscall/js`` package
 - Snippets use [Bulma](https://bulma.io/) CSS framework. Bulma is a pure CSS framework without any JS code.
 

@@ -8,7 +8,7 @@ import (
 	"github.com/icecake-framework/icecake/pkg/event"
 	"github.com/icecake-framework/icecake/pkg/ick"
 	"github.com/icecake-framework/icecake/pkg/js"
-	"github.com/lolorenzo777/verbose"
+	"github.com/larry868/verbose"
 )
 
 type ICKDelete struct {
